@@ -5,19 +5,22 @@
 
     let msRemaining = DURATION_MS;
     let lastTs: number;
-    let callId: number;
+    let callId: number | undefined = undefined;
     let running: boolean = false;
 
     let bar: HTMLDivElement;
     let color = "green";
 
     export function start() {
+        pause();
         lastTs = performance.now();
         callId = requestAnimationFrame(timerLoop);
     }
     export function pause() {
-        cancelAnimationFrame(callId);
-        running = false;
+        if (typeof callId === "number") {
+            cancelAnimationFrame(callId);
+        }
+        callId = undefined;
     }
     export function reset() {
         pause();
@@ -30,9 +33,10 @@
         lastTs = currentTs;
 
         // Continue animating if time is not up
-        running = msRemaining > 0;
-        if (running) {
+        if (msRemaining > 0) {
             callId = requestAnimationFrame(timerLoop);
+        } else {
+            callId = undefined;
         }
     }
     function timeString(ms: number): string {
@@ -62,13 +66,14 @@
     function clamp(value: number, min: number, max: number) {
         return Math.min(Math.max(min, value), max)
     }
-
+    
     $: bar?.style.setProperty("--progress", String(clamp(msRemaining / DURATION_MS, 0, 1)));
     $: {
         if (msRemaining <= 0.2 * DURATION_MS) color = "red";
         else if (msRemaining <= 0.5 * DURATION_MS) color = "yellow";
         else color = "green";
     }
+    $: running = typeof callId !== "undefined";
 </script>
 <style>
     .top {
