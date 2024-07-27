@@ -1,6 +1,6 @@
 <script lang="ts">
     import "$lib/panel/public";
-    import Timer from "$lib/panel/Timer.svelte";
+    import Timer from "$lib/Timer.svelte";
 
     let timer: Timer;
 </script>
