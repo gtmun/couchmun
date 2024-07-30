@@ -1,3 +1,8 @@
+<!-- A small timer component.
+    This component is a linear progress bar that runs for a preset number of seconds.
+    This contains the binds bind:start, bind:pause, bind:reset to start/pause/reset the timer,
+    and the duration prop to control how many seconds the timer should run for.
+-->
 <script lang="ts">
     export let duration: number;
 
