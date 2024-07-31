@@ -1,44 +1,67 @@
 <script lang="ts">
-    // Define a Participant type with name and status
-    type Participant = {
-      name: string;
-      status: 'Not Present' | 'Present' | 'Present and Voting';
-    };
-  
-    // Initialize an array of participants with default statuses
-    let participants: Participant[] = [
-      { name: "Participant 1", status: "Not Present" },
-      { name: "Participant 2", status: "Not Present" },
-      // Add more participants here
-    ];
-  
-    // Function to update the status of a participant
-    function updateStatus(index: number, status: Participant['status']) {
-      participants[index].status = status;
-    }
+  // TODO: probably link this to a config setting of some sort
+  import delegateData from "$lib/sample_delegates.json";
+
+  type DelegateName = keyof typeof delegateData;
+  type DelegateStatus = {
+    status: "NP" | "P" | "PV"
+  };
+
+  let delegates: Record<DelegateName, DelegateStatus> = Object.fromEntries(
+    Object.keys(delegateData).map(p => [p, { status: "NP" }])
+  ) as any;
+
+  let maj: number, supermaj: number, total: number;
+  $: {
+    total = Object.values(delegates)
+      .filter(st => st.status !== "NP")
+      .length;
+    maj = Math.ceil(total / 2);
+    supermaj = Math.ceil(total * 2 / 3);
+  }
   </script>
-  
-  <!-- Render a table to display participants and their statuses -->
-  <table>
-    <thead>
+<div>
+  <div><b>Majority (1/2)</b>: {maj}</div>
+  <div><b>Supermajority (2/3)</b>: {supermaj}</div>
+  <div><b>Total Present</b>: {total}</div>
+</div>
+<!-- Render a table to display participants and their statuses -->
+<table>
+  <thead>
+    <tr>
+      <th>Delegate</th>
+      <th>Present</th>
+      <th>Present and Voting</th>
+    </tr>
+  </thead>
+  <tbody id="del-table">
+    {#each Object.entries(delegates) as [dName, dStatus]}
       <tr>
-        <th>Participant</th>
-        <th>Status</th>
+        <td>{dName}</td>
+        <td on:click={() => dStatus.status = dStatus.status === "NP" ? "P" : "NP"} class:highlight={dStatus.status != "NP"}>
+        </td>
+        <td on:click={() => dStatus.status = dStatus.status === "PV" ? "P" : "PV"}  class:highlight={dStatus.status == "PV"}>
+        </td>
       </tr>
-    </thead>
-    <tbody>
-      {#each participants as participant, index}
-        <tr>
-          <td>{participant.name}</td>
-          <td>
-            <select bind:value={participant.status} on:change={() => updateStatus(index, participant.status)}>
-              <option value="Not Present">Not Present</option>
-              <option value="Present">Present</option>
-              <option value="Present and Voting">Present and Voting</option>
-            </select>
-          </td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-  
+    {/each}
+  </tbody>
+</table>
+
+<style>
+  /* TODO: color + general design */
+  #del-table td {
+    border: 1px solid black;
+  }
+  #del-table td {
+    transition: background-color 0.2s;
+  }
+  .highlight {
+    background-color: lightgreen;
+  }
+  td:hover {
+    background-color: color-mix(in srgb, lightgreen 30%, transparent);
+  }
+  td:hover.highlight {
+    background-color: color-mix(in srgb, lightgreen 70%, transparent);
+  }
+</style>
