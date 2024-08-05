@@ -23,39 +23,38 @@
     }
 </script>
 
-<h1>Welcome to SvelteKit</h1>
 
-<hr>
+<div class="flex flex-col gap-5">
+    <h1 class="h1">Welcome to SvelteKit</h1>
+    <div>
+        <h2 class="h2">Admin panel demo</h2>
+        <p>Visit <a class="anchor" href="/admin" target="_blank">/admin</a> to open admin panel</p>
+    </div>
+    <div>
+        <h2 class="h2">Timer demo</h2>
+        
+        <button class="btn btn-sm variant-filled-primary" on:click={timer.start}>Start</button>
+        <button class="btn btn-sm variant-filled-primary" on:click={timer.pause}>Pause</button>
+        <button class="btn btn-sm variant-filled-primary" on:click={timer.reset}>Reset</button>
+        <Timer duration={10} bind:this={timer} bind:start />
+    </div>
+    <div>
+        <h2 class="h2">Persistent Storage demo</h2>
+        
+        <button class="btn btn-sm variant-filled-primary" on:click={() => $storage++}>increment value</button>
+        <button class="btn btn-sm variant-filled-primary" on:click={() => (storage.delete(), updater ^= 1)}>delete key</button>
+        <div>value: {$storage}</div>
+        
+        <br>
 
-<h2>Admin panel demo</h2>
+        <button class="btn btn-sm variant-filled-primary" on:click={() => $dataStorage.first++}>increment value 1</button>
+        <button class="btn btn-sm variant-filled-primary" on:click={() => $dataStorage.second++}>increment value 2</button>
+        <button class="btn btn-sm variant-filled-primary" on:click={() => (dataStorage.delete(), updater ^= 1)}>delete all keys</button>
+        <div>value: {$dataStorage.first}</div>
+        <div>value: {$dataStorage.second}</div>
 
-<p>Visit <a href="/admin" target="_blank">/admin</a> to open admin panel</p>
-
-<hr>
-
-<h2>Timer demo</h2>
-
-<button on:click={timer.start}>Start</button>
-<button on:click={timer.pause}>Pause</button>
-<button on:click={timer.reset}>Reset</button>
-<Timer duration={10} bind:this={timer} bind:start />
-
-<hr>
-
-<h2>Persistent Storage demo</h2>
-
-<button on:click={() => $storage++}>increment value</button>
-<button on:click={() => (storage.delete(), updater ^= 1)}>delete key</button>
-<div>value: {$storage}</div>
-
-<br>
-
-<button on:click={() => $dataStorage.first++}>increment value 1</button>
-<button on:click={() => $dataStorage.second++}>increment value 2</button>
-<button on:click={() => (dataStorage.delete(), updater ^= 1)}>delete all keys</button>
-<div>value: {$dataStorage.first}</div>
-<div>value: {$dataStorage.second}</div>
-
-<div>
-    localStorage contents: <code>{localStorageStr}</code>
+        <div>
+            localStorage contents: <code>{localStorageStr}</code>
+        </div>
+    </div>
 </div>
