@@ -1,25 +1,34 @@
 <script lang="ts">
+  import { motionSchema } from "$lib/dashboard/points-motions/form_validation";
+  import delegates from "$lib/sample_delegates.json";
+  import Icon from "@iconify/svelte";
+  import { Autocomplete, type AutocompleteOption, popup, type PopupSettings } from "@skeletonlabs/skeleton";
+  import { ValidationError } from "yup";
+  import { parseTime, stringifyTime } from "$lib/time";
   type Motion = {
+    delegate: string,
     kind: "mod", 
     totalTime: number,
     speakingTime: number,
     topic: string
   } | {
+    delegate: string,
     kind: "unmod",
     totalTime: number,
     topic: string
   } | {
+    delegate: string,
     kind: "other",
     totalTime: number,
     topic: string
   }
   type MotionKind = Motion["kind"];
 
-  let currentMotion: Partial<Motion> = {
-    kind: "mod"
-  };
+  let inputMotion: Partial<Motion> = defaultInputMotion();
+  let inputError: { id: string, msg: string } | undefined = undefined;
   let motions: Motion[] = [];
 
+  // STRING DISPLAY
   function mkToStr(m: MotionKind) {
     switch (m) {
       case "mod": return "Moderated Caucus"
@@ -28,97 +37,220 @@
       default: throw new Error("no motion type " + m);
     }
   }
-  // TODO: remove redundancy between this and Timer.svelte
-  function timeString(secsElapsed: number): string {
-    let sec = secsElapsed % 60;
-    let min = Math.floor(secsElapsed / 60);
-    let hr;
-    let day;
-
-    if (min >= 60) {
-        hr = Math.floor(min / 60);
-        min %= 60;
-
-        if (hr >= 24) {
-            day = Math.floor(hr / 24);
-            hr %= 24;
-        }
+  function numSpeakersStr(totalTime: number | string | undefined, speakingTime: number | string | undefined): number | string | undefined {
+    // Parse arguments as either seconds or time string.
+    if (typeof totalTime === "string") {
+      totalTime = Number.isInteger(+totalTime) ? +totalTime : parseTime(totalTime);
     }
-    
-    return [day, hr, min, sec]
-        .filter(n => typeof n != "undefined")
-        .map(n => String(n).padStart(2, '0'))
-        .join(':');
+    if (typeof speakingTime === "string") {
+      speakingTime = Number.isInteger(+speakingTime) ? +speakingTime : parseTime(speakingTime);
+    }
+
+    // Handle undefined cases
+    if (typeof totalTime === "undefined") return;
+    if (typeof speakingTime === "undefined") return;
+
+    let nSpeakers = totalTime / speakingTime;
+    // Simple validation
+    if (!Number.isFinite(nSpeakers)) return;
+    if (nSpeakers < 0) return;
+    if (!Number.isInteger(nSpeakers)) return nSpeakers.toFixed(2);
+    return nSpeakers;
   }
-  function totalNumOfSpeakers(totalTime: number | undefined, speakingTime: number | undefined): number {
-    if (typeof totalTime === "undefined") return 0;
-    if (typeof speakingTime === "undefined") return 0;
-    return totalTime / speakingTime;
+
+  // MOTION FORM CHANGES
+  function defaultInputMotion(): Partial<Motion> {
+    return { kind: "mod" };
+  }
+  function resetInputErrors() {
+    inputError = undefined;
+  }
+  function submitMotion() {
+    let validatedMotion;
+    try {
+      validatedMotion = motionSchema.validateSync(inputMotion) as unknown as Motion;
+    } catch (e) {
+      // Failure
+      if (e instanceof ValidationError) {
+        inputError = { id: e.path ?? "", msg: e.message };
+        return;
+      } else {
+        throw e;
+      }
+    }
+
+    // Success
+    inputMotion = defaultInputMotion();
+    inputError = undefined;
+    motions.push(validatedMotion);
+    motions = motions;
+  }
+
+  // DELEGATE INPUT
+  const delegateInputPopupSettings: PopupSettings = {
+    event: 'focus-click',
+    target: 'delegateInputAutocomplete',
+    placement: 'bottom',
+    middleware: {
+      size: {
+        apply({availableHeight, elements}: any) {
+          Object.assign(elements.floating.style, {
+            maxHeight: `${availableHeight}px`,
+          });
+        },
+      }
+    }
+  }
+  const delegateOptions: AutocompleteOption<string>[] = Array.from(Object.entries(delegates), ([k, data]) => ({
+    label: k, value: k
+  }));
+
+  // TABLE CHANGES
+  function removeMotion(i: number) {
+    motions.splice(i, 1);
+    motions = motions;
   }
 </script>
 
-<!-- Input fields to set the topic and time for the moderated caucus -->
-<div>
-  <select bind:value={currentMotion.kind}>
-    <option value="mod">Moderated Caucus</option>
-    <option value="unmod">Unmoderated Caucus</option>
-    <option value="other">Other</option>
-  </select>
-  <div>
-    Total Time:
-    <input inputmode="numeric" placeholder="# of seconds" bind:value={currentMotion.totalTime} required>
-  </div>
-  {#if currentMotion.kind === "mod"}
-  <div>
-    Speaking Time:
-    <input inputmode="numeric" placeholder="# of seconds" bind:value={currentMotion.speakingTime} required>
-  </div>
-  {/if}
-  <div>
-    Topic:
-    <input bind:value={currentMotion.topic}>
-  </div>
-  {#if currentMotion.kind === "mod"}
-  <div>
-    Total number of speakers: {totalNumOfSpeakers(currentMotion.totalTime, currentMotion.speakingTime)}
-  </div>
-  {/if}
+<div class="grid gap-5 sm:grid-cols-[1fr_2fr] h-full">
+  <form on:submit|preventDefault={submitMotion} on:input={resetInputErrors} class="flex flex-col gap-3 card p-3 motion-form">
+    <!-- Motion input form -->
+    <label class="label">
+      <span>Delegation</span>
+      <input 
+        class="input"
+        class:input-error={inputError?.id === "delegate"}
+        placeholder="Select a delegate..."
+        bind:value={inputMotion.delegate}
+        use:popup={delegateInputPopupSettings}
+        required
+      >
+    </label>
+    <label class="label">
+      <span>Motion</span>
+      <select 
+        class="select" 
+        class:input-error={inputError?.id === "kind"} 
+        bind:value={inputMotion.kind}
+      >
+        <option value="mod">Moderated Caucus</option>
+        <option value="unmod">Unmoderated Caucus</option>
+        <option value="other">Other</option>
+      </select>
+    </label>
+    <label class="label">
+      <span>Total Time</span>
+      <input 
+        class="input" 
+        class:input-error={inputError?.id === "totalTime"}
+        placeholder="mm:ss" bind:value={inputMotion.totalTime} 
+        required
+      >
+    </label>
+    {#if inputMotion.kind === "mod"}
+    <label class="label">
+      <span>Speaking Time</span>
+      <input 
+        class="input" 
+        placeholder="mm:ss" 
+        class:input-error={inputError?.id === "speakingTime"}
+        bind:value={inputMotion.speakingTime}
+        required
+      >
+    </label>
+    {/if}
+    <label class="label">
+      <span>Topic</span>
+      <input 
+        class="input" 
+        class:input-error={inputError?.id === "topic"}
+        bind:value={inputMotion.topic}
+        required
+      >
+    </label>
+    {#if inputMotion.kind === "mod"}
+    <div class="text-center">
+      <strong>Number of speakers</strong>: {numSpeakersStr(inputMotion.totalTime, inputMotion.speakingTime) ?? '-'}
+    </div>
+    {/if}
 
-  <button type="submit" on:click={() => motions = [...motions, {...currentMotion}]}>Add</button>
+    <button 
+      class="btn variant-filled-primary" 
+      type="submit"
+    >
+      Add
+    </button>
+    {#if typeof inputError !== "undefined"}
+      <div class="text-error-500 text-center">{inputError.msg}</div>
+    {/if}
+
+    <!-- Delegate autocomplete popup -->
+    <div class="card overflow-hidden p-2" data-popup="delegateInputAutocomplete" tabindex="-1">
+      <Autocomplete
+        class="overflow-y-auto max-h-96"
+        bind:input={inputMotion.delegate}
+        options={delegateOptions}
+        on:selection={e => {inputMotion.delegate = e.detail.value; resetInputErrors()}}
+      />
+    </div>
+  </form>
+  
+  <div class="flex flex-col gap-2">
+    <h3 class="h3">List of Motions</h3>
+    
+    <div class="table-container">
+      <table class="table table-fixed motion-table">
+        <thead>
+          <tr>
+            <td class="w-24"></td>
+            <td class="px-3">Motion</td>
+            <td class="px-3">By</td>
+            <td class="px-3">Topic</td>
+            <td class="px-3">Total Time</td>
+            <td class="px-3">Speaking Time</td>
+            <td class="px-3">No. of Speakers</td>
+          </tr>
+        </thead>
+        <tbody>
+          {#each motions as motion, i}
+            <tr class="hover:!bg-primary-500/25">
+              <td>
+                <div class="flex flex-row">
+                  <button class="btn btn-sm btn-icon" on:click={() => removeMotion(i)}>
+                    <Icon icon="mdi:cancel" width="24" height="24" class="text-error-500" />
+                  </button>
+                  <button class="btn btn-sm btn-icon">
+                    <Icon icon="mdi:check" width="24" height="24"  class="text-success-700" />
+                  </button>
+                </div>
+              </td>
+              <td>{mkToStr(motion.kind)}</td>
+              <td>{motion.delegate}</td>
+              <td>{motion.topic}</td>
+              <td>{stringifyTime(motion.totalTime)}</td>
+              <td>{motion.kind === "mod" ? stringifyTime(motion.speakingTime) : "-"}</td>
+              <td>{motion.kind === "mod" ? numSpeakersStr(motion.totalTime, motion.speakingTime) ?? '-' : "-"}</td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
-<hr>
-
-<h3>
-  Current List of Motions:
-</h3>
-
-<table id="motion-table">
-  <thead>
-    <tr>
-      <td>Motion</td>
-      <td>Topic</td>
-      <td>Total Time</td>
-      <td>Speaking Time</td>
-      <td>Total # of Speakers</td>
-    </tr>
-  </thead>
-  <tbody>
-    {#each motions as motion}
-      <tr>
-        <td>{mkToStr(motion.kind)}</td>
-        <td>{motion.topic}</td>
-        <td>{timeString(motion.totalTime)}</td>
-        <td>{motion.kind === "mod" ? timeString(motion.speakingTime) : ""}</td>
-        <td>{motion.kind === "mod" ? Math.floor(motion.totalTime / motion.speakingTime) : ""}</td>
-      </tr>
-    {/each}
-  </tbody>
-</table>
-
 <style>
-  /* TODO: color + general design */
-  #motion-table td {
-    border: 1px solid black;
+  .motion-form label {
+    display: flex;
+    align-items: center;
+  }
+  .motion-form label :first-child {
+    width: 33.3%;
+  }
+  .motion-form label :nth-child(2) {
+    width: 66.7%;
+  }
+
+  .motion-table td {
+    vertical-align: middle;
   }
 </style>

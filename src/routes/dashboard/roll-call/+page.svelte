@@ -20,48 +20,55 @@
     supermaj = Math.ceil(total * 2 / 3);
   }
   </script>
-<div>
+<div class="sticky card">
   <div><b>Majority (1/2)</b>: {maj}</div>
   <div><b>Supermajority (2/3)</b>: {supermaj}</div>
   <div><b>Total Present</b>: {total}</div>
 </div>
 <!-- Render a table to display participants and their statuses -->
-<table>
-  <thead>
-    <tr>
-      <th>Delegate</th>
-      <th>Present</th>
-      <th>Present and Voting</th>
-    </tr>
-  </thead>
-  <tbody id="del-table">
-    {#each Object.entries(delegates) as [dName, dStatus]}
+<div class="table-container">
+  <table class="table table-compact">
+    <thead>
       <tr>
-        <td>{dName}</td>
-        <td on:click={() => dStatus.status = dStatus.status === "NP" ? "P" : "NP"} class:highlight={dStatus.status != "NP"}>
-        </td>
-        <td on:click={() => dStatus.status = dStatus.status === "PV" ? "P" : "PV"}  class:highlight={dStatus.status == "PV"}>
-        </td>
+        <th>Delegate</th>
+        <th>Present</th>
+        <th>Present and Voting</th>
       </tr>
-    {/each}
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      {#each Object.entries(delegates) as [dName, dStatus]}
+        <tr>
+          <td>{dName}</td>
+          <td 
+            on:click={() => dStatus.status = dStatus.status === "NP" ? "P" : "NP"}
+            class="data-cell"
+            class:selected={dStatus.status != "NP"}
+          />
+          <td 
+            on:click={() => dStatus.status = dStatus.status === "PV" ? "P" : "PV"}
+            class="data-cell"
+            class:selected={dStatus.status === "PV"}
+          />
+        </tr>
+      {/each}
+    </tbody>
+  </table>
+</div>
 
 <style>
-  /* TODO: color + general design */
-  #del-table td {
-    border: 1px solid black;
-  }
-  #del-table td {
+  td.data-cell {
+    cursor: pointer;
+    border-left-width: 1px;
+    border-left-color: rgb(var(--color-surface-500) / 0.2);
     transition: background-color 0.2s;
   }
-  .highlight {
-    background-color: lightgreen;
+  td.data-cell.selected {
+    background-color: rgba(var(--color-primary-500));
   }
-  td:hover {
-    background-color: color-mix(in srgb, lightgreen 30%, transparent);
+  td.data-cell:hover {
+    background-color: rgba(var(--color-primary-500) / 0.25);
   }
-  td:hover.highlight {
-    background-color: color-mix(in srgb, lightgreen 70%, transparent);
+  td.data-cell.selected:hover {
+    background-color: rgba(var(--color-primary-500) / 0.75);
   }
 </style>
