@@ -4,7 +4,7 @@
 
     function updateTitle() {
         // When unfocused, update title
-        title = heading.textContent ?? "";
+        heading.textContent = title = heading.textContent?.trim() || title;
     }
     function keyDown(k: KeyboardEvent) {
         // If Enter is pressed, unfocus the title
@@ -14,4 +14,12 @@
     }
 </script>
 
-<h2 class="h2" contenteditable on:focusout={updateTitle} on:keydown={keyDown} bind:this={heading}>{title}</h2>
+<h2 
+    class="h2 p-1 text-center break-all" 
+    contenteditable 
+    on:focusout={updateTitle} 
+    on:keydown={keyDown} 
+    bind:this={heading}
+>
+    {title}
+</h2>
