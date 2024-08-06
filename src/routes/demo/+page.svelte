@@ -1,10 +1,14 @@
 <script lang="ts">
     import "$lib/panel/public";
+    import { stringifyTime } from "$lib/time";
     import Timer from "$lib/Timer.svelte";
     import { persisted } from "svelte-persisted-store";
+    import type { Readable } from "svelte/store";
 
     let timer: Timer;
-    let start: () => void;
+    let running: boolean = false;
+    let secsRemaining: Readable<number>;
+        
     let storage = persisted("value", 0);
     let dataStorage = persisted("data", {
         first: 0,
@@ -33,10 +37,13 @@
     <div>
         <h2 class="h2">Timer demo</h2>
         
-        <button class="btn btn-sm variant-filled-primary" on:click={timer.start}>Start</button>
-        <button class="btn btn-sm variant-filled-primary" on:click={timer.pause}>Pause</button>
+        <button class="btn btn-sm variant-filled-primary" on:click={() => running = true}>Start</button>
+        <button class="btn btn-sm variant-filled-primary" on:click={() => running = false}>Pause</button>
         <button class="btn btn-sm variant-filled-primary" on:click={timer.reset}>Reset</button>
-        <Timer duration={10} bind:this={timer} bind:start />
+        <div class="flex flex-col">
+            <Timer duration={10} bind:this={timer} bind:secsRemaining bind:running />
+            <div class="self-center h3">{stringifyTime($secsRemaining)}/{stringifyTime(10)}</div>
+        </div>
     </div>
     <div>
         <h2 class="h2">Persistent Storage demo</h2>
