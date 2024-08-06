@@ -4,6 +4,8 @@
     and the duration prop to control how many seconds the timer should run for.
 -->
 <script lang="ts">
+    import { stringifyTime } from "./time";
+
     export let duration: number;
 
     const DURATION_MS = duration * 1000;
@@ -43,30 +45,6 @@
         } else {
             callId = undefined;
         }
-    }
-    function timeString(ms: number): string {
-        if (ms < 0) ms = 0;
-        let secsElapsed = Math.ceil(ms / 1000);
-
-        let sec = secsElapsed % 60;
-        let min = Math.floor(secsElapsed / 60);
-        let hr;
-        let day;
-
-        if (min >= 60) {
-            hr = Math.floor(min / 60);
-            min %= 60;
-
-            if (hr >= 24) {
-                day = Math.floor(hr / 24);
-                hr %= 24;
-            }
-        }
-        
-        return [day, hr, min, sec]
-            .filter(n => typeof n != "undefined")
-            .map(n => String(n).padStart(2, '0'))
-            .join(':');
     }
     function clamp(value: number, min: number, max: number) {
         return Math.min(Math.max(min, value), max)
@@ -111,5 +89,5 @@
 
 <div class="top">
     <div class="bar" bind:this={bar} class:yellow={color === "yellow"} class:red={color === "red"} class:running></div>
-    <div class="time">{timeString(msRemaining)}/{timeString(DURATION_MS)}</div>
+    <div class="time">{stringifyTime(msRemaining / 1000)}/{stringifyTime(DURATION_MS / 1000)}</div>
 </div>
