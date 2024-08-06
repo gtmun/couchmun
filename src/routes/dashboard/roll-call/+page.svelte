@@ -2,15 +2,17 @@
   // TODO: probably link this to a config setting of some sort
   import delegateData from "$lib/sample_delegates.json";
 
-  type DelegateName = keyof typeof delegateData;
+  type DelegateKey = keyof typeof delegateData;
   type DelegateStatus = {
     status: "NP" | "P" | "PV"
   };
 
-  let delegates: Record<DelegateName, DelegateStatus> = Object.fromEntries(
+  let delegates: Record<DelegateKey, DelegateStatus> = Object.fromEntries(
     Object.keys(delegateData).map(p => [p, { status: "NP" }])
   ) as any;
-
+  function entries<K extends string, V>(rec: Record<K, V>): [K, V][] {
+    return Object.entries(rec) as [K, V][];
+  }
   let maj: number, supermaj: number, total: number;
   $: {
     total = Object.values(delegates)
@@ -36,9 +38,9 @@
       </tr>
     </thead>
     <tbody>
-      {#each Object.entries(delegates) as [dName, dStatus]}
+      {#each entries(delegates) as [dKey, dStatus]}
         <tr>
-          <td>{dName}</td>
+          <td>{delegateData[dKey].name}</td>
           <td 
             on:click={() => dStatus.status = dStatus.status === "NP" ? "P" : "NP"}
             class="data-cell"

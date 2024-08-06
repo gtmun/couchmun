@@ -1,10 +1,14 @@
 <script lang="ts">
-  import { motionSchema } from "$lib/dashboard/points-motions/form_validation";
-  import delegates from "$lib/sample_delegates.json";
+  import { createMotionSchema } from "$lib/dashboard/points-motions/form_validation";
+  import _delegates from "$lib/sample_delegates.json";
   import Icon from "@iconify/svelte";
   import { Autocomplete, type AutocompleteOption, popup, type PopupSettings } from "@skeletonlabs/skeleton";
   import { ValidationError } from "yup";
   import { parseTime, stringifyTime } from "$lib/time";
+  import type { DelegateMap } from "$lib/delegates/types";
+  
+  // Type erase JSON
+  let delegates: DelegateMap = _delegates;
   type Motion = {
     delegate: string,
     kind: "mod", 
@@ -59,6 +63,7 @@
   }
 
   // MOTION FORM CHANGES
+  const motionSchema = createMotionSchema(delegates);
   function defaultInputMotion(): Partial<Motion> {
     return { kind: "mod" };
   }
@@ -102,7 +107,7 @@
     }
   }
   const delegateOptions: AutocompleteOption<string>[] = Array.from(Object.entries(delegates), ([k, data]) => ({
-    label: k, value: k
+    value: k, label: data.name, keywords: data.aliases.join(",")
   }));
 
   // TABLE CHANGES
@@ -190,7 +195,7 @@
         class="overflow-y-auto max-h-96"
         bind:input={inputMotion.delegate}
         options={delegateOptions}
-        on:selection={e => {inputMotion.delegate = e.detail.value; resetInputErrors()}}
+        on:selection={e => {inputMotion.delegate = e.detail.label; resetInputErrors()}}
       />
     </div>
   </form>
@@ -225,7 +230,7 @@
                 </div>
               </td>
               <td>{mkToStr(motion.kind)}</td>
-              <td>{motion.delegate}</td>
+              <td>{delegates[motion.delegate].name}</td>
               <td>{motion.topic}</td>
               <td>{stringifyTime(motion.totalTime)}</td>
               <td>{motion.kind === "mod" ? stringifyTime(motion.speakingTime) : "-"}</td>
