@@ -2,8 +2,11 @@
     import BarStats from '$lib/dashboard/BarStats.svelte';
     import BarTitle from '$lib/dashboard/BarTitle.svelte';
     import Navigation from '$lib/dashboard/Navigation.svelte';
+    import type { DelegatePresence, Motion, SessionData } from '$lib/dashboard/types';
     import Icon from "@iconify/svelte";
     import { AppBar, Drawer, getDrawerStore, LightSwitch } from '@skeletonlabs/skeleton';
+    import { setContext } from 'svelte';
+    import { derived, writable } from 'svelte/store';
 
     let title = "General Assembly";
 
@@ -13,6 +16,16 @@
             width: 'w-[280px] md:w-[480px]',
         });
     }
+
+    const { presentDelegates } = setContext<SessionData>("sessionData", (() => {
+        const delegateAttendance = writable<Record<string, DelegatePresence>>({});
+        const motions = writable<Motion[]>([]);
+        const presentDelegates = derived(delegateAttendance, $att => {
+            return Object.keys($att).filter(k => $att[k] !== "NP");
+        });
+        
+        return { delegateAttendance, motions, presentDelegates };
+    })());
 </script>
 
 <!-- Navigation drawer -->
@@ -38,7 +51,7 @@
             <div class="flex flex-col gap-1">
                 <BarTitle bind:title />
                 <hr class="divider border-t-4 border-surface-800-100-token" />
-                <BarStats total={30} />
+                <BarStats total={$presentDelegates.length} />
             </div>
             <svelte:fragment slot="trail">
                 <!-- Settings -->

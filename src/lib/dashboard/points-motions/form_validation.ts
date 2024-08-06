@@ -1,16 +1,17 @@
-import type { DelegateMap } from "$lib/delegates/types";
+import type { DelegateMap } from "$lib/dashboard/types";
 import { parseTime } from "$lib/time";
 import { object, string, number } from 'yup';
 
-export function createMotionSchema(delegates: DelegateMap) {
+export function createMotionSchema(delegates: DelegateMap, presentDelegates: string[]) {
     return object({
         // Note: the input is the delegate name, but is returned as the delegate key
         delegate: string()
             .label("delegate name")
             .trim()
+            .transform(name => Object.keys(delegates).find(k => delegates[k].name === name) ?? null)
             .required()
-            .transform(name => Object.keys(delegates).find(k => delegates[k].name === name))
-            .required("'${originalValue}' is not a present delegate"),
+            .nonNullable("'${originalValue}' is not a delegate")
+            .oneOf(presentDelegates, "'${originalValue}' is not a present delegate"),
         kind: string()
             .label("motion kind")
             .trim()
@@ -18,21 +19,21 @@ export function createMotionSchema(delegates: DelegateMap) {
             .oneOf(["mod", "unmod", "other"]),
         totalTime: number()
             .label("total time")
-            .required()
             .integer()
             .positive()
-            .transform((val, origVal, ctx) => ctx.isType(val) ? val : parseTime(origVal))
-            .required("${path} is not a valid time string (mm:ss)"),
+            .transform((val, origVal, ctx) => ctx.isType(val) ? val : parseTime(origVal) ?? null)
+            .required()
+            .nonNullable("${path} is not a valid time string (mm:ss)"),
         speakingTime: number()
             .label("speaking time")
             .when("kind", ([kind], schema) => {
                 if (kind === "mod") {
                     return schema
-                        .required()
                         .integer()
                         .positive()
-                        .transform((val, origVal, ctx) => ctx.isType(val) ? val : parseTime(origVal))
-                        .required("${path} is not a valid time string (mm:ss)")
+                        .transform((val, origVal, ctx) => ctx.isType(val) ? val : parseTime(origVal) ?? null)
+                        .required()
+                        .nonNullable("${path} is not a valid time string (mm:ss)")
                         .test(
                         "total-time-divisible-by-speaking-time",
                         "Total time cannot be evenly divided among speakers",

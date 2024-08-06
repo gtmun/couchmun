@@ -1,36 +1,19 @@
 <script lang="ts">
   import { createMotionSchema } from "$lib/dashboard/points-motions/form_validation";
   import _delegates from "$lib/sample_delegates.json";
+  import { parseTime, stringifyTime } from "$lib/time";
+  import type { DelegateMap, Motion, MotionKind, SessionData } from "$lib/dashboard/types";
+  import { getContext } from "svelte";
+
+  import { ValidationError } from "yup";
   import Icon from "@iconify/svelte";
   import { Autocomplete, type AutocompleteOption, popup, type PopupSettings } from "@skeletonlabs/skeleton";
-  import { ValidationError } from "yup";
-  import { parseTime, stringifyTime } from "$lib/time";
-  import type { DelegateMap } from "$lib/delegates/types";
   
-  // Type erase JSON
   let delegates: DelegateMap = _delegates;
-  type Motion = {
-    delegate: string,
-    kind: "mod", 
-    totalTime: number,
-    speakingTime: number,
-    topic: string
-  } | {
-    delegate: string,
-    kind: "unmod",
-    totalTime: number,
-    topic: string
-  } | {
-    delegate: string,
-    kind: "other",
-    totalTime: number,
-    topic: string
-  }
-  type MotionKind = Motion["kind"];
+  const { motions, presentDelegates } = getContext<SessionData>("sessionData");
 
   let inputMotion: Partial<Motion> = defaultInputMotion();
   let inputError: { id: string, msg: string } | undefined = undefined;
-  let motions: Motion[] = [];
 
   // STRING DISPLAY
   function mkToStr(m: MotionKind) {
@@ -63,7 +46,7 @@
   }
 
   // MOTION FORM CHANGES
-  const motionSchema = createMotionSchema(delegates);
+  const motionSchema = createMotionSchema(delegates, $presentDelegates);
   function defaultInputMotion(): Partial<Motion> {
     return { kind: "mod" };
   }
@@ -87,8 +70,10 @@
     // Success
     inputMotion = defaultInputMotion();
     inputError = undefined;
-    motions.push(validatedMotion);
-    motions = motions;
+    motions.update(m => {
+      m.push(validatedMotion);
+      return m;
+    })
   }
 
   // DELEGATE INPUT
@@ -112,8 +97,10 @@
 
   // TABLE CHANGES
   function removeMotion(i: number) {
-    motions.splice(i, 1);
-    motions = motions;
+    motions.update(m => {
+      m.splice(i, 1);
+      return m;
+    })
   }
 </script>
 
@@ -125,10 +112,11 @@
       <input 
         class="input"
         class:input-error={inputError?.id === "delegate"}
-        placeholder="Select a delegate..."
         bind:value={inputMotion.delegate}
         use:popup={delegateInputPopupSettings}
         required
+        disabled={$presentDelegates.length === 0}
+        placeholder={$presentDelegates.length !== 0 ? "Select a delegate..." : "No delegates present"}
       >
     </label>
     <label class="label">
@@ -195,6 +183,7 @@
         class="overflow-y-auto max-h-96"
         bind:input={inputMotion.delegate}
         options={delegateOptions}
+        allowlist={$presentDelegates}
         on:selection={e => {inputMotion.delegate = e.detail.label; resetInputErrors()}}
       />
     </div>
@@ -217,7 +206,7 @@
           </tr>
         </thead>
         <tbody>
-          {#each motions as motion, i}
+          {#each $motions as motion, i}
             <tr class="hover:!bg-primary-500/25">
               <td>
                 <div class="flex flex-row">
