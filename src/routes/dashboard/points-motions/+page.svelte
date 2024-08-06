@@ -10,7 +10,7 @@
   import { Autocomplete, type AutocompleteOption, popup, type PopupSettings } from "@skeletonlabs/skeleton";
   
   let delegates: DelegateMap = _delegates;
-  const { motions, presentDelegates } = getContext<SessionData>("sessionData");
+  const { motions, presentDelegates, selectedMotion } = getContext<SessionData>("sessionData");
 
   let inputMotion: Partial<Motion> = defaultInputMotion();
   let inputError: { id: string, msg: string } | undefined = undefined;
@@ -95,12 +95,16 @@
     value: k, label: data.name, keywords: data.aliases.join(",")
   }));
 
-  // TABLE CHANGES
+  // MOTION BUTTONS
   function removeMotion(i: number) {
     motions.update(m => {
       m.splice(i, 1);
       return m;
     })
+  }
+  function selectMotion(motion: Motion) {
+    $selectedMotion = motion;
+    $motions = [];
   }
 </script>
 
@@ -215,9 +219,9 @@
                   <button class="btn btn-sm btn-icon" on:click={() => removeMotion(i)}>
                     <Icon icon="mdi:cancel" width="24" height="24" class="text-error-500" />
                   </button>
-                  <button class="btn btn-sm btn-icon">
+                  <a class="btn btn-sm btn-icon" on:click={() => selectMotion(motion)} href="/dashboard/motion">
                     <Icon icon="mdi:check" width="24" height="24"  class="text-success-700" />
-                  </button>
+                  </a>
                 </div>
               </td>
               <td>{mkToStr(motion.kind)}</td>

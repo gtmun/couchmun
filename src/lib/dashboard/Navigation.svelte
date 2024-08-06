@@ -5,7 +5,7 @@
 
     const links = [
         { label: "Roll Call", href: "/dashboard/roll-call" },
-        { label: "Moderated Caucus", href: "/dashboard/moderated-caucus" },
+        { label: "Current Motion", href: "/dashboard/motion" },
         { label: "Speakers List", href: "/dashboard/speaker-list" },
         { label: "Points and Motions", href: "/dashboard/points-motions" },
     ]

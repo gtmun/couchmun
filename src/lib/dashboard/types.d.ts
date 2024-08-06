@@ -35,5 +35,6 @@ export type MotionKind = Motion["kind"];
 export type SessionData = {
     delegateAttendance: Writable<Record<string, DelegatePresence>>,
     motions: Writable<Motion[]>,
-    presentDelegates: Readable<string[]>
+    presentDelegates: Readable<string[]>,
+    selectedMotion: Writable<Motion | undefined>,
 };

@@ -23,8 +23,9 @@
         const presentDelegates = derived(delegateAttendance, $att => {
             return Object.keys($att).filter(k => $att[k] !== "NP");
         });
+        const selectedMotion = writable<Motion | undefined>();
         
-        return { delegateAttendance, motions, presentDelegates };
+        return { delegateAttendance, motions, presentDelegates, selectedMotion };
     })());
 </script>
 
