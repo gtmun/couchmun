@@ -1,12 +1,12 @@
 <script lang="ts">
     import "$lib/panel/public";
-    import { persistentStorage } from "$lib/storage";
     import Timer from "$lib/Timer.svelte";
+    import { persisted } from "svelte-persisted-store";
 
     let timer: Timer;
     let start: () => void;
-    let storage = persistentStorage("value", 0);
-    let dataStorage = persistentStorage("data", {
+    let storage = persisted("value", 0);
+    let dataStorage = persisted("data", {
         first: 0,
         second: 0
     });
@@ -42,14 +42,14 @@
         <h2 class="h2">Persistent Storage demo</h2>
         
         <button class="btn btn-sm variant-filled-primary" on:click={() => $storage++}>increment value</button>
-        <button class="btn btn-sm variant-filled-primary" on:click={() => (storage.delete(), updater ^= 1)}>delete key</button>
+        <button class="btn btn-sm variant-filled-primary" on:click={() => (storage.reset(), updater ^= 1)}>delete key</button>
         <div>value: {$storage}</div>
         
         <br>
 
         <button class="btn btn-sm variant-filled-primary" on:click={() => $dataStorage.first++}>increment value 1</button>
         <button class="btn btn-sm variant-filled-primary" on:click={() => $dataStorage.second++}>increment value 2</button>
-        <button class="btn btn-sm variant-filled-primary" on:click={() => (dataStorage.delete(), updater ^= 1)}>delete all keys</button>
+        <button class="btn btn-sm variant-filled-primary" on:click={() => (dataStorage.reset(), updater ^= 1)}>delete all keys</button>
         <div>value: {$dataStorage.first}</div>
         <div>value: {$dataStorage.second}</div>
 
