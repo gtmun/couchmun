@@ -1,7 +1,12 @@
 import type { DelegateMap } from "$lib/dashboard/types";
 import { parseTime } from "$lib/time";
-import { object, string, number } from 'yup';
+import { object, string, number, Schema } from 'yup';
 
+function ignoreable<S extends Schema>(s: S): S {
+    return s
+        .transform((val, _, ctx) => ctx.isType(val) ? val : undefined)
+        .notRequired();
+}
 export function createMotionSchema(delegates: DelegateMap, presentDelegates: string[]) {
     return object({
         // Note: the input is the delegate name, but is returned as the delegate key
@@ -48,13 +53,18 @@ export function createMotionSchema(delegates: DelegateMap, presentDelegates: str
                     )
                 } else {
                     // speakingTime is not a parameter for these types:
-                    return schema
-                        .transform((val, _, ctx) => ctx.isType(val) ? val : undefined)
-                        .notRequired();
+                    return ignoreable(schema);
                 }
             }),
         topic: string()
-            .trim()
-            .required()
+            .when("kind", ([kind], schema) => {
+                if (kind === "unmod") {
+                    return ignoreable(schema);
+                } else {
+                    return schema
+                        .trim()
+                        .required();
+                }
+            })
     });
 }

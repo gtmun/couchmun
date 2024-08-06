@@ -152,15 +152,17 @@
       >
     </label>
     {/if}
-    <label class="label">
-      <span>Topic</span>
-      <input 
-        class="input" 
-        class:input-error={inputError?.id === "topic"}
-        bind:value={inputMotion.topic}
-        required
-      >
-    </label>
+    {#if inputMotion.kind === "mod" || inputMotion.kind === "other"}
+      <label class="label">
+        <span>Topic</span>
+        <input 
+          class="input" 
+          class:input-error={inputError?.id === "topic"}
+          bind:value={inputMotion.topic}
+          required
+        >
+      </label>
+    {/if}
     {#if inputMotion.kind === "mod"}
     <div class="text-center">
       <strong>Number of speakers</strong>: {numSpeakersStr(inputMotion.totalTime, inputMotion.speakingTime) ?? '-'}
@@ -220,7 +222,7 @@
               </td>
               <td>{mkToStr(motion.kind)}</td>
               <td>{delegates[motion.delegate].name}</td>
-              <td>{motion.topic}</td>
+              <td>{motion.kind !== "unmod" ? motion.topic : "-"}</td>
               <td>{stringifyTime(motion.totalTime)}</td>
               <td>{motion.kind === "mod" ? stringifyTime(motion.speakingTime) : "-"}</td>
               <td>{motion.kind === "mod" ? numSpeakersStr(motion.totalTime, motion.speakingTime) ?? '-' : "-"}</td>

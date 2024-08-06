@@ -22,8 +22,7 @@ export type Motion = {
 } | {
     delegate: string,
     kind: "unmod",
-    totalTime: number,
-    topic: string
+    totalTime: number
 } | {
     delegate: string,
     kind: "other",
