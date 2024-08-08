@@ -6,6 +6,8 @@
     import Timer from "$lib/Timer.svelte";
     import { getContext } from "svelte";
     import type { Readable } from "svelte/store";
+    import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/dashboard/DelPopup.svelte";
+    import { popup } from "@skeletonlabs/skeleton";
 
     let delegates: DelegateMap = _delegates;
     const labels = Object.fromEntries(Array.from(
@@ -13,7 +15,7 @@
         ([k, attrs]) => [k, attrs.name]
     ));
 
-    const { speakersList: order } = getContext<SessionData>("sessionData");
+    const { presentDelegates, speakersList: order } = getContext<SessionData>("sessionData");
 
     // Timer
     let timer: Timer;
@@ -41,8 +43,8 @@
         timer.reset();
         speakersList.next();
     }
-    function addDelegate() {
-        speakersList.addSpeaker(delegateInput);
+    function addDelegate(inp?: string) {
+        speakersList.addSpeaker(inp ?? delegateInput);
         delegateInput = "";
     }
     function setDuration() {
@@ -92,13 +94,22 @@
             bind:this={speakersList}
             bind:cleared
             bind:allDone
-            onSelectChange={(k) => setCurrentSpeaker(k)}
+            onSelectChange={setCurrentSpeaker}
         />
         <!-- Add button -->
         <div class="flex flex-row gap-3">
-            <form class="contents" on:submit|preventDefault={addDelegate}>
-                <input class="input" bind:value={delegateInput} placeholder="Select a delegate..." />
-                <button type="submit" class="btn variant-filled-primary">Add</button>
+            <form class="contents" on:submit|preventDefault={() => addDelegate()}>
+                <input 
+                    class="input" 
+                    bind:value={delegateInput}
+                    use:popup={{ ...defaultPopupSettings("addDelegatePopup"), placement: "left-end" }}
+                    {...defaultPlaceholder($presentDelegates)}
+                />
+                <button
+                    type="submit"
+                    class="btn variant-filled-primary"
+                    disabled={$presentDelegates.length === 0}
+                >Add</button>
             </form>
             <button
                 type="submit"
@@ -120,3 +131,11 @@
         </div>
     </div>
 </div>
+
+<DelPopup 
+    popupID="addDelegatePopup"
+    bind:input={delegateInput}
+    {delegates}
+    presentDelegates={$presentDelegates}
+    on:selection={e => addDelegate(String(e.detail.value))}
+/>

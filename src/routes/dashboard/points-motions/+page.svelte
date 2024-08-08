@@ -7,7 +7,8 @@
 
   import { ValidationError } from "yup";
   import Icon from "@iconify/svelte";
-  import { Autocomplete, type AutocompleteOption, popup, type PopupSettings } from "@skeletonlabs/skeleton";
+  import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/dashboard/DelPopup.svelte";
+    import { popup } from "@skeletonlabs/skeleton";
   
   let delegates: DelegateMap = _delegates;
   const { motions, presentDelegates, selectedMotion } = getContext<SessionData>("sessionData");
@@ -76,25 +77,6 @@
     })
   }
 
-  // DELEGATE INPUT
-  const delegateInputPopupSettings: PopupSettings = {
-    event: 'focus-click',
-    target: 'delegateInputAutocomplete',
-    placement: 'bottom',
-    middleware: {
-      size: {
-        apply({availableHeight, elements}: any) {
-          Object.assign(elements.floating.style, {
-            maxHeight: `${availableHeight}px`,
-          });
-        },
-      }
-    }
-  }
-  const delegateOptions: AutocompleteOption<string>[] = Array.from(Object.entries(delegates), ([k, data]) => ({
-    value: k, label: data.name, keywords: data.aliases.join(",")
-  }));
-
   // MOTION BUTTONS
   function removeMotion(i: number) {
     motions.update(m => {
@@ -117,10 +99,9 @@
         class="input"
         class:input-error={inputError?.id === "delegate"}
         bind:value={inputMotion.delegate}
-        use:popup={delegateInputPopupSettings}
         required
-        disabled={$presentDelegates.length === 0}
-        placeholder={$presentDelegates.length !== 0 ? "Select a delegate..." : "No delegates present"}
+        use:popup={defaultPopupSettings("delegateInputPopup")}
+        {...defaultPlaceholder($presentDelegates)}
       >
     </label>
     <label class="label">
@@ -184,15 +165,13 @@
     {/if}
 
     <!-- Delegate autocomplete popup -->
-    <div class="card overflow-hidden p-2" data-popup="delegateInputAutocomplete" tabindex="-1">
-      <Autocomplete
-        class="overflow-y-auto max-h-96"
-        bind:input={inputMotion.delegate}
-        options={delegateOptions}
-        allowlist={$presentDelegates}
-        on:selection={e => {inputMotion.delegate = e.detail.label; resetInputErrors()}}
-      />
-    </div>
+    <DelPopup
+      popupID="delegateInputPopup"
+      bind:input={inputMotion.delegate}
+      {delegates}
+      presentDelegates={$presentDelegates}
+      on:selection={e => {inputMotion.delegate = e.detail.label; resetInputErrors()}}
+    />
   </form>
   
   <div class="flex flex-col gap-2">
