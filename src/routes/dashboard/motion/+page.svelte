@@ -1,4 +1,5 @@
 <script lang="ts">
+    import ModCaucus from "$lib/dashboard/motion/ModCaucus.svelte";
     import UnmodCaucus from "$lib/dashboard/motion/UnmodCaucus.svelte";
     import type { SessionData } from "$lib/dashboard/types";
     import { getContext } from "svelte";
@@ -10,7 +11,7 @@
 <div class="h-full w-full flex flex-col items-stretch justify-center">
     {#if typeof $selectedMotion !== "undefined"}
         {#if $selectedMotion.kind === "mod"}
-            <!-- TODO -->
+            <ModCaucus motion={$selectedMotion} />
         {:else if $selectedMotion.kind === "unmod"}
             <UnmodCaucus motion={$selectedMotion} />
         {:else if $selectedMotion.kind === "other"}
