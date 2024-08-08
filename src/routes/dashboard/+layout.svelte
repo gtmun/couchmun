@@ -2,7 +2,7 @@
     import BarStats from '$lib/dashboard/BarStats.svelte';
     import BarTitle from '$lib/dashboard/BarTitle.svelte';
     import Navigation from '$lib/dashboard/Navigation.svelte';
-    import type { DelegatePresence, Motion, SessionData } from '$lib/dashboard/types';
+    import type { DelegatePresence, Motion, SessionData, Speaker } from '$lib/dashboard/types';
     import Icon from "@iconify/svelte";
     import { AppBar, Drawer, getDrawerStore, LightSwitch } from '@skeletonlabs/skeleton';
     import { setContext } from 'svelte';
@@ -24,8 +24,9 @@
             return Object.keys($att).filter(k => $att[k] !== "NP");
         });
         const selectedMotion = writable<Motion | undefined>();
-        
-        return { delegateAttendance, motions, presentDelegates, selectedMotion };
+        const speakersList = writable<Speaker[]>();
+
+        return { delegateAttendance, motions, presentDelegates, selectedMotion, speakersList };
     })());
 </script>
 

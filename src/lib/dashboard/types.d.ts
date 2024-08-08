@@ -31,10 +31,16 @@ export type Motion = {
 };
 export type MotionKind = Motion["kind"];
 
+export type Speaker = {
+    key: string,
+    completed: boolean
+};
+
 // Session Data
 export type SessionData = {
     delegateAttendance: Writable<Record<string, DelegatePresence>>,
     motions: Writable<Motion[]>,
     presentDelegates: Readable<string[]>,
     selectedMotion: Writable<Motion | undefined>,
+    speakersList: Writable<Speaker[]>
 };
