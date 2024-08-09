@@ -10,8 +10,14 @@ const MIN_SEGMENTS = 2;
 export function parseTime(timeStr: string): number | undefined {
     let segments = timeStr.split(":").reverse();
     
-    // Accept formats mm:ss to yy:dd:hh:mm:ss
-    if (MIN_SEGMENTS <= segments.length && segments.length <= UNITS.length + 1) {
+    // Handling seconds:
+    if (segments.length === 1) {
+        let secs = +segments[0];
+        if (Number.isSafeInteger(secs) && secs > 0) return secs;
+    }
+
+    // Handling formats -- mm:ss to yy:dd:hh:mm:ss
+    if (segments.length <= UNITS.length + 1) {
         // Assert every segment (except the last) is a positive integer that falls under the unit range,
         // and that the last is a positive integer or nothing
         // This allows for the following formats:
@@ -20,8 +26,8 @@ export function parseTime(timeStr: string): number | undefined {
         // ::45, 14:95, 25:61:61
         // Unfortunately, this doesn't handle padding, so these are accepted as well:
         // 0:1, 10:2, 23:59:5
-        const valid = segments.slice(0, -1).every((s, i) => /^\d+$/.test(s) && 0 <= +s && +s < UNITS[i]) &&
-            segments.slice(-1).every(s => /^\d*$/.test(s));
+        const valid = segments.slice(0, -1).every((s, i) => /^\d+$/.test(s) && 0 <= +s && +s < UNITS[i])
+            && segments.slice(-1).every(s => /^\d*$/.test(s));
         if (valid) {
             let accum = 1;
             let secs = 0;
@@ -29,7 +35,8 @@ export function parseTime(timeStr: string): number | undefined {
                 secs += accum * +segments[i];
                 accum *= UNITS[i];
             }
-            return secs;
+
+            if (Number.isSafeInteger(secs)) return secs;
         }
     }
 }

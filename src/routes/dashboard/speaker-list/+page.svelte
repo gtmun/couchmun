@@ -49,7 +49,7 @@
         delegateInput = "";
     }
     function setDuration() {
-        let secs = Number.isInteger(+durInput) ? +durInput : parseTime(durInput);
+        let secs = parseTime(durInput);
         if (typeof secs !== "undefined") {
             duration = secs;
             timer.reset();

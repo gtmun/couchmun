@@ -26,7 +26,7 @@ export function createMotionSchema(delegates: DelegateMap, presentDelegates: str
             .label("total time")
             .integer()
             .positive()
-            .transform((val, origVal, ctx) => ctx.isType(val) ? val : parseTime(origVal) ?? null)
+            .transform((val, origVal, ctx) => parseTime(origVal) ?? null)
             .required()
             .nonNullable("${path} is not a valid time string (mm:ss)"),
         speakingTime: number()
@@ -36,7 +36,7 @@ export function createMotionSchema(delegates: DelegateMap, presentDelegates: str
                     return schema
                         .integer()
                         .positive()
-                        .transform((val, origVal, ctx) => ctx.isType(val) ? val : parseTime(origVal) ?? null)
+                        .transform((val, origVal, ctx) => parseTime(origVal) ?? null)
                         .required()
                         .nonNullable("${path} is not a valid time string (mm:ss)")
                         .test(
@@ -44,11 +44,7 @@ export function createMotionSchema(delegates: DelegateMap, presentDelegates: str
                         "Total time cannot be evenly divided among speakers",
                         (speakingTime, ctx) => {
                             let totalTime: number = ctx.parent.totalTime;
-                            return (
-                                totalTime <= Number.MAX_SAFE_INTEGER && 
-                                speakingTime <= Number.MAX_SAFE_INTEGER && 
-                                totalTime % speakingTime == 0
-                            );
+                            return totalTime % speakingTime == 0;
                         }
                     )
                 } else {
