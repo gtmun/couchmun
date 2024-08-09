@@ -3,18 +3,28 @@
   import _delegates from "$lib/sample_delegates.json";
   import { parseTime, stringifyTime } from "$lib/time";
   import type { DelegateMap, Motion, MotionKind, SessionData } from "$lib/dashboard/types";
-  import { getContext } from "svelte";
+  import { getContext, onMount } from "svelte";
 
   import { ValidationError } from "yup";
   import Icon from "@iconify/svelte";
   import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/dashboard/DelPopup.svelte";
-    import { popup } from "@skeletonlabs/skeleton";
-  
+  import { popup } from "@skeletonlabs/skeleton";
+  import Sortable from "sortablejs";
+
   let delegates: DelegateMap = _delegates;
   const { motions, presentDelegates, selectedMotion } = getContext<SessionData>("sessionData");
 
   let inputMotion: Partial<Motion> = defaultInputMotion();
   let inputError: { id: string, msg: string } | undefined = undefined;
+
+  let tableBody: HTMLTableSectionElement;
+  onMount(async() => {
+    Sortable.create(tableBody, {
+      animation: 150,
+      ghostClass: "!bg-surface-400/25",
+      fallbackOnBody: true
+    });
+  });
 
   // STRING DISPLAY
   function mkToStr(m: MotionKind) {
@@ -190,9 +200,9 @@
             <td class="px-3">No. of Speakers</td>
           </tr>
         </thead>
-        <tbody>
+        <tbody bind:this={tableBody}>
           {#each $motions as motion, i}
-            <tr class="hover:!bg-primary-500/25">
+            <tr>
               <td>
                 <div class="flex flex-row">
                   <button class="btn btn-sm btn-icon" on:click={() => removeMotion(i)}>
@@ -231,5 +241,13 @@
 
   .motion-table td {
     vertical-align: middle;
+  }
+  .motion-table tbody {
+    cursor: grab;
+  }
+
+  /* If we're NOT dragging an item, enable the hover effect. */
+  .motion-table tbody:not(:has(> [draggable="true"])) tr:hover:not(:active) {
+    background-color: rgba(var(--color-primary-500) / 0.25) !important;
   }
 </style>

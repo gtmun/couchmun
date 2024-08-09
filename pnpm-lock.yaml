@@ -11,6 +11,9 @@ importers:
       '@floating-ui/dom':
         specifier: ^1.6.8
         version: 1.6.8
+      sortablejs:
+        specifier: ^1.15.2
+        version: 1.15.2
       svelte-persisted-store:
         specifier: ^0.11.0
         version: 0.11.0(svelte@4.2.18)
@@ -42,6 +45,9 @@ importers:
       '@types/node':
         specifier: ^20.14.12
         version: 20.14.12
+      '@types/sortablejs':
+        specifier: ^1.15.8
+        version: 1.15.8
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.20(postcss@8.4.39)
@@ -408,6 +414,9 @@ packages:
 
   '@types/pug@2.0.10':
     resolution: {integrity: sha512-Sk/uYFOBAB7mb74XcpizmH0KOR2Pv3D2Hmrh1Dmy5BmK3MpdSa5kqZcg6EKBdklU0bFXX9gCfzvpnyUehrPIuA==}
+
+  '@types/sortablejs@1.15.8':
+    resolution: {integrity: sha512-b79830lW+RZfwaztgs1aVPgbasJ8e7AXtZYHTELNXZPsERt4ymJdjV4OccDbHQAvHrCcFpbF78jkm0R6h/pZVg==}
 
   acorn@8.12.1:
     resolution: {integrity: sha512-tcpGyI9zbizT9JbV6oYE477V6mTlXvvi0T0G3SNIYE2apm/G5huBa1+K89VGeovbg+jycCrfhl3ADxErOuO6Jg==}
@@ -933,6 +942,9 @@ packages:
     resolution: {integrity: sha512-o7npfeJE6wi6J9l0/5LKshFzZ2rMatRiCDwYeDQaOzqdzRJwALhX7mk/A/ecg6wjMu7wdZbmXfD2S/vpOg0bdQ==}
     hasBin: true
 
+  sortablejs@1.15.2:
+    resolution: {integrity: sha512-FJF5jgdfvoKn1MAKSdGs33bIqLi3LmsgVTliuX6iITj834F+JRQZN90Z93yql8h0K2t0RwDPBmxwlbZfDcxNZA==}
+
   source-map-js@1.2.0:
     resolution: {integrity: sha512-itJW8lvSA0TXEphiRoawsCksnlf8SyvmFzIhltqAHluXd88pkCd+cXJVHTDwdCr0IzwptSm035IHQktUu1QUMg==}
     engines: {node: '>=0.10.0'}
@@ -1397,6 +1409,8 @@ snapshots:
       undici-types: 5.26.5
 
   '@types/pug@2.0.10': {}
+
+  '@types/sortablejs@1.15.8': {}
 
   acorn@8.12.1: {}
 
@@ -1897,6 +1911,8 @@ snapshots:
       buffer-crc32: 1.0.0
       minimist: 1.2.8
       sander: 0.5.1
+
+  sortablejs@1.15.2: {}
 
   source-map-js@1.2.0: {}
 
