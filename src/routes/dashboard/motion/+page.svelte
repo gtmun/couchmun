@@ -22,7 +22,15 @@
     {:else}
         <div class="text-center">
             <h3 class="h3">No motion set.</h3>
-            Visit <a class="btn btn-sm variant-soft-primary" href="/dashboard/points-motions">Points and Motions</a> to set a motion.
+            Visit 
+            <a
+                class="btn btn-sm variant-soft-primary"
+                href="/dashboard/points-motions"
+                tabindex="0"
+            >
+                Points and Motions
+            </a>
+            to set a motion.
         </div>
     {/if}
 </div>

@@ -15,13 +15,16 @@
 <hr />
 <!-- Nav links -->
 <nav class="list-nav p-2">
-    <ul data-focusindex=0>
-        {#each links as link}
+    <ul>
+        {#each links as link, i}
+            {@const selected = $page.url.pathname === link.href}
             <li>
                 <a 
                     on:click={close} 
                     href={link.href} 
-                    class:!variant-soft-primary={$page.url.pathname === link.href}
+                    class:variant-soft-primary={selected}
+                    data-focusindex={1 - +selected}
+                    tabindex={i + 1}
                 >
                     {link.label}
                 </a>

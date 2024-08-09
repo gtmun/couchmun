@@ -27,15 +27,23 @@
         <tr>
           <td>{delegates[key].name}</td>
           <td 
-            on:click={() => $delegateAttendance[key] = presence === "NP" ? "P" : "NP"}
             class="data-cell"
             class:selected={presence != "NP"}
-          />
+          >
+            <button 
+              class="w-full h-full"
+              on:click={() => $delegateAttendance[key] = presence === "NP" ? "P" : "NP"}
+            />
+          </td>
           <td 
-            on:click={() => $delegateAttendance[key] = presence === "PV" ? "P" : "PV"}
             class="data-cell"
             class:selected={presence === "PV"}
-          />
+          >
+            <button 
+              class="w-full h-full"
+              on:click={() => $delegateAttendance[key] = presence === "PV" ? "P" : "PV"}
+            />
+          </td>
         </tr>
       {/each}
     </tbody>
@@ -44,10 +52,19 @@
 
 <style>
   td.data-cell {
-    cursor: pointer;
     border-left-width: 1px;
     border-left-color: rgb(var(--color-surface-500) / 0.2);
     transition: background-color 0.2s;
+    padding: 0 !important;
+    /**
+      Actually stupid, but whatever.
+      The attributes below allow h-full on button to apply,
+      allowing the button to expand the entire table cell.
+
+      It does not actually affect the height of the table.
+    */
+    height: 0;
+    min-height: 0;
   }
   td.data-cell.selected {
     background-color: rgba(var(--color-primary-500));

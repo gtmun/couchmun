@@ -185,7 +185,7 @@
   </form>
   
   <div class="flex flex-col gap-2">
-    <h3 class="h3">List of Motions</h3>
+    <h3 class="h3 text-center">List of Motions</h3>
     
     <div class="table-container">
       <table class="table table-fixed motion-table">
