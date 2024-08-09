@@ -22,14 +22,15 @@
     let secsRemaining: Readable<number>;
     let running: boolean = false;
     let duration: number = 10;
-    let currentSpeaker: string | undefined;
-
+    
     // Speakers List
     let speakersList: SpeakerList;
     let delegateInput: string;
     let durInput: string;
     let cleared: Readable<boolean>;
     let allDone: Readable<boolean>;
+    let selectedSpeaker: Readable<string | undefined>;
+    $: ($selectedSpeaker, timer?.reset());
 
     // Button triggers
     function start() {
@@ -55,9 +56,9 @@
         }
         durInput = "";
     }
-    function setCurrentSpeaker(k: string | undefined) {
-        timer?.reset();
-        currentSpeaker = k;
+    function getSpeakerName(key: string | undefined) {
+        if (typeof key === "undefined") return "-";
+        return labels[key] ?? key;
     }
 </script>
 
@@ -65,7 +66,7 @@
     <!-- Left -->
     <div class="flex flex-col gap-5 self-center">
         <div class="flex flex-col gap-3">
-            <h2 class="h2 text-center">{typeof currentSpeaker !== "undefined" ? labels[currentSpeaker] ?? currentSpeaker : '-'}</h2>
+            <h2 class="h2 text-center">{getSpeakerName($selectedSpeaker)}</h2>
             <h2 class="h2 text-center">{stringifyTime($secsRemaining)}/{stringifyTime(duration)}</h2>
         </div>
         <Timer
@@ -94,7 +95,7 @@
             bind:this={speakersList}
             bind:cleared
             bind:allDone
-            onSelectChange={setCurrentSpeaker}
+            bind:selectedSpeaker
         />
         <!-- Add button -->
         <div class="flex flex-row gap-3">
@@ -115,7 +116,7 @@
                 type="submit"
                 class="btn variant-filled-primary"
                 disabled={$cleared}
-                on:click={speakersList.clear}
+                on:click={() => $order = []}
             >
                 Clear
             </button>

@@ -26,14 +26,15 @@
     let delTimer: Timer;
     let delSecsRemaining: Readable<number>;
     let running: boolean = false;
-    let currentSpeaker: string | undefined;
-
+    
     // Speakers List
     let speakersList: SpeakerList;
     let order: Speaker[] = [];
     let delegateInput: string;
     let cleared: Readable<boolean>;
     let allDone: Readable<boolean>;
+    let selectedSpeaker: Readable<string | undefined>;
+    $: ($selectedSpeaker, reset());
 
     // Button triggers
     function start() {
@@ -58,16 +59,16 @@
         speakersList?.addSpeaker(inp ?? delegateInput);
         delegateInput = "";
     }
-    function setCurrentSpeaker(k: string | undefined) {
-        reset();
-        currentSpeaker = k;
+    function getSpeakerName(key: string | undefined) {
+        if (typeof key === "undefined") return "-";
+        return labels[key] ?? key;
     }
 </script>
 
 <div class="grid grid-cols-[2fr_1fr] gap-12 h-full">
     <!-- Left -->
     <div class="flex flex-col gap-5 self-center">
-        <h2 class="h2 text-center">{typeof currentSpeaker !== "undefined" ? labels[currentSpeaker] ?? currentSpeaker : '-'}</h2>
+        <h2 class="h2 text-center">{getSpeakerName($selectedSpeaker)}</h2>
         <div class="flex flex-col gap-3">
             <h2 class="h2 text-center">{stringifyTime($totalSecsRemaining)}/{stringifyTime(motion.totalTime)}</h2>
             <Timer
@@ -108,7 +109,7 @@
             bind:this={speakersList}
             bind:cleared
             bind:allDone
-            onSelectChange={setCurrentSpeaker}
+            bind:selectedSpeaker
         />
         <!-- Add button -->
         <div class="flex flex-row gap-3">
@@ -129,7 +130,7 @@
                 type="submit"
                 class="btn variant-filled-primary"
                 disabled={$cleared}
-                on:click={speakersList.clear}
+                on:click={() => order = []}
             >
                 Clear
             </button>

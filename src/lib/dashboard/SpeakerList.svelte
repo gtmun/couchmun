@@ -16,12 +16,10 @@
     export let labels: Record<string, string> = {};
 
     /**
-     * Handler for when the selected item changes.
+     * The current speaker.
      */
-    export let onSelectChange: (key: string | undefined) => void = () => {};
-
-    // The current selected item.
     let selectedSpeaker: Speaker | undefined = undefined;
+
     // List item elements per order item
     let liElements = new Map<Speaker, HTMLLIElement>();
 
@@ -34,24 +32,29 @@
     $: $_adStore = typeof selectedSpeaker === "undefined" && order.every(({ completed }) => completed);
     export const allDone = readonly(_adStore);
 
+    let _spStore = writable<string | undefined>(undefined);
+    $: $_spStore = selectedSpeaker?.key;
+    const _selectedSpeaker = readonly(_spStore);
+    export { _selectedSpeaker as selectedSpeaker };
+
+    // If order updates and selectedSpeaker isn't in there, then clear selectedSpeaker:
+    $: if (typeof selectedSpeaker !== "undefined" && !order.includes(selectedSpeaker)) {
+        selectedSpeaker = undefined;
+    }
+    // Scroll to speaker if it is out of view:
+    $: if (typeof selectedSpeaker !== "undefined") {
+        liElements.get(selectedSpeaker)?.scrollIntoView({ block: "nearest" });
+    }
+
     //
     function getLabel(key: string) {
         return labels?.[key] ?? key;
-    }
-    function selectSpeaker(speaker: Speaker | undefined) {
-        const change = selectedSpeaker !== speaker;
-        selectedSpeaker = speaker;
-        if (change) onSelectChange(selectedSpeaker?.key);
-        
-        if (typeof speaker !== "undefined") {
-            liElements.get(speaker)?.scrollIntoView({ block: "nearest" });
-        }
     }
     function markComplete(speaker: Speaker | undefined) {
         if (typeof speaker !== "undefined") {
             speaker.completed = true;
         }
-        selectedSpeaker = selectedSpeaker; // shouldn't rlly be here but this updates speaker
+        order = order;
     }
     export function start() {
         markComplete(selectedSpeaker);
@@ -60,13 +63,7 @@
         markComplete(selectedSpeaker);
 
         // Find first element in the order that has not been completed yet.
-        selectSpeaker(order.find(({ completed }) => !completed));
-    }
-    export function clear() {
-        liElements.clear();
-        liElements = liElements;
-        order = [];
-        selectSpeaker(undefined);
+        selectedSpeaker = order.find(({ completed }) => !completed);
     }
 
     export function addSpeaker(key: string) {
@@ -80,7 +77,7 @@
         order = order;
         
         if (removedSpeaker === selectedSpeaker) {
-            selectSpeaker(undefined);
+            selectedSpeaker = undefined;
         }
     }
 
@@ -101,7 +98,7 @@
                     class:variant-soft-surface={selectedSpeaker !== speaker && speaker.completed}
                     class:variant-ringed-surface={selectedSpeaker !== speaker && !speaker.completed}
                     class:hover:variant-ringed-primary={selectedSpeaker !== speaker && !speaker.completed}
-                    on:click={() => selectSpeaker(speaker)}
+                    on:click={() => selectedSpeaker = speaker}
                 >
                     {getLabel(speaker.key)}
                 </button>
