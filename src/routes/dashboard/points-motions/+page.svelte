@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { base } from "$app/paths";
   import { createMotionSchema } from "$lib/dashboard/points-motions/form_validation";
   import { parseTime, stringifyTime } from "$lib/time";
   import type { Motion, MotionKind, SessionData } from "$lib/dashboard/types";
@@ -207,7 +208,7 @@
                   <button class="btn btn-sm btn-icon" on:click={() => removeMotion(i)}>
                     <Icon icon="mdi:cancel" width="24" height="24" class="text-error-500" />
                   </button>
-                  <a class="btn btn-sm btn-icon" on:click={() => selectMotion(motion)} href="/dashboard/motion">
+                  <a class="btn btn-sm btn-icon" on:click={() => selectMotion(motion)} href="{base}/dashboard/motion">
                     <Icon icon="mdi:check" width="24" height="24"  class="text-success-700" />
                   </a>
                 </div>

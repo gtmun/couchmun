@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { base } from "$app/paths";
     import "$lib/panel/public";
     import { stringifyTime } from "$lib/time";
     import Timer from "$lib/Timer.svelte";
@@ -32,7 +33,7 @@
     <h1 class="h1">Welcome to SvelteKit</h1>
     <div>
         <h2 class="h2">Admin panel demo</h2>
-        <p>Visit <a class="anchor" href="/admin" target="_blank">/admin</a> to open admin panel</p>
+        <p>Visit <a class="anchor" href="{base}/admin" target="_blank">/admin</a> to open admin panel</p>
     </div>
     <div>
         <h2 class="h2">Timer demo</h2>

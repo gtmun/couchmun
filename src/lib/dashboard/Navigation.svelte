@@ -1,13 +1,14 @@
 <script lang="ts">
+    import { base } from "$app/paths";
     import { page } from "$app/stores";
 
     export let close: () => void;
 
     const links = [
-        { label: "Roll Call", href: "/dashboard/roll-call" },
-        { label: "Current Motion", href: "/dashboard/motion" },
-        { label: "Speakers List", href: "/dashboard/speaker-list" },
-        { label: "Points and Motions", href: "/dashboard/points-motions" },
+        { label: "Roll Call", href: `${base}/dashboard/roll-call` },
+        { label: "Current Motion", href: `${base}/dashboard/motion` },
+        { label: "Speakers List", href: `${base}/dashboard/speaker-list` },
+        { label: "Points and Motions", href: `${base}/dashboard/points-motions` },
     ]
 </script>
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { base } from "$app/paths";
     import ModCaucus from "$lib/dashboard/motion/ModCaucus.svelte";
     import UnmodCaucus from "$lib/dashboard/motion/UnmodCaucus.svelte";
     import type { SessionData } from "$lib/dashboard/types";
@@ -25,7 +26,7 @@
             Visit 
             <a
                 class="btn btn-sm variant-soft-primary"
-                href="/dashboard/points-motions"
+                href="{base}/dashboard/points-motions"
                 tabindex="0"
             >
                 Points and Motions
