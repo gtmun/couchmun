@@ -70,33 +70,30 @@
     inputError = undefined;
   }
   function submitMotion() {
-    let validatedMotion;
-    try {
-      validatedMotion = motionSchema.validateSync(inputMotion) as unknown as Motion;
-    } catch (e) {
-      // Failure
-      if (e instanceof ValidationError) {
-        inputError = { id: e.path ?? "", msg: e.message };
-        return;
-      } else {
-        throw e;
-      }
-    }
-
-    // Success
-    inputMotion = defaultInputMotion();
-    inputError = undefined;
-    motions.update(m => {
-      m.push(validatedMotion);
-      return m;
-    })
+    motionSchema.validate(inputMotion)
+      .then(m => m as Motion)
+      .then(newMotion => {
+        inputMotion = defaultInputMotion();
+        inputError = undefined;
+        motions.update($m => {
+          $m.push(newMotion);
+          return $m;
+        });
+      })
+      .catch(e => {
+        if (e instanceof ValidationError) {
+          inputError = { id: e.path ?? "", msg: e.message };
+        } else {
+          throw e;
+        }
+      });
   }
 
   // MOTION BUTTONS
   function removeMotion(i: number) {
-    motions.update(m => {
-      m.splice(i, 1);
-      return m;
+    motions.update($m => {
+      $m.splice(i, 1);
+      return $m;
     })
   }
   function selectMotion(motion: Motion) {
