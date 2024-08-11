@@ -8,6 +8,7 @@
     import type { Readable } from "svelte/store";
     import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/dashboard/DelPopup.svelte";
     import { popup } from "@skeletonlabs/skeleton";
+    import DelLabel from "$lib/dashboard/DelLabel.svelte";
 
     export let motion: Motion & { kind: "mod" };
 
@@ -59,16 +60,12 @@
         speakersList?.addSpeaker(inp ?? delegateInput);
         delegateInput = "";
     }
-    function getSpeakerName(key: string | undefined) {
-        if (typeof key === "undefined") return "-";
-        return labels[key] ?? key;
-    }
 </script>
 
 <div class="grid grid-cols-[2fr_1fr] gap-12 h-full">
     <!-- Left -->
     <div class="flex flex-col gap-5 self-center">
-        <h2 class="h2 text-center">{getSpeakerName($selectedSpeaker)}</h2>
+        <DelLabel speaker={$selectedSpeaker} />
         <div class="flex flex-col gap-3">
             <h2 class="h2 text-center">{stringifyTime($totalSecsRemaining)}/{stringifyTime(motion.totalTime)}</h2>
             <Timer

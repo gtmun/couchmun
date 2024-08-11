@@ -8,6 +8,7 @@
     import type { Readable } from "svelte/store";
     import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/dashboard/DelPopup.svelte";
     import { popup } from "@skeletonlabs/skeleton";
+    import DelLabel from "$lib/dashboard/DelLabel.svelte";
 
     let delegates: DelegateMap = _delegates;
     const labels = Object.fromEntries(Array.from(
@@ -56,17 +57,13 @@
         }
         durInput = "";
     }
-    function getSpeakerName(key: string | undefined) {
-        if (typeof key === "undefined") return "-";
-        return labels[key] ?? key;
-    }
 </script>
 
 <div class="grid grid-cols-[2fr_1fr] gap-12 h-full">
     <!-- Left -->
     <div class="flex flex-col gap-5 self-center">
+        <DelLabel speaker={$selectedSpeaker} />
         <div class="flex flex-col gap-3">
-            <h2 class="h2 text-center">{getSpeakerName($selectedSpeaker)}</h2>
             <h2 class="h2 text-center">{stringifyTime($secsRemaining)}/{stringifyTime(duration)}</h2>
         </div>
         <Timer
