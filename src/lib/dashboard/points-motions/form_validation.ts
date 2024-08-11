@@ -1,6 +1,6 @@
 import type { DelegateAttrs } from "$lib/dashboard/types";
 import { parseTime } from "$lib/time";
-import { object, string, number, Schema } from 'yup';
+import { object, string, number, type Schema } from 'yup';
 
 function ignoreable<S extends Schema>(s: S): S {
     return s
