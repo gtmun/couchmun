@@ -64,21 +64,21 @@
     <div class="flex flex-col gap-5 self-center">
         <DelLabel speaker={$selectedSpeaker} />
         <div class="flex flex-col gap-3">
-            <h2 class="h2 text-center">{stringifyTime($totalSecsRemaining)}/{stringifyTime(motion.totalTime)}</h2>
-            <Timer
-                duration={motion.totalTime}
-                bind:this={totalTimer}
-                bind:secsRemaining={totalSecsRemaining}
-                bind:running
-                height="h-10"
-            />
-        </div>
-        <div class="flex flex-col gap-3">
             <h2 class="h2 text-center">{stringifyTime($delSecsRemaining)}/{stringifyTime(motion.speakingTime)}</h2>
             <Timer
                 duration={motion.speakingTime}
                 bind:this={delTimer}
                 bind:secsRemaining={delSecsRemaining}
+                bind:running
+                height="h-10"
+            />
+        </div>
+        <div class="flex flex-col gap-3">
+            <h2 class="h2 text-center">{stringifyTime($totalSecsRemaining)}/{stringifyTime(motion.totalTime)}</h2>
+            <Timer
+                duration={motion.totalTime}
+                bind:this={totalTimer}
+                bind:secsRemaining={totalSecsRemaining}
                 bind:running
                 height="h-10"
             />
