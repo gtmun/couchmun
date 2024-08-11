@@ -1,9 +1,5 @@
 import type { Readable, Writable } from "svelte/store";
 
-// Delegate data map
-export type DelegateMap = {
-    [code: string]: DelegateAttrs
-}
 export type DelegateAttrs = {
     name: string,
     aliases: string[]
@@ -38,9 +34,29 @@ export type Speaker = {
 
 // Session Data
 export type SessionData = {
+    /**
+     * Delegate keys to characteristic data about the delegate (e.g., name and aliases)
+     */
+    delegateAttributes: Readable<Record<string, DelegateAttrs>>,
+    /**
+     * Attendance status of each delegate in the current session.
+     */
     delegateAttendance: Writable<Record<string, DelegatePresence>>,
-    motions: Writable<Motion[]>,
+    /**
+     * Derived attribute (based on delegateAttendance) that produces the list of present delegates.
+     */
     presentDelegates: Readable<string[]>,
+
+    /**
+     * All specified motions (from the points & motions page).
+     */
+    motions: Writable<Motion[]>,
+    /**
+     * The motion that was selected (and is currently on display in the current motion page).
+     */
     selectedMotion: Writable<Motion | undefined>,
+    /**
+     * The speakers list and speaker attributes (such as whether the given speaker has spoken already)
+     */
     speakersList: Writable<Speaker[]>
 };

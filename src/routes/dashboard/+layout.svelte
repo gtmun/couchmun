@@ -2,11 +2,12 @@
     import BarStats from '$lib/dashboard/BarStats.svelte';
     import BarTitle from '$lib/dashboard/BarTitle.svelte';
     import Navigation from '$lib/dashboard/Navigation.svelte';
-    import type { DelegatePresence, Motion, SessionData, Speaker } from '$lib/dashboard/types';
+    import type { DelegatePresence, SessionData } from '$lib/dashboard/types';
+    import delegates from '$lib/delegate_presets/un_delegates.json';
     import Icon from "@iconify/svelte";
     import { AppBar, Drawer, getDrawerStore, LightSwitch } from '@skeletonlabs/skeleton';
     import { setContext } from 'svelte';
-    import { derived, writable } from 'svelte/store';
+    import { derived, readable, writable } from 'svelte/store';
 
     let title = "General Assembly";
 
@@ -19,14 +20,18 @@
 
     const { presentDelegates } = setContext<SessionData>("sessionData", (() => {
         const delegateAttendance = writable<Record<string, DelegatePresence>>({});
-        const motions = writable<Motion[]>([]);
         const presentDelegates = derived(delegateAttendance, $att => {
             return Object.keys($att).filter(k => $att[k] !== "NP");
         });
-        const selectedMotion = writable<Motion | undefined>();
-        const speakersList = writable<Speaker[]>();
 
-        return { delegateAttendance, motions, presentDelegates, selectedMotion, speakersList };
+        return {
+            delegateAttributes: readable(delegates), // this'll probably be a writable store later
+            delegateAttendance,
+            presentDelegates,
+            motions: writable([]),
+            selectedMotion: writable(),
+            speakersList: writable([])
+        }
     })());
 </script>
 

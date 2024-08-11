@@ -1,4 +1,4 @@
-import type { DelegateMap } from "$lib/dashboard/types";
+import type { DelegateAttrs } from "$lib/dashboard/types";
 import { parseTime } from "$lib/time";
 import { object, string, number, Schema } from 'yup';
 
@@ -7,7 +7,7 @@ function ignoreable<S extends Schema>(s: S): S {
         .transform((val, _, ctx) => ctx.isType(val) ? val : undefined)
         .notRequired();
 }
-export function createMotionSchema(delegates: DelegateMap, presentDelegates: string[]) {
+export function createMotionSchema(delegates: Record<string, DelegateAttrs>, presentDelegates: string[]) {
     return object({
         // Note: the input is the delegate name, but is returned as the delegate key
         delegate: string()

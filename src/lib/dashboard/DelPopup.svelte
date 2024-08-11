@@ -1,10 +1,10 @@
 <script lang="ts">
     import { Autocomplete, type AutocompleteOption, type PopupSettings } from "@skeletonlabs/skeleton";
-    import type { DelegateMap } from "./types";
+    import type { DelegateAttrs } from "./types";
 
     export let popupID: string;
     export let input: string | undefined;
-    export let delegates: DelegateMap;
+    export let delegates: Record<string, DelegateAttrs>;
     export let presentDelegates: string[];
     export let maxHeight = "max-h-96";
 

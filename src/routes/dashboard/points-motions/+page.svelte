@@ -1,8 +1,7 @@
 <script lang="ts">
   import { createMotionSchema } from "$lib/dashboard/points-motions/form_validation";
-  import _delegates from "$lib/sample_delegates.json";
   import { parseTime, stringifyTime } from "$lib/time";
-  import type { DelegateMap, Motion, MotionKind, SessionData } from "$lib/dashboard/types";
+  import type { Motion, MotionKind, SessionData } from "$lib/dashboard/types";
   import { getContext, onMount } from "svelte";
 
   import { ValidationError } from "yup";
@@ -11,8 +10,7 @@
   import { popup } from "@skeletonlabs/skeleton";
   import Sortable from "sortablejs";
 
-  let delegates: DelegateMap = _delegates;
-  const { motions, presentDelegates, selectedMotion } = getContext<SessionData>("sessionData");
+  const { delegateAttributes, motions, presentDelegates, selectedMotion } = getContext<SessionData>("sessionData");
 
   let inputMotion: Partial<Motion> = defaultInputMotion();
   let inputError: { id: string, msg: string } | undefined = undefined;
@@ -58,7 +56,7 @@
   }
 
   // MOTION FORM CHANGES
-  const motionSchema = createMotionSchema(delegates, $presentDelegates);
+  const motionSchema = createMotionSchema($delegateAttributes, $presentDelegates);
   function defaultInputMotion(): Partial<Motion> {
     return { kind: "mod" };
   }
@@ -179,7 +177,7 @@
     <DelPopup
       popupID="delegateInputPopup"
       bind:input={inputMotion.delegate}
-      {delegates}
+      delegates={$delegateAttributes}
       presentDelegates={$presentDelegates}
       on:selection={e => {inputMotion.delegate = e.detail.label; resetInputErrors()}}
     />
@@ -215,7 +213,7 @@
                 </div>
               </td>
               <td>{mkToStr(motion.kind)}</td>
-              <td>{delegates[motion.delegate].name}</td>
+              <td>{$delegateAttributes[motion.delegate].name}</td>
               <td>{motion.kind !== "unmod" ? motion.topic : "-"}</td>
               <td>{stringifyTime(motion.totalTime)}</td>
               <td>{motion.kind === "mod" ? stringifyTime(motion.speakingTime) : "-"}</td>

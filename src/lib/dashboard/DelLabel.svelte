@@ -1,14 +1,15 @@
 <script lang="ts">
-    import _delegates from "$lib/sample_delegates.json";
-    import type { DelegateMap } from "./types";
-    const delegates: DelegateMap = _delegates;
+    import type { SessionData } from "./types";
+    import { getContext } from "svelte";
+
+    const { delegateAttributes } = getContext<SessionData>("sessionData");
 
     export let speaker: string | undefined = undefined;
     export let height: string = "h-[25dvh]";
 
     function getSpeakerName(key: string | undefined) {
         if (typeof key === "undefined") return "-";
-        return delegates[key]?.name ?? key;
+        return $delegateAttributes[key]?.name ?? key;
     }
 
     type SpeakerImage = {
@@ -16,10 +17,10 @@
         name: string
     };
     function getSpeakerImage(key: string): SpeakerImage {
-        if (key in delegates) {
+        if (key in $delegateAttributes) {
             return {
                 url: new URL(key.toLowerCase() + ".svg", "https://flagcdn.com/"),
-                name: delegates[key].name
+                name: $delegateAttributes[key].name
             };
         } else {
             // Default: UN

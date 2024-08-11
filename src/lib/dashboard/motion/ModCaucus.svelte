@@ -1,7 +1,6 @@
 <script lang="ts">
-    import _delegates from "$lib/sample_delegates.json";
     import SpeakerList from "$lib/dashboard/SpeakerList.svelte";
-    import type { DelegateMap, Motion, SessionData, Speaker } from "$lib/dashboard/types";
+    import type { Motion, SessionData, Speaker } from "$lib/dashboard/types";
     import { stringifyTime } from "$lib/time";
     import Timer from "$lib/Timer.svelte";
     import { getContext } from "svelte";
@@ -12,13 +11,11 @@
 
     export let motion: Motion & { kind: "mod" };
 
-    let delegates: DelegateMap = _delegates;
+    const { delegateAttributes, presentDelegates } = getContext<SessionData>("sessionData");
     const labels = Object.fromEntries(Array.from(
-        Object.entries(delegates), 
+        Object.entries($delegateAttributes), 
         ([k, attrs]) => [k, attrs.name]
     ));
-
-    const { presentDelegates } = getContext<SessionData>("sessionData");
 
     // Timer
     let totalTimer: Timer;
@@ -138,7 +135,7 @@
 <DelPopup 
     popupID="addDelegatePopup"
     bind:input={delegateInput}
-    {delegates}
+    delegates={$delegateAttributes}
     presentDelegates={$presentDelegates}
     on:selection={e => addDelegate(String(e.detail.value))}
 />

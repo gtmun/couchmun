@@ -1,13 +1,11 @@
 <script lang="ts">
-  import type { DelegateMap, DelegatePresence, SessionData } from "$lib/dashboard/types";
-  import _delegates from "$lib/sample_delegates.json";
+  import type { DelegatePresence, SessionData } from "$lib/dashboard/types";
   import { getContext } from "svelte";
 
-  const delegates: DelegateMap = _delegates;
-  const { delegateAttendance } = getContext<SessionData>("sessionData");
+  const { delegateAttributes, delegateAttendance } = getContext<SessionData>("sessionData");
   delegateAttendance.update(att => {
     return Object.assign(Object.fromEntries<DelegatePresence>(
-      Object.keys(delegates).map(p => [p, "NP"])
+      Object.keys($delegateAttributes).map(p => [p, "NP"])
     ), att);
   })
 </script>
@@ -25,7 +23,7 @@
     <tbody>
       {#each Object.entries($delegateAttendance) as [key, presence]}
         <tr>
-          <td>{delegates[key].name}</td>
+          <td>{$delegateAttributes[key].name}</td>
           <td 
             class="data-cell"
             class:selected={presence != "NP"}
