@@ -1,6 +1,7 @@
 <script lang="ts">
   import { base } from "$app/paths";
   import { createMotionSchema } from "$lib/dashboard/points-motions/form_validation";
+  import { compareMotions } from "$lib/dashboard/points-motions/sort";
   import { parseTime, stringifyTime } from "$lib/time";
   import type { Motion, MotionKind, SessionData } from "$lib/dashboard/types";
   import { getContext, onMount } from "svelte";
@@ -22,7 +23,11 @@
       animation: 150,
       ghostClass: "!bg-surface-400/25",
       dragClass: "!bg-surface-50",
-      fallbackOnBody: true
+      fallbackOnBody: true,
+      store: {
+        get: () => Object.keys($motions.length),
+        set: (sortable) => motions.update($m => sortable.toArray().map(k => $m[+k]))
+      }
     });
   });
 
@@ -97,6 +102,9 @@
   function selectMotion(motion: Motion) {
     $selectedMotion = motion;
     $motions = [];
+  }
+  function sortMotions() {
+    $motions = $motions.sort(compareMotions);
   }
 </script>
 
@@ -185,7 +193,12 @@
   </form>
   
   <div class="flex flex-col gap-2">
-    <h3 class="h3 text-center">List of Motions</h3>
+    <div class="grid grid-cols-[1fr_auto]">
+      <h3 class="h3 text-center">List of Motions</h3>
+      <button class="btn btn-icon" on:click={sortMotions}>
+        <Icon icon="mdi:sort" width="24" height="24" />
+      </button>
+    </div>
     
     <div class="table-container">
       <table class="table table-fixed motion-table">
@@ -201,8 +214,8 @@
           </tr>
         </thead>
         <tbody bind:this={tableBody}>
-          {#each $motions as motion, i}
-            <tr>
+          {#each $motions as motion, i (motion)}
+            <tr data-id={i}>
               <td>
                 <div class="flex flex-row">
                   <button class="btn btn-sm btn-icon" on:click={() => removeMotion(i)}>
