@@ -22,6 +22,7 @@
     Sortable.create(tableBody, {
       animation: 150,
       ghostClass: "!bg-surface-400/25",
+      dragClass: "!bg-surface-50",
       fallbackOnBody: true
     });
   });
