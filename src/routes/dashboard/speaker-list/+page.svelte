@@ -1,7 +1,7 @@
 <script lang="ts">
     import SpeakerList from "$lib/dashboard/SpeakerList.svelte";
     import type { SessionData } from "$lib/dashboard/types";
-    import { parseTime, stringifyTime } from "$lib/time";
+    import { addColons, parseTime, stringifyTime } from "$lib/time";
     import Timer from "$lib/Timer.svelte";
     import { getContext } from "svelte";
     import type { Readable } from "svelte/store";
@@ -42,8 +42,8 @@
         timer.reset();
         speakersList.next();
     }
-    function addDelegate(inp?: string) {
-        speakersList.addSpeaker(inp ?? delegateInput);
+    function addDelegate(inp?: unknown) {
+        speakersList.addSpeaker(inp as string ?? delegateInput);
         delegateInput = "";
     }
     function setDuration() {
@@ -132,5 +132,5 @@
     bind:input={delegateInput}
     delegates={$delegateAttributes}
     presentDelegates={$presentDelegates}
-    on:selection={e => addDelegate(String(e.detail.value))}
+    on:selection={e => addDelegate(e.detail.value)}
 />

@@ -53,8 +53,8 @@
         reset();
         speakersList?.next();
     }
-    function addDelegate(inp?: string) {
-        speakersList?.addSpeaker(inp ?? delegateInput);
+    function addDelegate(inp?: unknown) {
+        speakersList?.addSpeaker(inp as string ?? delegateInput);
         delegateInput = "";
     }
 </script>
@@ -137,5 +137,5 @@
     bind:input={delegateInput}
     delegates={$delegateAttributes}
     presentDelegates={$presentDelegates}
-    on:selection={e => addDelegate(String(e.detail.value))}
+    on:selection={e => addDelegate(e.detail.value)}
 />
