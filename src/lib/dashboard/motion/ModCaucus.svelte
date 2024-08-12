@@ -1,13 +1,12 @@
 <script lang="ts">
+    import DelLabel from "$lib/dashboard/DelLabel.svelte";
+    import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/dashboard/DelPopup.svelte";
     import SpeakerList from "$lib/dashboard/SpeakerList.svelte";
+    import Timer from "$lib/dashboard/Timer.svelte";
     import type { Motion, SessionData, Speaker } from "$lib/dashboard/types";
-    import { stringifyTime } from "$lib/time";
-    import Timer from "$lib/Timer.svelte";
     import { getContext } from "svelte";
     import type { Readable } from "svelte/store";
-    import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/dashboard/DelPopup.svelte";
     import { popup } from "@skeletonlabs/skeleton";
-    import DelLabel from "$lib/dashboard/DelLabel.svelte";
 
     export let motion: Motion & { kind: "mod" };
 
@@ -18,12 +17,11 @@
     ));
 
     // Timer
-    let totalTimer: Timer;
-    let totalSecsRemaining: Readable<number>;
-
-    let delTimer: Timer;
-    let delSecsRemaining: Readable<number>;
     let running: boolean = false;
+    let totalReset: () => void;
+    let delReset: () => void;
+    let totalResetable: Readable<boolean>;
+    let delResetable: Readable<boolean>;
     
     // Speakers List
     let speakersList: SpeakerList;
@@ -43,11 +41,11 @@
         running = false;
     }
     function reset() {
-        delTimer?.reset();
+        delReset?.();
     }
     function resetAll() {
-        totalTimer?.reset();
-        delTimer?.reset();
+        totalReset?.();
+        delReset?.();
     }
     function next() {
         reset();
@@ -63,26 +61,18 @@
     <!-- Left -->
     <div class="flex flex-col gap-5 self-center">
         <DelLabel speaker={$selectedSpeaker} />
-        <div class="flex flex-col gap-3">
-            <h2 class="h2 text-center">{stringifyTime($delSecsRemaining)}/{stringifyTime(motion.speakingTime)}</h2>
-            <Timer
-                duration={motion.speakingTime}
-                bind:this={delTimer}
-                bind:secsRemaining={delSecsRemaining}
-                bind:running
-                height="h-10"
-            />
-        </div>
-        <div class="flex flex-col gap-3">
-            <h2 class="h2 text-center">{stringifyTime($totalSecsRemaining)}/{stringifyTime(motion.totalTime)}</h2>
-            <Timer
-                duration={motion.totalTime}
-                bind:this={totalTimer}
-                bind:secsRemaining={totalSecsRemaining}
-                bind:running
-                height="h-10"
-            />
-        </div>
+        <Timer 
+            duration={motion.speakingTime} 
+            bind:reset={delReset} 
+            bind:canReset={delResetable}
+            bind:running 
+        />
+        <Timer 
+            duration={motion.totalTime} 
+            bind:reset={totalReset} 
+            bind:canReset={totalResetable}
+            bind:running 
+        />
         <div class="flex flex-row gap-3 justify-center">
             {#if !running}
                 <button class="btn variant-filled-primary" disabled={typeof $selectedSpeaker === "undefined"} on:click={start}>Start</button>
@@ -90,8 +80,8 @@
                 <button class="btn variant-filled-primary" on:click={pause}>Pause</button>
             {/if}
             <button class="btn variant-filled-primary" disabled={$allDone} on:click={next}>Next</button>
-            <button class="btn variant-filled-primary" disabled={$delSecsRemaining === motion.speakingTime} on:click={reset}>Reset</button>
-            <button class="btn variant-filled-primary" disabled={$totalSecsRemaining === motion.totalTime} on:click={resetAll}>Reset all</button>
+            <button class="btn variant-filled-primary" disabled={!$delResetable} on:click={reset}>Reset</button>
+            <button class="btn variant-filled-primary" disabled={!$totalResetable} on:click={resetAll}>Reset all</button>
         </div>
     </div>
     <!-- Right -->

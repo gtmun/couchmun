@@ -1,13 +1,13 @@
 <script lang="ts">
+    import DelLabel from "$lib/dashboard/DelLabel.svelte";
+    import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/dashboard/DelPopup.svelte";
     import SpeakerList from "$lib/dashboard/SpeakerList.svelte";
+    import Timer from "$lib/dashboard/Timer.svelte";
     import type { SessionData } from "$lib/dashboard/types";
-    import { addColons, parseTime, stringifyTime } from "$lib/time";
-    import Timer from "$lib/Timer.svelte";
+    import { parseTime } from "$lib/time";
     import { getContext } from "svelte";
     import type { Readable } from "svelte/store";
-    import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/dashboard/DelPopup.svelte";
     import { popup } from "@skeletonlabs/skeleton";
-    import DelLabel from "$lib/dashboard/DelLabel.svelte";
 
     const { delegateAttributes, presentDelegates, speakersList: order } = getContext<SessionData>("sessionData");
     const labels = Object.fromEntries(Array.from(
@@ -16,10 +16,10 @@
     ));
 
     // Timer
-    let timer: Timer;
-    let secsRemaining: Readable<number>;
     let running: boolean = false;
     let duration: number = 10;
+    let reset: () => void;
+    let canReset: Readable<boolean>;
     
     // Speakers List
     let speakersList: SpeakerList;
@@ -28,7 +28,7 @@
     let cleared: Readable<boolean>;
     let allDone: Readable<boolean>;
     let selectedSpeaker: Readable<string | undefined>;
-    $: ($selectedSpeaker, timer?.reset());
+    $: ($selectedSpeaker, reset?.());
 
     // Button triggers
     function start() {
@@ -39,7 +39,7 @@
         running = false;
     }
     function next() {
-        timer.reset();
+        reset();
         speakersList.next();
     }
     function addDelegate(inp?: unknown) {
@@ -50,7 +50,7 @@
         let secs = parseTime(durInput);
         if (typeof secs !== "undefined") {
             duration = secs;
-            timer.reset();
+            reset();
         }
         durInput = "";
     }
@@ -60,15 +60,12 @@
     <!-- Left -->
     <div class="flex flex-col gap-5 self-center">
         <DelLabel speaker={$selectedSpeaker} />
-        <div class="flex flex-col gap-3">
-            <h2 class="h2 text-center">{stringifyTime($secsRemaining)}/{stringifyTime(duration)}</h2>
-        </div>
+
         <Timer
             {duration}
-            bind:this={timer}
-            bind:secsRemaining
             bind:running
-            height="h-10"
+            bind:canReset
+            bind:reset
         />
         <div class="flex flex-row gap-3 justify-center">
             {#if !running}
@@ -77,7 +74,7 @@
                 <button class="btn variant-filled-primary" on:click={pause}>Pause</button>
             {/if}
             <button class="btn variant-filled-primary" disabled={$allDone} on:click={next}>Next</button>
-            <button class="btn variant-filled-primary" disabled={$secsRemaining === duration} on:click={timer.reset}>Reset</button>
+            <button class="btn variant-filled-primary" disabled={!$canReset} on:click={reset}>Reset</button>
         </div>
     </div>
     <!-- Right -->

@@ -2,7 +2,7 @@
     import { base } from "$app/paths";
     import "$lib/panel/public";
     import { stringifyTime } from "$lib/time";
-    import Timer from "$lib/Timer.svelte";
+    import Timer from "$lib/dashboard/Timer.svelte";
     import { persisted } from "svelte-persisted-store";
     import type { Readable } from "svelte/store";
 
@@ -42,7 +42,7 @@
         <button class="btn btn-sm variant-filled-primary" on:click={() => running = false}>Pause</button>
         <button class="btn btn-sm variant-filled-primary" on:click={timer.reset}>Reset</button>
         <div class="flex flex-col">
-            <Timer duration={10} bind:this={timer} bind:secsRemaining bind:running />
+            <Timer duration={10} bind:this={timer} bind:secsRemaining bind:running hideText={true} />
             <div class="self-center h3">{stringifyTime($secsRemaining)}/{stringifyTime(10)}</div>
         </div>
     </div>

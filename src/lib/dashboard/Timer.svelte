@@ -4,14 +4,15 @@
     and the duration prop to control how many seconds the timer should run for.
 -->
 <script lang="ts">
+    import { stringifyTime } from "$lib/time";
     import { ProgressBar } from "@skeletonlabs/skeleton";
     import { readonly, writable } from "svelte/store";
 
     export let duration: number;
-    export let height: string = "h-5";
-    export let border: string = "";
+    export let height: string = "h-10";
     export let running: boolean = false;
-
+    export let hideText: boolean = false;
+    
     $: DURATION_MS = duration * 1000;
     $: (DURATION_MS, reset()); // on duration update, reset timer
     
@@ -21,10 +22,17 @@
         ["bg-red-500",     0.2]
     ] as const;
 
-    // Progress values
+    // Progress & display values
     let msRemaining = DURATION_MS;
     $: progress = clamp(msRemaining / DURATION_MS, 0, 1)
-    $: color = (COLOR_THRESHOLDS.findLast(([_, n]) => msRemaining / DURATION_MS <= n) ?? COLOR_THRESHOLDS[0])[0];
+    $: color = (COLOR_THRESHOLDS.findLast(([_, n]) => progress <= n) ?? COLOR_THRESHOLDS[0])[0];
+    $: barProps = {
+        value: 100 * progress,
+        height,
+        transition: `duration-1000 ${running ? 'transition-[background-color]' : 'transition-[background-color,width]'}`,
+        meter: color,
+        track: "bg-surface-300-600-token"
+    }
     // Timer related handlers
     let lastStart: number | undefined = undefined;
     let msRemainingAtStart: number;
@@ -34,6 +42,10 @@
     $: $_remStore = msRemaining / 1000;
     export const secsRemaining = readonly(_remStore);
 
+    let _rsStore = writable(false);
+    $: $_rsStore = $secsRemaining !== duration;
+    export const canReset = readonly(_rsStore);
+    
     async function nextAnimationFrame() {
         return new Promise<void>(resolve => {
             // Handle prerendering
@@ -81,12 +93,12 @@
     }
 </script>
 
-<div class={border}>
-    <ProgressBar 
-        value={100 * progress}
-        {height}
-        transition="duration-1000 {running ? 'transition-[background-color]' : 'transition-[background-color,width]'}"
-        meter="{color}"
-        track="bg-surface-300-600-token"
-    />
-</div>
+{#if hideText}
+    <ProgressBar {...barProps} />
+{:else}
+    <div class="flex flex-col gap-3">
+        <h2 class="h2 text-center">{stringifyTime($secsRemaining)}/{stringifyTime(duration)}</h2>
+        <ProgressBar {...barProps} />
+    </div>
+
+{/if}
