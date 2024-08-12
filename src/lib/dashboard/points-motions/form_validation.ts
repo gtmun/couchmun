@@ -1,18 +1,7 @@
 import type { DelegateAttrs, MotionKind } from "$lib/dashboard/types";
+import { defineFormFields, MOTION_LABELS } from "$lib/dashboard/points-motions/definitions";
 import { parseTime } from "$lib/time";
 import { object, string, number } from 'yup';
-
-const MOTION_KINDS = ["mod", "unmod", "other"] as const;
-
-// Type magic.
-type Is<T, U> = Exclude<T, U> extends never ? Exclude<U, T> extends never ? true : false : false;
-const _assertAllMotionsAreDefined: Is<typeof MOTION_KINDS[number], MotionKind> = true;
-// 
-
-// More type magic
-function inArray<T>(el: any, arr: readonly T[]): el is T {
-    return arr.includes(el);
-}
 
 /**
  * Creates a schema that requires the input is the name of a present delegate.
@@ -37,10 +26,10 @@ function kindSchema() {
         .label("motion kind")
         .trim()
         .required()
-        .oneOf(MOTION_KINDS);
+        .oneOf(Object.keys(MOTION_LABELS) as MotionKind[]);
 }
 
-function timeSchema(label: string = "total time") {
+export function timeSchema(label: string = "total time") {
     return number()
         .label(label)
         .integer()
@@ -49,7 +38,7 @@ function timeSchema(label: string = "total time") {
         .required()
         .nonNullable("${path} is not a valid time string (mm:ss)");
 }
-function speakingTimeSchema(totalTimeAttr = "totalTime") {
+export function speakingTimeSchema(totalTimeAttr = "totalTime") {
     return timeSchema("speaking time")
         .test(
             "total-time-divisible-by-speaking-time",
@@ -60,7 +49,7 @@ function speakingTimeSchema(totalTimeAttr = "totalTime") {
             }
         )
 }
-function topicSchema() {
+export function topicSchema() {
     return string()
         .label("topic")
         .trim()
@@ -71,26 +60,5 @@ export function createMotionSchema(delegates: Record<string, DelegateAttrs>, pre
     return object({
         delegate: presentDelegateSchema(delegates, presentDelegates),
         kind: kindSchema(),
-    }).when(([{ kind }], schema) => {
-        if (!inArray(kind, MOTION_KINDS)) return schema;
-        if (kind === "mod") {
-            return schema.shape({
-                totalTime: timeSchema(),
-                speakingTime: speakingTimeSchema(),
-                topic: topicSchema()
-            });
-        } else if (kind === "unmod") {
-            return schema.shape({
-                totalTime: timeSchema()
-            })
-        } else if (kind === "other") {
-            return schema.shape({
-                totalTime: speakingTimeSchema(),
-                topic: topicSchema()
-            })
-        } else {
-            kind satisfies never;
-            throw new Error("Invalid motion kind " + kind);
-        }
-    });
+    }).when(([{ kind }], schema) => defineFormFields(schema, kind));
 }

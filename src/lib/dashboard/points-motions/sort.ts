@@ -1,32 +1,13 @@
-import type { Motion, MotionKind } from "../types";
+import type { Motion, SKeyUnit, SortEntry, SortOrderKey } from "../types";
 
 type Comparator<K> = (a: K, b: K) => number;
 
-// Bunch of types to define SortEntry
-type OneOrMany<T> = T | T[];
-type AllKeys<T> = T extends {} ? keyof T : never;
-type SOKeyUnit = Exclude<AllKeys<Motion> | "nSpeakers", "kind">;
-type SortOrderKey = SOKeyUnit | `${SOKeyUnit} asc`;
-type SortEntry = {
-    kind: OneOrMany<MotionKind>,
-    order: OneOrMany<SortOrderKey>
-};
-
 /**
- * The established sort order.
- * Values first in the list are prioritized, with the order parameter handling ties.
+ * Converts a string or string array into just an array.
  */
-const SORT_PRIORITY: SortEntry[] = [
-    { kind: "unmod", order: ["totalTime asc"] },
-    { kind: "mod", order: ["totalTime asc", "nSpeakers asc"] }
-];
-
-/**
- * Converts a string or string array into just a string.
- */
-const asArray = <T>(t: OneOrMany<T>) => t instanceof Array ? t : [t];
-const divideKey = (key: SortOrderKey): [key: SOKeyUnit, asc: boolean] => {
-    return key.endsWith(" asc") ? [key.slice(0, -4) as SOKeyUnit, true] : [key as SOKeyUnit, false];
+const asArray = <T>(t: T | T[]) => t instanceof Array ? t : [t];
+const divideKey = (key: SortOrderKey): [key: SKeyUnit, asc: boolean] => {
+    return key.endsWith(" asc") ? [key.slice(0, -4) as SKeyUnit, true] : [key as SKeyUnit, false];
 }
 /**
  * Lexicographical compare of arrays.
@@ -40,29 +21,26 @@ const lexico: Comparator<(number | string)[]> = (a, b) => {
     return a.length - b.length;
 };
 
-function asSortKey(k: Motion, priority = SORT_PRIORITY) {
-    let index = priority.findIndex(({ kind }) => asArray(kind).includes(k.kind));
+function computeProperty(m: Motion, key: SortOrderKey): number {
+    let [unit, asc] = divideKey(key);
+
+    // Invert sort order if ascending:
+    if (asc) return -computeProperty(m, unit);
+    // If key present in motion, use it:
+    if (unit in m) return +(m as any)[unit];
+    // If key == 'nSpeakers', use n. speakers algo:
+    if (unit === "nSpeakers" && "totalTime" in m && "speakingTime" in m) return m.totalTime / (m as any).speakingTime;
+    // Give up:
+    return Infinity;
+}
+function asSortKey(m: Motion, priority: SortEntry[]) {
+    let index = priority.findIndex(({ kind }) => asArray(kind).includes(m.kind));
     if (index < 0) return [priority.length];
     let { order } = priority[index];
 
-    return [index,
-        ...asArray(order).map(key => {
-            let [unit, asc] = divideKey(key);
-            let factor = asc ? -1 : 1;
-
-            if (unit in k) {
-                // Try to use a key that exists:
-                return factor * +(k as any)[unit];
-            } else if (unit === "nSpeakers" && "totalTime" in k && "speakingTime" in k) {
-                // Try to use number of speakers:
-                return factor * (k.totalTime / (k as any).speakingTime);
-            } else {
-                // Couldn't find a key that matches, so just return the highest possible value (move it to the end).
-                return Infinity;
-            }
-        })
-    ];
+    return [index, ...asArray(order).map(key => computeProperty(m, key))];
 }
 
-
-export const compareMotions: Comparator<Motion> = (a, b) => lexico(asSortKey(a), asSortKey(b));
+export function compareMotions(priority: SortEntry[]): Comparator<Motion> {
+    return (a, b) => lexico(asSortKey(a, priority), asSortKey(b, priority));
+}

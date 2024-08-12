@@ -32,6 +32,15 @@ export type Speaker = {
     completed: boolean
 };
 
+// Define SortEntry:
+export type AllKeys<T> = T extends {} ? keyof T : never;
+export type SKeyUnit = AllKeys<Motion> | "nSpeakers";
+export type SortOrderKey = SKeyUnit | `${SKeyUnit} asc`;
+export type SortEntry = {
+    kind: MotionKind | MotionKind[],
+    order: SortOrderKey | SortOrderKey[]
+};
+
 // Session Data
 export type SessionData = {
     /**

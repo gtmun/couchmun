@@ -1,9 +1,10 @@
 <script lang="ts">
   import { base } from "$app/paths";
+  import { MOTION_FIELDS, MOTION_LABELS, SORT_PRIORITY } from "$lib/dashboard/points-motions/definitions";
   import { createMotionSchema } from "$lib/dashboard/points-motions/form_validation";
-  import { compareMotions } from "$lib/dashboard/points-motions/sort";
+  import { compareMotions as motionComparator } from "$lib/dashboard/points-motions/sort";
   import { addColons, parseTime, stringifyTime } from "$lib/time";
-  import type { Motion, MotionKind, SessionData } from "$lib/dashboard/types";
+  import type { Motion, SessionData } from "$lib/dashboard/types";
   import { getContext, onMount } from "svelte";
 
   import { ValidationError } from "yup";
@@ -41,16 +42,7 @@
     });
   });
 
-  // STRING DISPLAY
-  function mkToStr(m: MotionKind) {
-    switch (m) {
-      case "mod": return "Moderated Caucus"
-      case "unmod": return "Unmoderated Caucus"
-      case "other": return "Other"
-      default: throw new Error("no motion type " + m);
-    }
-  }
-  function numSpeakersStr(totalTime: number | string | undefined, speakingTime: number | string | undefined): number | string | undefined {
+  function numSpeakersStr(totalTime: number | string | undefined, speakingTime: number | string | undefined): string | undefined {
     // Parse arguments as either seconds or time string.
     if (typeof totalTime === "string") totalTime = parseTime(totalTime);
     if (typeof speakingTime === "string") speakingTime = parseTime(speakingTime);
@@ -64,9 +56,42 @@
     if (!Number.isFinite(nSpeakers)) return;
     if (nSpeakers < 0) return;
     if (!Number.isInteger(nSpeakers)) return nSpeakers.toFixed(2);
-    return nSpeakers;
+    return nSpeakers.toString();
   }
 
+  /**
+   * Filters union type M to all options which include all entries of Fs as a field.
+   */
+  type WithFields<M, Fs extends string> = Extract<M, Record<Fs, unknown>>;
+  /**
+   * Returns true if the inputMotion's kind has the provided fields.
+   * This is useful for conditionally showing a field input only if the motion requires that field.
+   * 
+   * @param m the input motion
+   * @param fields the list of fields to check for
+   */
+  function hasField<F extends string>(m: typeof inputMotion, fields: F[]): m is Form<WithFields<Motion, F>, "kind"> {
+    const motionFields: readonly string[] = MOTION_FIELDS[m.kind];
+    return fields.every(f => motionFields.includes(f));
+  }
+  /**
+   * Produces a value by using the callback (if the provided motion has the required fields) 
+   * or using a default (if the provided motion does not have the required fields).
+   * @param m the motion
+   * @param fields the list of fields to check for
+   * @param cb the callback to produce a value (if the motion has the required fields)
+   * @param dflt the default value (if the motion does not have the required fields)
+   */
+  function apply<M extends {}, F extends string, R>(
+    m: M, 
+    fields: F[], 
+    cb: (m: WithFields<M, F>) => R | undefined, 
+    dflt: R
+  ): R {
+    if (fields.every(f => f in m)) return cb(m as any) ?? dflt;
+    return dflt;
+  }
+  
   // MOTION FORM CHANGES
   const motionSchema = createMotionSchema($delegateAttributes, $presentDelegates);
   function defaultInputMotion(): typeof inputMotion {
@@ -107,12 +132,12 @@
     $motions = [];
   }
   function sortMotions() {
-    $motions = $motions.sort(compareMotions);
+    $motions = $motions.sort(motionComparator(SORT_PRIORITY));
   }
 
   // INPUT BLUR HANDLER
-  function timeBlur<K extends MotionKind>(attr: keyof (typeof inputMotion & { kind: K }), require?: K) {
-    if (typeof require === "undefined" || inputMotion.kind === require) {
+  function timeBlur<A extends string>(attr: A) {
+    if (attr in inputMotion) {
       (inputMotion as any)[attr] = addColons((inputMotion as any)[attr] ?? "");
     }
   }
@@ -139,11 +164,12 @@
         class:input-error={inputError?.id === "kind"} 
         bind:value={inputMotion.kind}
       >
-        <option value="mod">Moderated Caucus</option>
-        <option value="unmod">Unmoderated Caucus</option>
-        <option value="other">Other</option>
+        {#each Object.entries(MOTION_LABELS) as [value, label]}
+          <option {value} {label} />
+        {/each}
       </select>
     </label>
+    {#if hasField(inputMotion, ["totalTime"])}
     <label class="label">
       <span>Total Time</span>
       <input 
@@ -155,7 +181,8 @@
         required
       >
     </label>
-    {#if inputMotion.kind === "mod"}
+    {/if}
+    {#if hasField(inputMotion, ["speakingTime"])}
     <label class="label">
       <span>Speaking Time</span>
       <input 
@@ -163,12 +190,12 @@
         placeholder="mm:ss" 
         class:input-error={inputError?.id === "speakingTime"}
         bind:value={inputMotion.speakingTime}
-        on:blur={() => timeBlur("speakingTime", "mod")}
+        on:blur={() => timeBlur("speakingTime")}
         required
       >
     </label>
     {/if}
-    {#if inputMotion.kind === "mod" || inputMotion.kind === "other"}
+    {#if hasField(inputMotion, ["topic"])}
       <label class="label">
         <span>Topic</span>
         <input 
@@ -179,7 +206,7 @@
         >
       </label>
     {/if}
-    {#if inputMotion.kind === "mod"}
+    {#if hasField(inputMotion, ["totalTime", "speakingTime"])}
     <div class="text-center">
       <strong>Number of speakers</strong>: {numSpeakersStr(inputMotion.totalTime, inputMotion.speakingTime) ?? '-'}
     </div>
@@ -239,12 +266,12 @@
                   </a>
                 </div>
               </td>
-              <td>{mkToStr(motion.kind)}</td>
+              <td>{MOTION_LABELS[motion.kind] ?? '-'}</td>
               <td>{$delegateAttributes[motion.delegate].name}</td>
-              <td>{motion.kind !== "unmod" ? motion.topic : "-"}</td>
-              <td>{stringifyTime(motion.totalTime)}</td>
-              <td>{motion.kind === "mod" ? stringifyTime(motion.speakingTime) : "-"}</td>
-              <td>{motion.kind === "mod" ? numSpeakersStr(motion.totalTime, motion.speakingTime) ?? '-' : "-"}</td>
+              <td>{apply(motion, ["topic"], m => m.topic, "-")}</td>
+              <td>{apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
+              <td>{apply(motion, ["speakingTime"], m => stringifyTime(m.speakingTime), "-")}</td>
+              <td>{apply(motion, ["totalTime", "speakingTime"], m => numSpeakersStr(m.totalTime, m.speakingTime), "-")}</td>
             </tr>
           {/each}
         </tbody>
