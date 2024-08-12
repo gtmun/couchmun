@@ -4,6 +4,7 @@ import { speakingTimeSchema, timeSchema, topicSchema } from "./form_validation";
 import type { ComponentType, SvelteComponent } from "svelte";
 import ModCaucus from "../motion/ModCaucus.svelte";
 import UnmodCaucus from "../motion/UnmodCaucus.svelte";
+import RoundRobin from "../motion/RoundRobin.svelte";
 
 /**
  * The label/name given to each motion kind.
@@ -11,6 +12,7 @@ import UnmodCaucus from "../motion/UnmodCaucus.svelte";
 export const MOTION_LABELS: Record<MotionKind, string> = {
     mod: "Moderated Caucus",
     unmod: "Unmoderated Caucus",
+    rr: "Round Robin",
     other: "Other"
 };
 /**
@@ -19,6 +21,7 @@ export const MOTION_LABELS: Record<MotionKind, string> = {
 export const MOTION_FIELDS = {
     mod:   ["delegate", "kind", "totalTime", "speakingTime", "topic"],
     unmod: ["delegate", "kind", "totalTime"],
+    rr:    ["delegate", "kind", "speakingTime", "topic"],
     other: ["delegate", "kind", "totalTime", "topic"]
 } as const;
 
@@ -44,6 +47,7 @@ const _assert: Is<TypeFields, ConstFields> = {};
 export const MOTION_COMPONENTS = {
     mod: ModCaucus,
     unmod: UnmodCaucus,
+    rr: RoundRobin,
     other: undefined /* TODO */
 } satisfies Record<MotionKind, ComponentType<SvelteComponent> | undefined>;
 /**
@@ -54,7 +58,7 @@ export const MOTION_COMPONENTS = {
  */
 export const SORT_PRIORITY: SortEntry[] = [
     { kind: "unmod", order: ["totalTime asc"] },
-    { kind: "mod", order: ["totalTime asc", "nSpeakers asc"] }
+    { kind: ["mod", "rr"], order: ["totalTime asc", "nSpeakers asc"] }
 ];
 
 /**
@@ -74,6 +78,11 @@ export function defineFormFields(schema: ObjectSchema<{ [K in keyof Motion]: Mot
     } else if (kind === "unmod") {
         return schema.shape({
             totalTime: timeSchema()
+        })
+    } else if (kind === "rr") {
+        return schema.shape({
+            speakingTime: timeSchema("speaking time"),
+            topic: topicSchema()
         })
     } else if (kind === "other") {
         return schema.shape({

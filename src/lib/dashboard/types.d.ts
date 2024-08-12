@@ -21,6 +21,11 @@ export type Motion = {
     totalTime: number
 } | {
     delegate: string,
+    kind: "rr",
+    speakingTime: number,
+    topic: string
+} | {
+    delegate: string,
     kind: "other",
     totalTime: number,
     topic: string
