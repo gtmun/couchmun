@@ -2,7 +2,7 @@
   import { base } from "$app/paths";
   import { createMotionSchema } from "$lib/dashboard/points-motions/form_validation";
   import { compareMotions } from "$lib/dashboard/points-motions/sort";
-  import { parseTime, stringifyTime } from "$lib/time";
+  import { addColons, parseTime, stringifyTime } from "$lib/time";
   import type { Motion, MotionKind, SessionData } from "$lib/dashboard/types";
   import { getContext, onMount } from "svelte";
 
@@ -14,7 +14,17 @@
 
   const { delegateAttributes, motions, presentDelegates, selectedMotion } = getContext<SessionData>("sessionData");
 
-  let inputMotion: Partial<Motion> = defaultInputMotion();
+  type Stringify<T> = T extends string ? T : string;
+  // acts like Partial<O>, but: 
+  //    extends across unions,
+  //    stringifies any non-string parameters, and
+  //    allows for required values.
+  type Form<O extends {}, Require extends keyof O = never> = O extends {} 
+    ? 
+      {[P in keyof O]?: Stringify<O[P]> } &
+      {[P in Require]:  Stringify<O[P]> }
+    : never;
+  let inputMotion: Form<Motion, "kind"> = defaultInputMotion();
   let inputError: { id: string, msg: string } | undefined = undefined;
 
   let tableBody: HTMLTableSectionElement;
@@ -42,17 +52,13 @@
   }
   function numSpeakersStr(totalTime: number | string | undefined, speakingTime: number | string | undefined): number | string | undefined {
     // Parse arguments as either seconds or time string.
-    if (typeof totalTime === "string") {
-      totalTime = Number.isInteger(+totalTime) ? +totalTime : parseTime(totalTime);
-    }
-    if (typeof speakingTime === "string") {
-      speakingTime = Number.isInteger(+speakingTime) ? +speakingTime : parseTime(speakingTime);
-    }
+    if (typeof totalTime === "string") totalTime = parseTime(totalTime);
+    if (typeof speakingTime === "string") speakingTime = parseTime(speakingTime);
 
     // Handle undefined cases
     if (typeof totalTime === "undefined") return;
     if (typeof speakingTime === "undefined") return;
-
+    
     let nSpeakers = totalTime / speakingTime;
     // Simple validation
     if (!Number.isFinite(nSpeakers)) return;
@@ -63,7 +69,7 @@
 
   // MOTION FORM CHANGES
   const motionSchema = createMotionSchema($delegateAttributes, $presentDelegates);
-  function defaultInputMotion(): Partial<Motion> {
+  function defaultInputMotion(): typeof inputMotion {
     return { kind: "mod" };
   }
   function resetInputErrors() {
@@ -103,6 +109,13 @@
   function sortMotions() {
     $motions = $motions.sort(compareMotions);
   }
+
+  // INPUT BLUR HANDLER
+  function timeBlur<K extends MotionKind>(attr: keyof (typeof inputMotion & { kind: K }), require?: K) {
+    if (typeof require === "undefined" || inputMotion.kind === require) {
+      (inputMotion as any)[attr] = addColons((inputMotion as any)[attr] ?? "");
+    }
+  }
 </script>
 
 <div class="grid gap-5 sm:grid-cols-[1fr_2fr] h-full">
@@ -135,8 +148,10 @@
       <span>Total Time</span>
       <input 
         class="input" 
+        placeholder="mm:ss" 
         class:input-error={inputError?.id === "totalTime"}
-        placeholder="mm:ss" bind:value={inputMotion.totalTime} 
+        bind:value={inputMotion.totalTime}
+        on:blur={() => timeBlur("totalTime")}
         required
       >
     </label>
@@ -148,6 +163,7 @@
         placeholder="mm:ss" 
         class:input-error={inputError?.id === "speakingTime"}
         bind:value={inputMotion.speakingTime}
+        on:blur={() => timeBlur("speakingTime", "mod")}
         required
       >
     </label>

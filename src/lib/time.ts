@@ -1,5 +1,8 @@
 const UNITS = [60, 60, 24, 365, Infinity];
+const PADDING = [2, 2, 2, 3, undefined];
 const MIN_SEGMENTS = 2;
+
+const NUM_REGEX = /^\d+$/;
 
 /**
  * Parses a time string of the format mm:ss (or optionally including days and hours)
@@ -12,8 +15,10 @@ export function parseTime(timeStr: string): number | undefined {
     
     // Handling seconds:
     if (segments.length === 1) {
-        let secs = +segments[0];
-        if (Number.isSafeInteger(secs) && secs > 0) return secs;
+        let [secs] = segments;
+        let colonized = addColons(secs);
+        
+        return colonized.includes(":") ? parseTime(addColons(secs)) : +colonized;
     }
 
     // Handling formats -- mm:ss to yy:dd:hh:mm:ss
@@ -26,7 +31,7 @@ export function parseTime(timeStr: string): number | undefined {
         // ::45, 14:95, 25:61:61
         // Unfortunately, this doesn't handle padding, so these are accepted as well:
         // 0:1, 10:2, 23:59:5
-        const valid = segments.slice(0, -1).every((s, i) => /^\d+$/.test(s) && 0 <= +s && +s < UNITS[i])
+        const valid = segments.slice(0, -1).every((s, i) => NUM_REGEX.test(s) && 0 <= +s && +s < UNITS[i])
             && segments.slice(-1).every(s => /^\d*$/.test(s));
         if (valid) {
             let accum = 1;
@@ -61,10 +66,48 @@ export function stringifyTime(secs: number): string | undefined {
 
     // extend to at least 2 elements:
     if (segments.length < MIN_SEGMENTS) {
-        segments.push(...Array.from({ length: Math.max(0, MIN_SEGMENTS - segments.length) }, () => 0));
+        const length = Math.max(0, MIN_SEGMENTS - segments.length);
+        segments.push(...Array.from({ length }, () => 0));
     }
 
-    return segments.reverse()
-        .map(n => n.toString().padStart(2, "0"))
+    return stringifySegments(segments);
+}
+
+function stringifySegments(segments: number[]): string {
+    return segments
+        .map((n, i) => typeof PADDING[i] === "number" ? n.toString().padStart(PADDING[i], "0") : n.toString())
+        .reverse()
         .join(":");
+}
+
+/**
+ * Adds colons to a numeric string.
+ * @param numStr the numeric string
+ * @returns the numeric string with colons (or the string again if not numeric)
+ */
+export function addColons(numStr: string): string {
+    if (typeof numStr === "undefined") return "";
+    if (!NUM_REGEX.test(numStr)) return numStr;
+
+    // Segment string
+    let time = [];
+    for (let u = 0, s = numStr.length; u < PADDING.length, s > 0; u++) {
+        let length = typeof PADDING[u] === "number" ? Math.min(s, PADDING[u] as number) : s;
+
+        time.push(numStr.slice(s - length, s));
+        s -= length;
+    }
+    
+    // Parse + apply carry
+    time = time.map(s => +s);
+    for (let u = 0; u < UNITS.length - 1 && u < time.length; u++) {
+        let [d, m] = [Math.floor(time[u] / UNITS[u]), time[u] % UNITS[u]];
+        time[u] = m;
+        
+        if (d == 0 && u == time.length - 1) break;
+        time[u + 1] ??= 0;
+        time[u + 1] += d;
+    }
+
+    return stringifySegments(time);
 }
