@@ -50,6 +50,32 @@ export const MOTION_COMPONENTS = {
     rr: RoundRobin,
     other: undefined /* TODO */
 } satisfies Record<MotionKind, ComponentType<SvelteComponent> | undefined>;
+
+// More hacky BS.
+// Asserts that each component defined in MOTION_COMPONENTS (ignoring undefined values):
+// - has a motion field, and
+// - accepts motions of the specified kind.
+// For example, the UnmodCaucus component should accept motions of kind "unmod".
+//
+// If any of the components cannot support their respective motion, the _assertAccepts raises an error
+// (listing the problematic keys).
+// This typically can be fixed by adjusting the type in the component's props.
+type AssertComponentAccepts<K, V> =
+    V extends ComponentType<SvelteComponent<infer P>> ?
+        P extends { motion: infer M } ?
+            Motion & { kind: K } extends M ? true : false
+        : false
+    : true;
+type AssertAllComponentsAccept<O extends {}> = Pick<
+    // Creates a mapping of key => acceptable
+    { [K in keyof O]: AssertComponentAccepts<K, O[K]> },
+    // Gets all keys where this is false. This means when the result is non-empty, there are problematic keys.
+    { [K in keyof O]-?: AssertComponentAccepts<K, O[K]> extends false ? K : never }[keyof O]
+>;
+
+type Z2<O> = O extends [infer R, false] ? R : never;
+const _assertAccepts: AssertAllComponentsAccept<typeof MOTION_COMPONENTS> = {};
+
 /**
  * The established sort order.
  * Values first in the list are prioritized, with the order parameter handling ties.
