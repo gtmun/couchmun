@@ -30,10 +30,10 @@
         };
     }
 
-    export function defaultPlaceholder(presentDelegates: string[]) {
+    export function defaultPlaceholder(noDelegatesPresent: boolean) {
         return {
-            disabled: presentDelegates.length === 0,
-            placeholder: presentDelegates.length !== 0 ? "Select a delegate..." : "No delegates present",
+            disabled: noDelegatesPresent,
+            placeholder: !noDelegatesPresent ? "Select a delegate..." : "No delegates present",
         };
     }
 </script>

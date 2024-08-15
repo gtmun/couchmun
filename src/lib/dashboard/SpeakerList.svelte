@@ -1,7 +1,10 @@
 <script lang="ts">
     import Icon from "@iconify/svelte";
     import { readonly, writable } from "svelte/store";
-    import type { Speaker } from "./types";
+    import type { DelegateAttrs, Speaker } from "./types";
+    import { popup } from "@skeletonlabs/skeleton";
+    import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "./DelPopup.svelte";
+    import { string, ValidationError, type StringSchema } from "yup";
 
     /**
      * The order of speakers for the speaker's list.
@@ -9,11 +12,31 @@
     export let order: Speaker[] = [];
 
     /**
-     * A mapping of key to label (display text).
+     * A mapping of key to their delegate attributes.
      * 
      * If no entry exists for a given key, the speaker's key is displayed.
      */
-    export let labels: Record<string, string> = {};
+    export let delegates: Record<string, DelegateAttrs> = {};
+
+    /**
+     * If defined, this creates control options to allow for adding
+     * and removing speakers from the speakers' list.
+     * 
+     * This doesn't need to be defined if:
+     * 1. Adding delegates isn't required, or
+     * 2. A custom control is implemented instead
+     */
+    export let useDefaultControls: {
+        presentDelegates: string[],
+        validator: StringSchema<string> | ((dels: Record<string, DelegateAttrs>, presentDels: string[]) => StringSchema<string>),
+        popupID?: string
+    } | undefined = undefined;
+    // Properties which are only used with default controls:
+    $: validator = typeof useDefaultControls?.validator === "function" 
+        ? useDefaultControls?.validator(delegates, useDefaultControls.presentDelegates)
+        : useDefaultControls?.validator ?? string().required();
+    let dfltControlsInput: string;
+    let dfltControlsError: string | undefined = undefined;
 
     /**
      * The current speaker.
@@ -24,10 +47,6 @@
     let liElements = new Map<Speaker, HTMLLIElement>();
 
     // Readonly values
-    let _clStore = writable(false);
-    $: $_clStore = order.length === 0;
-    export const cleared = readonly(_clStore);
-
     let _adStore = writable(false);
     $: $_adStore = typeof selectedSpeaker === "undefined" && order.every(({ completed }) => completed);
     export const allDone = readonly(_adStore);
@@ -48,7 +67,7 @@
 
     //
     function getLabel(key: string) {
-        return labels?.[key] ?? key;
+        return delegates?.[key]?.name ?? key;
     }
     function markComplete(speaker: Speaker | undefined) {
         if (typeof speaker !== "undefined") {
@@ -66,11 +85,27 @@
         selectedSpeaker = order.find(({ completed }) => !completed);
     }
 
-    export function addSpeaker(key: string) {
-        if (key) {
-            order.push({ key, completed: false });
-            order = order;
-        }
+    export function addSpeaker(name: string, clearControlInput: boolean = false) {
+        validator.validate(name)
+            .then(key => {
+                // Successful, so add speakers:
+                order.push({ key, completed: false });
+                order = order;
+
+                if (typeof useDefaultControls !== "undefined") {
+                    dfltControlsError = undefined;
+                    // Clear the control input if it exists and it was requested to be cleared.
+                    if (clearControlInput) dfltControlsInput = "";
+                }
+            })
+            .catch(e => {
+                // Unsuccessful, so update input errors:
+                if (e instanceof ValidationError && typeof useDefaultControls !== "undefined") {
+                    dfltControlsError = e.message;
+                } else {
+                    throw e;
+                }
+            })
     }
     function deleteSpeaker(i: number) {
         let [removedSpeaker] = order.splice(i, 1);
@@ -81,7 +116,7 @@
         }
     }
 
-    let bindToMap = <K, V extends HTMLElement>(el: V, [map, key]: [Map<K, V>, K]) => {
+    const bindToMap = <K, V extends HTMLElement>(el: V, [map, key]: [Map<K, V>, K]) => {
         map.set(key, el);
         return { destroy() { map.delete(key); } }
     };
@@ -116,3 +151,56 @@
         {/each}
     </ol>
 </div>
+
+<!-- Default controls, consisting of a delegate input, an add button, and a clear button. -->
+{#if typeof useDefaultControls !== "undefined"}
+    {@const popupID = useDefaultControls.popupID ?? "addDelegatePopup"}
+    {@const error = typeof dfltControlsError !== "undefined"}
+
+    <div class="flex flex-col gap-1">
+        <div class="flex flex-row gap-3">
+            <!-- Add delegate -->
+            <form class="contents" on:submit|preventDefault={() => addSpeaker(dfltControlsInput ?? "", true)} on:input={() => dfltControlsError = undefined}>
+                <input 
+                    class="input" 
+                    class:input-error={error}
+                    bind:value={dfltControlsInput}
+                    use:popup={{ ...defaultPopupSettings(popupID), placement: "left-end" }}
+                    {...defaultPlaceholder(useDefaultControls.presentDelegates.length === 0)}
+                />
+                <button
+                    type="submit"
+                    class="btn variant-filled-primary"
+                    disabled={useDefaultControls.presentDelegates.length === 0}
+                >Add</button>
+            </form>
+            <!-- Clear order -->
+            <button
+                type="submit"
+                class="btn variant-filled-primary"
+                disabled={order.length === 0}
+                on:click={() => order = []}
+            >
+                Clear
+            </button>
+        </div>
+        <!-- Error messages! -->
+        <div class="text-error-500 text-center transition-[height] overflow-hidden {error ? 'h-6' : 'h-0'}">
+            {dfltControlsError ?? "\xA0"}
+        </div>
+    </div>
+
+    <!-- Delegate popup. 
+        Note: this is in the middle of the document, 
+        so it might overlap with another element and cause visual bugs.
+
+        The solution used here is to not put another element over the popup :)
+    -->
+    <DelPopup 
+        {popupID}
+        bind:input={dfltControlsInput}
+        {delegates}
+        presentDelegates={useDefaultControls.presentDelegates}
+        on:selection={e => addSpeaker(e.detail.label, true)}
+    />
+{/if}

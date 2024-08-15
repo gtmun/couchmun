@@ -11,11 +11,15 @@ import { object, string, number } from 'yup';
  * @param presentDelegates the list of present delegates
  * @returns the schema
  */
-function presentDelegateSchema(delegates: Record<string, DelegateAttrs>, presentDelegates: string[]) {
+export function presentDelegateSchema(delegates: Record<string, DelegateAttrs>, presentDelegates: string[]) {
     return string()
         .label("delegate name")
         .trim()
-        .transform(name => Object.keys(delegates).find(k => delegates[k].name === name) ?? null) // convert to del key
+        .transform(name => {
+            if (!name) return undefined;
+            // convert to del key:
+            return Object.keys(delegates).find(k => delegates[k].name === name) ?? null;
+        })
         .required()
         .nonNullable("'${originalValue}' is not a delegate")
         .oneOf(presentDelegates, "'${originalValue}' is not a present delegate");

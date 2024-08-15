@@ -1,20 +1,15 @@
 <script lang="ts">
     import DelLabel from "$lib/dashboard/DelLabel.svelte";
-    import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/dashboard/DelPopup.svelte";
     import SpeakerList from "$lib/dashboard/SpeakerList.svelte";
     import Timer from "$lib/dashboard/Timer.svelte";
     import type { Motion, SessionData, Speaker } from "$lib/dashboard/types";
     import { getContext } from "svelte";
     import type { Readable } from "svelte/store";
-    import { popup } from "@skeletonlabs/skeleton";
+    import { presentDelegateSchema } from "../points-motions/form_validation";
 
     export let motion: Motion & { kind: "mod" };
 
     const { delegateAttributes, presentDelegates } = getContext<SessionData>("sessionData");
-    const labels = Object.fromEntries(Array.from(
-        Object.entries($delegateAttributes), 
-        ([k, attrs]) => [k, attrs.name]
-    ));
 
     // Timer
     let running: boolean = false;
@@ -26,8 +21,6 @@
     // Speakers List
     let speakersList: SpeakerList;
     let order: Speaker[] = [];
-    let delegateInput: string;
-    let cleared: Readable<boolean>;
     let allDone: Readable<boolean>;
     let selectedSpeaker: Readable<string | undefined>;
     $: ($selectedSpeaker, reset());
@@ -50,10 +43,6 @@
     function next() {
         reset();
         speakersList?.next();
-    }
-    function addDelegate(inp?: unknown) {
-        speakersList?.addSpeaker(inp as string ?? delegateInput);
-        delegateInput = "";
     }
 </script>
 
@@ -89,43 +78,14 @@
         <!-- List -->
         <SpeakerList
             bind:order
-            {labels}
+            delegates={$delegateAttributes}
             bind:this={speakersList}
-            bind:cleared
+            useDefaultControls={{
+                presentDelegates: $presentDelegates,
+                validator: presentDelegateSchema
+            }}
             bind:allDone
             bind:selectedSpeaker
         />
-        <!-- Add button -->
-        <div class="flex flex-row gap-3">
-            <form class="contents" on:submit|preventDefault={() => addDelegate()}>
-                <input 
-                    class="input" 
-                    bind:value={delegateInput}
-                    use:popup={{ ...defaultPopupSettings("addDelegatePopup"), placement: "left-end" }}
-                    {...defaultPlaceholder($presentDelegates)}
-                />
-                <button
-                    type="submit"
-                    class="btn variant-filled-primary"
-                    disabled={$presentDelegates.length === 0}
-                >Add</button>
-            </form>
-            <button
-                type="submit"
-                class="btn variant-filled-primary"
-                disabled={$cleared}
-                on:click={() => order = []}
-            >
-                Clear
-            </button>
-        </div>
     </div>
 </div>
-
-<DelPopup 
-    popupID="addDelegatePopup"
-    bind:input={delegateInput}
-    delegates={$delegateAttributes}
-    presentDelegates={$presentDelegates}
-    on:selection={e => addDelegate(e.detail.value)}
-/>

@@ -1,19 +1,14 @@
 <script lang="ts">
     import DelLabel from "$lib/dashboard/DelLabel.svelte";
-    import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/dashboard/DelPopup.svelte";
+    import { presentDelegateSchema } from "$lib/dashboard/points-motions/form_validation";
     import SpeakerList from "$lib/dashboard/SpeakerList.svelte";
     import Timer from "$lib/dashboard/Timer.svelte";
     import type { SessionData } from "$lib/dashboard/types";
     import { parseTime } from "$lib/time";
     import { getContext } from "svelte";
     import type { Readable } from "svelte/store";
-    import { popup } from "@skeletonlabs/skeleton";
 
     const { delegateAttributes, presentDelegates, speakersList: order } = getContext<SessionData>("sessionData");
-    const labels = Object.fromEntries(Array.from(
-        Object.entries($delegateAttributes), 
-        ([k, attrs]) => [k, attrs.name]
-    ));
 
     // Timer
     let running: boolean = false;
@@ -23,9 +18,7 @@
     
     // Speakers List
     let speakersList: SpeakerList;
-    let delegateInput: string;
     let durInput: string;
-    let cleared: Readable<boolean>;
     let allDone: Readable<boolean>;
     let selectedSpeaker: Readable<string | undefined>;
     $: ($selectedSpeaker, reset?.());
@@ -41,10 +34,6 @@
     function next() {
         reset();
         speakersList.next();
-    }
-    function addDelegate(inp?: unknown) {
-        speakersList.addSpeaker(inp as string ?? delegateInput);
-        delegateInput = "";
     }
     function setDuration() {
         let secs = parseTime(durInput);
@@ -78,40 +67,19 @@
         </div>
     </div>
     <!-- Right -->
-    <div class="flex flex-col gap-6 h-full overflow-hidden">
+    <div class="flex flex-col gap-4 h-full overflow-hidden">
         <!-- List -->
         <SpeakerList
             bind:order={$order}
-            {labels}
+            delegates={$delegateAttributes}
             bind:this={speakersList}
-            bind:cleared
+            useDefaultControls={{
+                presentDelegates: $presentDelegates,
+                validator: presentDelegateSchema
+            }}
             bind:allDone
             bind:selectedSpeaker
         />
-        <!-- Add button -->
-        <div class="flex flex-row gap-3">
-            <form class="contents" on:submit|preventDefault={() => addDelegate()}>
-                <input 
-                    class="input" 
-                    bind:value={delegateInput}
-                    use:popup={{ ...defaultPopupSettings("addDelegatePopup"), placement: "left-end" }}
-                    {...defaultPlaceholder($presentDelegates)}
-                />
-                <button
-                    type="submit"
-                    class="btn variant-filled-primary"
-                    disabled={$presentDelegates.length === 0}
-                >Add</button>
-            </form>
-            <button
-                type="submit"
-                class="btn variant-filled-primary"
-                disabled={$cleared}
-                on:click={() => $order = []}
-            >
-                Clear
-            </button>
-        </div>
         <!-- Timer config -->
         <div class="flex flex-row gap-5">
             <form class="contents" on:submit|preventDefault={setDuration}>
@@ -123,11 +91,3 @@
         </div>
     </div>
 </div>
-
-<DelPopup 
-    popupID="addDelegatePopup"
-    bind:input={delegateInput}
-    delegates={$delegateAttributes}
-    presentDelegates={$presentDelegates}
-    on:selection={e => addDelegate(e.detail.value)}
-/>

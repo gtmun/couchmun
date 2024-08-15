@@ -9,10 +9,6 @@
     export let motion: Motion & { kind: "rr" };
 
     const { delegateAttributes, presentDelegates } = getContext<SessionData>("sessionData");
-    const labels = Object.fromEntries(Array.from(
-        Object.entries($delegateAttributes), 
-        ([k, attrs]) => [k, attrs.name]
-    ));
 
     // Timer
     let running: boolean = false;
@@ -22,7 +18,6 @@
     // Speakers List
     let speakersList: SpeakerList;
     let order: Speaker[] = $presentDelegates.map(key => ({ key, completed: false }));
-    let cleared: Readable<boolean>;
     let allDone: Readable<boolean>;
     let selectedSpeaker: Readable<string | undefined>;
     $: ($selectedSpeaker, reset?.());
@@ -66,9 +61,8 @@
         <!-- List -->
         <SpeakerList
             bind:order
-            {labels}
+            delegates={$delegateAttributes}
             bind:this={speakersList}
-            bind:cleared
             bind:allDone
             bind:selectedSpeaker
         />

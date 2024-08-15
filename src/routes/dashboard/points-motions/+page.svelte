@@ -154,7 +154,7 @@
         bind:value={inputMotion.delegate}
         required
         use:popup={defaultPopupSettings("delegateInputPopup")}
-        {...defaultPlaceholder($presentDelegates)}
+        {...defaultPlaceholder($presentDelegates.length === 0)}
       >
     </label>
     <label class="label">
