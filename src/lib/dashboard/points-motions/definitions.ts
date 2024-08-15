@@ -112,7 +112,7 @@ export function defineFormFields(schema: ObjectSchema<{ [K in keyof Motion]: Mot
         })
     } else if (kind === "other") {
         return schema.shape({
-            totalTime: speakingTimeSchema(),
+            totalTime: timeSchema(),
             topic: topicSchema()
         })
     } else {

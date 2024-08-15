@@ -8,7 +8,7 @@
     export let height: string = "h-[25dvh]";
 
     function getSpeakerName(key: string | undefined) {
-        if (typeof key === "undefined") return "-";
+        if (typeof key === "undefined") return "";
         return $delegateAttributes[key]?.name ?? key;
     }
 
