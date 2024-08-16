@@ -8,7 +8,7 @@
     import { getContext } from "svelte";
     import type { Readable } from "svelte/store";
 
-    const { delegateAttributes, presentDelegates, speakersList: order } = getContext<SessionData>("sessionData");
+    const { settings: { delegateAttributes }, presentDelegates, speakersList: order } = getContext<SessionData>("sessionData");
 
     // Timer
     let running: boolean = false;

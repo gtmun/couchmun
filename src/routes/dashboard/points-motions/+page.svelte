@@ -1,6 +1,6 @@
 <script lang="ts">
   import { base } from "$app/paths";
-  import { MOTION_FIELDS, MOTION_LABELS, SORT_PRIORITY } from "$lib/dashboard/points-motions/definitions";
+  import { MOTION_FIELDS, MOTION_LABELS } from "$lib/dashboard/points-motions/definitions";
   import { createMotionSchema } from "$lib/dashboard/points-motions/form_validation";
   import { compareMotions as motionComparator } from "$lib/dashboard/points-motions/sort";
   import { addColons, parseTime, stringifyTime } from "$lib/time";
@@ -13,7 +13,7 @@
   import { popup } from "@skeletonlabs/skeleton";
   import Sortable from "sortablejs";
 
-  const { delegateAttributes, motions, presentDelegates, selectedMotion } = getContext<SessionData>("sessionData");
+  const { settings: { delegateAttributes, sortOrder }, motions, presentDelegates, selectedMotion } = getContext<SessionData>("sessionData");
 
   type Stringify<T> = T extends string ? T : string;
   // acts like Partial<O>, but: 
@@ -132,7 +132,7 @@
     $motions = [];
   }
   function sortMotions() {
-    $motions = $motions.sort(motionComparator(SORT_PRIORITY));
+    $motions = $motions.sort(motionComparator($sortOrder));
   }
 
   // INPUT BLUR HANDLER

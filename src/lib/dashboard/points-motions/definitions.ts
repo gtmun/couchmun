@@ -43,7 +43,7 @@ const _assert: Is<TypeFields, ConstFields> = {};
  * 
  * Any kinds not specified in this list are thrown at the end.
  */
-export const SORT_PRIORITY: SortEntry[] = [
+export const DEFAULT_SORT_PRIORITY: SortEntry[] = [
     { kind: "unmod", order: ["totalTime asc"] },
     { kind: ["mod", "rr"], order: ["totalTime asc", "nSpeakers asc"] }
 ];

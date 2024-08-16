@@ -8,7 +8,7 @@
 
     export let motion: Motion & { kind: "rr" };
 
-    const { delegateAttributes, presentDelegates } = getContext<SessionData>("sessionData");
+    const { settings: { delegateAttributes }, presentDelegates } = getContext<SessionData>("sessionData");
 
     // Timer
     let running: boolean = false;

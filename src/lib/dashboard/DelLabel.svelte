@@ -2,7 +2,7 @@
     import type { SessionData } from "./types";
     import { getContext } from "svelte";
 
-    const { delegateAttributes } = getContext<SessionData>("sessionData");
+    const { settings: { delegateAttributes } } = getContext<SessionData>("sessionData");
 
     export let speaker: string | undefined = undefined;
     export let height: string = "h-[25dvh]";

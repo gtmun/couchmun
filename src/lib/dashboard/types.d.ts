@@ -5,6 +5,40 @@ export type DelegateAttrs = {
     aliases: string[]
 }
 
+// Used to define sort entry:
+export type AllKeys<T> = T extends {} ? keyof T : never;
+export type SortKind = MotionKind;
+export type SKeyUnit = AllKeys<Motion> | "nSpeakers";
+export type SortOrderKey = SKeyUnit | `${SKeyUnit} asc`;
+export type SortEntry = {
+    kind: SortKind | SortKind[],
+    order: SortOrderKey | SortOrderKey[]
+};
+
+export type Settings = {
+    /**
+     * Delegate keys to characteristic data about the delegate (e.g., name and aliases)
+     */
+    delegateAttributes: Writable<Record<string, DelegateAttrs>>,
+
+    /**
+     * The established sort order.
+     * Values first in the list are prioritized, with the order parameter handling ties.
+     * 
+     * Any kinds not specified in this list are thrown at the end.
+     */
+    sortOrder: Writable<SortEntry[]>,
+    
+    /**
+     * Keys of delegates enabled for this assembly.
+     */
+    delegatesEnabled: Writable<Record<string, boolean>>
+};
+export type AccessibleSettings = {
+    delegateAttributes: Readable<Record<string, DelegateAttrs>>,
+    sortOrder: Readable<SortEntry[]>
+}
+
 // Attendance
 export type DelegatePresence = "NP" | "P" | "PV";
 
@@ -37,21 +71,9 @@ export type Speaker = {
     completed: boolean
 };
 
-// Define SortEntry:
-export type AllKeys<T> = T extends {} ? keyof T : never;
-export type SKeyUnit = AllKeys<Motion> | "nSpeakers";
-export type SortOrderKey = SKeyUnit | `${SKeyUnit} asc`;
-export type SortEntry = {
-    kind: MotionKind | MotionKind[],
-    order: SortOrderKey | SortOrderKey[]
-};
-
 // Session Data
 export type SessionData = {
-    /**
-     * Delegate keys to characteristic data about the delegate (e.g., name and aliases)
-     */
-    delegateAttributes: Readable<Record<string, DelegateAttrs>>,
+    settings: AccessibleSettings,
     /**
      * Attendance status of each delegate in the current session.
      */

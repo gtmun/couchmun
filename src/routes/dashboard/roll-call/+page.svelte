@@ -2,7 +2,7 @@
   import type { DelegatePresence, SessionData } from "$lib/dashboard/types";
   import { getContext } from "svelte";
 
-  const { delegateAttributes, delegateAttendance } = getContext<SessionData>("sessionData");
+  const { settings: { delegateAttributes }, delegateAttendance } = getContext<SessionData>("sessionData");
   delegateAttendance.update(att => {
     return Object.assign(Object.fromEntries<DelegatePresence>(
       Object.keys($delegateAttributes).map(p => [p, "NP"])
