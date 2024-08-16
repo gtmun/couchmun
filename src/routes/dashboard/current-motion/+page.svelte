@@ -1,15 +1,29 @@
 <script lang="ts">
     import { base } from "$app/paths";
-    import { MOTION_COMPONENTS } from "$lib/dashboard/points-motions/definitions";
+    import ModCaucus from "$lib/dashboard/motion/ModCaucus.svelte";
+    import RoundRobin from "$lib/dashboard/motion/RoundRobin.svelte";
+    import UnmodCaucus from "$lib/dashboard/motion/UnmodCaucus.svelte";
     import type { SessionData } from "$lib/dashboard/types";
     import { getContext } from "svelte";
 
     const { selectedMotion } = getContext<SessionData>("sessionData");
+
+    const isExhaustive = (s: never) => s;
 </script>
 
 <div class="h-full w-full flex flex-col items-stretch justify-center">
     {#if typeof $selectedMotion !== "undefined"}
-        <svelte:component this={MOTION_COMPONENTS[$selectedMotion.kind]} motion={$selectedMotion} />
+        {#if $selectedMotion.kind === "mod"}
+            <ModCaucus motion={$selectedMotion} />
+        {:else if $selectedMotion.kind === "unmod"}
+            <UnmodCaucus motion={$selectedMotion} />
+        {:else if $selectedMotion.kind === "rr"}
+            <RoundRobin motion={$selectedMotion} />
+        {:else if $selectedMotion.kind === "other"}
+            <!-- TODO -->
+        {:else if isExhaustive($selectedMotion)}
+            <!-- unreachable -->
+        {/if}
     {:else}
         <div class="text-center">
             <h3 class="h3">No motion set.</h3>

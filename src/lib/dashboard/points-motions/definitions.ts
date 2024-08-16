@@ -1,10 +1,6 @@
 import type { ObjectSchema } from "yup";
 import type { Motion, MotionKind, SortEntry } from "../types";
 import { speakingTimeSchema, timeSchema, topicSchema } from "./form_validation";
-import type { ComponentType, SvelteComponent } from "svelte";
-import ModCaucus from "../motion/ModCaucus.svelte";
-import UnmodCaucus from "../motion/UnmodCaucus.svelte";
-import RoundRobin from "../motion/RoundRobin.svelte";
 
 /**
  * The label/name given to each motion kind.
@@ -40,41 +36,6 @@ type Is<A, B, True = unknown, False = never> = NoInfer<A> extends B ? NoInfer<B>
 type TypeFields = { readonly [K in MotionKind]: keyof (Motion & { kind: K }) };
 type ConstFields = { [K in keyof typeof MOTION_FIELDS]: (typeof MOTION_FIELDS)[K][number] };
 const _assert: Is<TypeFields, ConstFields> = {};
-
-/**
- * The component type to use for /dashboard/current_motions.
- */
-export const MOTION_COMPONENTS = {
-    mod: ModCaucus,
-    unmod: UnmodCaucus,
-    rr: RoundRobin,
-    other: undefined /* TODO */
-} satisfies Record<MotionKind, ComponentType<SvelteComponent> | undefined>;
-
-// More hacky BS.
-// Asserts that each component defined in MOTION_COMPONENTS (ignoring undefined values):
-// - has a motion field, and
-// - accepts motions of the specified kind.
-// For example, the UnmodCaucus component should accept motions of kind "unmod".
-//
-// If any of the components cannot support their respective motion, the _assertAccepts raises an error
-// (listing the problematic keys).
-// This typically can be fixed by adjusting the type in the component's props.
-type AssertComponentAccepts<K, V> =
-    V extends ComponentType<SvelteComponent<infer P>> ?
-        P extends { motion: infer M } ?
-            Motion & { kind: K } extends M ? true : false
-        : false
-    : true;
-type AssertAllComponentsAccept<O extends {}> = Pick<
-    // Creates a mapping of key => acceptable
-    { [K in keyof O]: AssertComponentAccepts<K, O[K]> },
-    // Gets all keys where this is false. This means when the result is non-empty, there are problematic keys.
-    { [K in keyof O]-?: AssertComponentAccepts<K, O[K]> extends false ? K : never }[keyof O]
->;
-
-type Z2<O> = O extends [infer R, false] ? R : never;
-const _assertAccepts: AssertAllComponentsAccept<typeof MOTION_COMPONENTS> = {};
 
 /**
  * The established sort order.

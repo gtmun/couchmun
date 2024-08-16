@@ -6,7 +6,7 @@
 
     const links = [
         { label: "Roll Call", href: `${base}/dashboard/roll-call` },
-        { label: "Current Motion", href: `${base}/dashboard/motion` },
+        { label: "Current Motion", href: `${base}/dashboard/current-motion` },
         { label: "Speakers List", href: `${base}/dashboard/speaker-list` },
         { label: "Points and Motions", href: `${base}/dashboard/points-motions` },
     ]
