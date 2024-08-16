@@ -78,18 +78,31 @@
             return $enables;
         })
     }
-    function editDelegate(key: string) {
+    function clearDelegates() {
+        delegateAttributes.set({});
+        delegatesEnabled.set({});
+        currentPreset = "custom";
+    }
+
+    /**
+     * Opens the delegate editing modal. This can also be used to add a new delegate.
+     * @param key Key of delegate to edit (or undefined if adding a new delegate)
+     */
+    function editDelegate(key: string | undefined) {
         const compare = (a: any, b: any) => a < b ? -1 : a > b ? 1 : 0;
         modalStore.trigger({
             type: "component",
             component: {
                 ref: EditForm,
-                props: { key, attrs: structuredClone($delegateAttributes[key]) }
+                props: key ? { key, attrs: structuredClone($delegateAttributes[key]) } : {}
             },
             response({ key: newKey, attrs: newAttrs }: { key: string, attrs: DelegateAttrs }) {
                 delegateAttributes.update($attrs => {
                     let update = false;
-                    if (key !== newKey) {
+
+                    if (typeof key === "undefined") {
+                        update = true;
+                    } else if (key !== newKey) {
                         if (!(newKey in $attrs)) {
                             // If key changed to a different key (which doesn't already exist),
                             // delete the old key
@@ -108,6 +121,7 @@
                     if (update) {
                         currentPreset = "custom";
                         $attrs[newKey] = newAttrs;
+                        $delegatesEnabled[newKey] ??= true;
                         $attrs = Object.fromEntries(
                             Object.entries($attrs)
                                 .sort(([_k1, a1], [_k2, a2]) => compare(a1.name, a2.name))
@@ -160,15 +174,23 @@
     </div>
     <hr />
     <div class="flex flex-col p-4 gap-3">
-        <h3 class="h3 text-center">Delegates</h3>
-        <div class="grid grid-cols-[1fr_2fr] items-center">
-            <span>Apply Preset</span>
-            <select class="select" bind:value={currentPreset} on:change={setPreset}>
-                {#each Object.entries(presets) as [value, preset]}
-                <option {value} label={preset.label} />
-                {/each}
-            </select>
+        <!-- Delegate Main Settings -->
+        <div class="card p-4 flex flex-col gap-3">
+            <h3 class="h3 text-center">Delegates</h3>
+            <label class="flex gap-3 justify-center items-center">
+                <span>Apply Preset</span>
+                <select class="select w-1/2" bind:value={currentPreset} on:change={setPreset}>
+                    {#each Object.entries(presets) as [value, preset]}
+                    <option {value} label={preset.label} />
+                    {/each}
+                </select>
+            </label>
+            <div class="flex gap-3 justify-center">
+                <button class="btn variant-filled-error" on:click={clearDelegates}>Clear Delegates</button>
+                <button class="btn variant-filled-primary" on:click={() => editDelegate(undefined)}>Add Delegate</button>
+            </div>
         </div>
+        <!-- Delegate Table -->
         <div class="table-container">
             <table class="table table-compact del-table">
                 <thead>

@@ -2,8 +2,11 @@
     import type { DelegateAttrs } from "$lib/dashboard/types";
     import { getModalStore } from "@skeletonlabs/skeleton";
 
-    export let key: string;
-    export let attrs: DelegateAttrs;
+    export let key: string | undefined = undefined;
+    export let attrs: DelegateAttrs = {
+        name: "",
+        aliases: []
+    };
 
     let aliasesInput = attrs.aliases.join(", ");
     const modalStore = getModalStore();
