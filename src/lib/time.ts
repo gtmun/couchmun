@@ -4,6 +4,9 @@ const MIN_SEGMENTS = 2;
 
 const NUM_REGEX = /^\d+$/;
 
+function _safeInteger(n: number): number | undefined {
+    if (Number.isSafeInteger(n) && n >= 0) return n;
+}
 /**
  * Parses a time string of the format mm:ss (or optionally including days and hours)
  * into the number of seconds.
@@ -18,7 +21,7 @@ export function parseTime(timeStr: string): number | undefined {
         let [secs] = segments;
         let colonized = addColons(secs);
         
-        return colonized.includes(":") ? parseTime(addColons(secs)) : +colonized;
+        return colonized.includes(":") ? parseTime(addColons(secs)) : _safeInteger(+colonized);
     }
 
     // Handling formats -- mm:ss to yy:dd:hh:mm:ss
@@ -41,7 +44,7 @@ export function parseTime(timeStr: string): number | undefined {
                 accum *= UNITS[i];
             }
 
-            if (Number.isSafeInteger(secs)) return secs;
+            return _safeInteger(secs);
         }
     }
 }
