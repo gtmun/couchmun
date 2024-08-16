@@ -48,11 +48,13 @@ export type Motion = {
     kind: "mod", 
     totalTime: number,
     speakingTime: number,
-    topic: string
+    topic: string,
+    isExtension: boolean
 } | {
     delegate: string,
     kind: "unmod",
-    totalTime: number
+    totalTime: number,
+    isExtension: boolean
 } | {
     delegate: string,
     kind: "rr",

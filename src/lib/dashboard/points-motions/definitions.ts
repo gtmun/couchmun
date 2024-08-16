@@ -15,8 +15,8 @@ export const MOTION_LABELS: Record<MotionKind, string> = {
  * The fields that are defined on this motion kind's form.
  */
 export const MOTION_FIELDS = {
-    mod:   ["delegate", "kind", "totalTime", "speakingTime", "topic"],
-    unmod: ["delegate", "kind", "totalTime"],
+    mod:   ["delegate", "kind", "totalTime", "speakingTime", "topic", "isExtension"],
+    unmod: ["delegate", "kind", "totalTime", "isExtension"],
     rr:    ["delegate", "kind", "speakingTime", "topic"],
     other: ["delegate", "kind", "totalTime", "topic"]
 } as const;
@@ -62,10 +62,12 @@ export function createMotionSchema(delegates: Record<string, DelegateAttrs>, pre
         base("mod").extend({
             totalTime: timeSchema("total time"),
             speakingTime: timeSchema("speaking time"),
-            topic: topicSchema()
+            topic: topicSchema(),
+            isExtension: z.boolean().default(false)
         }).refine(...refineSpeakingTime()),
         base("unmod").extend({
-            totalTime: timeSchema("total time")
+            totalTime: timeSchema("total time"),
+            isExtension: z.boolean().default(false)
         }),
         base("rr").extend({
             speakingTime: timeSchema("speaking time"),

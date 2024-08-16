@@ -9,21 +9,21 @@
   import { getContext, onMount } from "svelte";
 
   import Icon from "@iconify/svelte";
-  import { popup } from "@skeletonlabs/skeleton";
+  import { popup, SlideToggle } from "@skeletonlabs/skeleton";
   import Sortable from "sortablejs";
   import type { z } from "zod";
 
   const { settings: { delegateAttributes, sortOrder }, motions, presentDelegates, selectedMotion } = getContext<SessionData>("sessionData");
 
-  type Stringify<T> = T extends string ? T : string;
+  type Formify<T> = T extends number ? `${T}` : T;
   // acts like Partial<O>, but: 
   //    extends across unions,
   //    stringifies any non-string parameters, and
   //    allows for required values.
   type Form<O extends {}, Require extends keyof O = never> = O extends {} 
     ? 
-      {[P in keyof O]?: Stringify<O[P]> } &
-      {[P in Require]:  Stringify<O[P]> }
+      {[P in keyof O]?: Formify<O[P]> } &
+      {[P in Require]:  Formify<O[P]> }
     : never;
   let inputMotion: Form<Motion, "kind"> = defaultInputMotion();
   let inputError: z.ZodIssue | undefined = undefined;
@@ -115,6 +115,28 @@
     }
   }
 
+  function motionName(m: Motion) {
+    const kindLabel = MOTION_LABELS[m.kind] ?? "-";
+    const extension = "isExtension" in m && m.isExtension;
+    
+    return kindLabel + (extension ? ' (Extension)': '');
+  }
+
+  // Extension handling.
+  // All of this kinda sucks.
+  function isExtending(m: typeof inputMotion) {
+    return "isExtension" in m && m.isExtension && m.kind === $selectedMotion?.kind;
+  }
+  function trySet(m: typeof inputMotion, field: string, value: (mapper: any) => any = t => t) {
+    if (typeof $selectedMotion !== "undefined" && $selectedMotion.kind === m.kind && field in $selectedMotion) {
+      (m as any)[field] = value(($selectedMotion as any)[field]);
+    }
+  }
+  // If extension, disable "topic" and "speakingTime":
+  $: if ((inputMotion as any).isExtension && typeof $selectedMotion !== "undefined") {
+    trySet(inputMotion, "topic");
+    trySet(inputMotion, "speakingTime", t => stringifyTime(t));
+  }
   // MOTION BUTTONS
   function removeMotion(i: number) {
     motions.update($m => {
@@ -158,6 +180,7 @@
         class="select" 
         class:input-error={inputError?.path.includes("kind")}
         bind:value={inputMotion.kind}
+        on:change={() => inputMotion = { kind: inputMotion.kind }}
       >
         {#each Object.entries(MOTION_LABELS) as [value, label]}
           <option {value} {label} />
@@ -186,7 +209,7 @@
         class:input-error={inputError?.path.includes("speakingTime")}
         bind:value={inputMotion.speakingTime}
         on:blur={() => timeBlur("speakingTime")}
-        required
+        disabled={isExtending(inputMotion)}
       >
     </label>
     {/if}
@@ -197,8 +220,19 @@
           class="input" 
           class:input-error={inputError?.path.includes("topic")}
           bind:value={inputMotion.topic}
-          required
+          disabled={isExtending(inputMotion)}
         >
+      </label>
+    {/if}
+    {#if hasField(inputMotion, ["isExtension"]) && $selectedMotion?.kind === inputMotion.kind}
+      <!-- svelte-ignore a11y-label-has-associated-control : SlideToggle is a control -->
+      <label class="label">
+        <span>Extend previous motion?</span>
+        <SlideToggle 
+          name="extension-toggle"
+          active="bg-primary-500"
+          bind:checked={inputMotion.isExtension}
+        />
       </label>
     {/if}
     {#if hasField(inputMotion, ["totalTime", "speakingTime"])}
@@ -261,7 +295,7 @@
                   </a>
                 </div>
               </td>
-              <td>{MOTION_LABELS[motion.kind] ?? '-'}</td>
+              <td>{motionName(motion)}</td>
               <td>{$delegateAttributes[motion.delegate].name}</td>
               <td>{apply(motion, ["topic"], m => m.topic, "-")}</td>
               <td>{apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
@@ -279,6 +313,7 @@
   .motion-form label {
     display: flex;
     align-items: center;
+    justify-content: space-between;
   }
   .motion-form label :first-child {
     width: 33.3%;
