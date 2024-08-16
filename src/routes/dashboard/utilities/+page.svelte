@@ -1,0 +1,126 @@
+<script lang="ts">
+    import DelAutocomplete from "$lib/dashboard/DelAutocomplete.svelte";
+    import DelLabel from "$lib/dashboard/DelLabel.svelte";
+    import Timer from "$lib/dashboard/Timer.svelte";
+    import type { SessionData } from "$lib/dashboard/types";
+    import { parseTime } from "$lib/time";
+    import Icon from "@iconify/svelte";
+    import { popup, SlideToggle, type PopupSettings } from "@skeletonlabs/skeleton";
+    import { getContext } from "svelte";
+    import type { Readable } from "svelte/store";
+
+    const { settings: { delegateAttributes }, presentDelegates } = getContext<SessionData>("sessionData");
+
+    // Timer
+    let timerEnabled: boolean = true;
+    let durInput: string;
+    
+    let duration: number = 60;
+    let running: boolean = false;
+    let reset: () => void;
+    let canReset: Readable<boolean>;
+    
+    // Label
+    let labelType: "delegate" | "title" | "none" = "title";
+    let labelText: string = "";
+
+    function getKey(label: string) {
+        return Object.keys($delegateAttributes).find(k => $delegateAttributes[k].name === label) ?? label;
+    }
+    // Configuration
+    const CONFIGURE_MODAL_SETTINGS: PopupSettings = {
+        event: "click",
+        target: "configure",
+        closeQuery: ''
+    }
+    function setDuration() {
+        let secs = parseTime(durInput);
+        if (typeof secs !== "undefined") {
+            duration = secs;
+            reset();
+        }
+        durInput = "";
+    }
+</script>
+
+<div class="flex flex-col h-full items-stretch">
+    <button class="btn-icon variant-filled-surface self-end" use:popup={CONFIGURE_MODAL_SETTINGS}>
+        <Icon icon="mdi:wrench" width="24" height="24" />
+    </button>
+    <div class="flex flex-col flex-grow gap-5 justify-center">
+        {#if labelType === "delegate"}
+            <DelLabel speaker={getKey(labelText)} />
+        {:else if labelType === "title"}
+            <h2 class="h2 text-center">{labelText}</h2>
+        {/if}
+
+    
+        {#if timerEnabled}
+            <Timer
+                {duration}
+                bind:running
+                bind:canReset
+                bind:reset
+            />
+    
+            <div class="flex flex-row gap-3 justify-center">
+                <button class="btn variant-filled-primary" on:click={() => running = !running}>
+                    {!running ? 'Start' : 'Pause'}
+                </button>
+                <button class="btn variant-filled-primary" disabled={!$canReset} on:click={reset}>Reset</button>
+            </div>
+        {/if}
+    </div>
+</div>
+
+<div data-popup="configure">
+    <div class="card p-4">
+        <div class="flex flex-col gap-4 overflow-hidden">
+            <!-- Timer config -->
+            <!-- svelte-ignore a11y-label-has-associated-control : SlideToggle is a control -->
+            <label class="flex flex-grow items-center justify-between gap-3">
+                <span><strong>Timer</strong></span>
+                <SlideToggle name="enable-timer" active="bg-primary-500" bind:checked={timerEnabled} />
+            </label>
+            {#if timerEnabled}
+                <div class="flex flex-row gap-5">
+                    <form class="contents" on:submit|preventDefault={setDuration}>
+                        <label class="flex flex-grow items-center justify-between gap-3">
+                            <span>Time</span>
+                            <input class="input" bind:value={durInput} placeholder="mm:ss" />
+                        </label>
+                    </form>
+                </div>
+            {/if}
+            <hr />
+            <!-- Label config -->
+            <form class="contents">
+                <label class="flex flex-grow items-center justify-between gap-3">
+                    <span><strong>Label</strong></span>
+                    <select class="select" bind:value={labelType}>
+                        <option value="delegate" label="Delegate" />
+                        <option value="title" label="Title" />
+                        <option value="none" label="None" />
+                    </select>
+                </label>
+                {#if labelType !== "none"}
+                    <label class="flex flex-grow items-center justify-between gap-3">
+                        <span>Text</span>
+                        <input class="input" bind:value={labelText} />
+                    </label>
+                    {#if labelType === "delegate"}
+                        <div class="card bg-surface-200-700-token">
+                            <DelAutocomplete
+                                bind:input={labelText}
+                                delegates={$delegateAttributes}
+                                presentDelegates={$presentDelegates}
+                                maxHeight="max-h-36"
+                                on:selection={e => labelText = e.detail.label}
+                            />
+                        </div>
+                    {/if}
+                {/if}
+            </form>
+        </div>
+    </div>
+</div>

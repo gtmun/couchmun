@@ -1,16 +1,13 @@
 <script lang="ts">
-    import { Autocomplete, type AutocompleteOption, type PopupSettings } from "@skeletonlabs/skeleton";
+    import { type PopupSettings } from "@skeletonlabs/skeleton";
     import type { DelegateAttrs } from "./types";
+    import DelAutocomplete from "./DelAutocomplete.svelte";
 
     export let popupID: string;
     export let input: string | undefined;
     export let delegates: Record<string, DelegateAttrs>;
     export let presentDelegates: string[];
     export let maxHeight = "max-h-96";
-
-    $: options = Array.from(Object.entries(delegates), ([k, data]): AutocompleteOption<string> => ({
-        value: k, label: data.name, keywords: data.aliases.join(",")
-    }));
 </script>
 <script lang="ts" context="module">
     export function defaultPopupSettings(target: string): PopupSettings {
@@ -39,11 +36,11 @@
 </script>
 
 <div class="card overflow-hidden p-2" data-popup={popupID} tabindex="-1">
-    <Autocomplete
-      class="overflow-y-auto {maxHeight}"
-      bind:input
-      {options}
-      allowlist={presentDelegates}
-      on:selection
+    <DelAutocomplete
+        bind:input
+        {delegates}
+        {presentDelegates}
+        {maxHeight}
+        on:selection
     />
 </div>

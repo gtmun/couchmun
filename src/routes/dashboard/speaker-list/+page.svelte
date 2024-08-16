@@ -12,7 +12,7 @@
 
     // Timer
     let running: boolean = false;
-    let duration: number = 10;
+    let duration: number = 60;
     let reset: () => void;
     let canReset: Readable<boolean>;
     
