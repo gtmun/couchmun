@@ -1,7 +1,25 @@
-import type { DelegateAttrs, MotionKind } from "$lib/dashboard/types";
-import { defineFormFields, MOTION_LABELS } from "$lib/dashboard/points-motions/definitions";
+import type { DelegateAttrs } from "$lib/dashboard/types";
 import { parseTime } from "$lib/time";
-import { object, string, number } from 'yup';
+import { z } from "zod";
+
+export function nonEmptyString(...params: Parameters<typeof z.string>) {
+    return z.string(...params)
+        .trim()
+        .min(1, params[0]?.required_error);
+}
+export function formatValidationError(error: z.ZodError) {
+    let [issue] = error.issues;
+    // If union error, find the non-union related error and return it.
+    //
+    // Note, this should be refactored once this issue resolves:
+    // https://github.com/colinhacks/zod/issues/3407
+    if (issue.code === "invalid_union") {
+        [issue] = issue.unionErrors.map(e => e.issues)
+            .find(issues => !issues.some(i => i.code === "invalid_literal")) ?? [];
+    }
+
+    return issue;
+}
 
 /**
  * Creates a schema that requires the input is the name of a present delegate.
@@ -12,57 +30,55 @@ import { object, string, number } from 'yup';
  * @returns the schema
  */
 export function presentDelegateSchema(delegates: Record<string, DelegateAttrs>, presentDelegates: string[]) {
-    return string()
-        .label("delegate name")
-        .trim()
-        .transform(name => {
-            if (!name) return undefined;
-            // convert to del key:
-            return Object.keys(delegates).find(k => delegates[k].name === name) ?? null;
-        })
-        .required()
-        .nonNullable("'${originalValue}' is not a delegate")
-        .oneOf(presentDelegates, "'${originalValue}' is not a present delegate");
-}
+    return nonEmptyString({ description: "delegate name", required_error: "delegate name is a required field" })
+        .transform((name, ctx) => {
+            const key = Object.keys(delegates).find(k => delegates[k].name === name);
+            if (!key) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: `${name} is not a delegate`
+                })
 
-function kindSchema() {
-    return string()
-        .label("motion kind")
-        .trim()
-        .required()
-        .oneOf(Object.keys(MOTION_LABELS) as MotionKind[]);
-}
+                return z.NEVER;
+            } else if (!presentDelegates.includes(key)) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: `${name} is not a present delegate`
+                })
 
-export function timeSchema(label: string = "total time") {
-    return number()
-        .label(label)
-        .integer()
-        .positive()
-        .transform((val, origVal, ctx) => parseTime(origVal) ?? null)
-        .required()
-        .nonNullable("${path} is not a valid time string (mm:ss)");
-}
-export function speakingTimeSchema(totalTimeAttr = "totalTime") {
-    return timeSchema("speaking time")
-        .test(
-            "total-time-divisible-by-speaking-time",
-            "Total time cannot be evenly divided among speakers",
-            (speakingTime, ctx) => {
-                let totalTime: number = ctx.parent[totalTimeAttr];
-                return totalTime % speakingTime == 0;
+                return z.NEVER;
+            } else {
+                return key;
             }
-        )
+        })
+}
+
+export function timeSchema(label: string) {
+    return nonEmptyString({ description: label })
+        .transform((inp, ctx) => {
+            const time = parseTime(inp);
+            if (typeof time === "number") {
+                return time;
+            } else {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: `${label} is not a valid time string (mm:ss)`
+                })
+
+                return z.NEVER;
+            }
+        });
+}
+export function refineSpeakingTime(totalTimeAttr = "totalTime", speakingTimeAttr = "speakingTime") {
+    return [(o: any) => {
+        let totalTime: number = o[totalTimeAttr];
+        let speakingTime: number = o[speakingTimeAttr];
+        return totalTime % speakingTime == 0;
+    }, {
+        message: "total time cannot be evenly divided among speakers",
+        path: [speakingTimeAttr]
+    } satisfies z.CustomErrorParams] as const;
 }
 export function topicSchema() {
-    return string()
-        .label("topic")
-        .trim()
-        .required();
-}
-
-export function createMotionSchema(delegates: Record<string, DelegateAttrs>, presentDelegates: string[]) {
-    return object({
-        delegate: presentDelegateSchema(delegates, presentDelegates),
-        kind: kindSchema(),
-    }).when(([{ kind }], schema) => defineFormFields(schema, kind));
+    return nonEmptyString({ description: "topic", required_error: "topic is a required field" });
 }

@@ -1,6 +1,6 @@
-import type { ObjectSchema } from "yup";
-import type { Motion, MotionKind, SortEntry } from "../types";
-import { speakingTimeSchema, timeSchema, topicSchema } from "./form_validation";
+import type { DelegateAttrs, Motion, MotionKind, SortEntry } from "../types";
+import { presentDelegateSchema, refineSpeakingTime, timeSchema, topicSchema } from "./form_validation";
+import { z } from "zod";
 
 /**
  * The label/name given to each motion kind.
@@ -51,33 +51,29 @@ export const DEFAULT_SORT_PRIORITY: SortEntry[] = [
 /**
  * Schema verification for a given form.
  * This takes the form inputs and verifies & creates the motion object associated with the form.
- * 
- * This is used by the createObjectSchema function of the form_validation.ts file, and should not
- * be used explicitly.
  */
-export function defineFormFields(schema: ObjectSchema<{ [K in keyof Motion]: Motion[K] }>, kind: MotionKind) {
-    if (kind === "mod") {
-        return schema.shape({
-            totalTime: timeSchema(),
-            speakingTime: speakingTimeSchema(),
-            topic: topicSchema()
-        });
-    } else if (kind === "unmod") {
-        return schema.shape({
-            totalTime: timeSchema()
-        })
-    } else if (kind === "rr") {
-        return schema.shape({
+export function createMotionSchema(delegates: Record<string, DelegateAttrs>, presentDelegates: string[]) {
+    const base = <K extends MotionKind>(k: K) => z.object({
+        delegate: presentDelegateSchema(delegates, presentDelegates),
+        kind: z.literal(k)
+    });
+
+    return z.union([
+        base("mod").extend({
+            totalTime: timeSchema("total time"),
             speakingTime: timeSchema("speaking time"),
             topic: topicSchema()
-        })
-    } else if (kind === "other") {
-        return schema.shape({
-            totalTime: timeSchema(),
+        }).refine(...refineSpeakingTime()),
+        base("unmod").extend({
+            totalTime: timeSchema("total time")
+        }),
+        base("rr").extend({
+            speakingTime: timeSchema("speaking time"),
+            topic: topicSchema()
+        }),
+        base("other").extend({
+            totalTime: timeSchema("total time"),
             topic: topicSchema()
         })
-    } else {
-        kind satisfies never;
-        throw new Error("Invalid motion kind " + kind);
-    }
+    ]) satisfies z.ZodType<Motion, any, any>;
 }

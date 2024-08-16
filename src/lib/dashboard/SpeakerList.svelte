@@ -1,10 +1,11 @@
 <script lang="ts">
-    import Icon from "@iconify/svelte";
-    import { readonly, writable } from "svelte/store";
     import type { DelegateAttrs, Speaker } from "./types";
-    import { popup } from "@skeletonlabs/skeleton";
     import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "./DelPopup.svelte";
-    import { string, ValidationError, type StringSchema } from "yup";
+    import { formatValidationError, nonEmptyString } from "./points-motions/form_validation";
+    import { readonly, writable } from "svelte/store";
+    import type { z } from "zod";
+    import Icon from "@iconify/svelte";
+    import { popup } from "@skeletonlabs/skeleton";
 
     /**
      * The order of speakers for the speaker's list.
@@ -28,13 +29,13 @@
      */
     export let useDefaultControls: {
         presentDelegates: string[],
-        validator: StringSchema<string> | ((dels: Record<string, DelegateAttrs>, presentDels: string[]) => StringSchema<string>),
+        validator: z.ZodType<string, any, any> | ((dels: Record<string, DelegateAttrs>, presentDels: string[]) => z.ZodType<string, any, any>),
         popupID?: string
     } | undefined = undefined;
     // Properties which are only used with default controls:
     $: validator = typeof useDefaultControls?.validator === "function" 
         ? useDefaultControls?.validator(delegates, useDefaultControls.presentDelegates)
-        : useDefaultControls?.validator ?? string().required();
+        : useDefaultControls?.validator ?? nonEmptyString();
     let dfltControlsInput: string;
     let dfltControlsError: string | undefined = undefined;
 
@@ -86,26 +87,21 @@
     }
 
     export function addSpeaker(name: string, clearControlInput: boolean = false) {
-        validator.validate(name)
-            .then(key => {
-                // Successful, so add speakers:
-                order.push({ key, completed: false });
-                order = order;
+        const result = validator.safeParse(name);
+        if (result.success) {
+            const key = result.data;
+            // Successful, so add speakers:
+            order.push({ key, completed: false });
+            order = order;
 
-                if (typeof useDefaultControls !== "undefined") {
-                    dfltControlsError = undefined;
-                    // Clear the control input if it exists and it was requested to be cleared.
-                    if (clearControlInput) dfltControlsInput = "";
-                }
-            })
-            .catch(e => {
-                // Unsuccessful, so update input errors:
-                if (e instanceof ValidationError && typeof useDefaultControls !== "undefined") {
-                    dfltControlsError = e.message;
-                } else {
-                    throw e;
-                }
-            })
+            if (typeof useDefaultControls !== "undefined") {
+                dfltControlsError = undefined;
+                // Clear the control input if it exists and it was requested to be cleared.
+                if (clearControlInput) dfltControlsInput = "";
+            }
+        } else {
+            dfltControlsError = formatValidationError(result.error).message;
+        }
     }
     function deleteSpeaker(i: number) {
         let [removedSpeaker] = order.splice(i, 1);

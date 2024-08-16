@@ -1,17 +1,17 @@
 <script lang="ts">
   import { base } from "$app/paths";
-  import { MOTION_FIELDS, MOTION_LABELS } from "$lib/dashboard/points-motions/definitions";
-  import { createMotionSchema } from "$lib/dashboard/points-motions/form_validation";
+  import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/dashboard/DelPopup.svelte";
+  import { MOTION_FIELDS, MOTION_LABELS, createMotionSchema } from "$lib/dashboard/points-motions/definitions";
+  import { formatValidationError } from "$lib/dashboard/points-motions/form_validation";
   import { compareMotions as motionComparator } from "$lib/dashboard/points-motions/sort";
   import { addColons, parseTime, stringifyTime } from "$lib/time";
   import type { Motion, SessionData } from "$lib/dashboard/types";
   import { getContext, onMount } from "svelte";
 
-  import { ValidationError } from "yup";
   import Icon from "@iconify/svelte";
-  import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/dashboard/DelPopup.svelte";
   import { popup } from "@skeletonlabs/skeleton";
   import Sortable from "sortablejs";
+  import type { z } from "zod";
 
   const { settings: { delegateAttributes, sortOrder }, motions, presentDelegates, selectedMotion } = getContext<SessionData>("sessionData");
 
@@ -26,7 +26,7 @@
       {[P in Require]:  Stringify<O[P]> }
     : never;
   let inputMotion: Form<Motion, "kind"> = defaultInputMotion();
-  let inputError: { id: string, msg: string } | undefined = undefined;
+  let inputError: z.ZodIssue | undefined = undefined;
 
   let tableBody: HTMLTableSectionElement;
   onMount(async() => {
@@ -101,23 +101,18 @@
     inputError = undefined;
   }
   function submitMotion() {
-    motionSchema.validate(inputMotion)
-      .then(m => m as Motion)
-      .then(newMotion => {
-        inputMotion = defaultInputMotion();
-        inputError = undefined;
-        motions.update($m => {
-          $m.push(newMotion);
-          return $m;
-        });
-      })
-      .catch(e => {
-        if (e instanceof ValidationError) {
-          inputError = { id: e.path ?? "", msg: e.message };
-        } else {
-          throw e;
-        }
+    const result = motionSchema.safeParse(inputMotion);
+    if (result.success) {
+      inputMotion = defaultInputMotion();
+      inputError = undefined;
+
+      motions.update($m => {
+        $m.push(result.data);
+        return $m;
       });
+    } else {
+      inputError = formatValidationError(result.error);
+    }
   }
 
   // MOTION BUTTONS
@@ -150,7 +145,7 @@
       <span>Delegation</span>
       <input 
         class="input"
-        class:input-error={inputError?.id === "delegate"}
+        class:input-error={inputError?.path.includes("delegate")}
         bind:value={inputMotion.delegate}
         required
         use:popup={defaultPopupSettings("delegateInputPopup")}
@@ -161,7 +156,7 @@
       <span>Motion</span>
       <select 
         class="select" 
-        class:input-error={inputError?.id === "kind"} 
+        class:input-error={inputError?.path.includes("kind")}
         bind:value={inputMotion.kind}
       >
         {#each Object.entries(MOTION_LABELS) as [value, label]}
@@ -175,7 +170,7 @@
       <input 
         class="input" 
         placeholder="mm:ss" 
-        class:input-error={inputError?.id === "totalTime"}
+        class:input-error={inputError?.path.includes("totalTime")}
         bind:value={inputMotion.totalTime}
         on:blur={() => timeBlur("totalTime")}
         required
@@ -188,7 +183,7 @@
       <input 
         class="input" 
         placeholder="mm:ss" 
-        class:input-error={inputError?.id === "speakingTime"}
+        class:input-error={inputError?.path.includes("speakingTime")}
         bind:value={inputMotion.speakingTime}
         on:blur={() => timeBlur("speakingTime")}
         required
@@ -200,7 +195,7 @@
         <span>Topic</span>
         <input 
           class="input" 
-          class:input-error={inputError?.id === "topic"}
+          class:input-error={inputError?.path.includes("topic")}
           bind:value={inputMotion.topic}
           required
         >
@@ -219,7 +214,7 @@
       Add
     </button>
     {#if typeof inputError !== "undefined"}
-      <div class="text-error-500 text-center">{inputError.msg}</div>
+      <div class="text-error-500 text-center">{inputError.message}</div>
     {/if}
 
     <!-- Delegate autocomplete popup -->
