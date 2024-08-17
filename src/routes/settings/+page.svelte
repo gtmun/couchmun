@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/dashboard/points-motions/sort";
     import type { DelegateAttrs, Settings } from "$lib/dashboard/types";
     import EditForm from "$lib/settings/EditForm.svelte";
     import Icon from "@iconify/svelte";
@@ -167,9 +168,41 @@
     <div class="flex flex-col p-4 gap-3">
         <h3 class="h3 text-center">Sort Order</h3>
         <div class="flex gap-3">
-            <code>
-                {JSON.stringify($sortOrder)}
-            </code>
+            <!-- Sort Order Table -->
+            <div class="table-container">
+                <table class="table table-compact del-table">
+                    <thead>
+                        <tr>
+                            <th>Motion</th>
+                            <th>Tiebreakers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {#each $sortOrder as entry}
+                            {#each entry.kind as k}
+                                <tr>
+                                    <td>{SORT_KIND_NAMES[k]}</td>
+                                    <td class="flex gap-3">
+                                        {#each entry.order as key}
+                                            <div class="card p-1 flex items-center bg-surface-300-600-token">
+                                                <span>{SORT_PROPERTY_NAMES[key.property]}</span>
+                                                <button on:click={() => key.ascending = !key.ascending}>
+                                                    <Icon
+                                                        icon={"mdi:arrow-down"}
+                                                        class="{key.ascending ? 'rotate-180' : ''} transition-[transform]"
+                                                        width="24"
+                                                        height="24"
+                                                    />
+                                                </button>
+                                            </div>
+                                        {/each}
+                                    </td>
+                                </tr>
+                            {/each}
+                        {/each}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     <hr />
