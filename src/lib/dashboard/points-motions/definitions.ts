@@ -44,8 +44,9 @@ const _assert: Is<TypeFields, ConstFields> = {};
  * Any kinds not specified in this list are thrown at the end.
  */
 export const DEFAULT_SORT_PRIORITY: SortEntry[] = [
-    { kind: "unmod", order: ["totalTime asc"] },
-    { kind: ["mod", "rr"], order: ["totalTime asc", "nSpeakers asc"] }
+    { kind: ["ext"], order: [] },
+    { kind: ["unmod"], order: [{ property: "totalTime", ascending: false }] },
+    { kind: ["mod", "rr"], order: [{ property: "totalTime", ascending: false }, { property: "nSpeakers", ascending: false }] }
 ];
 
 /**

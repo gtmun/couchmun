@@ -6,13 +6,15 @@ export type DelegateAttrs = {
 }
 
 // Used to define sort entry:
-export type AllKeys<T> = T extends {} ? keyof T : never;
-export type SortKind = MotionKind;
-export type SKeyUnit = AllKeys<Motion> | "nSpeakers";
-export type SortOrderKey = SKeyUnit | `${SKeyUnit} asc`;
+export type SortKind = "mod" | "unmod" | "rr" | "other" | "ext";
+export type SortOrderProperty = "totalTime" | "speakingTime" | "topic" | "delegate" | "nSpeakers";
+export type SortOrderKey = {
+    property: SortOrderProperty,
+    ascending: boolean
+};
 export type SortEntry = {
-    kind: SortKind | SortKind[],
-    order: SortOrderKey | SortOrderKey[]
+    kind: SortKind[],
+    order: SortOrderKey[]
 };
 
 export type Settings = {
