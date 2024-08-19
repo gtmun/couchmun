@@ -1,27 +1,39 @@
 <script lang="ts">
+    import LabeledSlideToggle from "$lib/dashboard/LabeledSlideToggle.svelte";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/dashboard/points-motions/sort";
     import type { DelegateAttrs, Settings } from "$lib/dashboard/types";
     import EditForm from "$lib/settings/EditForm.svelte";
+    import { resetSettingsContext, SETTINGS_KEY } from "$lib/settings/stores";
     import Icon from "@iconify/svelte";
-    import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
+    import { FileButton, getModalStore, type ModalSettings } from "@skeletonlabs/skeleton";
     import { getContext } from "svelte";
-    import type { Readable } from "svelte/store";
+    import { get } from "svelte/store";
 
-    const settings = getContext<Settings>("settings");
+    const settings = getContext<Settings>(SETTINGS_KEY);
     const { delegateAttributes, sortOrder, delegatesEnabled } = settings;
     let delsEnabledAll: boolean | undefined;
     $: {
-        const [first, ...rest] = Object.values($delegatesEnabled);
+        const [first, ...rest] = Object.keys($delegateAttributes).map(key => $delegatesEnabled[key]);
         delsEnabledAll = rest.every(k => k === first) ? first : undefined;
     }
 
-    const presets = {
-        un: { label: "United Nations", delegates: "un_delegates" },
+    const PRESETS = {
+        un: { label: "United Nations", delegates: "un_delegates", default: true },
         custom: { label: "Custom", delegates: undefined }
     };
+
     const modalStore = getModalStore();
     let files: FileList;
 
+    function modalAction(body: string, successCallback: () => void, errorCallback: () => void = () => {}) {
+        const modal: ModalSettings = {
+            type: "confirm",
+            title: "Confirm",
+            body,
+            response: (r: boolean) => r ? successCallback() : errorCallback(),
+        };
+        modalStore.trigger(modal);
+    }
     // IMPORT & EXPORT
     async function importFile() {
         const file = files.item(0);
@@ -52,19 +64,26 @@
         }, 0);
     }
     function exportFile() {
-        const exportSettings: { [P in keyof Settings]: Settings[P] extends Readable<infer I> ? I : Settings[P] } = {
-            delegateAttributes: $delegateAttributes,
-            sortOrder: $sortOrder,
-            delegatesEnabled: $delegatesEnabled
-        };
+        const exportSettings = Object.fromEntries(Object.entries(settings).map(
+            ([k, v]) => [k, "subscribe" in v ? get<unknown>(v) : v]
+        ));
 
         downloadFile("couchmun-config.json", JSON.stringify(exportSettings), "application/json");
     }
+    function resetAllSettings() {
+        modalAction("Are you sure you want to reset all settings?", () => {
+            // Reset preset state cause it's not bound to settings
+            currentPreset = (Object.keys(PRESETS) as (keyof typeof PRESETS)[])
+                .find(p => "default" in PRESETS[p] && PRESETS[p].default)!;
+            // Reset settings
+            resetSettingsContext(settings);
+        })
+    }
 
     // DELEGATES
-    let currentPreset: keyof typeof presets;
+    let currentPreset: keyof typeof PRESETS;
     async function setPreset() {
-        const delURL = presets[currentPreset].delegates;
+        const delURL = PRESETS[currentPreset].delegates;
         if (typeof delURL === "string") {
             const { default: json } = await import(`$lib/delegate_presets/${delURL}.json`);
             delegateAttributes.set(structuredClone(json));
@@ -80,9 +99,11 @@
         })
     }
     function clearDelegates() {
-        delegateAttributes.set({});
-        delegatesEnabled.set({});
-        currentPreset = "custom";
+        modalAction("Are you sure you want to remove all delegates?", () => {
+            delegateAttributes.set({});
+            delegatesEnabled.set({});
+            currentPreset = "custom";
+        });
     }
 
     /**
@@ -142,10 +163,10 @@
     }
 </script>
 
-<div class="flex flex-col p-4">
+<div class="flex flex-col p-4 gap-4">
     <hr />
-    <div class="flex flex-col p-4 gap-3">
-        <h3 class="h3 text-center">File Configuration</h3>
+    <div class="flex flex-col gap-3">
+        <h3 class="h3 text-center">Control Panel</h3>
         <div class="flex gap-3 justify-center">
             <FileButton 
                 name="import" 
@@ -154,19 +175,40 @@
                 on:change={importFile} 
                 accept="application/json"
             >
-                Import
+                Import from file...
             </FileButton>
             <button
                 class="btn variant-filled-primary"
                 on:click={exportFile}
             >
-                Export
+                Export to file...
+            </button>
+            <button
+                class="btn variant-filled-error"
+                on:click={resetAllSettings}
+            >
+                Reset all settings
             </button>
         </div>
     </div>
     <hr />
-    <div class="flex flex-col p-4 gap-3">
-        <h3 class="h3 text-center">Sort Order</h3>
+    <div class="flex flex-col gap-3">
+        <h3 class="h3 text-center">Preferences (WIP)</h3>
+        <div class="flex flex-col gap-3">
+            <LabeledSlideToggle name="settings-enable-rr" checked={true} disabled={true}>
+                <div>Enable round robin</div>
+            </LabeledSlideToggle>
+            <LabeledSlideToggle name="settings-enable-ext" checked={true} disabled={true}>
+                <div>Enable extensions</div>
+            </LabeledSlideToggle>
+            <LabeledSlideToggle name="settings-pause-timer" checked={true} disabled={true}>
+                <div>Pause main timer when delegate timer elapses</div>
+            </LabeledSlideToggle>
+        </div>
+    </div>
+    <hr />
+    <div class="flex flex-col gap-3">
+        <h3 class="h3 text-center">Sort Order (WIP)</h3>
         <div class="flex gap-3">
             <!-- Sort Order Table -->
             <div class="table-container">
@@ -206,21 +248,21 @@
         </div>
     </div>
     <hr />
-    <div class="flex flex-col p-4 gap-3">
+    <div class="flex flex-col gap-3">
         <!-- Delegate Main Settings -->
         <div class="card p-4 flex flex-col gap-3">
             <h3 class="h3 text-center">Delegates</h3>
             <label class="flex gap-3 justify-center items-center">
                 <span>Apply Preset</span>
                 <select class="select w-1/2" bind:value={currentPreset} on:change={setPreset}>
-                    {#each Object.entries(presets) as [value, preset]}
+                    {#each Object.entries(PRESETS) as [value, preset]}
                     <option {value} label={preset.label} />
                     {/each}
                 </select>
             </label>
             <div class="flex gap-3 justify-center">
-                <button class="btn variant-filled-error" on:click={clearDelegates}>Clear Delegates</button>
                 <button class="btn variant-filled-primary" on:click={() => editDelegate(undefined)}>Add Delegate</button>
+                <button class="btn variant-filled-error" on:click={clearDelegates}>Clear Delegates</button>
             </div>
         </div>
         <!-- Delegate Table -->

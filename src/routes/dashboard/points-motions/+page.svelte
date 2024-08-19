@@ -1,5 +1,6 @@
 <script lang="ts">
   import { base } from "$app/paths";
+  import LabeledSlideToggle from "$lib/dashboard/LabeledSlideToggle.svelte";
   import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/dashboard/DelPopup.svelte";
   import { MOTION_FIELDS, MOTION_LABELS, createMotionSchema } from "$lib/dashboard/points-motions/definitions";
   import { formatValidationError } from "$lib/dashboard/points-motions/form_validation";
@@ -9,7 +10,7 @@
   import { getContext, onMount } from "svelte";
 
   import Icon from "@iconify/svelte";
-  import { popup, SlideToggle } from "@skeletonlabs/skeleton";
+  import { popup } from "@skeletonlabs/skeleton";
   import Sortable from "sortablejs";
   import type { z } from "zod";
 
@@ -225,15 +226,9 @@
       </label>
     {/if}
     {#if hasField(inputMotion, ["isExtension"]) && $selectedMotion?.kind === inputMotion.kind}
-      <!-- svelte-ignore a11y-label-has-associated-control : SlideToggle is a control -->
-      <label class="label">
+      <LabeledSlideToggle name="extension-toggle" bind:checked={inputMotion.isExtension}>
         <span>Extend previous motion?</span>
-        <SlideToggle 
-          name="extension-toggle"
-          active="bg-primary-500"
-          bind:checked={inputMotion.isExtension}
-        />
-      </label>
+      </LabeledSlideToggle>
     {/if}
     {#if hasField(inputMotion, ["totalTime", "speakingTime"])}
     <div class="text-center">

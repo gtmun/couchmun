@@ -1,11 +1,12 @@
 <script lang="ts">
     import DelAutocomplete from "$lib/dashboard/DelAutocomplete.svelte";
     import DelLabel from "$lib/dashboard/DelLabel.svelte";
+    import LabeledSlideToggle from "$lib/dashboard/LabeledSlideToggle.svelte";
     import Timer from "$lib/dashboard/Timer.svelte";
     import type { SessionData } from "$lib/dashboard/types";
     import { parseTime } from "$lib/time";
     import Icon from "@iconify/svelte";
-    import { popup, SlideToggle, type PopupSettings } from "@skeletonlabs/skeleton";
+    import { popup, type PopupSettings } from "@skeletonlabs/skeleton";
     import { getContext } from "svelte";
     import type { Readable } from "svelte/store";
 
@@ -77,11 +78,9 @@
     <div class="card p-4">
         <div class="flex flex-col gap-4 overflow-hidden">
             <!-- Timer config -->
-            <!-- svelte-ignore a11y-label-has-associated-control : SlideToggle is a control -->
-            <label class="flex flex-grow items-center justify-between gap-3">
+             <LabeledSlideToggle name="enable-timer" bind:checked={timerEnabled}>
                 <span><strong>Timer</strong></span>
-                <SlideToggle name="enable-timer" active="bg-primary-500" bind:checked={timerEnabled} />
-            </label>
+             </LabeledSlideToggle>
             {#if timerEnabled}
                 <div class="flex flex-row gap-5">
                     <form class="contents" on:submit|preventDefault={setDuration}>

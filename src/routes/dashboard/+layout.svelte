@@ -3,11 +3,12 @@
     import BarTitle from '$lib/dashboard/BarTitle.svelte';
     import Navigation from '$lib/dashboard/Navigation.svelte';
     import SettingsNavigation from '$lib/dashboard/SettingsNavigation.svelte';
-    import type { AccessibleSettings, DelegatePresence, SessionData, Settings } from '$lib/dashboard/types';
+    import type { DelegatePresence, SessionData } from '$lib/dashboard/types';
+    import { createAccessibleSettings } from '$lib/settings/stores';
     import Icon from "@iconify/svelte";
     import { AppBar, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
-    import { getContext, setContext } from 'svelte';
-    import { derived, readonly, writable } from 'svelte/store';
+    import { setContext } from 'svelte';
+    import { derived, writable } from 'svelte/store';
 
     let title = "General Assembly";
 
@@ -27,13 +28,6 @@
         })
     }
 
-    const settings = getContext<Settings>("settings");
-    const accessibleSettings: AccessibleSettings = {
-        delegateAttributes: derived([settings.delegateAttributes, settings.delegatesEnabled], 
-            ([$attrs, $enables]) => Object.fromEntries(Object.entries($attrs).filter(([k]) => $enables[k] ?? false))
-        ),
-        sortOrder: readonly(settings.sortOrder)
-    };
     const { presentDelegates } = setContext<SessionData>("sessionData", (() => {
         const delegateAttendance = writable<Record<string, DelegatePresence>>({});
         const presentDelegates = derived(delegateAttendance, $att => {
@@ -41,7 +35,7 @@
         });
 
         return {
-            settings: accessibleSettings,
+            settings: createAccessibleSettings(),
             delegateAttendance,
             presentDelegates,
             motions: writable([]),
