@@ -1,6 +1,7 @@
 <script lang="ts">
     import DelLabel from "$lib/dashboard/DelLabel.svelte";
     import SpeakerList from "$lib/dashboard/SpeakerList.svelte";
+    import { SESSION_DATA_KEY } from "$lib/dashboard/stores";
     import Timer from "$lib/dashboard/Timer.svelte";
     import type { Motion, SessionData, Speaker } from "$lib/dashboard/types";
     import { getContext } from "svelte";
@@ -9,7 +10,7 @@
 
     export let motion: Motion & { kind: "mod" };
 
-    const { settings: { delegateAttributes }, presentDelegates } = getContext<SessionData>("sessionData");
+    const { settings: { delegateAttributes }, presentDelegates } = getContext<SessionData>(SESSION_DATA_KEY);
 
     // Timer
     let running: boolean = false;

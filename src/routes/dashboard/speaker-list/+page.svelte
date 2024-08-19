@@ -2,13 +2,14 @@
     import DelLabel from "$lib/dashboard/DelLabel.svelte";
     import { presentDelegateSchema } from "$lib/dashboard/points-motions/form_validation";
     import SpeakerList from "$lib/dashboard/SpeakerList.svelte";
+    import { SESSION_DATA_KEY } from "$lib/dashboard/stores";
     import Timer from "$lib/dashboard/Timer.svelte";
     import type { SessionData } from "$lib/dashboard/types";
     import { parseTime } from "$lib/time";
     import { getContext } from "svelte";
     import type { Readable } from "svelte/store";
 
-    const { settings: { delegateAttributes }, presentDelegates, speakersList: order } = getContext<SessionData>("sessionData");
+    const { settings: { delegateAttributes }, presentDelegates, speakersList: order } = getContext<SessionData>(SESSION_DATA_KEY);
 
     // Timer
     let running: boolean = false;

@@ -1,13 +1,9 @@
 <script lang="ts">
-  import type { DelegatePresence, SessionData } from "$lib/dashboard/types";
+  import { SESSION_DATA_KEY } from "$lib/dashboard/stores";
+  import type { SessionData } from "$lib/dashboard/types";
   import { getContext } from "svelte";
 
-  const { settings: { delegateAttributes }, delegateAttendance } = getContext<SessionData>("sessionData");
-  delegateAttendance.update(att => {
-    return Object.assign(Object.fromEntries<DelegatePresence>(
-      Object.keys($delegateAttributes).map(p => [p, "NP"])
-    ), att);
-  })
+  const { settings: { delegateAttributes }, delegateAttendance } = getContext<SessionData>(SESSION_DATA_KEY);
 </script>
 
 <!-- Render a table to display participants and their statuses -->
@@ -21,7 +17,8 @@
       </tr>
     </thead>
     <tbody>
-      {#each Object.entries($delegateAttendance) as [key, presence]}
+      {#each Object.keys($delegateAttributes) as key}
+        {@const presence = $delegateAttendance[key] ??= "NP"}
         <tr>
           <td>{$delegateAttributes[key].name}</td>
           <td 

@@ -1,10 +1,18 @@
 <script lang="ts">
     import { base } from "$app/paths";
+    import { resetSessionDataContext, SESSION_DATA_KEY } from "$lib/dashboard/stores";
     import Icon from "@iconify/svelte";
     import { LightSwitch } from "@skeletonlabs/skeleton";
+    import type { SessionData } from "./types";
+    import { getContext } from "svelte";
 
     export let close: () => void;
 
+    const sessionData = getContext<SessionData>(SESSION_DATA_KEY);
+    function clearSession() {
+        resetSessionDataContext(sessionData);
+        close();
+    }
 </script>
 
 <div class="flex p-4 gap-3 items-center">
@@ -27,4 +35,16 @@
     <div class="flex justify-between">
         Active Theme <LightSwitch />
     </div>
+</div>
+
+<hr />
+
+<div class="p-4 flex flex-col gap-3">
+    <a 
+        class="btn variant-filled-error" 
+        on:click={clearSession}
+        href="{base}/dashboard/roll-call"
+    >
+        Clear Session
+    </a>
 </div>

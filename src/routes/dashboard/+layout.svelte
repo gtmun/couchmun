@@ -3,12 +3,9 @@
     import BarTitle from '$lib/dashboard/BarTitle.svelte';
     import Navigation from '$lib/dashboard/Navigation.svelte';
     import SettingsNavigation from '$lib/dashboard/SettingsNavigation.svelte';
-    import type { DelegatePresence, SessionData } from '$lib/dashboard/types';
-    import { createAccessibleSettings } from '$lib/settings/stores';
+    import { createSessionDataContext } from '$lib/dashboard/stores';
     import Icon from "@iconify/svelte";
     import { AppBar, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
-    import { setContext } from 'svelte';
-    import { derived, writable } from 'svelte/store';
 
     let title = "General Assembly";
 
@@ -28,21 +25,7 @@
         })
     }
 
-    const { presentDelegates } = setContext<SessionData>("sessionData", (() => {
-        const delegateAttendance = writable<Record<string, DelegatePresence>>({});
-        const presentDelegates = derived(delegateAttendance, $att => {
-            return Object.keys($att).filter(k => $att[k] !== "NP");
-        });
-
-        return {
-            settings: createAccessibleSettings(),
-            delegateAttendance,
-            presentDelegates,
-            motions: writable([]),
-            selectedMotion: writable(),
-            speakersList: writable([])
-        }
-    })());
+    const { presentDelegates } = createSessionDataContext();
 </script>
 
 <!-- Navigation drawer -->
