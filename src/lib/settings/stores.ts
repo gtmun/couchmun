@@ -15,8 +15,13 @@ const SETTINGS_DEFAULTS: { [P in keyof Settings]: Settings[P] extends Writable<i
     delegatesEnabled: Object.fromEntries(
         Object.keys(DEFAULT_DELEGATES).map(k => [k, true])
     ),
-    title: "General Assembly"
-}
+    title: "General Assembly",
+    preferences: {
+        enableMotionRoundRobin: true,
+        enableMotionExt: true,
+        pauseMainTimer: true,
+    }
+};
 /**
  * @returns a deep copy of the default settings
  */

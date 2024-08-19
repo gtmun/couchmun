@@ -17,6 +17,11 @@ export type SortEntry = {
     order: SortOrderKey[]
 };
 
+export type Preferences = {
+    enableMotionRoundRobin: boolean,
+    enableMotionExt: boolean,
+    pauseMainTimer: boolean
+}
 export type Settings = {
     /**
      * Delegate keys to characteristic data about the delegate (e.g., name and aliases)
@@ -39,7 +44,12 @@ export type Settings = {
     /**
      * The title of the assembly.
      */
-    title: Writable<string>
+    title: Writable<string>,
+
+    /**
+     * Toggleable preferences.
+     */
+    preferences: Writable<Preferences>
 };
 export type AccessibleSettings = {
     delegateAttributes: Readable<Record<string, DelegateAttrs>>,

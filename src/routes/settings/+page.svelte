@@ -2,16 +2,16 @@
     import BarTitle from "$lib/dashboard/BarTitle.svelte";
     import LabeledSlideToggle from "$lib/dashboard/LabeledSlideToggle.svelte";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/dashboard/points-motions/sort";
-    import type { DelegateAttrs, Settings } from "$lib/dashboard/types";
+    import type { DelegateAttrs, Preferences, Settings } from "$lib/dashboard/types";
     import EditForm from "$lib/settings/EditForm.svelte";
     import { resetSettingsContext, SETTINGS_KEY } from "$lib/settings/stores";
     import Icon from "@iconify/svelte";
     import { FileButton, getModalStore, type ModalSettings } from "@skeletonlabs/skeleton";
     import { getContext } from "svelte";
-    import { get } from "svelte/store";
+    import { get, type Writable } from "svelte/store";
 
     const settings = getContext<Settings>(SETTINGS_KEY);
-    const { delegateAttributes, sortOrder, delegatesEnabled, title } = settings;
+    const { delegateAttributes, sortOrder, delegatesEnabled, title, preferences } = settings;
     let delsEnabledAll: boolean | undefined;
     $: {
         const [first, ...rest] = Object.keys($delegateAttributes).map(key => $delegatesEnabled[key]);
@@ -22,7 +22,12 @@
         un: { label: "United Nations", delegates: "un_delegates", default: true },
         custom: { label: "Custom", delegates: undefined }
     };
-
+    const PREFERENCES_LABELS = {
+        enableMotionRoundRobin: { label: "Enable round robin" },
+        enableMotionExt: { label: "Enable extensions" },
+        pauseMainTimer: { label: "Pause main timer when delegate timer elapses" },
+    } satisfies Record<keyof Preferences, unknown>;
+    const _preferences: Writable<Record<string, boolean>> = preferences;
     const modalStore = getModalStore();
     let files: FileList;
 
@@ -197,15 +202,11 @@
     <div class="flex flex-col gap-3">
         <h3 class="h3 text-center">Preferences (WIP)</h3>
         <div class="flex flex-col gap-3">
-            <LabeledSlideToggle name="settings-enable-rr" checked={true} disabled={true}>
-                <div>Enable round robin</div>
-            </LabeledSlideToggle>
-            <LabeledSlideToggle name="settings-enable-ext" checked={true} disabled={true}>
-                <div>Enable extensions</div>
-            </LabeledSlideToggle>
-            <LabeledSlideToggle name="settings-pause-timer" checked={true} disabled={true}>
-                <div>Pause main timer when delegate timer elapses</div>
-            </LabeledSlideToggle>
+            {#each Object.entries(PREFERENCES_LABELS) as [key, properties]}
+                <LabeledSlideToggle name="prefs-{key}" bind:checked={$_preferences[key]} disabled={true}>
+                    <div>{properties.label}</div>
+                </LabeledSlideToggle>
+            {/each}
         </div>
     </div>
     <hr />
