@@ -14,7 +14,8 @@ const SETTINGS_DEFAULTS: { [P in keyof Settings]: Settings[P] extends Writable<i
     sortOrder: DEFAULT_SORT_PRIORITY,
     delegatesEnabled: Object.fromEntries(
         Object.keys(DEFAULT_DELEGATES).map(k => [k, true])
-    )
+    ),
+    title: "General Assembly"
 }
 /**
  * @returns a deep copy of the default settings
@@ -42,6 +43,7 @@ export function createAccessibleSettings(): AccessibleSettings {
         delegateAttributes: derived([settings.delegateAttributes, settings.delegatesEnabled], 
             ([$attrs, $enables]) => Object.fromEntries(Object.entries($attrs).filter(([k]) => $enables[k] ?? false))
         ),
-        sortOrder: readonly(settings.sortOrder)
+        sortOrder: readonly(settings.sortOrder),
+        title: settings.title
     };
 }

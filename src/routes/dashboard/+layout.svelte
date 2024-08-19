@@ -7,8 +7,6 @@
     import Icon from "@iconify/svelte";
     import { AppBar, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
 
-    let title = "General Assembly";
-
     const drawerStore = getDrawerStore();
     function openNav() {
         drawerStore.open({
@@ -25,7 +23,7 @@
         })
     }
 
-    const { presentDelegates } = createSessionDataContext();
+    const { settings: { title }, presentDelegates } = createSessionDataContext();
 </script>
 
 <!-- Navigation drawer -->
@@ -53,7 +51,7 @@
                 </button>
             </svelte:fragment>
             <div class="flex flex-col gap-1">
-                <BarTitle bind:title />
+                <BarTitle bind:title={$title} />
                 <hr class="divider border-t-4 border-surface-800-100-token" />
                 <BarStats total={$presentDelegates.length} />
             </div>

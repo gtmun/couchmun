@@ -4,6 +4,7 @@ import { createAccessibleSettings } from "$lib/settings/stores";
 import { setContext } from "svelte";
 
 export const SESSION_DATA_KEY = "sessionData";
+
 export function createSessionDataContext(): SessionData {
     const delegateAttendance = writable<Record<string, DelegatePresence>>({});
     const presentDelegates = derived(delegateAttendance, $att => {

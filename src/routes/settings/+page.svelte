@@ -1,4 +1,5 @@
 <script lang="ts">
+    import BarTitle from "$lib/dashboard/BarTitle.svelte";
     import LabeledSlideToggle from "$lib/dashboard/LabeledSlideToggle.svelte";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/dashboard/points-motions/sort";
     import type { DelegateAttrs, Settings } from "$lib/dashboard/types";
@@ -10,7 +11,7 @@
     import { get } from "svelte/store";
 
     const settings = getContext<Settings>(SETTINGS_KEY);
-    const { delegateAttributes, sortOrder, delegatesEnabled } = settings;
+    const { delegateAttributes, sortOrder, delegatesEnabled, title } = settings;
     let delsEnabledAll: boolean | undefined;
     $: {
         const [first, ...rest] = Object.keys($delegateAttributes).map(key => $delegatesEnabled[key]);
@@ -164,6 +165,7 @@
 </script>
 
 <div class="flex flex-col p-4 gap-4">
+    <BarTitle bind:title={$title} />
     <hr />
     <div class="flex flex-col gap-3">
         <h3 class="h3 text-center">Control Panel</h3>

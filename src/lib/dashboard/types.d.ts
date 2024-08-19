@@ -34,11 +34,17 @@ export type Settings = {
     /**
      * Keys of delegates enabled for this assembly.
      */
-    delegatesEnabled: Writable<Record<string, boolean>>
+    delegatesEnabled: Writable<Record<string, boolean>>,
+
+    /**
+     * The title of the assembly.
+     */
+    title: Writable<string>
 };
 export type AccessibleSettings = {
     delegateAttributes: Readable<Record<string, DelegateAttrs>>,
-    sortOrder: Readable<SortEntry[]>
+    sortOrder: Readable<SortEntry[]>,
+    title: Writable<string>
 }
 
 // Attendance
