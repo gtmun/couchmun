@@ -2,7 +2,8 @@ import { DEFAULT_SORT_PRIORITY } from "$lib/dashboard/points-motions/definitions
 import type { AccessibleSettings, Settings } from "$lib/dashboard/types";
 import DEFAULT_DELEGATES from '$lib/delegate_presets/un_delegates.json';
 import { getContext, setContext } from "svelte";
-import { derived, readonly, writable, type Writable } from "svelte/store";
+import { persisted } from "svelte-persisted-store";
+import { derived, readonly, type Writable } from "svelte/store";
 
 export const SETTINGS_KEY = "settings";
 
@@ -30,7 +31,7 @@ export const getDefaults = () => structuredClone(SETTINGS_DEFAULTS);
 export function createSettingsContext(): Settings {
     // Add writable to all settings:
     const context = Object.fromEntries(Object.entries(getDefaults()).map(
-        ([k, v]) => [k, writable(v)]
+        ([k, v]) => [k, persisted(`${SETTINGS_KEY}.${k}`, v)]
     )) as unknown as Settings;
 
     return setContext<Settings>(SETTINGS_KEY, context);

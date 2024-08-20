@@ -1,12 +1,13 @@
-import { derived, writable } from "svelte/store";
+import { derived } from "svelte/store";
 import type { DelegatePresence, SessionData } from "./types";
 import { createAccessibleSettings } from "$lib/settings/stores";
 import { setContext } from "svelte";
+import { persisted } from "svelte-persisted-store";
 
 export const SESSION_DATA_KEY = "sessionData";
 
 export function createSessionDataContext(): SessionData {
-    const delegateAttendance = writable<Record<string, DelegatePresence>>({});
+    const delegateAttendance = persisted(`${SESSION_DATA_KEY}.delegateAttendance`, {} as Record<string, DelegatePresence>);
     const presentDelegates = derived(delegateAttendance, $att => {
         return Object.keys($att).filter(k => $att[k] !== "NP");
     });
@@ -15,9 +16,9 @@ export function createSessionDataContext(): SessionData {
         settings: createAccessibleSettings(),
         delegateAttendance,
         presentDelegates,
-        motions: writable([]),
-        selectedMotion: writable(),
-        speakersList: writable([])
+        motions: persisted(`${SESSION_DATA_KEY}.motions`, []),
+        selectedMotion: persisted(`${SESSION_DATA_KEY}.selectedMotion`, undefined),
+        speakersList: persisted(`${SESSION_DATA_KEY}.speakersList`, [])
     });
 }
 
