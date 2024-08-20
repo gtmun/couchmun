@@ -68,6 +68,6 @@
         <slot></slot>
     </main>
     <!-- Footer -->
-    <footer class="bg-surface-300-600-token p-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris faucibus. (footer)</footer>
+    <footer class="bg-surface-300-600-token p-4"></footer>
   </div>
   

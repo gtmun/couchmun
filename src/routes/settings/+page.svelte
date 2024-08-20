@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { base } from "$app/paths";
     import BarTitle from "$lib/dashboard/BarTitle.svelte";
     import LabeledSlideToggle from "$lib/dashboard/LabeledSlideToggle.svelte";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/dashboard/points-motions/sort";
@@ -170,9 +171,14 @@
 </script>
 
 <div class="flex flex-col p-4 gap-4">
-    <BarTitle bind:title={$title} />
+    <div class="grid grid-cols-[36px_1fr_36px] items-center">
+        <a href="{base}/dashboard" class="btn btn-icon">
+            <Icon icon="mdi:chevron-left" width="36" height="36" />
+        </a>
+        <BarTitle bind:title={$title} />
+    </div>
     <hr />
-    <div class="flex flex-col gap-3">
+    <div class="panel">
         <h3 class="h3 text-center">Control Panel</h3>
         <div class="flex gap-3 justify-center">
             <FileButton 
@@ -199,7 +205,7 @@
         </div>
     </div>
     <hr />
-    <div class="flex flex-col gap-3">
+    <div class="panel">
         <h3 class="h3 text-center">Preferences (WIP)</h3>
         <div class="flex flex-col gap-3">
             {#each Object.entries(PREFERENCES_LABELS) as [key, properties]}
@@ -210,7 +216,7 @@
         </div>
     </div>
     <hr />
-    <div class="flex flex-col gap-3">
+    <div class="panel">
         <h3 class="h3 text-center">Sort Order (WIP)</h3>
         <div class="flex gap-3">
             <!-- Sort Order Table -->
@@ -251,7 +257,7 @@
         </div>
     </div>
     <hr />
-    <div class="flex flex-col gap-3">
+    <div class="panel">
         <!-- Delegate Main Settings -->
         <div class="card p-4 flex flex-col gap-3">
             <h3 class="h3 text-center">Delegates</h3>
@@ -307,6 +313,13 @@
 </div>
 
 <style>
+    .panel {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 75%;
+        align-self: center;
+    }
     .del-table td {
         vertical-align: middle;
     }
