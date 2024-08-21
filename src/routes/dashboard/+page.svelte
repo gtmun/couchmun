@@ -1,0 +1,1 @@
+<!-- Redirects to dashboard/roll-call. See +page.server.ts -->
