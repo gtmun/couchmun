@@ -182,7 +182,7 @@
         class="select" 
         class:input-error={inputError?.path.includes("kind")}
         bind:value={inputMotion.kind}
-        on:change={() => inputMotion = { kind: inputMotion.kind }}
+        on:change={() => inputMotion = { delegate: inputMotion.delegate, kind: inputMotion.kind }}
       >
         {#each Object.entries(MOTION_LABELS) as [value, label]}
           <option {value} {label} />
@@ -258,7 +258,7 @@
   </form>
   
   <div class="flex flex-col gap-2">
-    <div class="grid grid-cols-[1fr_auto]">
+    <div class="grid grid-cols-[1fr_auto] items-center">
       <h3 class="h3 text-center">List of Motions</h3>
       <button class="btn btn-icon" on:click={sortMotions}>
         <Icon icon="mdi:sort" width="24" height="24" />
@@ -270,12 +270,12 @@
         <thead>
           <tr>
             <td class="w-24"></td>
-            <td class="px-3">Motion</td>
-            <td class="px-3">By</td>
+            <td class="px-3 w-24">Motion</td>
+            <td class="px-3 w-32">By</td>
             <td class="px-3">Topic</td>
-            <td class="px-3">Total Time</td>
-            <td class="px-3">Speaking Time</td>
-            <td class="px-3">No. of Speakers</td>
+            <td class="px-3 w-24">Total Time</td>
+            <td class="px-3 w-24">Speaking Time</td>
+            <td class="px-3 w-24">No. of Speakers</td>
           </tr>
         </thead>
         <tbody bind:this={tableBody}>

@@ -239,10 +239,10 @@
                                                 <span>{SORT_PROPERTY_NAMES[key.property]}</span>
                                                 <button on:click={() => key.ascending = !key.ascending}>
                                                     <Icon
-                                                        icon={"mdi:arrow-down"}
+                                                        icon="mdi:arrow-down"
                                                         class="{key.ascending ? 'rotate-180' : ''} transition-[transform]"
-                                                        width="24"
-                                                        height="24"
+                                                        width="1.2rem"
+                                                        height="1.2rem"
                                                     />
                                                 </button>
                                             </div>

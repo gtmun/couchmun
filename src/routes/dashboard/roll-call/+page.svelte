@@ -12,8 +12,8 @@
     <thead>
       <tr>
         <th>Delegate</th>
-        <th>Present</th>
-        <th>Present and Voting</th>
+        <th class="w-1/4">Present</th>
+        <th class="w-1/4">Present and Voting</th>
       </tr>
     </thead>
     <tbody>

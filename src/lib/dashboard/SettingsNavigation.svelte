@@ -5,6 +5,7 @@
     import { getModalStore, LightSwitch, type ModalSettings } from "@skeletonlabs/skeleton";
     import type { SessionData } from "./types";
     import { getContext } from "svelte";
+    import { goto } from "$app/navigation";
 
     export let close: () => void;
 
@@ -24,6 +25,7 @@
         close();
         modalAction("Are you sure you want to reset the session?", () => {
             resetSessionDataContext(sessionData);
+            goto(`${base}/dashboard/roll-call`);
         })
     }
 </script>
@@ -53,11 +55,10 @@
 <hr />
 
 <div class="p-4 flex flex-col gap-3">
-    <a 
+    <button 
         class="btn variant-filled-error" 
         on:click={clearSession}
-        href="{base}/dashboard/roll-call"
     >
         Clear Session
-    </a>
+</button>
 </div>
