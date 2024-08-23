@@ -2,16 +2,29 @@
     import { base } from "$app/paths";
     import { resetSessionDataContext, SESSION_DATA_KEY } from "$lib/dashboard/stores";
     import Icon from "@iconify/svelte";
-    import { LightSwitch } from "@skeletonlabs/skeleton";
+    import { getModalStore, LightSwitch, type ModalSettings } from "@skeletonlabs/skeleton";
     import type { SessionData } from "./types";
     import { getContext } from "svelte";
 
     export let close: () => void;
 
     const sessionData = getContext<SessionData>(SESSION_DATA_KEY);
+    const modalStore = getModalStore();
+    
+    function modalAction(body: string, successCallback: () => void, errorCallback: () => void = () => {}) {
+        const modal: ModalSettings = {
+            type: "confirm",
+            title: "Confirm",
+            body,
+            response: (r: boolean) => r ? successCallback() : errorCallback(),
+        };
+        modalStore.trigger(modal);
+    }
     function clearSession() {
-        resetSessionDataContext(sessionData);
         close();
+        modalAction("Are you sure you want to reset the session?", () => {
+            resetSessionDataContext(sessionData);
+        })
     }
 </script>
 
