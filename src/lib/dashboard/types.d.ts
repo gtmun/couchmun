@@ -110,7 +110,7 @@ export type SessionData = {
     /**
      * The motion that was selected (and is currently on display in the current motion page).
      */
-    selectedMotion: Writable<Motion | undefined>,
+    selectedMotion: Writable<Motion | null>,
     /**
      * The speakers list and speaker attributes (such as whether the given speaker has spoken already)
      */

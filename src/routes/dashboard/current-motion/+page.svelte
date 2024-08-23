@@ -13,7 +13,7 @@
 </script>
 
 <div class="h-full w-full flex flex-col items-stretch justify-center">
-    {#if typeof $selectedMotion !== "undefined"}
+    {#if $selectedMotion}
         {#if $selectedMotion.kind === "mod"}
             <ModCaucus motion={$selectedMotion} />
         {:else if $selectedMotion.kind === "unmod"}

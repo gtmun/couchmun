@@ -130,12 +130,12 @@
     return "isExtension" in m && m.isExtension && m.kind === $selectedMotion?.kind;
   }
   function trySet(m: typeof inputMotion, field: string, value: (mapper: any) => any = t => t) {
-    if (typeof $selectedMotion !== "undefined" && $selectedMotion.kind === m.kind && field in $selectedMotion) {
+    if ($selectedMotion && $selectedMotion.kind === m.kind && field in $selectedMotion) {
       (m as any)[field] = value(($selectedMotion as any)[field]);
     }
   }
   // If extension, disable "topic" and "speakingTime":
-  $: if ((inputMotion as any).isExtension && typeof $selectedMotion !== "undefined") {
+  $: if ((inputMotion as any).isExtension && $selectedMotion) {
     trySet(inputMotion, "topic");
     trySet(inputMotion, "speakingTime", t => stringifyTime(t));
   }

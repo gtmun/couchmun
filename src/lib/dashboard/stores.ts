@@ -17,7 +17,7 @@ export function createSessionDataContext(): SessionData {
         delegateAttendance,
         presentDelegates,
         motions: persisted(`${SESSION_DATA_KEY}.motions`, []),
-        selectedMotion: persisted(`${SESSION_DATA_KEY}.selectedMotion`, undefined),
+        selectedMotion: persisted(`${SESSION_DATA_KEY}.selectedMotion`, null),
         speakersList: persisted(`${SESSION_DATA_KEY}.speakersList`, [])
     });
 }
@@ -28,6 +28,6 @@ export function createSessionDataContext(): SessionData {
 export function resetSessionDataContext(ctx: SessionData) {
     ctx.delegateAttendance.set({});
     ctx.motions.set([]);
-    ctx.selectedMotion.set(undefined);
+    ctx.selectedMotion.set(null);
     ctx.speakersList.set([]);
 }
