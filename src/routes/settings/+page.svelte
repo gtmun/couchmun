@@ -6,10 +6,11 @@
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
     import { getSettingsContext, resetSettingsContext } from "$lib/stores/settings";
     import type { DelegateAttrs, Preferences } from "$lib/types";
-    
+    import { triggerConfirmModal } from "$lib/util";
+
     import { get, type Writable } from "svelte/store";
     import Icon from "@iconify/svelte";
-    import { FileButton, getModalStore, type ModalSettings } from "@skeletonlabs/skeleton";
+    import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
 
     const settings = getSettingsContext();
     const { delegateAttributes, sortOrder, delegatesEnabled, title, preferences } = settings;
@@ -32,15 +33,6 @@
     const modalStore = getModalStore();
     let files: FileList;
 
-    function modalAction(body: string, successCallback: () => void, errorCallback: () => void = () => {}) {
-        const modal: ModalSettings = {
-            type: "confirm",
-            title: "Confirm",
-            body,
-            response: (r: boolean) => r ? successCallback() : errorCallback(),
-        };
-        modalStore.trigger(modal);
-    }
     // IMPORT & EXPORT
     async function importFile() {
         const file = files.item(0);
@@ -78,13 +70,16 @@
         downloadFile("couchmun-config.json", JSON.stringify(exportSettings), "application/json");
     }
     function resetAllSettings() {
-        modalAction("Are you sure you want to reset all settings?", () => {
-            // Reset preset state cause it's not bound to settings
-            currentPreset = (Object.keys(PRESETS) as (keyof typeof PRESETS)[])
-                .find(p => "default" in PRESETS[p] && PRESETS[p].default)!;
-            // Reset settings
-            resetSettingsContext(settings);
-        })
+        triggerConfirmModal(modalStore,
+            "Are you sure you want to reset all settings?", 
+            () => {
+                // Reset preset state cause it's not bound to settings
+                currentPreset = (Object.keys(PRESETS) as (keyof typeof PRESETS)[])
+                    .find(p => "default" in PRESETS[p] && PRESETS[p].default)!;
+                // Reset settings
+                resetSettingsContext(settings);
+            }
+        )
     }
 
     // DELEGATES
@@ -106,11 +101,14 @@
         })
     }
     function clearDelegates() {
-        modalAction("Are you sure you want to remove all delegates?", () => {
-            delegateAttributes.set({});
-            delegatesEnabled.set({});
-            currentPreset = "custom";
-        });
+        triggerConfirmModal(modalStore,
+            "Are you sure you want to remove all delegates?", 
+            () => {
+                delegateAttributes.set({});
+                delegatesEnabled.set({});
+                currentPreset = "custom";
+            }
+        );
     }
 
     /**

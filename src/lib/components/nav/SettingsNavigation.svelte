@@ -2,30 +2,25 @@
     import { goto } from "$app/navigation";
     import { base } from "$app/paths";
     import { getSessionDataContext, resetSessionDataContext } from "$lib/stores/session";
-    
+    import { triggerConfirmModal } from "$lib/util";
+
     import Icon from "@iconify/svelte";
-    import { getModalStore, LightSwitch, type ModalSettings } from "@skeletonlabs/skeleton";
+    import { getModalStore, LightSwitch } from "@skeletonlabs/skeleton";
 
     export let close: () => void;
 
     const sessionData = getSessionDataContext();
     const modalStore = getModalStore();
     
-    function modalAction(body: string, successCallback: () => void, errorCallback: () => void = () => {}) {
-        const modal: ModalSettings = {
-            type: "confirm",
-            title: "Confirm",
-            body,
-            response: (r: boolean) => r ? successCallback() : errorCallback(),
-        };
-        modalStore.trigger(modal);
-    }
     function clearSession() {
         close();
-        modalAction("Are you sure you want to reset the session?", () => {
-            resetSessionDataContext(sessionData);
-            goto(`${base}/dashboard/roll-call`);
-        })
+        triggerConfirmModal(modalStore,
+            "Are you sure you want to reset the session?", 
+            () => {
+                resetSessionDataContext(sessionData);
+                goto(`${base}/dashboard/roll-call`);
+            }
+        )
     }
 </script>
 
