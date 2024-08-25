@@ -15,7 +15,7 @@
 </script>
 
 <h2 
-    class="h2 p-1 text-center break-all" 
+    class="h2 text-center break-all" 
     contenteditable 
     on:focusout={updateTitle} 
     on:keydown={keyDown} 
