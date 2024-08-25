@@ -30,6 +30,13 @@ export {
     getStoreContext as getSettingsContext
 };
 
+/**
+ * Creates an object which holds a view of the settings.
+ * 
+ * This is created so that settings can be accessed using the session data store
+ * whilst preventing accidental modifications to the settings
+ * and simplifying unimportant details for the session.
+ */
 export function createAccessibleSettings(): AccessibleSettings {
     const settings = getStoreContext();
     return {

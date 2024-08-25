@@ -1,27 +1,105 @@
 import type { Readable, Writable } from "svelte/store";
 
+/**
+ * Attributes each delegate in a given preset should have.
+ * 
+ * A given preset in `delegate_presets` 
+ * should match the schema `Record<string, DelegateAttrs>.
+ */
 export type DelegateAttrs = {
+    /**
+     * The official name of the delegation.
+     */
     name: string,
+    /**
+     * Name aliases for the delegation.
+     * 
+     * This will never be shown, but is used to improve delegate
+     * input autocomplete.
+     */
     aliases: string[]
 }
 
-// Used to define sort entry:
+// These types are used to define motion sorting.
+
+/**
+ * All possible categories of motion.
+ * Note that this doesn't perfectly align to `MotionKind`.
+ */
 export type SortKind = "mod" | "unmod" | "rr" | "other" | "ext";
+/**
+ * All possible properties that can define the order between
+ * motions of the same `SortKind`.
+ */
 export type SortOrderProperty = "totalTime" | "speakingTime" | "topic" | "delegate" | "nSpeakers";
+/**
+ * A `SortOrderProperty` alongside 
+ * whether the items should be in ascending or descending order.
+ */
 export type SortOrderKey = {
     property: SortOrderProperty,
     ascending: boolean
 };
+/**
+ * The order definition for a given set of motion categories.
+ * 
+ * This defines which categories to group and how to break ties 
+ * between motions of the same category.
+ * 
+ * For example, take this `SortEntry`:
+ * ```ts
+ * {
+ *   kind: ["mod", "rr"],
+ *   order: [
+ *     { property: "totalTime", ascending: false },
+ *     { property: "nSpeakers", ascending: false }
+ *   ]
+ * }
+ * ```
+ * 
+ * This means that for motions of type `"mod"` or `"rr"`, 
+ * they should:
+ * 1. first be sorted by total time in descending order, 
+ * 2. then by number of spekers in descending order,
+ * 3. then (implicitly) by order received.
+ * 
+ * A array of `SortEntry`s (`SortEntry[]`) defines the complete sort order.
+ */
 export type SortEntry = {
+    /**
+     * The categories of motion this entry applies to.
+     */
     kind: SortKind[],
+    /**
+     * The order.
+     */
     order: SortOrderKey[]
 };
 
+// These types are used to define settings.
+
+/**
+ * Simple toggle preferences.
+ */
 export type Preferences = {
+    /**
+     * Whether or not to enable the round robin motion.
+     */
     enableMotionRoundRobin: boolean,
+    /**
+     * Whether or not to enable extensions.
+     */
     enableMotionExt: boolean,
+    /**
+     * Whether the main timer in a moderated caucus (and related)
+     * should automatically pause when the delegate timer pauses.
+     */
     pauseMainTimer: boolean
 }
+
+/**
+ * All configurable settings (in store format).
+ */
 export type Settings = {
     /**
      * Delegate keys to characteristic data about the delegate (e.g., name and aliases)
@@ -51,6 +129,11 @@ export type Settings = {
      */
     preferences: Writable<Preferences>
 };
+
+/**
+ * A wrapper type around settings to designate all accessible settings
+ * in `SessionData`.
+ */
 export type AccessibleSettings = {
     delegateAttributes: Readable<Record<string, DelegateAttrs>>,
     sortOrder: Readable<SortEntry[]>,
@@ -87,7 +170,13 @@ export type Motion = {
 export type MotionKind = Motion["kind"];
 
 export type Speaker = {
+    /**
+     * The key of the delegate.
+     */
     key: string,
+    /**
+     * Whether they have completed speaking.
+     */
     completed: boolean
 };
 
