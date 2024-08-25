@@ -1,15 +1,13 @@
 <script lang="ts">
     import { base } from "$app/paths";
-    import { resetSessionDataContext, SESSION_DATA_KEY } from "$lib/dashboard/stores";
+    import { getSessionDataContext, resetSessionDataContext } from "$lib/stores/session";
     import Icon from "@iconify/svelte";
     import { getModalStore, LightSwitch, type ModalSettings } from "@skeletonlabs/skeleton";
-    import type { SessionData } from "./types";
-    import { getContext } from "svelte";
     import { goto } from "$app/navigation";
 
     export let close: () => void;
 
-    const sessionData = getContext<SessionData>(SESSION_DATA_KEY);
+    const sessionData = getSessionDataContext();
     const modalStore = getModalStore();
     
     function modalAction(body: string, successCallback: () => void, errorCallback: () => void = () => {}) {

@@ -3,15 +3,14 @@
     import BarTitle from "$lib/dashboard/BarTitle.svelte";
     import LabeledSlideToggle from "$lib/dashboard/LabeledSlideToggle.svelte";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/dashboard/points-motions/sort";
-    import type { DelegateAttrs, Preferences, Settings } from "$lib/dashboard/types";
+    import type { DelegateAttrs, Preferences } from "$lib/dashboard/types";
     import EditForm from "$lib/settings/EditForm.svelte";
-    import { resetSettingsContext, SETTINGS_KEY } from "$lib/settings/stores";
+    import { getSettingsContext, resetSettingsContext } from "$lib/stores/settings";
     import Icon from "@iconify/svelte";
     import { FileButton, getModalStore, type ModalSettings } from "@skeletonlabs/skeleton";
-    import { getContext } from "svelte";
     import { get, type Writable } from "svelte/store";
 
-    const settings = getContext<Settings>(SETTINGS_KEY);
+    const settings = getSettingsContext();
     const { delegateAttributes, sortOrder, delegatesEnabled, title, preferences } = settings;
     let delsEnabledAll: boolean | undefined;
     $: {

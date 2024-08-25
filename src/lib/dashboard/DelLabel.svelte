@@ -1,9 +1,7 @@
 <script lang="ts">
-    import { SESSION_DATA_KEY } from "./stores";
-    import type { SessionData } from "./types";
-    import { getContext } from "svelte";
+    import { getSessionDataContext } from "$lib/stores/session";
 
-    const { settings: { delegateAttributes } } = getContext<SessionData>(SESSION_DATA_KEY);
+    const { settings: { delegateAttributes } } = getSessionDataContext();
 
     export let speaker: string | undefined = undefined;
     export let height: string = "h-[25dvh]";

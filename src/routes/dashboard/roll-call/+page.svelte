@@ -1,9 +1,7 @@
 <script lang="ts">
-  import { SESSION_DATA_KEY } from "$lib/dashboard/stores";
-  import type { SessionData } from "$lib/dashboard/types";
-  import { getContext } from "svelte";
+  import { getSessionDataContext } from "$lib/stores/session";
 
-  const { settings: { delegateAttributes }, delegateAttendance } = getContext<SessionData>(SESSION_DATA_KEY);
+  const { settings: { delegateAttributes }, delegateAttendance } = getSessionDataContext();
 </script>
 
 <!-- Render a table to display participants and their statuses -->

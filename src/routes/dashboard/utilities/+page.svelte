@@ -2,16 +2,14 @@
     import DelAutocomplete from "$lib/dashboard/DelAutocomplete.svelte";
     import DelLabel from "$lib/dashboard/DelLabel.svelte";
     import LabeledSlideToggle from "$lib/dashboard/LabeledSlideToggle.svelte";
-    import { SESSION_DATA_KEY } from "$lib/dashboard/stores";
     import Timer from "$lib/dashboard/Timer.svelte";
-    import type { SessionData } from "$lib/dashboard/types";
+    import { getSessionDataContext } from "$lib/stores/session";
     import { parseTime } from "$lib/time";
     import Icon from "@iconify/svelte";
     import { popup, type PopupSettings } from "@skeletonlabs/skeleton";
-    import { getContext } from "svelte";
     import type { Readable } from "svelte/store";
 
-    const { settings: { delegateAttributes }, presentDelegates } = getContext<SessionData>(SESSION_DATA_KEY);
+    const { settings: { delegateAttributes }, presentDelegates } = getSessionDataContext();
 
     // Timer
     let timerEnabled: boolean = true;

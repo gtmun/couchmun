@@ -3,7 +3,7 @@
     import BarTitle from '$lib/dashboard/BarTitle.svelte';
     import Navigation from '$lib/dashboard/Navigation.svelte';
     import SettingsNavigation from '$lib/dashboard/SettingsNavigation.svelte';
-    import { createSessionDataContext } from '$lib/dashboard/stores';
+    import { createSessionDataContext } from '$lib/stores/session';
     import Icon from "@iconify/svelte";
     import { AppBar, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
 

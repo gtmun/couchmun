@@ -5,17 +5,17 @@
   import { MOTION_FIELDS, MOTION_LABELS, createMotionSchema } from "$lib/dashboard/points-motions/definitions";
   import { formatValidationError } from "$lib/dashboard/points-motions/form_validation";
   import { compareMotions as motionComparator } from "$lib/dashboard/points-motions/sort";
-  import { SESSION_DATA_KEY } from "$lib/dashboard/stores";
-  import type { Motion, SessionData } from "$lib/dashboard/types";
+  import type { Motion } from "$lib/dashboard/types";
+  import { getSessionDataContext } from "$lib/stores/session";
   import { addColons, parseTime, stringifyTime } from "$lib/time";
-  import { getContext, onMount } from "svelte";
+  import { onMount } from "svelte";
 
   import Icon from "@iconify/svelte";
   import { popup } from "@skeletonlabs/skeleton";
   import Sortable from "sortablejs";
   import type { z } from "zod";
 
-  const { settings: { delegateAttributes, sortOrder }, motions, presentDelegates, selectedMotion } = getContext<SessionData>(SESSION_DATA_KEY);
+  const { settings: { delegateAttributes, sortOrder }, motions, presentDelegates, selectedMotion } = getSessionDataContext();
 
   type Formify<T> = T extends number ? `${T}` : T;
   // acts like Partial<O>, but: 

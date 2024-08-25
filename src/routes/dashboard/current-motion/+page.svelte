@@ -3,11 +3,9 @@
     import ModCaucus from "$lib/dashboard/motion/ModCaucus.svelte";
     import RoundRobin from "$lib/dashboard/motion/RoundRobin.svelte";
     import UnmodCaucus from "$lib/dashboard/motion/UnmodCaucus.svelte";
-    import { SESSION_DATA_KEY } from "$lib/dashboard/stores";
-    import type { SessionData } from "$lib/dashboard/types";
-    import { getContext } from "svelte";
+    import { getSessionDataContext } from "$lib/stores/session";
 
-    const { selectedMotion } = getContext<SessionData>(SESSION_DATA_KEY);
+    const { selectedMotion } = getSessionDataContext();
 
     const isExhaustive = (s: never) => s;
 </script>
