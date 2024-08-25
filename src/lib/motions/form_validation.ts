@@ -1,5 +1,5 @@
-import type { DelegateAttrs } from "$lib/dashboard/types";
-import { parseTime } from "$lib/time";
+import type { DelegateAttrs } from "$lib/types";
+import { parseTime } from "$lib/util/time";
 import { z } from "zod";
 
 export function nonEmptyString(...params: Parameters<typeof z.string>) {

@@ -1,9 +1,10 @@
 <script lang="ts">
+    import { goto } from "$app/navigation";
     import { base } from "$app/paths";
     import { getSessionDataContext, resetSessionDataContext } from "$lib/stores/session";
+    
     import Icon from "@iconify/svelte";
     import { getModalStore, LightSwitch, type ModalSettings } from "@skeletonlabs/skeleton";
-    import { goto } from "$app/navigation";
 
     export let close: () => void;
 

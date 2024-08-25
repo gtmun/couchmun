@@ -1,6 +1,6 @@
 <script lang="ts">
-    import Timer from "$lib/dashboard/Timer.svelte";
-    import type { Motion } from "$lib/dashboard/types";
+    import Timer from "$lib/components/Timer.svelte";
+    import type { Motion } from "$lib/types";
     
     export let motion: Motion & { kind: "unmod" };
 

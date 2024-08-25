@@ -1,13 +1,14 @@
 <script lang="ts">
-    import DelAutocomplete from "$lib/dashboard/DelAutocomplete.svelte";
-    import DelLabel from "$lib/dashboard/DelLabel.svelte";
-    import LabeledSlideToggle from "$lib/dashboard/LabeledSlideToggle.svelte";
-    import Timer from "$lib/dashboard/Timer.svelte";
+    import DelAutocomplete from "$lib/components/del-input/DelAutocomplete.svelte";
+    import DelLabel from "$lib/components/DelLabel.svelte";
+    import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
+    import Timer from "$lib/components/Timer.svelte";
     import { getSessionDataContext } from "$lib/stores/session";
-    import { parseTime } from "$lib/time";
+    import { parseTime } from "$lib/util/time";
+
+    import type { Readable } from "svelte/store";
     import Icon from "@iconify/svelte";
     import { popup, type PopupSettings } from "@skeletonlabs/skeleton";
-    import type { Readable } from "svelte/store";
 
     const { settings: { delegateAttributes }, presentDelegates } = getSessionDataContext();
 

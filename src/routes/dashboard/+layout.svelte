@@ -1,9 +1,10 @@
 <script lang="ts">
-    import BarStats from '$lib/dashboard/BarStats.svelte';
-    import BarTitle from '$lib/dashboard/BarTitle.svelte';
-    import Navigation from '$lib/dashboard/Navigation.svelte';
-    import SettingsNavigation from '$lib/dashboard/SettingsNavigation.svelte';
+    import BarStats from '$lib/components/app-bar/BarStats.svelte';
+    import BarTitle from '$lib/components/app-bar/BarTitle.svelte';
+    import Navigation from '$lib/components/nav/Navigation.svelte';
+    import SettingsNavigation from '$lib/components/nav/SettingsNavigation.svelte';
     import { createSessionDataContext } from '$lib/stores/session';
+    
     import Icon from "@iconify/svelte";
     import { AppBar, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
 

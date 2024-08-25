@@ -1,7 +1,8 @@
 <script lang="ts">
-    import type { DelegateAttrs, Speaker } from "./types";
-    import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "./DelPopup.svelte";
-    import { formatValidationError, nonEmptyString } from "./points-motions/form_validation";
+    import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/components/del-input/DelPopup.svelte";
+    import { formatValidationError, nonEmptyString } from "$lib/motions/form_validation";
+    import type { DelegateAttrs, Speaker } from "$lib/types";
+    
     import { readonly, writable } from "svelte/store";
     import type { z } from "zod";
     import Icon from "@iconify/svelte";

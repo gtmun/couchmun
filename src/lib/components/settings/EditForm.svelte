@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { DelegateAttrs } from "$lib/dashboard/types";
+    import type { DelegateAttrs } from "$lib/types";
     import { getModalStore } from "@skeletonlabs/skeleton";
 
     export let key: string | undefined = undefined;

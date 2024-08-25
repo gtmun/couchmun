@@ -1,4 +1,4 @@
-import type { Motion, SortEntry, SortKind, SortOrderProperty } from "../types";
+import type { Motion, SortEntry, SortKind, SortOrderProperty } from "$lib/types";
 
 type Comparator<K> = (a: K, b: K) => number;
 

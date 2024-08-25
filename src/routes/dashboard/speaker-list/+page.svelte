@@ -1,10 +1,11 @@
 <script lang="ts">
-    import DelLabel from "$lib/dashboard/DelLabel.svelte";
-    import { presentDelegateSchema } from "$lib/dashboard/points-motions/form_validation";
-    import SpeakerList from "$lib/dashboard/SpeakerList.svelte";
-    import Timer from "$lib/dashboard/Timer.svelte";
+    import DelLabel from "$lib/components/DelLabel.svelte";
+    import SpeakerList from "$lib/components/SpeakerList.svelte";
+    import Timer from "$lib/components/Timer.svelte";
+    import { presentDelegateSchema } from "$lib/motions/form_validation";
     import { getSessionDataContext } from "$lib/stores/session";
-    import { parseTime } from "$lib/time";
+    import { parseTime } from "$lib/util/time";
+    
     import type { Readable } from "svelte/store";
 
     const { settings: { delegateAttributes }, presentDelegates, speakersList: order } = getSessionDataContext();

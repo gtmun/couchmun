@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { sendMessage } from "$lib/panel/admin";
+    import { sendMessage } from "$lib/admin-panel/admin";
 
 
 

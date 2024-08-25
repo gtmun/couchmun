@@ -1,7 +1,7 @@
 <script lang="ts">
+    import type { DelegateAttrs } from "$lib/types";
+    import DelAutocomplete from "$lib/components/del-input/DelAutocomplete.svelte";
     import { type PopupSettings } from "@skeletonlabs/skeleton";
-    import type { DelegateAttrs } from "./types";
-    import DelAutocomplete from "./DelAutocomplete.svelte";
 
     export let popupID: string;
     export let input: string | undefined;

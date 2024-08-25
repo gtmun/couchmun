@@ -4,7 +4,7 @@
     and the duration prop to control how many seconds the timer should run for.
 -->
 <script lang="ts">
-    import { stringifyTime } from "$lib/time";
+    import { stringifyTime } from "$lib/util/time";
     import { ProgressBar } from "@skeletonlabs/skeleton";
     import { readonly, writable } from "svelte/store";
 

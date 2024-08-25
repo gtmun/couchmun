@@ -1,6 +1,6 @@
-import { DEFAULT_SORT_PRIORITY } from "$lib/dashboard/points-motions/definitions";
-import type { AccessibleSettings, Settings } from "$lib/dashboard/types";
 import DEFAULT_DELEGATES from '$lib/delegate_presets/un_delegates.json';
+import { DEFAULT_SORT_PRIORITY } from "$lib/motions/definitions";
+import type { AccessibleSettings, Settings } from "$lib/types";
 import { derived, readonly } from "svelte/store";
 import { createStore } from ".";
 

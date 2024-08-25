@@ -1,13 +1,13 @@
 <script lang="ts">
   import { base } from "$app/paths";
-  import LabeledSlideToggle from "$lib/dashboard/LabeledSlideToggle.svelte";
-  import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/dashboard/DelPopup.svelte";
-  import { MOTION_FIELDS, MOTION_LABELS, createMotionSchema } from "$lib/dashboard/points-motions/definitions";
-  import { formatValidationError } from "$lib/dashboard/points-motions/form_validation";
-  import { compareMotions as motionComparator } from "$lib/dashboard/points-motions/sort";
-  import type { Motion } from "$lib/dashboard/types";
+  import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
+  import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/components/del-input/DelPopup.svelte";
+  import { MOTION_FIELDS, MOTION_LABELS, createMotionSchema } from "$lib/motions/definitions";
+  import { formatValidationError } from "$lib/motions/form_validation";
+  import { compareMotions as motionComparator } from "$lib/motions/sort";
   import { getSessionDataContext } from "$lib/stores/session";
-  import { addColons, parseTime, stringifyTime } from "$lib/time";
+  import type { Motion } from "$lib/types";
+  import { addColons, parseTime, stringifyTime } from "$lib/util/time";
 
   import Icon from "@iconify/svelte";
   import { popup } from "@skeletonlabs/skeleton";

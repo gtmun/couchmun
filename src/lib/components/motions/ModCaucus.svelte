@@ -1,26 +1,29 @@
 <script lang="ts">
-    import DelLabel from "$lib/dashboard/DelLabel.svelte";
-    import SpeakerList from "$lib/dashboard/SpeakerList.svelte";
-    import Timer from "$lib/dashboard/Timer.svelte";
-    import type { Motion, Speaker } from "$lib/dashboard/types";
+    import DelLabel from "$lib/components/DelLabel.svelte";
+    import SpeakerList from "$lib/components/SpeakerList.svelte";
+    import Timer from "$lib/components/Timer.svelte";
+    import { presentDelegateSchema } from "$lib/motions/form_validation";
     import { getSessionDataContext } from "$lib/stores/session";
+    import type { Motion, Speaker } from "$lib/types";
     import type { Readable } from "svelte/store";
 
-    export let motion: Motion & { kind: "rr" };
+    export let motion: Motion & { kind: "mod" };
 
     const { settings: { delegateAttributes }, presentDelegates } = getSessionDataContext();
 
     // Timer
     let running: boolean = false;
-    let reset: () => void;
-    let canReset: Readable<boolean>;
+    let totalReset: () => void;
+    let delReset: () => void;
+    let totalResetable: Readable<boolean>;
+    let delResetable: Readable<boolean>;
     
     // Speakers List
     let speakersList: SpeakerList;
-    let order: Speaker[] = $presentDelegates.map(key => ({ key, completed: false }));
+    let order: Speaker[] = [];
     let allDone: Readable<boolean>;
     let selectedSpeaker: Readable<string | undefined>;
-    $: ($selectedSpeaker, reset?.());
+    $: ($selectedSpeaker, reset());
 
     // Button triggers
     function start() {
@@ -29,6 +32,13 @@
     }
     function pause() {
         running = false;
+    }
+    function reset() {
+        delReset?.();
+    }
+    function resetAll() {
+        totalReset?.();
+        delReset?.();
     }
     function next() {
         reset();
@@ -42,8 +52,14 @@
         <DelLabel speaker={$selectedSpeaker} />
         <Timer 
             duration={motion.speakingTime} 
-            bind:reset
-            bind:canReset
+            bind:reset={delReset} 
+            bind:canReset={delResetable}
+            bind:running 
+        />
+        <Timer 
+            duration={motion.totalTime} 
+            bind:reset={totalReset} 
+            bind:canReset={totalResetable}
             bind:running 
         />
         <div class="flex flex-row gap-3 justify-center">
@@ -53,7 +69,8 @@
                 <button class="btn variant-filled-primary" on:click={pause}>Pause</button>
             {/if}
             <button class="btn variant-filled-primary" disabled={$allDone} on:click={next}>Next</button>
-            <button class="btn variant-filled-primary" disabled={!$canReset} on:click={reset}>Reset</button>
+            <button class="btn variant-filled-primary" disabled={!$delResetable} on:click={reset}>Reset</button>
+            <button class="btn variant-filled-primary" disabled={!$totalResetable} on:click={resetAll}>Reset all</button>
         </div>
     </div>
     <!-- Right -->
@@ -63,6 +80,10 @@
             bind:order
             delegates={$delegateAttributes}
             bind:this={speakersList}
+            useDefaultControls={{
+                presentDelegates: $presentDelegates,
+                validator: presentDelegateSchema
+            }}
             bind:allDone
             bind:selectedSpeaker
         />

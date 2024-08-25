@@ -1,8 +1,8 @@
 <script lang="ts">
     import { base } from "$app/paths";
-    import ModCaucus from "$lib/dashboard/motion/ModCaucus.svelte";
-    import RoundRobin from "$lib/dashboard/motion/RoundRobin.svelte";
-    import UnmodCaucus from "$lib/dashboard/motion/UnmodCaucus.svelte";
+    import ModCaucus from "$lib/components/motions/ModCaucus.svelte";
+    import RoundRobin from "$lib/components/motions/RoundRobin.svelte";
+    import UnmodCaucus from "$lib/components/motions/UnmodCaucus.svelte";
     import { getSessionDataContext } from "$lib/stores/session";
 
     const { selectedMotion } = getSessionDataContext();

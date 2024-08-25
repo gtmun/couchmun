@@ -1,6 +1,6 @@
 <script lang="ts">
+    import type { DelegateAttrs } from "$lib/types";
     import { Autocomplete, type AutocompleteOption } from "@skeletonlabs/skeleton";
-    import type { DelegateAttrs } from "./types";
 
     export let input: string | undefined;
     export let delegates: Record<string, DelegateAttrs>;

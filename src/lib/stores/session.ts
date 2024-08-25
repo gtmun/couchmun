@@ -1,6 +1,6 @@
 import { derived } from "svelte/store";
-import type { SessionData } from "$lib/dashboard/types";
 import { createAccessibleSettings } from "$lib/stores/settings";
+import type { SessionData } from "$lib/types";
 import { createStore } from ".";
 
 const { createContext, resetContext, getStoreContext } = createStore<SessionData>("sessionData",

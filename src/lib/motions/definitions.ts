@@ -1,5 +1,5 @@
-import type { DelegateAttrs, Motion, MotionKind, SortEntry } from "../types";
-import { presentDelegateSchema, refineSpeakingTime, timeSchema, topicSchema } from "./form_validation";
+import type { DelegateAttrs, Motion, MotionKind, SortEntry } from "$lib/types";
+import { presentDelegateSchema, refineSpeakingTime, timeSchema, topicSchema } from "$lib/motions/form_validation";
 import { z } from "zod";
 
 /**
