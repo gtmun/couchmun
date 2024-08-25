@@ -8,7 +8,6 @@
   import type { Motion } from "$lib/dashboard/types";
   import { getSessionDataContext } from "$lib/stores/session";
   import { addColons, parseTime, stringifyTime } from "$lib/time";
-  import { onMount } from "svelte";
 
   import Icon from "@iconify/svelte";
   import { popup } from "@skeletonlabs/skeleton";
@@ -30,19 +29,9 @@
   let inputMotion: Form<Motion, "kind"> = defaultInputMotion();
   let inputError: z.ZodIssue | undefined = undefined;
 
-  let tableBody: HTMLTableSectionElement;
-  onMount(() => {
-    Sortable.create(tableBody, {
-      animation: 150,
-      ghostClass: "!bg-surface-400/25",
-      dragClass: "!bg-surface-50",
-      fallbackOnBody: true,
-      store: {
-        get: () => Object.keys($motions.length),
-        set: (sortable) => motions.update($m => sortable.toArray().map(k => $m[+k]))
-      }
-    });
-  });
+  function sortable(el: HTMLElement, options?: Sortable.Options) {
+    Sortable.create(el, options);
+  }
 
   function numSpeakersStr(totalTime: number | string | undefined, speakingTime: number | string | undefined): string | undefined {
     // Parse arguments as either seconds or time string.
@@ -278,7 +267,16 @@
             <td class="px-3 w-24">No. of Speakers</td>
           </tr>
         </thead>
-        <tbody bind:this={tableBody}>
+        <tbody use:sortable={{
+          animation: 150,
+          ghostClass: "!bg-surface-400/25",
+          dragClass: "!bg-surface-50",
+          fallbackOnBody: true,
+          store: {
+            get: () => Object.keys($motions.length),
+            set: (sortable) => motions.update($m => sortable.toArray().map(k => $m[+k]))
+          }
+        }}>
           {#each $motions as motion, i (motion)}
             <tr data-id={i}>
               <td>
