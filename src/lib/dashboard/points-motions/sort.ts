@@ -59,13 +59,6 @@ function getSortProperty(m: Motion, key: SortOrderProperty): unknown {
     throw Error(`Motion cannot be sorted by ${key}`);
 }
 
-function x() {
-    const x = {};
-    if (hasSortProperty(x, "delegate")) {
-        x.delegate;
-    }
-}
-
 const compare = ((a, b, reverse: boolean = false) => (reverse ? -1 : 1) * (a < b ? -1 : a > b ? 1 : 0)) satisfies Comparator<any>;
 
 export function compareMotions(priority: SortEntry[]): Comparator<Motion> {

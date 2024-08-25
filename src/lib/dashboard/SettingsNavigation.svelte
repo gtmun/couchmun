@@ -56,9 +56,9 @@
 
 <div class="p-4 flex flex-col gap-3">
     <button 
-        class="btn variant-filled-error" 
+        class="btn variant-ghost-error" 
         on:click={clearSession}
     >
         Clear Session
-</button>
+    </button>
 </div>

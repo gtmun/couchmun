@@ -31,7 +31,7 @@
   let inputError: z.ZodIssue | undefined = undefined;
 
   let tableBody: HTMLTableSectionElement;
-  onMount(async() => {
+  onMount(() => {
     Sortable.create(tableBody, {
       animation: 150,
       ghostClass: "!bg-surface-400/25",
