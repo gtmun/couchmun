@@ -255,7 +255,7 @@
     </div>
     
     <div class="table-container">
-      <table class="table table-fixed motion-table">
+      <table class="table motion-table">
         <thead>
           <tr>
             <td class="w-24"></td>
@@ -273,7 +273,7 @@
           dragClass: "!bg-surface-50",
           fallbackOnBody: true,
           store: {
-            get: () => Object.keys($motions.length),
+            get: () => Object.keys(Array.from({ length: $motions.length })),
             set: (sortable) => motions.update($m => sortable.toArray().map(k => $m[+k]))
           }
         }}>
