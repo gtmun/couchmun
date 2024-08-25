@@ -3,6 +3,7 @@
     import BarTitle from "$lib/components/app-bar/BarTitle.svelte";
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
     import EditForm from "$lib/components/settings/EditForm.svelte";
+    import { defaultPresetKey, getPreset, PRESETS } from "$lib/delegate_presets";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
     import { getSettingsContext, resetSettingsContext } from "$lib/stores/settings";
     import type { DelegateAttrs, Preferences } from "$lib/types";
@@ -20,10 +21,6 @@
         delsEnabledAll = rest.every(k => k === first) ? first : undefined;
     }
 
-    const PRESETS = {
-        un: { label: "United Nations", delegates: "un_delegates", default: true },
-        custom: { label: "Custom", delegates: undefined }
-    };
     const PREFERENCES_LABELS = {
         enableMotionRoundRobin: { label: "Enable round robin" },
         enableMotionExt: { label: "Enable extensions" },
@@ -74,8 +71,7 @@
             "Are you sure you want to reset all settings?", 
             () => {
                 // Reset preset state cause it's not bound to settings
-                currentPreset = (Object.keys(PRESETS) as (keyof typeof PRESETS)[])
-                    .find(p => "default" in PRESETS[p] && PRESETS[p].default)!;
+                currentPreset = defaultPresetKey();
                 // Reset settings
                 resetSettingsContext(settings);
             }
@@ -85,10 +81,9 @@
     // DELEGATES
     let currentPreset: keyof typeof PRESETS;
     async function setPreset() {
-        const delURL = PRESETS[currentPreset].delegates;
-        if (typeof delURL === "string") {
-            const { default: json } = await import(`$lib/delegate_presets/${delURL}.json`);
-            delegateAttributes.set(structuredClone(json));
+        const preset = await getPreset(currentPreset);
+        if (typeof preset !== "undefined") {
+            delegateAttributes.set(preset);
             setAllEnableStatuses(true);
         }
     }
