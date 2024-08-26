@@ -1,10 +1,12 @@
-import { getDefaultPreset } from "$lib/delegate_presets";
+// HACK: this really should use getDefaultPreset from "$lib/delegate_presets",
+// but it can't cause that's async and top-level await isn't supported pre-2022 browser.
+// so unfortunately this has to be hardcoded
+import DEFAULT_DELEGATES from "$lib/delegate_presets/preset-un.json";
 import { DEFAULT_SORT_PRIORITY } from "$lib/motions/definitions";
 import type { AccessibleSettings, Settings } from "$lib/types";
 import { derived, readonly } from "svelte/store";
 import { createStore } from ".";
 
-const DEFAULT_DELEGATES = await getDefaultPreset();
 const { getDefaults, createContext, resetContext, getStoreContext } = createStore<Settings>("settings", 
     {
         delegateAttributes: DEFAULT_DELEGATES,
