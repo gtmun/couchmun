@@ -50,13 +50,15 @@
             duration={motion.speakingTime} 
             bind:reset={delReset} 
             bind:canReset={delResetable}
-            bind:running 
+            bind:running
+            disableKeyHandlers={typeof $selectedSpeaker === "undefined"}
         />
         <Timer 
             duration={motion.totalTime} 
             bind:reset={totalReset} 
             bind:canReset={totalResetable}
-            bind:running 
+            bind:running
+            disableKeyHandlers
         />
         <div class="flex flex-row gap-3 justify-center">
             {#if !running}

@@ -12,7 +12,8 @@
     export let height: string = "h-10";
     export let running: boolean = false;
     export let hideText: boolean = false;
-    
+    export let disableKeyHandlers: boolean = false;
+
     $: DURATION_MS = duration * 1000;
     $: (DURATION_MS, reset()); // on duration update, reset timer
     
@@ -91,6 +92,22 @@
         if (value > max) return max;
         return value;
     }
+
+    function keydown(e: KeyboardEvent) {
+        if (disableKeyHandlers) return;
+        if (e.target !== document.body) return;
+
+        if (!e.repeat) {
+            if (e.code === "Enter") running = !running;
+            if (e.code === "Space") running = true;
+        }
+    }
+    function keyup(e: KeyboardEvent) {
+        if (disableKeyHandlers) return;
+        if (e.target !== document.body) return;
+
+        if (e.code === "Space") running = false;
+    }
 </script>
 
 {#if hideText}
@@ -100,5 +117,6 @@
         <h2 class="h2 text-center">{stringifyTime($secsRemaining)}/{stringifyTime(duration)}</h2>
         <ProgressBar {...barProps} />
     </div>
-
 {/if}
+
+<svelte:window on:keydown={keydown} on:keyup={keyup} />

@@ -41,6 +41,7 @@
             bind:reset
             bind:canReset
             bind:running 
+            disableKeyHandlers={typeof $selectedSpeaker === "undefined"}
         />
         <div class="flex flex-row gap-3 justify-center">
             {#if !running}
