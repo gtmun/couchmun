@@ -162,7 +162,7 @@
                     class="input" 
                     class:input-error={error}
                     bind:value={dfltControlsInput}
-                    use:popup={{ ...defaultPopupSettings(popupID), placement: "left-end" }}
+                    use:popup={{ ...defaultPopupSettings(popupID), placement: "left-end", event: "focus-blur" }}
                     {...defaultPlaceholder(useDefaultControls.presentDelegates.length === 0)}
                 />
                 <button

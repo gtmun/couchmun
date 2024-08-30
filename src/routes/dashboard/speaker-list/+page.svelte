@@ -23,14 +23,10 @@
     let selectedSpeaker: Readable<string | undefined>;
     $: ($selectedSpeaker, reset?.());
 
+    $: if (running) {
+        speakersList?.start();
+    }
     // Button triggers
-    function start() {
-        running = true;
-        speakersList.start();
-    }
-    function pause() {
-        running = false;
-    }
     function next() {
         reset();
         speakersList.next();
@@ -58,9 +54,9 @@
         />
         <div class="flex flex-row gap-3 justify-center">
             {#if !running}
-                <button class="btn variant-filled-primary" disabled={typeof $selectedSpeaker === "undefined"} on:click={start}>Start</button>
+                <button class="btn variant-filled-primary" disabled={typeof $selectedSpeaker === "undefined"} on:click={() => running = true}>Start</button>
             {:else}
-                <button class="btn variant-filled-primary" on:click={pause}>Pause</button>
+                <button class="btn variant-filled-primary" on:click={() => running = false}>Pause</button>
             {/if}
             <button class="btn variant-filled-primary" disabled={$allDone} on:click={next}>Next</button>
             <button class="btn variant-filled-primary" disabled={!$canReset} on:click={reset}>Reset</button>
