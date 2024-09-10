@@ -36,7 +36,7 @@
         if (file) {
             const text = await file.text();
             const json = JSON.parse(text);
-            for (let [key, store] of Object.entries(settings)) {
+            for (let [key, store] of Object.entries<Writable<unknown>>(settings)) {
                 if (key in json) store.set(json[key]);
             }
         }
