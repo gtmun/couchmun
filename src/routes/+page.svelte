@@ -1,7 +1,13 @@
 <script lang="ts">
     import { base } from "$app/paths";
+    import MetaTags from "$lib/components/MetaTags.svelte";
     import Icon from "@iconify/svelte";
 </script>
+
+<MetaTags
+    title="CouchMUN"
+    description="A tool to help Model United Nations committees keep time, oversee debate, and manage delegates."
+/>
 
 <div class="flex flex-col justify-center h-screen gap-3">
     <h1 class="h1 text-center">CouchMUN</h1>
