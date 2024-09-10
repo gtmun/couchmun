@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { page } from '$app/stores';
+    import MetaTags from '$lib/components/MetaTags.svelte';
     import BarStats from '$lib/components/app-bar/BarStats.svelte';
     import BarTitle from '$lib/components/app-bar/BarTitle.svelte';
     import Navigation from '$lib/components/nav/Navigation.svelte';
@@ -25,12 +27,27 @@
     }
 
     const { settings: { title }, presentDelegates } = createSessionDataContext();
+
+    const links: Record<string, { label: string }> = {
+        "/dashboard/roll-call":      { label: "Roll Call" },
+        "/dashboard/current-motion": { label: "Current Motion" },
+        "/dashboard/speaker-list":   { label: "Speakers List" },
+        "/dashboard/points-motions": { label: "Points and Motions" },
+        "/dashboard/utilities":      { label: "Utilities" },
+    };
+    $: thisLink = typeof $page.route.id == "string" ? links[$page.route.id] : undefined;
 </script>
+
+{#if typeof thisLink !== "undefined"}
+    <MetaTags title="{thisLink.label} &middot; CouchMUN" />
+    {:else}
+    <MetaTags title="CouchMUN" />
+{/if}
 
 <!-- Navigation drawer -->
 <Drawer>
     {#if $drawerStore.id === "navigation"}
-        <Navigation close={drawerStore.close} />
+        <Navigation close={drawerStore.close} {links} />
         {:else if $drawerStore.id === "settings"}
         <SettingsNavigation close={drawerStore.close} />
     {/if}

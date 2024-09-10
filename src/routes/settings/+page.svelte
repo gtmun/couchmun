@@ -1,7 +1,8 @@
 <script lang="ts">
     import { base } from "$app/paths";
-    import BarTitle from "$lib/components/app-bar/BarTitle.svelte";
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
+    import MetaTags from "$lib/components/MetaTags.svelte";
+    import BarTitle from "$lib/components/app-bar/BarTitle.svelte";
     import EditForm from "$lib/components/settings/EditForm.svelte";
     import { defaultPresetKey, getPreset, PRESETS } from "$lib/delegate_presets";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
@@ -162,6 +163,8 @@
         })
     }
 </script>
+
+<MetaTags title="Settings &middot; CouchMUN" />
 
 <div class="flex flex-col p-4 gap-4">
     <div class="grid grid-cols-[36px_1fr_36px] items-center">
