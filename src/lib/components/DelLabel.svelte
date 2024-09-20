@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { getFlagUrl } from "$lib/flags/flagcdn";
     import { getSessionDataContext } from "$lib/stores/session";
 
     const { settings: { delegateAttributes } } = getSessionDataContext();
@@ -10,24 +11,14 @@
         if (typeof key === "undefined") return "";
         return $delegateAttributes[key]?.name ?? key;
     }
-
     type SpeakerImage = {
         url: URL,
         name: string
     };
     function getSpeakerImage(key: string): SpeakerImage {
-        if (key in $delegateAttributes) {
-            return {
-                url: new URL(key.toLowerCase() + ".svg", "https://flagcdn.com/"),
-                name: $delegateAttributes[key].name
-            };
-        } else {
-            // Default: UN
-            return {
-                url: new URL("https://flagcdn.com/un.svg"),
-                name: "United Nations"
-            }
-        }
+        let url = getFlagUrl(key) ?? getFlagUrl("un")!;
+        let name = getSpeakerName(key);
+        return { url, name };
     }
 </script>
 
