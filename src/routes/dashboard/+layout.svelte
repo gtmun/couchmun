@@ -30,9 +30,9 @@
 
     const links: Record<string, { label: string }> = {
         "/dashboard/roll-call":      { label: "Roll Call" },
-        "/dashboard/current-motion": { label: "Current Motion" },
         "/dashboard/speaker-list":   { label: "Speakers List" },
         "/dashboard/points-motions": { label: "Points and Motions" },
+        "/dashboard/current-motion": { label: "Current Motion" },
         "/dashboard/utilities":      { label: "Utilities" },
     };
     $: thisLink = typeof $page.route.id == "string" ? links[$page.route.id] : undefined;
