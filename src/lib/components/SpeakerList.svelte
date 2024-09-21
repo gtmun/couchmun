@@ -7,6 +7,7 @@
     import type { z } from "zod";
     import Icon from "@iconify/svelte";
     import { popup } from "@skeletonlabs/skeleton";
+    import { sortable } from "$lib/util";
 
     /**
      * The order of speakers for the speaker's list.
@@ -120,9 +121,26 @@
 </script>
 
 <div class="card p-4 overflow-y-auto flex-grow">
-    <ol class="list grid grid-cols-[auto_1fr_auto]">
-        {#each order as speaker, i}
-            <li class="!grid grid-cols-subgrid col-span-3" use:bindToMap={[liElements, speaker]}>
+    <ol class="list grid grid-cols-[auto_auto_1fr_auto]" use:sortable={{
+        animation: 150,
+        swapThreshold: 0.9,
+        ghostClass: "!bg-surface-400/25",
+        dragClass: "!bg-surface-50",
+        handle: ".handle",
+        fallbackOnBody: true,
+        store: {
+            get: () => Object.keys(Array.from({ length: order.length })),
+            set: (sortable) => order = sortable.toArray().map(k => order[+k])
+        }
+    }}>
+        {#each order as speaker, i (speaker)}
+            {@const flagURL = getFlagUrl(speaker.key)}
+            {@const speakerLabel = getLabel(speaker.key)}
+
+            <li class="!grid grid-cols-subgrid col-span-4" use:bindToMap={[liElements, speaker]} data-id={i}>
+                <div class="btn-icon handle cursor-grab">
+                    <Icon icon="mdi:drag-vertical" width="24" height="24" />
+                </div>
                 <span>{i + 1}.</span>
                 <button 
                     class="btn"

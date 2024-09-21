@@ -7,11 +7,11 @@
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import { getSessionDataContext } from "$lib/stores/session";
   import type { Motion } from "$lib/types";
+  import { sortable } from "$lib/util";
   import { addColons, parseTime, stringifyTime } from "$lib/util/time";
 
   import Icon from "@iconify/svelte";
   import { popup } from "@skeletonlabs/skeleton";
-  import Sortable from "sortablejs";
   import type { z } from "zod";
 
   const { settings: { delegateAttributes, sortOrder }, motions, presentDelegates, selectedMotion } = getSessionDataContext();
@@ -28,10 +28,6 @@
     : never;
   let inputMotion: Form<Motion, "kind"> = defaultInputMotion();
   let inputError: z.ZodIssue | undefined = undefined;
-
-  function sortable(el: HTMLElement, options?: Sortable.Options) {
-    Sortable.create(el, options);
-  }
 
   function numSpeakersStr(totalTime: number | string | undefined, speakingTime: number | string | undefined): string | undefined {
     // Parse arguments as either seconds or time string.
