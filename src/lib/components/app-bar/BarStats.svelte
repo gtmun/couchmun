@@ -5,8 +5,12 @@
     export let majOverride: number | undefined = undefined;
     export let supermajOverride: number | undefined = undefined;
 
-    $: maj = majOverride ?? Math.ceil(total / 2);
-    $: supermaj = supermajOverride ?? Math.ceil(total * 2 / 3);
+    // given n,
+    // maj is smallest integer > n/2
+    // supermaj is smallest integer > 2n/3
+    // TODO: make this cleaner
+    $: maj = majOverride ?? Math.min(Math.ceil(total / 2 + 0.01), total);
+    $: supermaj = supermajOverride ?? Math.min(Math.ceil(total * 2 / 3 + 0.01), total);
 
     const majConic: ConicStop[] = [
         { color: 'rgb(var(--color-primary-800))', start: 0, end: 50 },
