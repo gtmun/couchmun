@@ -144,19 +144,17 @@
                 </div>
                 <span>{i + 1}.</span>
                 <button 
-                    class="btn"
+                    class="btn flex items-center gap-1"
                     class:variant-filled-primary={selectedSpeaker === speaker}
                     class:variant-soft-surface={selectedSpeaker !== speaker && speaker.completed}
                     class:variant-ringed-surface={selectedSpeaker !== speaker && !speaker.completed}
                     class:hover:variant-ringed-primary={selectedSpeaker !== speaker && !speaker.completed}
                     on:click={() => selectedSpeaker = speaker}
                 >
-                <div class="flex items-center gap-1">
                     {#if flagURL}
                         <img class="h-4" src={flagURL.toString()} alt="Flag of {speakerLabel}">
                     {/if}
                     {getLabel(speaker.key)}
-                </div>
                 </button>
                 <div class="btn-icon">
                     {#if !speaker.completed}
