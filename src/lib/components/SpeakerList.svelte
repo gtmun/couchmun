@@ -7,6 +7,7 @@
     import type { z } from "zod";
     import Icon from "@iconify/svelte";
     import { popup } from "@skeletonlabs/skeleton";
+    import { getFlagUrl } from "$lib/flags/flagcdn";
     import { sortable } from "$lib/util";
 
     /**
@@ -150,7 +151,12 @@
                     class:hover:variant-ringed-primary={selectedSpeaker !== speaker && !speaker.completed}
                     on:click={() => selectedSpeaker = speaker}
                 >
+                <div class="flex items-center gap-1">
+                    {#if flagURL}
+                        <img class="h-4" src={flagURL.toString()} alt="Flag of {speakerLabel}">
+                    {/if}
                     {getLabel(speaker.key)}
+                </div>
                 </button>
                 <div class="btn-icon">
                     {#if !speaker.completed}
