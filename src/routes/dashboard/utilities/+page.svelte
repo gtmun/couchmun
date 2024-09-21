@@ -40,7 +40,6 @@
             duration = secs;
             reset();
         }
-        durInput = "";
     }
 </script>
 
@@ -86,7 +85,7 @@
                     <form class="contents" on:submit|preventDefault={setDuration}>
                         <label class="flex flex-grow items-center justify-between gap-3">
                             <span>Time</span>
-                            <input class="input" bind:value={durInput} placeholder="mm:ss" />
+                            <input class="input" bind:value={durInput} on:input={setDuration} placeholder="mm:ss" />
                         </label>
                     </form>
                 </div>
