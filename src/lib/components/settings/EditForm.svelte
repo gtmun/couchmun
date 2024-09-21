@@ -25,20 +25,20 @@
     }
 </script>
 
-<div class="card p-4">
+<div class="card p-4 w-1/2">
     <h2 class="h2 p-4">Editing {attrs.name}</h2>
     <form class="flex flex-col gap-3" on:submit|preventDefault={submitData}>
         <label>
             <span>Key</span>
-            <input class="input" bind:value={key}>
+            <input class="input" bind:value={key} required placeholder="XM">
         </label>
         <label>
             <span>Name</span>
-            <input class="input" bind:value={attrs.name}>
+            <input class="input" bind:value={attrs.name} required placeholder="Modelunia">
         </label>
         <label>
-            <span>Aliases</span>
-            <input class="input" bind:value={aliasesInput}>
+            <span>Aliases (optional)</span>
+            <input class="input" bind:value={aliasesInput} placeholder="Republic of Modelunia, Modelunic Republic">
         </label>
         <div class="flex justify-end gap-3">
             <button class="btn variant-filled-error" type="button" on:click={modalStore.close}>Cancel</button>
