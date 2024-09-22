@@ -9,6 +9,7 @@
     import { popup } from "@skeletonlabs/skeleton";
     import { getFlagUrl } from "$lib/flags/flagcdn";
     import { sortable } from "$lib/util";
+    import { tick } from "svelte";
 
     /**
      * The order of speakers for the speaker's list.
@@ -115,6 +116,44 @@
         }
     }
 
+    function getButton(i: number, btn: number): HTMLButtonElement | undefined {
+        if (0 <= i && i < order.length) {
+            return liElements.get(order[i])?.querySelectorAll("button")[btn];
+        }
+    }
+    async function onKeyDown(e: KeyboardEvent, i: number, btn: number) {
+        // On ctrl+up or ctrl+down, move speaker's list item:
+        if (e.ctrlKey || e.metaKey) {
+            if (e.code === "ArrowUp") {
+                // Swap element with element before
+                let im1 = Math.max(i - 1, 0);
+                [order[im1], order[i]] = [order[i], order[im1]];
+                // Update DOM, then apply focus to element
+                await tick();
+                getButton(im1, btn)?.focus();
+            } else if (e.code === "ArrowDown") {
+                // Swap element with element after
+                let ip1 = Math.min(i + 1, order.length - 1);
+                [order[i], order[ip1]] = [order[ip1], order[i]];
+                // Update DOM, then apply focus to element
+                await tick();
+                getButton(ip1, btn)?.focus();
+            }
+        } else {
+            // On up or down, move active element
+            if (e.code === "ArrowUp") {
+                getButton(i - 1, btn)?.focus();
+            } else if (e.code === "ArrowDown") {
+                getButton(i + 1, btn)?.focus();
+            } else if (e.code === "ArrowLeft") {
+                getButton(i, btn - 1)?.focus();
+            } else if (e.code === "ArrowRight") {
+                getButton(i, btn + 1)?.focus();
+            } else if (e.code === "Escape") {
+                (document.activeElement as HTMLElement)?.blur();
+            }
+        }
+    }
     const bindToMap = <K, V extends HTMLElement>(el: V, [map, key]: [Map<K, V>, K]) => {
         map.set(key, el);
         return { destroy() { map.delete(key); } }
@@ -150,6 +189,7 @@
                     class:variant-ringed-surface={selectedSpeaker !== speaker && !speaker.completed}
                     class:hover:variant-ringed-primary={selectedSpeaker !== speaker && !speaker.completed}
                     on:click={() => selectedSpeaker = speaker}
+                    on:keydown={(e) => onKeyDown(e, i, 0)}
                 >
                     {#if flagURL}
                         <img class="h-4" src={flagURL.toString()} alt="Flag of {speakerLabel}">
@@ -161,8 +201,9 @@
                         <button 
                             class="btn-icon variant-soft-surface hover:variant-filled-error" 
                             on:click={() => deleteSpeaker(i)}
-                            title="Delete Delegate"
-                            aria-label="Delete Delegate"
+                            on:keydown={(e) => onKeyDown(e, i, 1)}
+                            title="Delete {speakerLabel}"
+                            aria-label="Delete {speakerLabel}"
                         >
                             <Icon icon="mdi:cancel" />
                         </button>
@@ -186,7 +227,7 @@
                     class="input" 
                     class:input-error={error}
                     bind:value={dfltControlsInput}
-                    use:popup={{ ...defaultPopupSettings(popupID), placement: "left-end", event: "focus-blur" }}
+                    use:popup={{ ...defaultPopupSettings(popupID), placement: "left-end", event: "focus-click" }}
                     {...defaultPlaceholder(useDefaultControls.presentDelegates.length === 0)}
                 />
                 <button
