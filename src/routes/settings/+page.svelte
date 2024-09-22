@@ -168,7 +168,12 @@
 
 <div class="flex flex-col p-4 gap-4">
     <div class="grid grid-cols-[36px_1fr_36px] items-center">
-        <a href="{base}/dashboard" class="btn btn-icon">
+        <a
+            href="{base}/dashboard"
+            class="btn btn-icon"
+            aria-label="Return to Dashboard"
+            title="Return to Dashboard"
+        >
             <Icon icon="mdi:chevron-left" width="36" height="36" />
         </a>
         <BarTitle bind:title={$title} />
@@ -234,6 +239,7 @@
                                             <div class="card p-1 flex items-center bg-surface-300-600-token">
                                                 <span>{SORT_PROPERTY_NAMES[key.property]}</span>
                                                 <button on:click={() => key.ascending = !key.ascending}>
+                                                    <!-- TODO: add aria-label, title -->
                                                     <Icon
                                                         icon="mdi:arrow-down"
                                                         class="{key.ascending ? 'rotate-180' : ''} transition-[transform]"
@@ -292,10 +298,18 @@
                             <input class="checkbox" type="checkbox" bind:checked={$delegatesEnabled[key]}>
                         </td>
                         <td class="text-right">
-                            <button on:click={() => editDelegate(key)}>
+                            <button
+                                on:click={() => editDelegate(key)}
+                                aria-label="Edit Delegate"
+                                title="Edit Delegate"
+                            >
                                 <Icon icon="mdi:wrench" width="24" height="24" />
                             </button>
-                            <button on:click={() => deleteDelegate(key)}>
+                            <button
+                                on:click={() => deleteDelegate(key)}
+                                aria-label="Delete Delegate"
+                                title="Delete Delegate"
+                            >
                                 <Icon icon="mdi:cancel" width="24" height="24" class="text-error-500" />
                             </button>
                         </td>

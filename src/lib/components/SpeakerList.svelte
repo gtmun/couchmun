@@ -161,6 +161,8 @@
                         <button 
                             class="btn-icon variant-soft-surface hover:variant-filled-error" 
                             on:click={() => deleteSpeaker(i)}
+                            title="Delete Delegate"
+                            aria-label="Delete Delegate"
                         >
                             <Icon icon="mdi:cancel" />
                         </button>

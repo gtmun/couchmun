@@ -64,7 +64,12 @@
         >
             <svelte:fragment slot="lead">
                 <!-- Hamburger menu button -->
-                <button class="btn-icon" on:click={openNav}>
+                <button
+                    class="btn-icon"
+                    on:click={openNav}
+                    data-label="Pages"
+                    title="Pages"
+                >
                     <Icon icon="mdi:menu" width="24" height="24" />
                 </button>
             </svelte:fragment>
@@ -75,7 +80,12 @@
             </div>
             <svelte:fragment slot="trail">
                 <!-- Settings -->
-                <button class="btn-icon" on:click={openSettings}>
+                <button
+                    class="btn-icon"
+                    on:click={openSettings}
+                    data-label="Settings"
+                    title="Settings"
+                >
                     <Icon icon="mdi:gear" width="24" height="24" />
                 </button>
             </svelte:fragment>

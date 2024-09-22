@@ -245,7 +245,12 @@
   <div class="flex flex-col gap-2">
     <div class="grid grid-cols-[1fr_auto] items-center">
       <h3 class="h3 text-center">List of Motions</h3>
-      <button class="btn btn-icon" on:click={sortMotions}>
+      <button
+        class="btn btn-icon"
+        on:click={sortMotions}
+        aria-label="Sort Motions"
+        title="Sort Motions"
+      >
         <Icon icon="mdi:sort" width="24" height="24" />
       </button>
     </div>
@@ -277,10 +282,21 @@
             <tr data-id={i}>
               <td>
                 <div class="flex flex-row">
-                  <button class="btn btn-sm btn-icon" on:click={() => removeMotion(i)}>
+                  <button
+                    class="btn btn-sm btn-icon"
+                    on:click={() => removeMotion(i)}
+                    data-label="Reject Motion"
+                    title="Reject Motion"
+                  >
                     <Icon icon="mdi:cancel" width="24" height="24" class="text-error-500" />
                   </button>
-                  <a class="btn btn-sm btn-icon" on:click={() => selectMotion(motion)} href="{base}/dashboard/current-motion">
+                  <a
+                    class="btn btn-sm btn-icon"
+                    on:click={() => selectMotion(motion)}
+                    href="{base}/dashboard/current-motion"
+                    data-label="Accept Motion"
+                    title="Accept Motion"
+                  >
                     <Icon icon="mdi:check" width="24" height="24"  class="text-success-700" />
                   </a>
                 </div>

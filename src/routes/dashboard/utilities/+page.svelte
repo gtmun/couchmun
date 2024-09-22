@@ -44,7 +44,12 @@
 </script>
 
 <div class="flex flex-col h-full items-stretch">
-    <button class="btn-icon variant-filled-surface self-end" use:popup={CONFIGURE_MODAL_SETTINGS}>
+    <button
+        class="btn-icon variant-filled-surface self-end"
+        use:popup={CONFIGURE_MODAL_SETTINGS}
+        aria-label="Configure Utilities"
+        title="Configure Utilities"
+    >
         <Icon icon="mdi:wrench" width="24" height="24" />
     </button>
     <div class="flex flex-col flex-grow gap-5 justify-center">

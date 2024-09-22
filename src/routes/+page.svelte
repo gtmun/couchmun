@@ -14,8 +14,15 @@
 
     <!-- Entry buttons -->
     <div class="flex justify-center gap-3">
-        <a class="btn variant-filled-primary" href="{base}/dashboard">Open Dashboard</a>
-        <a class="btn-icon variant-filled-primary" href="{base}/settings">
+        <a class="btn variant-filled-primary" href="{base}/dashboard">
+            Open Dashboard
+        </a>
+        <a 
+            class="btn-icon variant-filled-primary" 
+            href="{base}/settings"
+            aria-label="Settings"
+            title="Settings"
+        >
             <Icon icon="mdi:gear" width="24" height="24" />
         </a>
     </div>
