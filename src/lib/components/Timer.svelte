@@ -9,6 +9,7 @@
     import { readonly, writable } from "svelte/store";
 
     export let duration: number;
+    export let name: string; // Label for the timer. Must be unique between timers in the same page.
     export let height: string = "h-10";
     export let running: boolean = false;
     export let hideText: boolean = false;
@@ -32,7 +33,8 @@
         height,
         transition: `duration-1000 ${running ? 'transition-[background-color]' : 'transition-[background-color,width]'}`,
         meter: color,
-        track: "bg-surface-300-600-token"
+        track: "bg-surface-300-600-token",
+        labelledby: `timer-text-${name}`
     }
     // Timer related handlers
     let lastStart: number | undefined = undefined;
@@ -110,13 +112,15 @@
     }
 </script>
 
-{#if hideText}
+<div class="flex flex-col gap-3">
+    <h2 
+        class="h2 text-center"
+        class:hidden={hideText}
+        id={barProps.labelledby}
+    >
+        {stringifyTime($secsRemaining)}/{stringifyTime(duration)}
+    </h2>
     <ProgressBar {...barProps} />
-{:else}
-    <div class="flex flex-col gap-3">
-        <h2 class="h2 text-center">{stringifyTime($secsRemaining)}/{stringifyTime(duration)}</h2>
-        <ProgressBar {...barProps} />
-    </div>
-{/if}
+</div>
 
 <svelte:window on:keydown={keydown} on:keyup={keyup} />

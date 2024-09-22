@@ -37,6 +37,7 @@
     <div class="flex flex-col gap-5 self-center">
         <DelLabel speaker={$selectedSpeaker} />
         <Timer 
+            name="total"
             duration={motion.speakingTime} 
             bind:reset
             bind:canReset

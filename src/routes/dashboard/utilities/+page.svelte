@@ -62,6 +62,7 @@
     
         {#if timerEnabled}
             <Timer
+                name="total"
                 {duration}
                 bind:running
                 bind:canReset

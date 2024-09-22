@@ -47,6 +47,7 @@
         <DelLabel speaker={$selectedSpeaker} />
 
         <Timer
+            name="total"
             {duration}
             bind:running
             bind:canReset

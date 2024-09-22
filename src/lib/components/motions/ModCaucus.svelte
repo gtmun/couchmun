@@ -47,13 +47,15 @@
     <div class="flex flex-col gap-5 self-center">
         <DelLabel speaker={$selectedSpeaker} />
         <Timer 
+            name="delegate"
             duration={motion.speakingTime} 
             bind:reset={delReset} 
             bind:canReset={delResetable}
             bind:running
             disableKeyHandlers={typeof $selectedSpeaker === "undefined"}
         />
-        <Timer 
+        <Timer
+            name="total"
             duration={motion.totalTime} 
             bind:reset={totalReset} 
             bind:canReset={totalResetable}
