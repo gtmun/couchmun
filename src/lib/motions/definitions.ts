@@ -61,21 +61,21 @@ export function createMotionSchema(delegates: Record<string, DelegateAttrs>, pre
 
     return z.union([
         base("mod").extend({
-            totalTime: timeSchema("total time"),
-            speakingTime: timeSchema("speaking time"),
+            totalTime: timeSchema("Total time"),
+            speakingTime: timeSchema("Speaking time"),
             topic: topicSchema(),
             isExtension: z.boolean().default(false)
         }).refine(...refineSpeakingTime()),
         base("unmod").extend({
-            totalTime: timeSchema("total time"),
+            totalTime: timeSchema("Total time"),
             isExtension: z.boolean().default(false)
         }),
         base("rr").extend({
-            speakingTime: timeSchema("speaking time"),
+            speakingTime: timeSchema("Speaking time"),
             topic: topicSchema()
         }),
         base("other").extend({
-            totalTime: timeSchema("total time"),
+            totalTime: timeSchema("Total time"),
             topic: topicSchema()
         })
     ]) satisfies z.ZodType<Motion, any, any>;

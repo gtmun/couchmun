@@ -30,9 +30,9 @@ export function formatValidationError(error: z.ZodError) {
  * @returns the schema
  */
 export function presentDelegateSchema(delegates: Record<string, DelegateAttrs>, presentDelegates: string[]) {
-    return nonEmptyString({ description: "delegate name", required_error: "delegate name is a required field" })
+    return nonEmptyString({ description: "Delegate name", required_error: "Delegate name is a required field" })
         .transform((name, ctx) => {
-            const key = Object.keys(delegates).find(k => delegates[k].name === name);
+            const key = Object.keys(delegates).find(k => delegates[k].name.localeCompare(name, undefined, { sensitivity: "base" }) == 0);
             if (!key) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
@@ -43,7 +43,7 @@ export function presentDelegateSchema(delegates: Record<string, DelegateAttrs>, 
             } else if (!presentDelegates.includes(key)) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
-                    message: `${name} is not a present delegate`
+                    message: `${delegates[key].name} is not a present delegate`
                 })
 
                 return z.NEVER;
@@ -75,10 +75,10 @@ export function refineSpeakingTime(totalTimeAttr = "totalTime", speakingTimeAttr
         let speakingTime: number = o[speakingTimeAttr];
         return totalTime % speakingTime == 0;
     }, {
-        message: "total time cannot be evenly divided among speakers",
+        message: "Total time cannot be evenly divided among speakers",
         path: [speakingTimeAttr]
     } satisfies z.CustomErrorParams] as const;
 }
 export function topicSchema() {
-    return nonEmptyString({ description: "topic", required_error: "topic is a required field" });
+    return nonEmptyString({ description: "Topic", required_error: "Topic is a required field" });
 }
