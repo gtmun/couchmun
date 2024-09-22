@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { DelegateAttrs } from "$lib/types";
-    import { getModalStore } from "@skeletonlabs/skeleton";
+    import EditModal from "$lib/components/modals/EditModal.svelte";
 
     export let key: string | undefined = undefined;
     export let attrs: DelegateAttrs = {
@@ -9,7 +9,6 @@
     };
 
     let aliasesInput = attrs.aliases.join(", ");
-    const modalStore = getModalStore();
 
     function splitAliasInput(inp: string) {
         inp = inp.trim();
@@ -18,16 +17,14 @@
             .map(s => s.trim())
             .filter(s => s.length !== 0);
     }
-    function submitData() {
+    function submitValue(submit: (t: any) => void) {
         attrs.aliases = splitAliasInput(aliasesInput);
-        $modalStore[0].response?.({ key, attrs });
-        modalStore.close();
+        submit({ key, attrs });
     }
 </script>
 
-<div class="card p-4 w-1/2">
-    <h2 class="h2 p-4">Editing {attrs.name}</h2>
-    <form class="flex flex-col gap-3" on:submit|preventDefault={submitData}>
+<EditModal title="Editing {attrs.name}" let:submit let:close>
+    <form class="flex flex-col gap-3" on:submit|preventDefault={() => submitValue(submit)}>
         <label>
             <span>Key</span>
             <input class="input" bind:value={key} required placeholder="XM">
@@ -41,8 +38,8 @@
             <input class="input" bind:value={aliasesInput} placeholder="Republic of Modelunia, Modelunic Republic">
         </label>
         <div class="flex justify-end gap-3">
-            <button class="btn variant-filled-error" type="button" on:click={modalStore.close}>Cancel</button>
+            <button class="btn variant-filled-error" type="button" on:click={close}>Cancel</button>
             <button class="btn variant-filled-primary" type="submit">Submit</button>
         </div>
     </form>
-</div>
+</EditModal>

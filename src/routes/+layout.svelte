@@ -11,5 +11,3 @@
 </script>
 
 <slot></slot>
-
-<Modal />

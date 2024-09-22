@@ -3,7 +3,7 @@
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
     import MetaTags from "$lib/components/MetaTags.svelte";
     import BarTitle from "$lib/components/app-bar/BarTitle.svelte";
-    import EditForm from "$lib/components/settings/EditForm.svelte";
+    import EditDelegateCard from "$lib/components/modals/EditDelegateCard.svelte";
     import { defaultPresetKey, getPreset, PRESETS } from "$lib/delegate_presets";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
     import { getSettingsContext, resetSettingsContext } from "$lib/stores/settings";
@@ -12,7 +12,7 @@
 
     import { get, type Writable } from "svelte/store";
     import Icon from "@iconify/svelte";
-    import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
+    import { FileButton, Modal, getModalStore } from "@skeletonlabs/skeleton";
 
     const settings = getSettingsContext();
     const { delegateAttributes, sortOrder, delegatesEnabled, title, preferences } = settings;
@@ -116,10 +116,13 @@
         modalStore.trigger({
             type: "component",
             component: {
-                ref: EditForm,
+                ref: EditDelegateCard,
                 props: key ? { key, attrs: structuredClone($delegateAttributes[key]) } : {}
             },
-            response({ key: newKey, attrs: newAttrs }: { key: string, attrs: DelegateAttrs }) {
+            response(data?: { key: string, attrs: DelegateAttrs }) {
+                if (!data) return;
+
+                let { key: newKey, attrs: newAttrs } = data;
                 delegateAttributes.update($attrs => {
                     let update = false;
 
@@ -165,6 +168,8 @@
 </script>
 
 <MetaTags title="Settings &middot; CouchMUN" />
+
+<Modal />
 
 <div class="flex flex-col p-4 gap-4">
     <div class="grid grid-cols-[36px_1fr_36px] items-center">

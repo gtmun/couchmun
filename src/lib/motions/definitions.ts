@@ -1,6 +1,8 @@
 import type { DelegateAttrs, Motion, MotionKind, SortEntry } from "$lib/types";
 import { presentDelegateSchema, refineSpeakingTime, timeSchema, topicSchema } from "$lib/motions/form_validation";
+import type { MotionInput } from "$lib/motions/types";
 import { z } from "zod";
+import { stringifyTime } from "$lib/util/time";
 
 /**
  * The label/name given to each motion kind.
@@ -79,4 +81,46 @@ export function createMotionSchema(delegates: Record<string, DelegateAttrs>, pre
             topic: topicSchema()
         })
     ]) satisfies z.ZodType<Motion, any, any>;
+}
+
+/**
+ * Defines how to convert a motion back into an input motion.
+ * @param m 
+ * @param delAttrs 
+ * @returns 
+ */
+export function inputifyMotion(m: Motion, delAttrs: Record<string, DelegateAttrs>): MotionInput {
+    if (m.kind === "mod") {
+        return {
+            delegate: delAttrs[m.delegate].name,
+            kind: m.kind,
+            totalTime: stringifyTime(m.totalTime),
+            speakingTime: stringifyTime(m.speakingTime),
+            topic: m.topic,
+            isExtension: m.isExtension
+        }
+    } else if (m.kind === "unmod") {
+        return {
+            delegate: delAttrs[m.delegate].name,
+            kind: m.kind,
+            totalTime: stringifyTime(m.totalTime),
+            isExtension: m.isExtension
+        }
+    } else if (m.kind === "rr") {
+        return {
+            delegate: delAttrs[m.delegate].name,
+            kind: m.kind,
+            speakingTime: stringifyTime(m.speakingTime),
+            topic: m.topic,
+        }
+    } else if (m.kind === "other") {
+        return {
+            delegate: delAttrs[m.delegate].name,
+            kind: m.kind,
+            totalTime: stringifyTime(m.totalTime),
+            topic: m.topic,
+        }
+    } else {
+        return m satisfies never;
+    }
 }

@@ -9,7 +9,7 @@
     import type { AppBarData } from '$lib/types';
     
     import Icon from "@iconify/svelte";
-    import { AppBar, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
+    import { AppBar, Drawer, Modal, getDrawerStore } from '@skeletonlabs/skeleton';
     import { setContext } from 'svelte';
     import { writable } from 'svelte/store';
 
@@ -53,6 +53,8 @@
     {:else}
     <MetaTags title="CouchMUN" />
 {/if}
+
+<Modal />
 
 <!-- Navigation drawer -->
 <Drawer>
