@@ -4,10 +4,12 @@
     and the duration prop to control how many seconds the timer should run for.
 -->
 <script lang="ts">
+    import type { ClockMessage } from "$lib/util/clock";
     import { stringifyTime } from "$lib/util/time";
     import { ProgressBar } from "@skeletonlabs/skeleton";
+    import { onDestroy, onMount } from "svelte";
     import { readonly, writable } from "svelte/store";
-
+    
     export let duration: number;
     export let name: string; // Label for the timer. Must be unique between timers in the same page.
     export let height: string = "h-10";
@@ -39,6 +41,21 @@
     // Timer related handlers
     let lastStart: number | undefined = undefined;
     let msRemainingAtStart: number;
+    onMount(() => {
+        initClockSource().addEventListener("message", loop);
+    });
+    onDestroy(() => {
+        running = false;
+        clockSource?.removeEventListener("message", loop);
+    });
+
+    $: if (running) {
+        if (typeof lastStart === "undefined") {
+            msRemainingAtStart = msRemaining;
+        }
+    } else {
+        lastStart = undefined;
+    }
 
     // Readonly query variables:
     let _remStore = writable(msRemaining / 1000);
@@ -48,46 +65,26 @@
     let _rsStore = writable(false);
     $: $_rsStore = $secsRemaining !== duration;
     export const canReset = readonly(_rsStore);
-    
-    async function nextAnimationFrame() {
-        return new Promise<void>(resolve => {
-            // Handle prerendering
-            if (!("requestAnimationFrame" in globalThis)) return resolve();
 
-            // Before the next frame is animated
-            requestAnimationFrame(() => {
-                // Before the frame after the next is animated (e.g., after the next frame is animated)
-                requestAnimationFrame(() => resolve())
-            })
-        });
-    }
+    function loop({ data }: MessageEvent<ClockMessage>) {
+        if (data.kind === "startTick") {
+            if (!running) return;
 
-    $: if (running) {
-        msRemainingAtStart = msRemaining;
-        lastStart = undefined;
-        running = true;
-
-        requestAnimationFrame(timerLoop);
+            // Update msRemaining:
+            lastStart ??= data.ts;
+            msRemaining = Math.max(0, msRemainingAtStart - Math.floor(data.ts - lastStart));
+        } else if (data.kind === "endTick") {
+            // After all timers have been updated, update running:
+            running = running && msRemaining > 0;
+        } else {
+            data satisfies never;
+        }
     }
     export function reset() {
         running = false;
-
-        // Wait until the frame completes before updating values.
-        nextAnimationFrame().then(() => {
-            msRemaining = DURATION_MS;
-        });
+        msRemaining = DURATION_MS;
     }
 
-    function timerLoop(ts: number) {
-        lastStart ??= ts;
-        msRemaining = msRemainingAtStart - Math.floor(ts - lastStart);
-
-        // Continue animating if time is not up
-        running = running && msRemaining > 0;
-        if (running) {
-            requestAnimationFrame(timerLoop);
-        }
-    }
     function clamp(value: number, min: number, max: number) {
         if (Number.isNaN(value)) return max;
         if (value < min) return min;
@@ -109,6 +106,19 @@
         if (e.target !== document.body) return;
 
         if (e.code === "Space") running = false;
+    }
+</script>
+
+<script context="module" lang="ts">
+    import ClockSourceURL from "$lib/util/clock?url";
+
+    // This is a synchronized timer for all Timer components.
+    // It is in a worker thread so that it runs in the background.
+    // Every "tick", each timer connected to this clock source gets the same timestamp,
+    // allowing them to be synchronized.
+    let clockSource: Worker | undefined = undefined;
+    function initClockSource(): Worker {
+        return (clockSource ??= new Worker(ClockSourceURL));
     }
 </script>
 
