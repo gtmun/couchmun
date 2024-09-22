@@ -303,7 +303,7 @@
                                 aria-label="Edit Delegate"
                                 title="Edit Delegate"
                             >
-                                <Icon icon="mdi:wrench" width="24" height="24" />
+                                <Icon icon="mdi:pencil" width="24" height="24" />
                             </button>
                             <button
                                 on:click={() => deleteDelegate(key)}
