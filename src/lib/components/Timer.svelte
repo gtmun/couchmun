@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
     import type { ClockMessage } from "$lib/util/clock";
-    import { stringifyTime } from "$lib/util/time";
+    import { parseTime, stringifyTime } from "$lib/util/time";
     import { ProgressBar } from "@skeletonlabs/skeleton";
     import { onDestroy, onMount } from "svelte";
     import { readonly, writable } from "svelte/store";
@@ -16,6 +16,7 @@
     export let running: boolean = false;
     export let hideText: boolean = false;
     export let disableKeyHandlers: boolean = false;
+    export let editable: boolean = false;
 
     $: DURATION_MS = duration * 1000;
     $: (DURATION_MS, reset()); // on duration update, reset timer
@@ -107,6 +108,19 @@
 
         if (e.code === "Space") running = false;
     }
+
+    // Editable time:
+    let totalTimeText: HTMLSpanElement;
+    function titleKeyDown(e: KeyboardEvent) {
+        if (e.code === "Enter") {
+            totalTimeText?.blur();
+        }
+    }
+    function setDuration() {
+        let text = totalTimeText.textContent;
+        let time = text ? parseTime(text) : undefined;
+        duration = time ?? duration;
+    }
 </script>
 
 <script context="module" lang="ts">
@@ -128,7 +142,19 @@
         class:hidden={hideText}
         id={barProps.labelledby}
     >
-        {stringifyTime($secsRemaining)}/{stringifyTime(duration)}
+        {#if editable && !running}
+            {stringifyTime($secsRemaining)}/<span
+                contenteditable
+                on:focusout={setDuration}
+                on:keydown={titleKeyDown}
+                bind:this={totalTimeText}
+                role="none"
+            >
+                {stringifyTime(duration)}
+            </span>
+        {:else}
+            {stringifyTime($secsRemaining)}/{stringifyTime(duration)}
+        {/if}
     </h2>
     <ProgressBar {...barProps} />
 </div>

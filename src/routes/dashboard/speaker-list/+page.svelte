@@ -48,11 +48,12 @@
 
         <Timer
             name="total"
-            {duration}
+            bind:duration
             bind:running
             bind:canReset
             bind:reset
             disableKeyHandlers={typeof $selectedSpeaker === "undefined"}
+            editable
         />
         <div class="flex flex-row gap-3 justify-center">
             {#if !running}

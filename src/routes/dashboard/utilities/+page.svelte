@@ -63,10 +63,11 @@
         {#if timerEnabled}
             <Timer
                 name="total"
-                {duration}
+                bind:duration
                 bind:running
                 bind:canReset
                 bind:reset
+                editable
             />
     
             <div class="flex flex-row gap-3 justify-center">
