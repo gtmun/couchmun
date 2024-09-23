@@ -205,3 +205,11 @@ export type SessionData = {
      */
     speakersList: Writable<Speaker[]>
 };
+
+// App bar data
+export type AppBarData = {
+    /**
+     * Topic to display on the app bar
+     */
+    topic: Writable<string | undefined>
+}

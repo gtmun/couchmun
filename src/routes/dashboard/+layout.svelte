@@ -1,14 +1,17 @@
 <script lang="ts">
-    import { page } from '$app/stores';
+    import { navigating, page } from '$app/stores';
     import MetaTags from '$lib/components/MetaTags.svelte';
     import BarStats from '$lib/components/app-bar/BarStats.svelte';
     import BarTitle from '$lib/components/app-bar/BarTitle.svelte';
     import Navigation from '$lib/components/nav/Navigation.svelte';
     import SettingsNavigation from '$lib/components/nav/SettingsNavigation.svelte';
     import { createSessionDataContext } from '$lib/stores/session';
+    import type { AppBarData } from '$lib/types';
     
     import Icon from "@iconify/svelte";
     import { AppBar, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
+    import { setContext } from 'svelte';
+    import { writable } from 'svelte/store';
 
     const drawerStore = getDrawerStore();
     function openNav() {
@@ -36,6 +39,13 @@
         "/dashboard/utilities":      { label: "Utilities" },
     };
     $: thisLink = typeof $page.route.id == "string" ? links[$page.route.id] : undefined;
+
+    // This can be set to change the topic displayed on the app bar.
+    // This must be cleared when navigating to different pages.
+    const { topic } = setContext<AppBarData>("app-bar", {
+        topic: writable(undefined)
+    });
+    $: if ($navigating) topic.set(undefined);
 </script>
 
 {#if typeof thisLink !== "undefined"}
@@ -77,6 +87,9 @@
                 <BarTitle bind:title={$title} />
                 <hr class="divider border-t-4 border-surface-800-100-token" />
                 <BarStats total={$presentDelegates.length} />
+                {#if $topic}
+                    <h3 class="h3 capitalize self-center mt-3"><i>Topic: {$topic}</i></h3>
+                {/if}
             </div>
             <svelte:fragment slot="trail">
                 <!-- Settings -->

@@ -4,12 +4,15 @@
     import Timer from "$lib/components/Timer.svelte";
     import { presentDelegateSchema } from "$lib/motions/form_validation";
     import { getSessionDataContext } from "$lib/stores/session";
-    import type { Motion, Speaker } from "$lib/types";
+    import type { AppBarData, Motion, Speaker } from "$lib/types";
+    import { getContext } from "svelte";
     import type { Readable } from "svelte/store";
 
     export let motion: Motion & { kind: "mod" };
 
     const { settings: { delegateAttributes }, presentDelegates } = getSessionDataContext();
+    const { topic } = getContext<AppBarData>("app-bar");
+    $: topic.set(motion.topic);
 
     // Timer
     let running: boolean = false;
