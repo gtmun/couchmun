@@ -51,12 +51,14 @@
         clockSource?.removeEventListener("message", loop);
     });
 
-    $: if (running) {
-        if (typeof lastStart === "undefined") {
+    // Only trigger state update if running state changed:
+    let _running = running;
+    $: if (_running != running) {
+        _running = running;
+        if (running) {
+            lastStart = undefined;
             msRemainingAtStart = msRemaining;
         }
-    } else {
-        lastStart = undefined;
     }
 
     // Readonly query variables:
