@@ -46,7 +46,7 @@
     /**
      * The current speaker.
      */
-    let selectedSpeaker: Speaker | undefined = undefined;
+    export let selectedSpeaker: Speaker | undefined = undefined;
 
     // List item elements per order item
     let liElements = new Map<Speaker, HTMLLIElement>();
@@ -55,11 +55,6 @@
     let _adStore = writable(false);
     $: $_adStore = typeof selectedSpeaker === "undefined" && order.every(({ completed }) => completed);
     export const allDone = readonly(_adStore);
-
-    let _spStore = writable<string | undefined>(undefined);
-    $: $_spStore = selectedSpeaker?.key;
-    const _selectedSpeaker = readonly(_spStore);
-    export { _selectedSpeaker as selectedSpeaker };
 
     // If order updates and selectedSpeaker isn't in there, then clear selectedSpeaker:
     $: if (typeof selectedSpeaker !== "undefined" && !order.includes(selectedSpeaker)) {
@@ -188,7 +183,7 @@
                     class:variant-soft-surface={selectedSpeaker !== speaker && speaker.completed}
                     class:variant-ringed-surface={selectedSpeaker !== speaker && !speaker.completed}
                     class:hover:variant-ringed-primary={selectedSpeaker !== speaker && !speaker.completed}
-                    on:click={() => selectedSpeaker = speaker}
+                    on:click={() => { if (selectedSpeaker !== speaker) selectedSpeaker = speaker; }}
                     on:keydown={(e) => onKeyDown(e, i, 0)}
                 >
                     {#if flagURL}
