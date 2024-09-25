@@ -41,6 +41,7 @@
     }
     // Timer related handlers
     let lastStart: number | undefined = undefined;
+    let lastEnd: number = 0;
     let msRemainingAtStart: number;
     onMount(() => {
         initClockSource().addEventListener("message", loop);
@@ -73,7 +74,8 @@
 
             // Update msRemaining:
             lastStart ??= data.ts;
-            msRemaining = Math.max(0, msRemainingAtStart - Math.floor(data.ts - lastStart));
+            lastEnd = data.ts;
+            msRemaining = Math.max(0, msRemainingAtStart - Math.floor(lastEnd - lastStart));
         } else if (data.kind === "endTick") {
             // After all timers have been updated, update running:
             running = running && msRemaining > 0;
@@ -84,6 +86,14 @@
     export function reset() {
         running = false;
         msRemaining = DURATION_MS;
+    }
+    function getElapsedTime() {
+        if (typeof lastStart === "undefined") return 0;
+        if (Number.isNaN(lastStart)) return 0;
+        if (Number.isNaN(lastEnd)) return 0;
+        if (lastEnd < lastStart) return 0;
+
+        return lastEnd - lastStart;
     }
 
     function clamp(value: number, min: number, max: number) {
