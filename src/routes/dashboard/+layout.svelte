@@ -5,11 +5,11 @@
     import BarTitle from '$lib/components/app-bar/BarTitle.svelte';
     import Navigation from '$lib/components/nav/Navigation.svelte';
     import SettingsNavigation from '$lib/components/nav/SettingsNavigation.svelte';
-    import { createSessionDataContext } from '$lib/stores/session';
+    import { getSessionDataContext } from '$lib/stores/session';
     import type { AppBarData } from '$lib/types';
     
     import Icon from "@iconify/svelte";
-    import { AppBar, Drawer, Modal, getDrawerStore } from '@skeletonlabs/skeleton';
+    import { AppBar, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
     import { setContext } from 'svelte';
     import { writable } from 'svelte/store';
 
@@ -29,7 +29,7 @@
         })
     }
 
-    const { settings: { title }, presentDelegates } = createSessionDataContext();
+    const { settings: { title }, presentDelegates } = getSessionDataContext();
 
     const links: Record<string, { label: string }> = {
         "/dashboard/roll-call":      { label: "Roll Call" },
@@ -53,8 +53,6 @@
     {:else}
     <MetaTags title="CouchMUN" />
 {/if}
-
-<Modal />
 
 <!-- Navigation drawer -->
 <Drawer>

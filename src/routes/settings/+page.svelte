@@ -12,7 +12,7 @@
 
     import { get, type Writable } from "svelte/store";
     import Icon from "@iconify/svelte";
-    import { FileButton, Modal, getModalStore } from "@skeletonlabs/skeleton";
+    import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
 
     const settings = getSettingsContext();
     const { delegateAttributes, sortOrder, delegatesEnabled, title, preferences } = settings;
@@ -168,8 +168,6 @@
 </script>
 
 <MetaTags title="Settings &middot; CouchMUN" />
-
-<Modal />
 
 <div class="flex flex-col p-4 gap-4">
     <div class="grid grid-cols-[36px_1fr_36px] items-center">
