@@ -10,8 +10,17 @@
 
     createSettingsContext();
     createSessionDataContext();
+
+    function keydown(e: KeyboardEvent) {
+        // Allows ESC to be used to unfocus an element.
+        if (e.code === "Escape") {
+            (document.activeElement as HTMLElement)?.blur?.();
+        }
+    }
 </script>
 
 <Modal />
 
 <slot></slot>
+
+<svelte:window on:keydown={keydown} />

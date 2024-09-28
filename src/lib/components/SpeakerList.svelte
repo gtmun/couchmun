@@ -144,8 +144,6 @@
                 getButton(i, btn - 1)?.focus();
             } else if (e.code === "ArrowRight") {
                 getButton(i, btn + 1)?.focus();
-            } else if (e.code === "Escape") {
-                (document.activeElement as HTMLElement)?.blur();
             }
         }
     }
