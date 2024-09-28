@@ -7,15 +7,18 @@
     export let presentDelegates: string[];
     export let maxHeight = "max-h-96";
 
-    $: options = Array.from(Object.entries(delegates), ([k, data]): AutocompleteOption<string> => ({
-        value: k, label: data.name, keywords: data.aliases.join(",")
-    }));
+    $: options = Array.from(presentDelegates)
+        .filter(k => typeof delegates[k] !== "undefined")
+        .map((k) => ({
+            value: k,
+            label: delegates[k].name,
+            keywords: delegates[k].aliases.join(",")
+        }) satisfies AutocompleteOption<string>);
 </script>
 
 <Autocomplete
     class="overflow-y-auto {maxHeight}"
     bind:input
     {options}
-    allowlist={presentDelegates}
     on:selection
 />
