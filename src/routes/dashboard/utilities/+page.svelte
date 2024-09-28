@@ -54,7 +54,7 @@
     </button>
     <div class="flex flex-col flex-grow gap-5 justify-center">
         {#if labelType === "delegate"}
-            <DelLabel speaker={getKey(labelText)} />
+            <DelLabel key={getKey(labelText)} />
         {:else if labelType === "title"}
             <h2 class="h2 text-center">{labelText}</h2>
         {/if}

@@ -4,32 +4,43 @@
 
     const { settings: { delegateAttributes } } = getSessionDataContext();
 
-    export let speaker: string | undefined = undefined;
-    export let height: string = "h-[25dvh]";
+    export let key: string;
+    export let height: string | undefined = undefined;
+    export let inline: boolean = false;
+    $: _height = height ?? (inline ? "h-4" : "h-[25dvh]");
 
-    function getSpeakerName(key: string | undefined) {
+    function getSpeakerLabel(key: string | undefined) {
         if (typeof key === "undefined") return "";
         return $delegateAttributes[key]?.name ?? key;
     }
     type SpeakerImage = {
         url: URL,
-        name: string
+        label: string
     };
     function getSpeakerImage(key: string): SpeakerImage {
         let url = getFlagUrl(key) ?? getFlagUrl("un")!;
-        let name = getSpeakerName(key);
-        return { url, name };
+        let label = getSpeakerLabel(key);
+        return { url, label };
     }
+    const imgData = getSpeakerImage(key);
 </script>
 
-<div class="flex flex-col items-center gap-3">
-    <h2 class="h2">{getSpeakerName(speaker)}</h2>
-    {#if typeof speaker !== "undefined"}
-        {@const imgData = getSpeakerImage(speaker)}
-        <img
-            src={imgData.url.toString()}
-            alt="Flag of {imgData.name}"
-            class={height}
-        >
-    {/if}
+{#if inline}
+<div class="flex items-center gap-1">
+    <img
+        src={imgData.url.toString()}
+        alt="Flag of {imgData.label}"
+        class={_height}
+    >
+    {getSpeakerLabel(key)}
 </div>
+{:else}
+<div class="flex flex-col items-center gap-3">
+    <h2 class="h2">{getSpeakerLabel(key)}</h2>
+    <img
+        src={imgData.url.toString()}
+        alt="Flag of {imgData.label}"
+        class={_height}
+    >
+</div>
+{/if}

@@ -48,7 +48,9 @@
 <div class="grid grid-cols-[2fr_1fr] gap-12 h-full">
     <!-- Left -->
     <div class="flex flex-col gap-5 self-center">
-        <DelLabel speaker={selectedSpeaker?.key} />
+        {#if typeof selectedSpeaker !== "undefined"}
+            <DelLabel key={selectedSpeaker.key} />
+        {/if}
         <Timer 
             name="delegate"
             duration={motion.speakingTime} 

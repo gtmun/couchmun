@@ -1,4 +1,5 @@
 <script lang="ts">
+    import DelLabel from "$lib/components/DelLabel.svelte";
     import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/components/del-input/DelPopup.svelte";
     import { formatValidationError, nonEmptyString } from "$lib/motions/form_validation";
     import type { DelegateAttrs, Speaker } from "$lib/types";
@@ -7,7 +8,6 @@
     import type { z } from "zod";
     import Icon from "@iconify/svelte";
     import { popup } from "@skeletonlabs/skeleton";
-    import { getFlagUrl } from "$lib/flags/flagcdn";
     import { sortable } from "$lib/util";
     import { tick } from "svelte";
 
@@ -169,7 +169,6 @@
         }
     }}>
         {#each order as speaker, i (speaker)}
-            {@const flagURL = getFlagUrl(speaker.key)}
             {@const speakerLabel = getLabel(speaker.key)}
 
             <li class="!grid grid-cols-subgrid col-span-4" use:bindToMap={[liElements, speaker]} data-id={i}>
@@ -178,7 +177,7 @@
                 </div>
                 <span>{i + 1}.</span>
                 <button 
-                    class="btn flex items-center gap-1"
+                    class="btn flex overflow-clip"
                     class:variant-filled-primary={selectedSpeaker === speaker}
                     class:variant-soft-surface={selectedSpeaker !== speaker && speaker.completed}
                     class:variant-ringed-surface={selectedSpeaker !== speaker && !speaker.completed}
@@ -186,10 +185,7 @@
                     on:click={() => { if (selectedSpeaker !== speaker) selectedSpeaker = speaker; }}
                     on:keydown={(e) => onKeyDown(e, i, 0)}
                 >
-                    {#if flagURL}
-                        <img class="h-4" src={flagURL.toString()} alt="Flag of {speakerLabel}">
-                    {/if}
-                    {getLabel(speaker.key)}
+                    <DelLabel key={speaker.key} inline />
                 </button>
                 <div class="btn-icon">
                     {#if !speaker.completed}
