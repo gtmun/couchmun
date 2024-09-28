@@ -7,7 +7,7 @@
 </script>
 
 <!-- Render a table to display participants and their statuses -->
-<div class="card grid grid-cols-[1fr-1fr]">
+<div class="card grid grid-cols-[1fr_1fr]">
   {#each Object.keys($delegateAttributes) as key}
     {@const _presence = $delegateAttendance[key] ??= "NP"}
     <div class="grid grid-cols-subgrid col-span-2 even:bg-surface-100-800-token odd:bg-surface-200-700-token">
