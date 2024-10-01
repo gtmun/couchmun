@@ -22,7 +22,7 @@
         let label = getSpeakerLabel(key);
         return { url, label };
     }
-    const imgData = getSpeakerImage(key);
+    $: imgData = getSpeakerImage(key);
 </script>
 
 {#if inline}
