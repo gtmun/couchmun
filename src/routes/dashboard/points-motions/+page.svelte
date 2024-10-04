@@ -12,6 +12,7 @@
 
   import Icon from "@iconify/svelte";
   import { getModalStore } from "@skeletonlabs/skeleton";
+  import { flip } from "svelte/animate";
 
   const { settings: { delegateAttributes, sortOrder }, motions, selectedMotion } = getSessionDataContext();
   const modalStore = getModalStore();
@@ -127,7 +128,7 @@
           }
         }}>
           {#each $motions as motion, i (motion)}
-            <tr data-id={i}>
+            <tr data-id={i} animate:flip={{ duration: 300 }}>
               <td>
                 <div class="flex flex-row">
                   <button
