@@ -1,5 +1,5 @@
 <script lang="ts">
-  import DelLabel from "$lib/components/DelLabel.svelte";
+  import DelLabel from "$lib/components/del-label/DelLabel.svelte";
   import { getSessionDataContext } from "$lib/stores/session";
   import { RadioGroup, RadioItem } from "@skeletonlabs/skeleton";
 
@@ -8,11 +8,11 @@
 
 <!-- Render a table to display participants and their statuses -->
 <div class="card grid">
-  {#each Object.keys($delegateAttributes) as key}
+  {#each Object.entries($delegateAttributes) as [key, attrs]}
     {@const _presence = $delegateAttendance[key] ??= "NP"}
     <div class="grid grid-cols-subgrid col-span-2 even:bg-surface-100-800-token odd:bg-surface-200-700-token">
       <div class="flex items-center p-4">
-          <DelLabel {key} inline />
+          <DelLabel {key} {attrs} inline />
       </div>
       <div class="flex flex-col justify-center p-2">
         <RadioGroup active="variant-filled-primary" hover="hover:variant-soft-primary" border="" background="bg-surface-300-600-token">

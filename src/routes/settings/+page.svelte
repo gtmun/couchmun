@@ -3,6 +3,7 @@
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
     import MetaTags from "$lib/components/MetaTags.svelte";
     import BarTitle from "$lib/components/app-bar/BarTitle.svelte";
+    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import EditDelegateCard from "$lib/components/modals/EditDelegateCard.svelte";
     import { defaultPresetKey, getPreset, PRESETS } from "$lib/delegate_presets";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
@@ -296,7 +297,7 @@
                         <td>
                             <code>{key}</code>
                         </td>
-                        <td class="w-full">{attrs.name}</td>
+                        <td class="w-full"><DelLabel {key} {attrs} inline fallback="icon" /></td>
                         <td class="text-center">
                             <input class="checkbox" type="checkbox" bind:checked={$delegatesEnabled[key]}>
                         </td>

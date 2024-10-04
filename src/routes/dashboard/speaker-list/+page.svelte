@@ -1,5 +1,5 @@
 <script lang="ts">
-    import DelLabel from "$lib/components/DelLabel.svelte";
+    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { presentDelegateSchema } from "$lib/motions/form_validation";
@@ -46,7 +46,7 @@
     <!-- Left -->
     <div class="flex flex-col gap-5 self-center">
         {#if typeof selectedSpeaker !== "undefined"}
-            <DelLabel key={selectedSpeaker.key} />
+            <DelLabel key={selectedSpeaker.key} attrs={$delegateAttributes[selectedSpeaker.key]} />
         {/if}
         
         <Timer

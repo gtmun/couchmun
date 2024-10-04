@@ -1,5 +1,5 @@
 <script lang="ts">
-    import DelLabel from "$lib/components/DelLabel.svelte";
+    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/components/del-input/DelPopup.svelte";
     import { formatValidationError, nonEmptyString } from "$lib/motions/form_validation";
     import type { DelegateAttrs, Speaker } from "$lib/types";
@@ -183,7 +183,7 @@
                     on:click={() => { if (selectedSpeaker !== speaker) selectedSpeaker = speaker; }}
                     on:keydown={(e) => onKeyDown(e, i, 0)}
                 >
-                    <DelLabel key={speaker.key} inline />
+                    <DelLabel key={speaker.key} attrs={delegates[speaker.key]} inline />
                 </button>
                 <div class="btn-icon">
                     {#if !speaker.completed}

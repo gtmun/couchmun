@@ -1,6 +1,6 @@
 <script lang="ts">
   import { base } from "$app/paths";
-  import DelLabel from "$lib/components/DelLabel.svelte";
+  import DelLabel from "$lib/components/del-label/DelLabel.svelte";
   import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
   import { MOTION_LABELS } from "$lib/motions/definitions";
@@ -13,7 +13,7 @@
   import Icon from "@iconify/svelte";
   import { getModalStore } from "@skeletonlabs/skeleton";
 
-  const { settings: { sortOrder }, motions, selectedMotion } = getSessionDataContext();
+  const { settings: { delegateAttributes, sortOrder }, motions, selectedMotion } = getSessionDataContext();
   const modalStore = getModalStore();
 
   function submitMotion(motion: Motion) {
@@ -158,7 +158,7 @@
                 </div>
               </td>
               <td>{motionName(motion)}</td>
-              <td><DelLabel key={motion.delegate} inline /></td>
+              <td><DelLabel key={motion.delegate} attrs={$delegateAttributes[motion.delegate]} inline /></td>
               <td>{apply(motion, ["topic"], m => m.topic, "-")}</td>
               <td>{apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
               <td>{apply(motion, ["speakingTime"], m => stringifyTime(m.speakingTime), "-")}</td>

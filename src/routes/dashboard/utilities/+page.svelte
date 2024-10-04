@@ -1,6 +1,6 @@
 <script lang="ts">
     import DelAutocomplete from "$lib/components/del-input/DelAutocomplete.svelte";
-    import DelLabel from "$lib/components/DelLabel.svelte";
+    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { getSessionDataContext } from "$lib/stores/session";
@@ -54,7 +54,8 @@
     </button>
     <div class="flex flex-col flex-grow gap-5 justify-center">
         {#if labelType === "delegate"}
-            <DelLabel key={getKey(labelText)} />
+            {@const key = getKey(labelText)}
+            <DelLabel {key} attrs={$delegateAttributes[key]} />
         {:else if labelType === "title"}
             <h2 class="h2 text-center">{labelText}</h2>
         {/if}
