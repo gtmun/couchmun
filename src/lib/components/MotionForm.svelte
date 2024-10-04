@@ -93,7 +93,7 @@
 <form on:submit|preventDefault={submitMotion} on:input={resetInputErrors} class="flex flex-col gap-3 p-3">
     <!-- Motion input form -->
     <label class="label">
-        <span>Delegation</span>
+        <span>Delegate</span>
         <input 
             class="input"
             class:input-error={inputError?.path.includes("delegate")}
