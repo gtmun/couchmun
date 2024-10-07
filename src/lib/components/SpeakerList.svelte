@@ -109,6 +109,9 @@
         if (removedSpeaker === selectedSpeaker) {
             selectedSpeaker = undefined;
         }
+        if (removedSpeaker === draggingSpeaker) {
+            draggingSpeaker = undefined;
+        }
     }
 
     function getButton(i: number, btn: number): HTMLButtonElement | undefined {
@@ -151,9 +154,38 @@
         map.set(key, el);
         return { destroy() { map.delete(key); } }
     };
+
+    // A11y dragging
+    let draggingSpeaker: Speaker | undefined = undefined;
+
+    async function handleDragButton(s: Speaker) {
+        // No currently dragging speaker, so set:
+        if (typeof draggingSpeaker === "undefined") {
+            draggingSpeaker = s;
+            return;
+        }
+
+        // If we clicked on the speaker again, toggle off:
+        if (draggingSpeaker === s) {
+            draggingSpeaker = undefined;
+            return;
+        }
+
+        let x = order.indexOf(draggingSpeaker);
+        let y = order.indexOf(s);
+        draggingSpeaker = undefined;
+        if (x >= 0 && y >= 0) {
+            [order[y], order[x]] = [order[x], order[y]];
+            await tick();
+            getButton(y, 0)?.focus();
+        }
+    }
 </script>
 
-<div class="card p-4 overflow-y-auto flex-grow">
+<div class="card p-4 overflow-y-auto flex-grow flex flex-col items-stretch gap-3">
+    <h4 class="h4 flex justify-center">
+        Speakers List
+    </h4>
     <ol class="list grid grid-cols-[auto_auto_1fr_auto]" use:sortable={{
         animation: 150,
         swapThreshold: 0.9,
@@ -168,20 +200,42 @@
     }}>
         {#each order as speaker, i (speaker)}
             {@const speakerLabel = getLabel(speaker.key)}
-
-            <li class="!grid grid-cols-subgrid col-span-4" use:bindToMap={[liElements, speaker]} data-id={i}>
-                <div class="btn-icon handle cursor-grab">
+            {@const selected = selectedSpeaker === speaker}
+            
+            {@const dragSelected = draggingSpeaker === speaker}
+            {@const dragBtnLabel = 
+                dragSelected ? `Stop Dragging ${speakerLabel}` :
+                typeof draggingSpeaker !== "undefined" ? `Swap ${getLabel(draggingSpeaker.key)} (${order.indexOf(draggingSpeaker) + 1}) with ${speakerLabel} (${i + 1})` :
+                `Start Dragging ${speakerLabel}`
+            }
+            <li
+                class="!grid grid-cols-subgrid col-span-4"
+                class:variant-ghost-primary={draggingSpeaker == speaker}
+                use:bindToMap={[liElements, speaker]}
+                data-id={i}
+            >
+                <button
+                    class="btn-icon handle cursor-grab"
+                    aria-pressed={dragSelected}
+                    on:click={() => handleDragButton(speaker)}
+                    on:keydown={(e) => onKeyDown(e, i, 0)}
+                    aria-label={dragBtnLabel}
+                    title={dragBtnLabel}
+                >
                     <Icon icon="mdi:drag-vertical" width="24" height="24" />
-                </div>
+                </button>
                 <span>{i + 1}.</span>
                 <button 
                     class="btn flex overflow-clip"
-                    class:variant-filled-primary={selectedSpeaker === speaker}
-                    class:variant-soft-surface={selectedSpeaker !== speaker && speaker.completed}
-                    class:variant-ringed-surface={selectedSpeaker !== speaker && !speaker.completed}
-                    class:hover:variant-ringed-primary={selectedSpeaker !== speaker && !speaker.completed}
-                    on:click={() => { if (selectedSpeaker !== speaker) selectedSpeaker = speaker; }}
-                    on:keydown={(e) => onKeyDown(e, i, 0)}
+                    class:variant-filled-primary={selected}
+                    class:variant-soft-surface={!selected && speaker.completed}
+                    class:variant-ringed-surface={!selected && !speaker.completed}
+                    class:hover:variant-ringed-primary={!selected && !speaker.completed}
+                    on:click={() => { if (!selected) selectedSpeaker = speaker; }}
+                    on:keydown={(e) => onKeyDown(e, i, 1)}
+                    title="Select {speakerLabel}"
+                    aria-label="Select {speakerLabel}"
+                    aria-pressed={selected}
                 >
                     <DelLabel key={speaker.key} attrs={delegates[speaker.key]} inline />
                 </button>
@@ -190,7 +244,7 @@
                         <button 
                             class="btn-icon variant-soft-surface hover:variant-filled-error" 
                             on:click={() => deleteSpeaker(i)}
-                            on:keydown={(e) => onKeyDown(e, i, 1)}
+                            on:keydown={(e) => onKeyDown(e, i, 2)}
                             title="Delete {speakerLabel}"
                             aria-label="Delete {speakerLabel}"
                         >
@@ -223,7 +277,11 @@
                     type="submit"
                     class="btn variant-filled-primary"
                     disabled={useDefaultControls.presentDelegates.length === 0}
-                >Add</button>
+                    aria-label="Add to Speakers List"
+                    title="Add to Speakers List"
+                >
+                    Add
+                </button>
             </form>
             <!-- Clear order -->
             <button
@@ -231,6 +289,8 @@
                 class="btn variant-filled-primary"
                 disabled={order.length === 0}
                 on:click={() => order = []}
+                aria-label="Clear Speakers List"
+                title="Clear Speakers List"
             >
                 Clear
             </button>

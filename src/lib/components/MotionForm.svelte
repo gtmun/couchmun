@@ -20,6 +20,9 @@
     export let submit: (m: Motion) => void;
     let inputError: z.ZodIssue | undefined = undefined;
 
+    // The input after the delegate input.
+    let afterDel: HTMLElement;
+
     function submitMotion() {
         const result = motionSchema.safeParse(inputMotion);
         if (result.success) {
@@ -99,7 +102,7 @@
             class:input-error={inputError?.path.includes("delegate")}
             bind:value={inputMotion.delegate}
             required
-            use:popup={{...defaultPopupSettings("delegateInputPopup"), event: "click"}}
+            use:popup={{...defaultPopupSettings("delegateInputPopup"), event: "focus-click"}}
             {...defaultPlaceholder($presentDelegates.length === 0)}
         >
     </label>
@@ -108,6 +111,7 @@
         <select 
             class="select" 
             class:input-error={inputError?.path.includes("kind")}
+            bind:this={afterDel}
             bind:value={inputMotion.kind}
             on:change={() => inputMotion = { delegate: inputMotion.delegate, kind: inputMotion.kind }}
             >
@@ -169,7 +173,7 @@
             class="btn variant-filled-primary" 
             type="submit"
         >
-            Add
+            Add Motion
         </button>
     </slot>
 
@@ -183,6 +187,6 @@
         bind:input={inputMotion.delegate}
         delegates={$delegateAttributes}
         presentDelegates={$presentDelegates}
-        on:selection={e => {inputMotion.delegate = e.detail.label; resetInputErrors()}}
+        on:selection={e => {inputMotion.delegate = e.detail.label; resetInputErrors(); afterDel?.focus()}}
     />
 </form>

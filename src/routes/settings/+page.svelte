@@ -304,15 +304,15 @@
                         <td class="text-right">
                             <button
                                 on:click={() => editDelegate(key)}
-                                aria-label="Edit Delegate"
-                                title="Edit Delegate"
+                                aria-label="Edit {attrs.name}"
+                                title="Edit {attrs.name}"
                             >
                                 <Icon icon="mdi:pencil" width="24" height="24" />
                             </button>
                             <button
                                 on:click={() => deleteDelegate(key)}
-                                aria-label="Delete Delegate"
-                                title="Delete Delegate"
+                                aria-label="Delete {attrs.name}"
+                                title="Delete {attrs.name}"
                             >
                                 <Icon icon="mdi:cancel" width="24" height="24" class="text-error-500" />
                             </button>

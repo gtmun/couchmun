@@ -128,14 +128,15 @@
           }
         }}>
           {#each $motions as motion, i (motion)}
+            {@const delName = $delegateAttributes[motion.delegate]?.name ?? motion.delegate}
             <tr data-id={i} animate:flip={{ duration: 300 }}>
               <td>
                 <div class="flex flex-row">
                   <button
                     class="btn btn-sm btn-icon"
                     on:click={() => removeMotion(i)}
-                    data-label="Reject Motion"
-                    title="Reject Motion"
+                    data-label="Reject {delName}'s Motion"
+                    title="Reject {delName}'s Motion"
                   >
                     <Icon icon="mdi:cancel" width="24" height="24" class="text-error-500" />
                   </button>
@@ -143,16 +144,16 @@
                     class="btn btn-sm btn-icon"
                     on:click={() => acceptMotion(motion)}
                     href="{base}/dashboard/current-motion"
-                    data-label="Accept Motion"
-                    title="Accept Motion"
+                    data-label="Accept {delName}'s Motion"
+                    title="Accept {delName}'s Motion"
                   >
                     <Icon icon="mdi:check" width="24" height="24" class="text-success-700" />
                   </a>
                   <button
                     class="btn btn-sm btn-icon"
                     on:click={() => editMotion(i, motion)}
-                    data-label="Edit Motion"
-                    title="Edit Motion"
+                    data-label="Edit {delName}'s Motion"
+                    title="Edit {delName}'s Motion"
                   >
                     <Icon icon="mdi:pencil" width="24" height="24" />
                   </button>
