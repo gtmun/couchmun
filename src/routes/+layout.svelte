@@ -11,12 +11,28 @@
 
     createSettingsContext();
     createSessionDataContext();
-    createStatsContext();
+    const { stats } = createStatsContext();
     
     function keydown(e: KeyboardEvent) {
         // Allows ESC to be used to unfocus an element.
         if (e.code === "Escape") {
             (document.activeElement as HTMLElement)?.blur?.();
+        }
+    }
+
+    function storage(e: StorageEvent) {
+        // HACK: Synchronize stats across different screens
+        if (e.storageArea === localStorage && e.key === "statistics.stats") {
+            if (e.newValue != null && e.oldValue !== e.newValue) {
+                let json = undefined;
+                try {
+                    json = JSON.parse(e.newValue);
+                } catch (e) {
+
+                }
+                
+                if (json) stats.set(json);
+            }
         }
     }
 </script>
@@ -25,4 +41,4 @@
 
 <slot></slot>
 
-<svelte:window on:keydown={keydown} />
+<svelte:window on:keydown={keydown} on:storage={storage} />
