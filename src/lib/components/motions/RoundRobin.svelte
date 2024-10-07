@@ -3,19 +3,21 @@
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { getSessionDataContext } from "$lib/stores/session";
+    import { getStatsContext, updateStats } from "$lib/stores/stats";
     import type { AppBarData, Motion, Speaker } from "$lib/types";
-    import { getContext } from "svelte";
+    import { getContext, tick } from "svelte";
     import type { Readable } from "svelte/store";
 
     export let motion: Motion & { kind: "rr" };
 
     const { settings: { delegateAttributes }, presentDelegates } = getSessionDataContext();
+    const { stats } = getStatsContext();
     const { topic } = getContext<AppBarData>("app-bar");
     $: topic.set(motion.topic);
     
     // Timer
     let running: boolean = false;
-    let reset: () => void;
+    let resetTimer: () => void;
     let canReset: Readable<boolean>;
     
     // Speakers List
@@ -23,14 +25,17 @@
     let order: Speaker[] = $presentDelegates.map(key => ({ key, completed: false }));
     let allDone: Readable<boolean>;
     let selectedSpeaker: Speaker | undefined;
-    $: (selectedSpeaker, reset?.());
 
     $: if (running) {
         speakersList?.start();
     }
+    async function reset() {
+        resetTimer?.();
+        await tick();
+    }
     // Button triggers
-    function next() {
-        reset();
+    async function next() {
+        await reset();
         speakersList?.next();
     }
 </script>
@@ -44,10 +49,11 @@
         <Timer 
             name="total"
             duration={motion.speakingTime} 
-            bind:reset
+            bind:reset={resetTimer}
             bind:canReset
             bind:running 
             disableKeyHandlers={typeof selectedSpeaker === "undefined"}
+            onPause={(t) => updateStats(stats, selectedSpeaker?.key, dat => dat.durationSpoken += t)}
         />
         <div class="flex flex-row gap-3 justify-center">
             {#if !running}
@@ -68,6 +74,8 @@
             bind:this={speakersList}
             bind:allDone
             bind:selectedSpeaker
+            onBeforeSpeakerUpdate={reset}
+            onMarkComplete={(key, isRepeat) => { if (!isRepeat) updateStats(stats, key, dat => dat.timesSpoken++) }}
         />
     </div>
 </div>

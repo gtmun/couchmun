@@ -30,9 +30,16 @@
 </div>
 <hr />
 
-<div class="p-2 list-nav">
-    <a on:click={close} href="{base}/settings">Open Settings</a>
-</div>
+<nav class="list-nav p-2">
+    <ul>
+        <a on:click={close} href="{base}/admin/settings" tabindex="0">
+            Settings&nbsp;<Icon icon="mdi:open-in-new" class="text-surface-400-500-token" />
+        </a>
+        <a on:click={close} target="_blank" href="{base}/admin/stats" tabindex="0">
+            Stats&nbsp;<Icon icon="mdi:open-in-new" class="text-surface-400-500-token" />
+        </a>
+    </ul>
+</nav>
 
 <hr />
 

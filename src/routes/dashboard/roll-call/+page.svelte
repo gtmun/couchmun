@@ -1,15 +1,18 @@
 <script lang="ts">
-  import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-  import { getSessionDataContext } from "$lib/stores/session";
-  import { RadioGroup, RadioItem } from "@skeletonlabs/skeleton";
+    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
+    import { getSessionDataContext } from "$lib/stores/session";
+    import { mapObj } from "$lib/util";
+    import { RadioGroup, RadioItem } from "@skeletonlabs/skeleton";
 
-  const { settings: { delegateAttributes }, delegateAttendance } = getSessionDataContext();
+    const { settings: { delegateAttributes }, delegateAttendance } = getSessionDataContext();
+    delegateAttributes.subscribe($da => {
+        $delegateAttendance = mapObj($da, k => [k, $delegateAttendance[k] ?? "NP"]);
+    });
 </script>
 
 <!-- Render a table to display participants and their statuses -->
 <div class="card grid">
   {#each Object.entries($delegateAttributes) as [key, attrs]}
-    {@const _presence = $delegateAttendance[key] ??= "NP"}
     <div class="grid grid-cols-subgrid col-span-2 even:bg-surface-100-800-token odd:bg-surface-200-700-token">
       <div class="flex items-center p-4">
           <DelLabel {key} {attrs} inline />

@@ -4,13 +4,15 @@
     import { initializeStores, Modal, storePopup } from "@skeletonlabs/skeleton";
     import { createSettingsContext } from "$lib/stores/settings";
     import { createSessionDataContext } from "$lib/stores/session";
+    import { createStatsContext } from "$lib/stores/stats";
 
     initializeStores();
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow, size });
 
     createSettingsContext();
     createSessionDataContext();
-
+    createStatsContext();
+    
     function keydown(e: KeyboardEvent) {
         // Allows ESC to be used to unfocus an element.
         if (e.code === "Escape") {

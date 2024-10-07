@@ -19,7 +19,7 @@
         </a>
         <a 
             class="btn-icon variant-filled-primary" 
-            href="{base}/settings"
+            href="{base}/admin/settings"
             aria-label="Settings"
             title="Settings"
         >

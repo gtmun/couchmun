@@ -54,8 +54,17 @@ export function parseTime(timeStr: string): number | undefined {
  * @param secs the number of seconds
  * @returns the time string, or undefined if negative or non-finite or non-integral
  */
-export function stringifyTime(secs: number): string | undefined {
-    secs = Math.ceil(secs);
+export function stringifyTime(secs: number, roundingMode: "floor" | "round" | "ceil" = "ceil"): string | undefined {
+    switch (roundingMode) {
+        case "floor":
+            secs = Math.floor(secs);
+        case "round":
+            secs = Math.round(secs);
+        case "ceil":
+        default:
+            secs = Math.ceil(secs);
+    }
+
     if (secs < 0) return;
     if (!Number.isSafeInteger(secs)) return;
 

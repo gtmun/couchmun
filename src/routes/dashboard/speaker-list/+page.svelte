@@ -4,17 +4,20 @@
     import Timer from "$lib/components/Timer.svelte";
     import { presentDelegateSchema } from "$lib/motions/form_validation";
     import { getSessionDataContext } from "$lib/stores/session";
+    import { getStatsContext, updateStats } from "$lib/stores/stats";
     import type { Speaker } from "$lib/types";
     import { parseTime } from "$lib/util/time";
+    import { tick } from "svelte";
     
     import type { Readable } from "svelte/store";
 
     const { settings: { delegateAttributes }, presentDelegates, speakersList: order } = getSessionDataContext();
+    const { stats } = getStatsContext();
 
     // Timer
     let running: boolean = false;
     let duration: number = 60;
-    let reset: () => void;
+    let resetTimer: () => void;
     let canReset: Readable<boolean>;
     
     // Speakers List
@@ -22,14 +25,17 @@
     let durInput: string;
     let allDone: Readable<boolean>;
     let selectedSpeaker: Speaker | undefined;
-    $: (selectedSpeaker, reset?.());
 
     $: if (running) {
         speakersList?.start();
     }
+    async function reset() {
+        resetTimer?.();
+        await tick();
+    }
     // Button triggers
-    function next() {
-        reset();
+    async function next() {
+        await reset();
         speakersList.next();
     }
     function setDuration() {
@@ -54,8 +60,9 @@
             bind:duration
             bind:running
             bind:canReset
-            bind:reset
+            bind:reset={resetTimer}
             disableKeyHandlers={typeof selectedSpeaker === "undefined"}
+            onPause={(t) => updateStats(stats, selectedSpeaker?.key, dat => dat.durationSpoken += t)}
             editable
         />
         <div class="flex flex-row gap-3 justify-center">
@@ -81,6 +88,8 @@
             }}
             bind:allDone
             bind:selectedSpeaker
+            onBeforeSpeakerUpdate={reset}
+            onMarkComplete={(key, isRepeat) => { if (!isRepeat) updateStats(stats, key, dat => dat.timesSpoken++) }}
         />
         <!-- Timer config -->
         <div class="flex flex-row gap-5">

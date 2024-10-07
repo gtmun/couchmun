@@ -6,6 +6,7 @@
   import { MOTION_LABELS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import { getSessionDataContext } from "$lib/stores/session";
+  import { getStatsContext, updateStats } from "$lib/stores/stats";
   import type { Motion } from "$lib/types";
   import { sortable } from "$lib/util";
   import { stringifyTime } from "$lib/util/time";
@@ -15,6 +16,7 @@
   import { flip } from "svelte/animate";
 
   const { settings: { delegateAttributes, sortOrder }, motions, selectedMotion } = getSessionDataContext();
+  const { stats } = getStatsContext();
   const modalStore = getModalStore();
 
   function submitMotion(motion: Motion) {
@@ -22,6 +24,7 @@
       $m.push(motion);
       return $m;
     });
+    updateStats(stats, motion.delegate, dat => dat.motionsProposed++);
   }
 
   /**
@@ -64,6 +67,7 @@
   function acceptMotion(motion: Motion) {
     $selectedMotion = motion;
     $motions = [];
+    updateStats(stats, motion.delegate, dat => dat.motionsAccepted++);
   }
   function editMotion(i: number, motion: Motion) {
     modalStore.trigger({
@@ -75,6 +79,8 @@
         response(motion?: Motion) {
           if (!motion) return;
           motions.update($m => {
+            updateStats(stats, $m[i].delegate, dat => dat.motionsProposed--);
+            updateStats(stats, motion.delegate, dat => dat.motionsProposed++);
             $m[i] = motion;
             return $m;
           });

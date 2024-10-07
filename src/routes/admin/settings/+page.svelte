@@ -168,21 +168,8 @@
     }
 </script>
 
-<MetaTags title="Settings &middot; CouchMUN" />
-
+<MetaTags title="Settings &middot; CouchMUN (Admin)" />
 <div class="flex flex-col p-4 gap-4">
-    <div class="grid grid-cols-[36px_1fr_36px] items-center">
-        <a
-            href="{base}/dashboard"
-            class="btn btn-icon"
-            aria-label="Return to Dashboard"
-            title="Return to Dashboard"
-        >
-            <Icon icon="mdi:chevron-left" width="36" height="36" />
-        </a>
-        <BarTitle bind:title={$title} />
-    </div>
-    <hr />
     <div class="panel">
         <h3 class="h3 text-center">Control Panel</h3>
         <div class="flex gap-3 justify-center">

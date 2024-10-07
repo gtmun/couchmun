@@ -48,6 +48,8 @@
      */
     export let selectedSpeaker: Speaker | undefined = undefined;
 
+    export let onBeforeSpeakerUpdate: ((oldSpeaker: Speaker | undefined, newSpeaker: Speaker | undefined) => unknown) | undefined = undefined;
+    export let onMarkComplete: ((key: string, isRepeat: boolean) => unknown) | undefined = undefined;
     // List item elements per order item
     let liElements = new Map<Speaker, HTMLLIElement>();
 
@@ -58,7 +60,7 @@
 
     // If order updates and selectedSpeaker isn't in there, then clear selectedSpeaker:
     $: if (typeof selectedSpeaker !== "undefined" && !order.includes(selectedSpeaker)) {
-        selectedSpeaker = undefined;
+        setSelectedSpeaker(undefined);
     }
     // Scroll to speaker if it is out of view:
     $: if (typeof selectedSpeaker !== "undefined") {
@@ -71,6 +73,7 @@
     }
     function markComplete(speaker: Speaker | undefined) {
         if (typeof speaker !== "undefined") {
+            onMarkComplete?.(speaker.key, speaker.completed);
             speaker.completed = true;
         }
         order = order;
@@ -82,7 +85,7 @@
         markComplete(selectedSpeaker);
 
         // Find first element in the order that has not been completed yet.
-        selectedSpeaker = order.find(({ completed }) => !completed);
+        setSelectedSpeaker(order.find(({ completed }) => !completed));
     }
 
     export function addSpeaker(name: string, clearControlInput: boolean = false) {
@@ -107,10 +110,21 @@
         order = order;
         
         if (removedSpeaker === selectedSpeaker) {
-            selectedSpeaker = undefined;
+            setSelectedSpeaker(undefined);
         }
         if (removedSpeaker === draggingSpeaker) {
             draggingSpeaker = undefined;
+        }
+    }
+
+    /// Sets the selected speaker.
+    function setSelectedSpeaker(speaker: Speaker | undefined) {
+        if (selectedSpeaker !== speaker) {
+            // Call beforeSpeakerUpdate (and let it run to completion if is Promise) before setting speaker.
+            (async () => {
+                await onBeforeSpeakerUpdate?.(selectedSpeaker, speaker);
+                selectedSpeaker = speaker;
+            })()
         }
     }
 
@@ -231,7 +245,7 @@
                     class:variant-soft-surface={!selected && speaker.completed}
                     class:variant-ringed-surface={!selected && !speaker.completed}
                     class:hover:variant-ringed-primary={!selected && !speaker.completed}
-                    on:click={() => { if (!selected) selectedSpeaker = speaker; }}
+                    on:click={() => setSelectedSpeaker(speaker)}
                     on:keydown={(e) => onKeyDown(e, i, 1)}
                     title="Select {speakerLabel}"
                     aria-label="Select {speakerLabel}"

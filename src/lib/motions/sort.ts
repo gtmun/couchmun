@@ -1,6 +1,5 @@
 import type { Motion, SortEntry, SortKind, SortOrderProperty } from "$lib/types";
-
-type Comparator<K> = (a: K, b: K) => number;
+import { compare, type Comparator } from "$lib/util";
 
 export const SORT_KIND_NAMES: Record<SortKind, string> = {
     mod: "Moderated Caucus",
@@ -58,8 +57,6 @@ function getSortProperty(m: Motion, key: SortOrderProperty): unknown {
 
     throw Error(`Motion cannot be sorted by ${key}`);
 }
-
-const compare = ((a, b, reverse: boolean = false) => (reverse ? -1 : 1) * (a < b ? -1 : a > b ? 1 : 0)) satisfies Comparator<any>;
 
 export function compareMotions(priority: SortEntry[]): Comparator<Motion> {
     return (a, b) => {

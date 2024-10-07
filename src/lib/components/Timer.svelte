@@ -16,6 +16,7 @@
     export let hideText: boolean = false;
     export let disableKeyHandlers: boolean = false;
     export let editable: boolean = false;
+    export let onPause: ((elapsed: number) => void) | undefined = undefined;
 
     $: DURATION_MS = duration * 1000;
     $: (DURATION_MS, reset()); // on duration update, reset timer
@@ -57,6 +58,8 @@
         if (running) {
             lastStart = undefined;
             msRemainingAtStart = msRemaining;
+        } else {
+            onPause?.(getElapsedTime());
         }
     }
 

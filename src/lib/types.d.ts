@@ -217,3 +217,26 @@ export type AppBarData = {
 export type ClockMessage = 
     | { kind: "startTick", ts: number } 
     | { kind: "endTick"}
+
+// Stats store data:
+export type StatsData = {
+    /**
+     * Number of motions proposed by this delegate.
+     */
+    motionsProposed: number,
+    /**
+     * Number of motions accepted by this delegate.
+     */
+    motionsAccepted: number,
+    /**
+     * Number of times this delegate has gone up to speak (in speakers list and moderated caucuses).
+     */
+    timesSpoken: number,
+    /**
+     * Total duration this delegate has gone up to speak (in speakers list and moderated caucuses), in milliseconds.
+     */
+    durationSpoken: number
+}
+export type StatsDataStore = {
+    stats: Writable<Record<string, StatsData>>
+}

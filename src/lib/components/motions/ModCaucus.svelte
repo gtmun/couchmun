@@ -4,13 +4,15 @@
     import Timer from "$lib/components/Timer.svelte";
     import { presentDelegateSchema } from "$lib/motions/form_validation";
     import { getSessionDataContext } from "$lib/stores/session";
+    import { getStatsContext, updateStats } from "$lib/stores/stats";
     import type { AppBarData, Motion, Speaker } from "$lib/types";
-    import { getContext } from "svelte";
+    import { getContext, tick } from "svelte";
     import type { Readable } from "svelte/store";
 
     export let motion: Motion & { kind: "mod" };
 
     const { settings: { delegateAttributes }, presentDelegates } = getSessionDataContext();
+    const { stats } = getStatsContext();
     const { topic } = getContext<AppBarData>("app-bar");
     $: topic.set(motion.topic);
 
@@ -32,15 +34,17 @@
         speakersList?.start();
     }
     // Button triggers
-    function reset() {
+    async function reset() {
         delReset?.();
+        await tick();
     }
-    function resetAll() {
+    async function resetAll() {
         totalReset?.();
         delReset?.();
+        await tick();
     }
-    function next() {
-        reset();
+    async function next() {
+        await reset();
         speakersList?.next();
     }
 </script>
@@ -58,6 +62,7 @@
             bind:canReset={delResetable}
             bind:running
             disableKeyHandlers={typeof selectedSpeaker === "undefined"}
+            onPause={(t) => updateStats(stats, selectedSpeaker?.key, dat => dat.durationSpoken += t)}
         />
         <Timer
             name="total"
@@ -91,6 +96,8 @@
             }}
             bind:allDone
             bind:selectedSpeaker
+            onBeforeSpeakerUpdate={reset}
+            onMarkComplete={(key, isRepeat) => { if (!isRepeat) updateStats(stats, key, dat => dat.timesSpoken++) }}
         />
     </div>
 </div>

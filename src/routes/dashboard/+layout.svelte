@@ -110,5 +110,4 @@
     </main>
     <!-- Footer -->
     <footer class="bg-surface-300-600-token p-4"></footer>
-  </div>
-  
+</div>
