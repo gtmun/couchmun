@@ -213,3 +213,7 @@ export type AppBarData = {
      */
     topic: Writable<string | undefined>
 }
+
+export type ClockMessage = 
+    | { kind: "startTick", ts: number } 
+    | { kind: "endTick"}

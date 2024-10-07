@@ -4,7 +4,6 @@
     and the duration prop to control how many seconds the timer should run for.
 -->
 <script lang="ts">
-    import type { ClockMessage } from "$lib/util/clock";
     import { parseTime, stringifyTime } from "$lib/util/time";
     import { ProgressBar } from "@skeletonlabs/skeleton";
     import { onDestroy, onMount } from "svelte";
@@ -136,6 +135,7 @@
 </script>
 
 <script context="module" lang="ts">
+    import type { ClockMessage } from "$lib/types";
     import ClockSourceURL from "$lib/util/clock?url";
 
     // This is a synchronized timer for all Timer components.
