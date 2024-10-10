@@ -101,7 +101,7 @@
     <div class="grid grid-cols-[1fr_auto] items-center">
       <h3 class="h3 text-center">List of Motions</h3>
       <button
-        class="btn btn-icon"
+        class="btn btn-icon variant-ghost-primary hover:variant-filled-primary"
         on:click={sortMotions}
         aria-label="Sort Motions"
         title="Sort Motions"
