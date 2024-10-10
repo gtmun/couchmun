@@ -37,6 +37,10 @@
             <span>Aliases (optional)</span>
             <input class="input" bind:value={aliasesInput} placeholder="Republic of Modelunia, Modelunic Republic">
         </label>
+        <label>
+            <span>Flag URL (optional)</span>
+            <input class="input" bind:value={attrs.flagURL} placeholder="https://example.com/flag.svg">
+        </label>
         <div class="flex justify-end gap-3">
             <button class="btn variant-filled-error" type="button" on:click={close}>Cancel</button>
             <button class="btn variant-filled-primary" type="submit">Submit</button>

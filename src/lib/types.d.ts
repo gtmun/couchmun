@@ -17,7 +17,9 @@ export type DelegateAttrs = {
      * This will never be shown, but is used to improve delegate
      * input autocomplete.
      */
-    aliases: string[]
+    aliases: string[],
+
+    flagURL?: string
 }
 
 // These types are used to define motion sorting.

@@ -8,7 +8,7 @@
     export let attrs: DelegateAttrs | undefined;
     export let fallback: "un" | "icon" | "none" = "none";
 
-    $: flag = getFlagUrl(key);
+    $: flag = attrs?.flagURL ? new URL(attrs?.flagURL) : getFlagUrl(key);
     $: label = attrs?.name ?? key ?? "";
 
     function getUNFlag() {
