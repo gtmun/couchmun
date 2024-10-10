@@ -12,6 +12,7 @@
     import { get, type Writable } from "svelte/store";
     import Icon from "@iconify/svelte";
     import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
+    import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
 
     const settings = getSettingsContext();
     const { delegateAttributes, sortOrder, delegatesEnabled, preferences } = settings;
@@ -138,6 +139,22 @@
             }
         });
     }
+    function configureEnableDelegates() {
+        modalStore.trigger({
+            type: "component",
+            component: {
+                ref: EnableDelegatesCard,
+                props: { attrs: $delegateAttributes }
+            },
+            response(data?: Record<string, boolean>) {
+                if (!data) return;
+
+                $delegatesEnabled = Object.fromEntries(
+                    Object.keys($delegateAttributes).map(k => [k, data[k] ?? false])
+                );
+            }
+        })
+    }
     function deleteDelegate(key: string) {
         currentPreset = "custom";
         delegateAttributes.update($attrs => {
@@ -243,6 +260,7 @@
             </label>
             <div class="flex gap-3 justify-center">
                 <button class="btn variant-filled-primary" on:click={() => editDelegate(undefined)}>Add Delegate</button>
+                <button class="btn variant-filled-primary" on:click={() => configureEnableDelegates()}>Enable/Disable Delegates</button>
                 <button class="btn variant-filled-error" on:click={clearDelegates}>Clear Delegates</button>
             </div>
         </div>
