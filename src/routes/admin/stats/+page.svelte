@@ -4,7 +4,7 @@
     import { getSessionDataContext } from "$lib/stores/session";
     import { defaultStats, getStatsContext } from "$lib/stores/stats";
     import type { StatsData } from "$lib/types";
-    import { compare, mapObj, triggerConfirmModal } from "$lib/util";
+    import { compare, downloadFile, mapObj, triggerConfirmModal } from "$lib/util";
     import { stringifyTime } from "$lib/util/time";
     
     import Icon from "@iconify/svelte";
@@ -60,25 +60,6 @@
         event: "click",
         target: "stats-button",
         closeQuery: ''
-    }
-
-    function downloadFile(filename: string, contents: string, type: string) {
-        // Creates file to download:
-        const a = document.createElement("a");
-        const blob = new Blob([contents], { type });
-        const href = URL.createObjectURL(blob);
-        a.href = href;
-        a.download = filename;
-        document.body.appendChild(a);
-
-        // Downloads:
-        a.click();
-
-        // Teardown:
-        setTimeout(() => {
-            URL.revokeObjectURL(href);
-            document.body.removeChild(a);
-        }, 0);
     }
     function exportStats() {
         let data = {

@@ -56,3 +56,28 @@ export function mapObj<
         )
     );
 }
+
+/**
+ * Allows user to download a file.
+ * @param filename The name of the file to download
+ * @param contents The string in the file
+ * @param type The type of the file (e.g., "application/json")
+ */
+export function downloadFile(filename: string, contents: string, type: string) {
+    // Creates file to download:
+    const a = document.createElement("a");
+    const blob = new Blob([contents], { type });
+    const href = URL.createObjectURL(blob);
+    a.href = href;
+    a.download = filename;
+    document.body.appendChild(a);
+
+    // Downloads:
+    a.click();
+
+    // Teardown:
+    setTimeout(() => {
+        URL.revokeObjectURL(href);
+        document.body.removeChild(a);
+    }, 0);
+}

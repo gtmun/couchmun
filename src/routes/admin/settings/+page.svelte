@@ -1,22 +1,20 @@
 <script lang="ts">
-    import { base } from "$app/paths";
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
     import MetaTags from "$lib/components/MetaTags.svelte";
-    import BarTitle from "$lib/components/app-bar/BarTitle.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import EditDelegateCard from "$lib/components/modals/EditDelegateCard.svelte";
     import { defaultPresetKey, getPreset, PRESETS } from "$lib/delegate_presets";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
     import { getSettingsContext, resetSettingsContext } from "$lib/stores/settings";
     import type { DelegateAttrs, Preferences } from "$lib/types";
-    import { triggerConfirmModal } from "$lib/util";
+    import { compare, downloadFile, triggerConfirmModal } from "$lib/util";
 
     import { get, type Writable } from "svelte/store";
     import Icon from "@iconify/svelte";
     import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
 
     const settings = getSettingsContext();
-    const { delegateAttributes, sortOrder, delegatesEnabled, title, preferences } = settings;
+    const { delegateAttributes, sortOrder, delegatesEnabled, preferences } = settings;
     let delsEnabledAll: boolean | undefined;
     $: {
         const [first, ...rest] = Object.keys($delegateAttributes).map(key => $delegatesEnabled[key]);
@@ -42,24 +40,6 @@
                 if (key in json) store.set(json[key]);
             }
         }
-    }
-    function downloadFile(filename: string, contents: string, type: string) {
-        // Creates file to download:
-        const a = document.createElement("a");
-        const blob = new Blob([contents], { type });
-        const href = URL.createObjectURL(blob);
-        a.href = href;
-        a.download = filename;
-        document.body.appendChild(a);
-
-        // Downloads:
-        a.click();
-
-        // Teardown:
-        setTimeout(() => {
-            URL.revokeObjectURL(href);
-            document.body.removeChild(a);
-        }, 0);
     }
     function exportFile() {
         const exportSettings = Object.fromEntries(Object.entries(settings).map(
@@ -113,7 +93,6 @@
      * @param key Key of delegate to edit (or undefined if adding a new delegate)
      */
     function editDelegate(key: string | undefined) {
-        const compare = (a: any, b: any) => a < b ? -1 : a > b ? 1 : 0;
         modalStore.trigger({
             type: "component",
             component: {
