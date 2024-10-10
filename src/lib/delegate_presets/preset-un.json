@@ -64,10 +64,11 @@
         ]
     },
     "BS": {
-        "name": "The Bahamas",
+        "name": "Bahamas",
         "aliases": [
             "Bahamas (the)",
-            "Commonwealth of The Bahamas"
+            "Commonwealth of The Bahamas",
+            "The Bahamas"
         ]
     },
     "BH": {
@@ -115,10 +116,10 @@
         ]
     },
     "BO": {
-        "name": "Bolivia",
+        "name": "Bolivia (Plurinational State of)",
         "aliases": [
-            "Bolivia (Plurinational State of)",
-            "Plurinational State of Bolivia"
+            "Plurinational State of Bolivia",
+            "Bolivia"
         ]
     },
     "BA": {
@@ -138,9 +139,10 @@
         ]
     },
     "BN": {
-        "name": "Brunei",
+        "name": "Brunei Darussalam",
         "aliases": [
-            "Brunei Darussalam",
+            "Brunei",
+            "Negara Brunei Darussalam",
             "Nation of Brunei, the Abode of Peace"
         ]
     },
@@ -215,20 +217,15 @@
     "KM": {
         "name": "Comoros",
         "aliases": [
-            "Comoros (the)",
-            "Union of the Comoros"
-        ]
-    },
-    "CD": {
-        "name": "Democratic Republic of the Congo",
-        "aliases": [
-            "Congo (the Democratic Republic of the)"
+            "Union of the Comoros",
+            "Comoros (the)"
         ]
     },
     "CG": {
-        "name": "Republic of the Congo",
+        "name": "Congo",
         "aliases": [
-            "Congo (the)"
+            "Congo (the)",
+            "Republic of the Congo"
         ]
     },
     "CR": {
@@ -266,6 +263,20 @@
         "name": "Czechia",
         "aliases": [
             "Czech Republic"
+        ]
+    },
+    "KP": {
+        "name": "Democratic People's Republic of Korea",
+        "aliases": [
+            "North Korea",
+            "Korea (the Democratic People's Republic of)"
+        ]
+    },
+    "CD": {
+        "name": "Democratic Republic of the Congo",
+        "aliases": [
+            "DR Congo",
+            "Congo (the Democratic Republic of the)"
         ]
     },
     "DK": {
@@ -365,9 +376,10 @@
         ]
     },
     "GM": {
-        "name": "The Gambia",
+        "name": "Gambia",
         "aliases": [
             "Gambia (the)",
+            "The Gambia",
             "Republic of The Gambia"
         ]
     },
@@ -454,9 +466,9 @@
         ]
     },
     "IR": {
-        "name": "Iran",
+        "name": "Iran (Islamic Republic of)",
         "aliases": [
-            "Iran (Islamic Republic of)",
+            "Iran",
             "Islamic Republic of Iran"
         ]
     },
@@ -514,20 +526,6 @@
             "Republic of Kiribati"
         ]
     },
-    "KP": {
-        "name": "North Korea",
-        "aliases": [
-            "Korea (the Democratic People's Republic of)",
-            "Democratic People's Republic of Korea"
-        ]
-    },
-    "KR": {
-        "name": "South Korea",
-        "aliases": [
-            "Korea (the Republic of)",
-            "Republic of Korea"
-        ]
-    },
     "KW": {
         "name": "Kuwait",
         "aliases": [
@@ -541,10 +539,10 @@
         ]
     },
     "LA": {
-        "name": "Laos",
+        "name": "Lao People's Democratic Republic",
         "aliases": [
-            "Lao People's Democratic Republic (the)",
-            "Lao People's Democratic Republic"
+            "Laos",
+            "Lao People's Democratic Republic (the)"
         ]
     },
     "LV": {
@@ -655,17 +653,10 @@
         ]
     },
     "FM": {
-        "name": "Micronesia",
+        "name": "Micronesia (Federated States of)",
         "aliases": [
-            "Micronesia (Federated States of)",
-            "Federated States of Micronesia"
-        ]
-    },
-    "MD": {
-        "name": "Moldova",
-        "aliases": [
-            "Moldova (the Republic of)",
-            "Republic of Moldova"
+            "Federated States of Micronesia",
+            "Micronesia"
         ]
     },
     "MC": {
@@ -719,10 +710,11 @@
         ]
     },
     "NL": {
-        "name": "Netherlands",
+        "name": "Netherlands (Kingdom of the)",
         "aliases": [
+            "Kingdom of the Netherlands",
             "Netherlands, Kingdom of the",
-            "Kingdom of the Netherlands"
+            "Netherlands"
         ]
     },
     "NZ": {
@@ -827,15 +819,29 @@
             "State of Qatar"
         ]
     },
+    "KR": {
+        "name": "Republic of Korea",
+        "aliases": [
+            "South Korea",
+            "Korea (the Republic of)"
+        ]
+    },
+    "MD": {
+        "name": "Republic of Moldova",
+        "aliases": [
+            "Moldova (the Republic of)",
+            "Moldova"
+        ]
+    },
     "RO": {
         "name": "Romania",
         "aliases": []
     },
     "RU": {
-        "name": "Russia",
+        "name": "Russian Federation",
         "aliases": [
-            "Russian Federation (the)",
-            "Russian Federation"
+            "Russia",
+            "Russian Federation (the)"
         ]
     },
     "RW": {
@@ -869,9 +875,9 @@
         ]
     },
     "ST": {
-        "name": "S\u00e3o Tom\u00e9 and Pr\u00edncipe",
+        "name": "Sao Tome and Principe",
         "aliases": [
-            "Sao Tome and Principe",
+            "S\u00e3o Tom\u00e9 and Pr\u00edncipe",
             "Democratic Republic of S\u00e3o Tom\u00e9 and Pr\u00edncipe"
         ]
     },
@@ -1042,8 +1048,8 @@
         "name": "T\u00fcrkiye",
         "aliases": [
             "Republic of T\u00fcrkiye",
-            "Turkiye",
-            "Turkey"
+            "Turkey",
+            "Turkiye"
         ]
     },
     "TM": {
@@ -1105,15 +1111,15 @@
     "VE": {
         "name": "Venezuela",
         "aliases": [
-            "Venezuela (Bolivarian Republic of)",
-            "Bolivarian Republic of Venezuela"
+            "Bolivarian Republic of Venezuela",
+            "Venezuela (Bolivarian Republic of)"
         ]
     },
     "VN": {
-        "name": "Vietnam",
+        "name": "Viet Nam",
         "aliases": [
-            "Viet Nam",
-            "Socialist Republic of Viet Nam"
+            "Socialist Republic of Viet Nam",
+            "Vietnam"
         ]
     },
     "YE": {
