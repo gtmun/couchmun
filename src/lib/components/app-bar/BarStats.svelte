@@ -34,7 +34,7 @@
         <ConicGradient width="w-6" height="h-6" stops={supermajConic} />
         {supermaj}
     </div>
-    <div class="flex flex-row gap-1 align-center" aria-label="Quorum ({total})" title="Quorum ({total})">
+    <div class="flex flex-row gap-1 align-center" aria-label="Total ({total})" title="Total ({total})">
         <ConicGradient width="w-6" height="h-6" stops={totalConic} />
         {total}
     </div>
