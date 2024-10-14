@@ -1,38 +1,9 @@
-# create-svelte
+# CouchMUN
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+*If you're looking for a link to the hosted version of CouchMUN, you can find it [here](https://gtmun.github.io/couchmun/)!*
 
-## Creating a project
+This is an application aimed at managing tasks for Model United Nations Conferences, heavily inspired by the [ChairMUN](https://chairmun.com/) project.
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Contributing and Developing
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+For details regarding how to contribute and develop this project, see [`CONTRIBUTING.md`](CONTRIBUTING.md).

@@ -56,4 +56,4 @@ You will also see any lint errors in the console.
 - `npm run build`: Builds the app for production to the `build/` folder.
 - `npm run preview`: Creates a server to view the built app in `build/`. Open [http://localhost:4173](http://localhost:4173) to view it in browser.
 
-Note that it is not usually necessary to run these commands locally, as the Github Workflow that deploys the website will automatically run these commands.
+Note that it is not usually necessary to run these commands locally, as the Github Workflow that deploys the website will automatically run `npm run build` and `npm run preview`.
