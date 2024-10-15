@@ -64,6 +64,8 @@
     function exportStats() {
         let data = {
             committee: $title,
+            present: $presentDelegates,
+            attributes: $delegateAttributes,
             stats: $stats
         };
         downloadFile("couchmun-del-stats.json", JSON.stringify(data), "application/json");
