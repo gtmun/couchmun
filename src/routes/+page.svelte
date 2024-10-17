@@ -6,7 +6,7 @@
 
 <MetaTags
     title="CouchMUN"
-    description="A tool to help Model United Nations committees keep time, oversee debate, and manage delegates."
+    description="A tool to support chairs of Model UN committees in keeping time, overseeing debate, and managing delegates."
 />
 
 <div class="flex flex-col justify-center h-screen gap-3">
