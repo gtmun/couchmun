@@ -127,6 +127,7 @@
     let totalTimeText: HTMLSpanElement;
     function titleKeyDown(e: KeyboardEvent) {
         if (e.code === "Enter") {
+            e.preventDefault();
             totalTimeText?.blur();
         }
     }

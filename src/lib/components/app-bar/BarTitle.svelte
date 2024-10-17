@@ -9,6 +9,7 @@
     function keyDown(k: KeyboardEvent) {
         // If Enter is pressed, unfocus the title
         if (k.code === "Enter") {
+            k.preventDefault();
             heading.blur();
         }
     }
