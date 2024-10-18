@@ -144,7 +144,7 @@
 
 <script context="module" lang="ts">
     import type { ClockMessage } from "$lib/types";
-    import ClockSourceURL from "$lib/util/clock?url";
+    import ClockSourceWorker from "$lib/util/clock?worker";
 
     // This is a synchronized timer for all Timer components.
     // It is in a worker thread so that it runs in the background.
@@ -152,7 +152,7 @@
     // allowing them to be synchronized.
     let clockSource: Worker | undefined = undefined;
     function initClockSource(): Worker {
-        return (clockSource ??= new Worker(ClockSourceURL));
+        return (clockSource ??= new ClockSourceWorker());
     }
 </script>
 
