@@ -47,21 +47,12 @@
         initClockSource().addEventListener("message", loop);
     });
     onDestroy(() => {
-        running = false;
+        setRunning(false);
         clockSource?.removeEventListener("message", loop);
     });
 
     // Only trigger state update if running state changed:
-    let _running = running;
-    $: if (_running != running) {
-        _running = running;
-        if (running) {
-            lastStart = undefined;
-            msRemainingAtStart = msRemaining;
-        } else {
-            onPause?.(getElapsedTime());
-        }
-    }
+    $: setRunning(running);
 
     // Readonly query variables:
     let _remStore = writable(msRemaining / 1000);
@@ -98,6 +89,19 @@
         if (lastEnd < lastStart) return 0;
 
         return lastEnd - lastStart;
+    }
+    
+    let _running = running;
+    function setRunning(running: boolean) {
+        if (_running != running) {
+            _running = running;
+            if (running) {
+                lastStart = undefined;
+                msRemainingAtStart = msRemaining;
+            } else {
+                onPause?.(getElapsedTime());
+            }
+        }
     }
 
     function clamp(value: number, min: number, max: number) {
