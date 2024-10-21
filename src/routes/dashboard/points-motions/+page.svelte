@@ -189,7 +189,7 @@
   }
 
   /* If we're NOT dragging an item, enable the hover effect. */
-  .motion-table tbody:not(:has(> [draggable="true"])) tr:hover:not(:active) {
+  .motion-table tbody:not(:has(> :global(.sortable-chosen))) tr:hover:not(:active) {
     background-color: rgba(var(--color-primary-500) / 0.25) !important;
   }
 </style>
