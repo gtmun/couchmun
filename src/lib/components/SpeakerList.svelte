@@ -4,68 +4,63 @@
     import { formatValidationError, nonEmptyString } from "$lib/motions/form_validation";
     import type { DelegateAttrs, Speaker } from "$lib/types";
     
-    import { readonly, writable } from "svelte/store";
-    import type { z } from "zod";
+    import { type z } from "zod";
     import Icon from "@iconify/svelte";
     import { popup } from "@skeletonlabs/skeleton";
     import { sortable } from "$lib/util";
     import { tick } from "svelte";
     import { flip } from "svelte/animate";
 
-    /**
-     * The order of speakers for the speaker's list.
-     */
-    export let order: Speaker[] = [];
+    let dfltControlsInput: string = $state("");
+    let dfltControlsError: string | undefined = $state(undefined);
 
-    /**
-     * A mapping of key to their delegate attributes.
-     * 
-     * If no entry exists for a given key, the speaker's key is displayed.
-     */
-    export let delegates: Record<string, DelegateAttrs> = {};
+    interface Props {
+        /**
+         * The order of speakers for the speaker's list.
+         */
+        order?: Speaker[];
+        /**
+         * A mapping of key to their delegate attributes.
+         * 
+         * If no entry exists for a given key, the speaker's key is displayed.
+         */
+        delegates?: Record<string, DelegateAttrs>;
+        /**
+         * If defined, this creates control options to allow for adding
+         * and removing speakers from the speakers' list.
+         * 
+         * This doesn't need to be defined if:
+         * 1. Adding delegates isn't required, or
+         * 2. A custom control is implemented instead
+         */
+        useDefaultControls?: {
+            presentDelegates: string[],
+            validator: z.ZodType<string, any, any> | ((dels: Record<string, DelegateAttrs>, presentDels: string[]) => z.ZodType<string, any, any>),
+            popupID?: string
+        } | undefined;
+        /**
+         * The current speaker.
+         */
+        selectedSpeaker?: Speaker | undefined;
+        onBeforeSpeakerUpdate?: ((oldSpeaker: Speaker | undefined, newSpeaker: Speaker | undefined) => unknown) | undefined;
+        onMarkComplete?: ((key: string, isRepeat: boolean) => unknown) | undefined;
+    }
 
-    /**
-     * If defined, this creates control options to allow for adding
-     * and removing speakers from the speakers' list.
-     * 
-     * This doesn't need to be defined if:
-     * 1. Adding delegates isn't required, or
-     * 2. A custom control is implemented instead
-     */
-    export let useDefaultControls: {
-        presentDelegates: string[],
-        validator: z.ZodType<string, any, any> | ((dels: Record<string, DelegateAttrs>, presentDels: string[]) => z.ZodType<string, any, any>),
-        popupID?: string
-    } | undefined = undefined;
-    // Properties which are only used with default controls:
-    $: validator = typeof useDefaultControls?.validator === "function" 
-        ? useDefaultControls?.validator(delegates, useDefaultControls.presentDelegates)
-        : useDefaultControls?.validator ?? nonEmptyString();
-    let dfltControlsInput: string;
-    let dfltControlsError: string | undefined = undefined;
-
-    /**
-     * The current speaker.
-     */
-    export let selectedSpeaker: Speaker | undefined = undefined;
-
-    export let onBeforeSpeakerUpdate: ((oldSpeaker: Speaker | undefined, newSpeaker: Speaker | undefined) => unknown) | undefined = undefined;
-    export let onMarkComplete: ((key: string, isRepeat: boolean) => unknown) | undefined = undefined;
+    let {
+        order = $bindable([]),
+        delegates = {},
+        useDefaultControls = undefined,
+        selectedSpeaker = $bindable(undefined),
+        onBeforeSpeakerUpdate = undefined,
+        onMarkComplete = undefined
+    }: Props = $props();
+    
     // List item elements per order item
     let liElements = new Map<Speaker, HTMLLIElement>();
 
     // Readonly values
-    let _adStore = writable(false);
-    $: $_adStore = typeof selectedSpeaker === "undefined" && order.every(({ completed }) => completed);
-    export const allDone = readonly(_adStore);
-
-    // If order updates and selectedSpeaker isn't in there, then clear selectedSpeaker:
-    $: if (typeof selectedSpeaker !== "undefined" && !order.includes(selectedSpeaker)) {
-        setSelectedSpeaker(undefined);
-    }
-    // Scroll to speaker if it is out of view:
-    $: if (typeof selectedSpeaker !== "undefined") {
-        liElements.get(selectedSpeaker)?.scrollIntoView({ block: "nearest" });
+    export function isAllDone() {
+        return typeof selectedSpeaker === "undefined" && order.every(({ completed }) => completed);
     }
 
     //
@@ -105,6 +100,10 @@
         } else {
             dfltControlsError = formatValidationError(result.error).message;
         }
+    }
+    function submitSpeaker(e: SubmitEvent) {
+        e.preventDefault();
+        addSpeaker(dfltControlsInput, true);
     }
     function deleteSpeaker(i: number) {
         let [removedSpeaker] = order.splice(i, 1);
@@ -171,7 +170,7 @@
     };
 
     // A11y dragging
-    let draggingSpeaker: Speaker | undefined = undefined;
+    let draggingSpeaker: Speaker | undefined = $state(undefined);
 
     async function handleDragButton(s: Speaker) {
         // No currently dragging speaker, so set:
@@ -195,6 +194,21 @@
             getButton(y, 0)?.focus();
         }
     }
+    // Properties which are only used with default controls:
+    let validator = $derived(
+        typeof useDefaultControls?.validator === "function" 
+        ? useDefaultControls?.validator(delegates, useDefaultControls.presentDelegates)
+        : useDefaultControls?.validator ?? nonEmptyString()
+    );
+    
+        // If order updates and selectedSpeaker isn't in there, then clear selectedSpeaker.
+    // Scroll to speaker if it is out of view.
+    $effect(() => {
+        if (typeof selectedSpeaker !== "undefined") {
+            if (!order.includes(selectedSpeaker)) setSelectedSpeaker(undefined);
+            liElements.get(selectedSpeaker)?.scrollIntoView({ block: "nearest" });
+        }
+    })
 </script>
 
 <div class="card p-4 overflow-y-auto flex-grow flex flex-col items-stretch gap-3">
@@ -233,8 +247,8 @@
                 <button
                     class="btn-icon handle cursor-grab"
                     aria-pressed={dragSelected}
-                    on:click={() => handleDragButton(speaker)}
-                    on:keydown={(e) => onKeyDown(e, i, 0)}
+                    onclick={() => handleDragButton(speaker)}
+                    onkeydown={(e) => onKeyDown(e, i, 0)}
                     aria-label={dragBtnLabel}
                     title={dragBtnLabel}
                 >
@@ -247,8 +261,8 @@
                     class:variant-soft-surface={!selected && speaker.completed}
                     class:variant-ringed-surface={!selected && !speaker.completed}
                     class:hover:variant-ringed-primary={!selected && !speaker.completed}
-                    on:click={() => setSelectedSpeaker(speaker)}
-                    on:keydown={(e) => onKeyDown(e, i, 1)}
+                    onclick={() => setSelectedSpeaker(speaker)}
+                    onkeydown={(e) => onKeyDown(e, i, 1)}
                     title="Select {speakerLabel}"
                     aria-label="Select {speakerLabel}"
                     aria-pressed={selected}
@@ -259,8 +273,8 @@
                     {#if !speaker.completed}
                         <button 
                             class="btn-icon variant-soft-surface hover:variant-filled-error" 
-                            on:click={() => deleteSpeaker(i)}
-                            on:keydown={(e) => onKeyDown(e, i, 2)}
+                            onclick={() => deleteSpeaker(i)}
+                            onkeydown={(e) => onKeyDown(e, i, 2)}
                             title="Delete {speakerLabel}"
                             aria-label="Delete {speakerLabel}"
                         >
@@ -281,7 +295,7 @@
     <div class="flex flex-col gap-1">
         <div class="flex flex-row gap-3">
             <!-- Add delegate -->
-            <form class="contents" on:submit|preventDefault={() => addSpeaker(dfltControlsInput ?? "", true)} on:input={() => dfltControlsError = undefined}>
+            <form class="contents" onsubmit={submitSpeaker} oninput={() => dfltControlsError = undefined}>
                 <input 
                     class="input" 
                     class:input-error={error}
@@ -304,7 +318,7 @@
                 type="submit"
                 class="btn variant-filled-primary"
                 disabled={order.length === 0}
-                on:click={() => order = []}
+                onclick={() => order = []}
                 aria-label="Clear Speakers List"
                 title="Clear Speakers List"
             >

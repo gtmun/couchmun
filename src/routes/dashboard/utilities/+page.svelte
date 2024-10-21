@@ -13,17 +13,16 @@
     const { settings: { delegateAttributes }, presentDelegates } = getSessionDataContext();
 
     // Timer
-    let timerEnabled: boolean = true;
-    let durInput: string;
+    let timerEnabled: boolean = $state(true);
+    let durInput: string = $state("");
     
-    let duration: number = 60;
-    let running: boolean = false;
-    let reset: () => void;
-    let canReset: Readable<boolean>;
+    let duration: number = $state(60);
+    let running: boolean = $state(false);
+    let timer: ReturnType<typeof Timer> | undefined = $state();
     
     // Label
-    let labelType: "delegate" | "title" | "none" = "title";
-    let labelText: string = "";
+    let labelType: "delegate" | "title" | "none" = $state("title");
+    let labelText: string = $state("");
 
     function getKey(label: string) {
         return Object.keys($delegateAttributes).find(k => $delegateAttributes[k].name === label) ?? label;
@@ -38,8 +37,12 @@
         let secs = parseTime(durInput);
         if (typeof secs !== "undefined") {
             duration = secs;
-            reset();
+            timer?.reset();
         }
+    }
+    function submitDuration(e: SubmitEvent) {
+        e.preventDefault();
+        setDuration();
     }
 </script>
 
@@ -66,16 +69,15 @@
                 name="total"
                 bind:duration
                 bind:running
-                bind:canReset
-                bind:reset
+                bind:this={timer}
                 editable
             />
     
             <div class="flex flex-row gap-3 justify-center">
-                <button class="btn variant-filled-primary" on:click={() => running = !running}>
+                <button class="btn variant-filled-primary" onclick={() => running = !running}>
                     {!running ? 'Start' : 'Pause'}
                 </button>
-                <button class="btn variant-filled-primary" disabled={!$canReset} on:click={reset}>Reset</button>
+                <button class="btn variant-filled-primary" disabled={!timer?.canReset()} onclick={timer?.reset}>Reset</button>
             </div>
         {/if}
     </div>
@@ -90,10 +92,10 @@
              </LabeledSlideToggle>
             {#if timerEnabled}
                 <div class="flex flex-row gap-5">
-                    <form class="contents" on:submit|preventDefault={setDuration}>
+                    <form class="contents" onsubmit={submitDuration}>
                         <label class="flex flex-grow items-center justify-between gap-3">
                             <span>Time</span>
-                            <input class="input" bind:value={durInput} on:input={setDuration} placeholder="mm:ss" />
+                            <input class="input" bind:value={durInput} oninput={setDuration} placeholder="mm:ss" />
                         </label>
                     </form>
                 </div>
@@ -104,9 +106,9 @@
                 <label class="flex flex-grow items-center justify-between gap-3">
                     <span><strong>Label</strong></span>
                     <select class="select" bind:value={labelType}>
-                        <option value="delegate" label="Delegate" />
-                        <option value="title" label="Title" />
-                        <option value="none" label="None" />
+                        <option value="delegate" label="Delegate"></option>
+                        <option value="title" label="Title"></option>
+                        <option value="none" label="None"></option>
                     </select>
                 </label>
                 {#if labelType !== "none"}

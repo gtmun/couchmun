@@ -6,31 +6,39 @@
     import { getStatsContext, updateStats } from "$lib/stores/stats";
     import type { AppBarData, Motion, Speaker } from "$lib/types";
     import { getContext, tick } from "svelte";
-    import type { Readable } from "svelte/store";
 
-    export let motion: Motion & { kind: "rr" };
+    interface Props {
+        motion: Motion & { kind: "rr" };
+    }
+    let { motion }: Props = $props();
 
     const { settings: { delegateAttributes }, presentDelegates } = getSessionDataContext();
     const { stats } = getStatsContext();
     const { topic } = getContext<AppBarData>("app-bar");
-    $: topic.set(motion.topic);
-    
+    $effect(() => {
+        topic.set(motion.topic);
+    });
+
     // Timer
-    let running: boolean = false;
-    let resetTimer: () => void;
-    let canReset: Readable<boolean>;
+    let running: boolean = $state(false);
+    let timer: ReturnType<typeof Timer> | undefined = $state();
     
     // Speakers List
-    let speakersList: SpeakerList;
-    let order: Speaker[] = $presentDelegates.map(key => ({ key, completed: false }));
-    let allDone: Readable<boolean>;
-    let selectedSpeaker: Speaker | undefined;
-
-    $: if (running) {
-        speakersList?.start();
-    }
+    let speakersList: ReturnType<typeof SpeakerList> | undefined = $state();
+    let order: Speaker[] = $state($presentDelegates.map(key => ({ key, completed: false })));
+    let selectedSpeaker: Speaker | undefined = $state();
+    $effect(() => {
+        selectedSpeaker;
+        reset();
+    });
+    $effect(() => {
+        if (running) {
+            speakersList?.start();
+        }
+    });
+    
     async function reset() {
-        resetTimer?.();
+        timer?.reset();
         await tick();
     }
     // Button triggers
@@ -49,20 +57,19 @@
         <Timer 
             name="total"
             duration={motion.speakingTime} 
-            bind:reset={resetTimer}
-            bind:canReset
+            bind:this={timer}
             bind:running 
             disableKeyHandlers={typeof selectedSpeaker === "undefined"}
             onPause={(t) => updateStats(stats, selectedSpeaker?.key, dat => dat.durationSpoken += t)}
         />
         <div class="flex flex-row gap-3 justify-center">
             {#if !running}
-                <button class="btn variant-filled-primary" disabled={typeof selectedSpeaker === "undefined"} on:click={() => running = true}>Start</button>
+                <button class="btn variant-filled-primary" disabled={typeof selectedSpeaker === "undefined"} onclick={() => running = true}>Start</button>
             {:else}
-                <button class="btn variant-filled-primary" on:click={() => running = false}>Pause</button>
+                <button class="btn variant-filled-primary" onclick={() => running = false}>Pause</button>
             {/if}
-            <button class="btn variant-filled-primary" disabled={$allDone} on:click={next}>Next</button>
-            <button class="btn variant-filled-primary" disabled={!$canReset} on:click={reset}>Reset</button>
+            <button class="btn variant-filled-primary" disabled={speakersList?.isAllDone() ?? true} onclick={next}>Next</button>
+            <button class="btn variant-filled-primary" disabled={!timer?.canReset()} onclick={reset}>Reset</button>
         </div>
     </div>
     <!-- Right -->
@@ -72,7 +79,6 @@
             bind:order
             delegates={$delegateAttributes}
             bind:this={speakersList}
-            bind:allDone
             bind:selectedSpeaker
             onBeforeSpeakerUpdate={reset}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) updateStats(stats, key, dat => dat.timesSpoken++) }}

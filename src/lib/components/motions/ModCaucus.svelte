@@ -7,40 +7,46 @@
     import { getStatsContext, updateStats } from "$lib/stores/stats";
     import type { AppBarData, Motion, Speaker } from "$lib/types";
     import { getContext, tick } from "svelte";
-    import type { Readable } from "svelte/store";
 
-    export let motion: Motion & { kind: "mod" };
+    interface Props {
+        motion: Motion & { kind: "mod" };
+    }
+    let { motion }: Props = $props();
 
     const { settings: { delegateAttributes }, presentDelegates } = getSessionDataContext();
     const { stats } = getStatsContext();
     const { topic } = getContext<AppBarData>("app-bar");
-    $: topic.set(motion.topic);
+    $effect(() => {
+        topic.set(motion.topic);
+    })
 
     // Timer
-    let running: boolean = false;
-    let totalReset: () => void;
-    let delReset: () => void;
-    let totalResetable: Readable<boolean>;
-    let delResetable: Readable<boolean>;
+    let running: boolean = $state(false);
+    let delTimer: ReturnType<typeof Timer> | undefined = $state();
+    let totalTimer: ReturnType<typeof Timer> | undefined = $state();
     
     // Speakers List
-    let speakersList: SpeakerList;
-    let order: Speaker[] = [];
-    let allDone: Readable<boolean>;
-    let selectedSpeaker: Speaker | undefined;
-    $: (selectedSpeaker, reset());
+    let speakersList: ReturnType<typeof SpeakerList> | undefined = $state();
+    let order: Speaker[] = $state([]);
+    let selectedSpeaker: Speaker | undefined = $state();
+    $effect(() => {
+        selectedSpeaker;
+        reset();
+    });
+    $effect(() => {
+        if (running) {
+            speakersList?.start();
+        }
+    });
 
-    $: if (running) {
-        speakersList?.start();
-    }
     // Button triggers
     async function reset() {
-        delReset?.();
+        delTimer?.reset();
         await tick();
     }
     async function resetAll() {
-        totalReset?.();
-        delReset?.();
+        delTimer?.reset();
+        totalTimer?.reset();
         await tick();
     }
     async function next() {
@@ -57,30 +63,28 @@
         {/if}
         <Timer 
             name="delegate"
-            duration={motion.speakingTime} 
-            bind:reset={delReset} 
-            bind:canReset={delResetable}
+            duration={motion.speakingTime}
+            bind:this={delTimer}
             bind:running
             disableKeyHandlers={typeof selectedSpeaker === "undefined"}
             onPause={(t) => updateStats(stats, selectedSpeaker?.key, dat => dat.durationSpoken += t)}
         />
         <Timer
             name="total"
-            duration={motion.totalTime} 
-            bind:reset={totalReset} 
-            bind:canReset={totalResetable}
+            duration={motion.totalTime}
+            bind:this={totalTimer}
             bind:running
             disableKeyHandlers
         />
         <div class="flex flex-row gap-3 justify-center">
             {#if !running}
-                <button class="btn variant-filled-primary" disabled={typeof selectedSpeaker === "undefined"} on:click={() => running = true}>Start</button>
+                <button class="btn variant-filled-primary" disabled={typeof selectedSpeaker === "undefined"} onclick={() => running = true}>Start</button>
             {:else}
-                <button class="btn variant-filled-primary" on:click={() => running = false}>Pause</button>
+                <button class="btn variant-filled-primary" onclick={() => running = false}>Pause</button>
             {/if}
-            <button class="btn variant-filled-primary" disabled={$allDone} on:click={next}>Next</button>
-            <button class="btn variant-filled-primary" disabled={!$delResetable} on:click={reset}>Reset</button>
-            <button class="btn variant-filled-primary" disabled={!$totalResetable} on:click={resetAll}>Reset all</button>
+            <button class="btn variant-filled-primary" disabled={speakersList?.isAllDone() ?? true} onclick={next}>Next</button>
+            <button class="btn variant-filled-primary" disabled={!delTimer?.canReset()} onclick={reset}>Reset</button>
+            <button class="btn variant-filled-primary" disabled={!totalTimer?.canReset()} onclick={resetAll}>Reset all</button>
         </div>
     </div>
     <!-- Right -->
@@ -94,7 +98,6 @@
                 presentDelegates: $presentDelegates,
                 validator: presentDelegateSchema
             }}
-            bind:allDone
             bind:selectedSpeaker
             onBeforeSpeakerUpdate={reset}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) updateStats(stats, key, dat => dat.timesSpoken++) }}

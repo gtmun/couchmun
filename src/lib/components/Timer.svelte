@@ -7,19 +7,29 @@
     import { parseTime, stringifyTime } from "$lib/util/time";
     import { ProgressBar } from "@skeletonlabs/skeleton";
     import { onDestroy, onMount } from "svelte";
-    import { readonly, writable } from "svelte/store";
     
-    export let duration: number;
-    export let name: string; // Label for the timer. Must be unique between timers in the same page.
-    export let height: string = "h-10";
-    export let running: boolean = false;
-    export let hideText: boolean = false;
-    export let disableKeyHandlers: boolean = false;
-    export let editable: boolean = false;
-    export let onPause: ((elapsed: number) => void) | undefined = undefined;
+    interface Props {
+        duration: number;
+        name: string;
+        height?: string;
+        running?: boolean;
+        hideText?: boolean;
+        disableKeyHandlers?: boolean;
+        editable?: boolean;
+        onPause?: ((elapsed: number) => void) | undefined;
+    }
 
-    $: DURATION_MS = duration * 1000;
-    $: (DURATION_MS, reset()); // on duration update, reset timer
+    let {
+        duration = $bindable(),
+        name,
+        height = "h-10",
+        running = $bindable(false),
+        hideText = false,
+        disableKeyHandlers = false,
+        editable = false,
+        onPause = undefined
+    }: Props = $props();
+
     
     const COLOR_THRESHOLDS = [
         ["bg-emerald-500", 1],
@@ -27,18 +37,26 @@
         ["bg-red-500",     0.2]
     ] as const;
 
+    let DURATION_MS = $derived(duration * 1000);
+    // reset timer on duration update:
+    $effect(() => {
+        duration;
+        reset();
+    });
+
     // Progress & display values
-    let msRemaining = DURATION_MS;
-    $: progress = clamp(msRemaining / DURATION_MS, 0, 1)
-    $: color = (COLOR_THRESHOLDS.findLast(([_, n]) => progress <= n) ?? COLOR_THRESHOLDS[0])[0];
-    $: barProps = {
+    let msRemaining = $state(duration * 1000);
+    let progress = $derived(clamp(msRemaining / DURATION_MS, 0, 1))
+    let color = $derived((COLOR_THRESHOLDS.findLast(([_, n]) => progress <= n) ?? COLOR_THRESHOLDS[0])[0]);
+    let barProps = $derived({
         value: 100 * progress,
         height,
         transition: `duration-1000 ${running ? 'transition-[background-color]' : 'transition-[background-color,width]'}`,
         meter: color,
         track: "bg-surface-300-600-token",
         labelledby: `timer-text-${name}`
-    }
+    });
+
     // Timer related handlers
     let lastStart: number | undefined = undefined;
     let lastEnd: number = 0;
@@ -47,22 +65,24 @@
         initClockSource().addEventListener("message", loop);
     });
     onDestroy(() => {
-        setRunning(false);
+        running = false;
+        updateRunningEffects(running);
         clockSource?.removeEventListener("message", loop);
     });
 
-    // Only trigger state update if running state changed:
-    $: setRunning(running);
+    // Trigger state update on running change:
+    $effect(() => {
+        updateRunningEffects(running);
+    });
 
     // Readonly query variables:
-    let _remStore = writable(msRemaining / 1000);
-    $: $_remStore = msRemaining / 1000;
-    export const secsRemaining = readonly(_remStore);
-
-    let _rsStore = writable(false);
-    $: $_rsStore = $secsRemaining !== duration;
-    export const canReset = readonly(_rsStore);
-
+    export function secsRemaining(): number {
+        return msRemaining / 1000;
+    }
+    export function canReset(): boolean {
+        return secsRemaining() != duration;
+    }
+    
     function loop({ data }: MessageEvent<ClockMessage>) {
         if (data.kind === "startTick") {
             if (!running) return;
@@ -91,8 +111,9 @@
         return lastEnd - lastStart;
     }
     
+    // You have to check for a state change here, idk why
     let _running = running;
-    function setRunning(running: boolean) {
+    function updateRunningEffects(running: boolean) {
         if (_running != running) {
             _running = running;
             if (running) {
@@ -128,7 +149,7 @@
     }
 
     // Editable time:
-    let totalTimeText: HTMLSpanElement;
+    let totalTimeText: HTMLSpanElement | undefined = $state();
     function titleKeyDown(e: KeyboardEvent) {
         if (e.code === "Enter") {
             e.preventDefault();
@@ -136,13 +157,13 @@
         }
     }
     function setDuration() {
-        let text = totalTimeText.textContent;
+        let text = totalTimeText?.textContent;
         let time = text ? parseTime(text) : undefined;
         duration = time ?? duration;
     }
 </script>
 
-<script context="module" lang="ts">
+<script module lang="ts">
     import type { ClockMessage } from "$lib/types";
     import ClockSourceWorker from "$lib/util/clock?worker";
 
@@ -163,20 +184,20 @@
         id={barProps.labelledby}
     >
         {#if editable && !running}
-            {stringifyTime($secsRemaining)}/<span
+            {stringifyTime(secsRemaining())}/<span
                 contenteditable
-                on:focusout={setDuration}
-                on:keydown={titleKeyDown}
+                onfocusout={setDuration}
+                onkeydown={titleKeyDown}
                 bind:this={totalTimeText}
                 role="none"
             >
                 {stringifyTime(duration)}
             </span>
         {:else}
-            {stringifyTime($secsRemaining)}/{stringifyTime(duration)}
+            {stringifyTime(secsRemaining())}/{stringifyTime(duration)}
         {/if}
     </h2>
     <ProgressBar {...barProps} />
 </div>
 
-<svelte:window on:keydown={keydown} on:keyup={keyup} />
+<svelte:window onkeydown={keydown} onkeyup={keyup} />

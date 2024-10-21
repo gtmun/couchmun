@@ -7,16 +7,22 @@
 
     const { settings: { delegateAttributes } } = getSessionDataContext();
     
-    export let motion: Motion;
+    interface Props {
+        motion: Motion;
+    }
+
+    let { motion }: Props = $props();
 </script>
 
-<EditModal title="Editing Motion" let:submit let:close>
-    <MotionForm {submit} inputMotion={inputifyMotion(motion, $delegateAttributes)}>
-        <svelte:fragment slot="buttons">
-            <div class="flex justify-end gap-3">
-                <button class="btn variant-filled-error" type="button" on:click={close}>Cancel</button>
-                <button class="btn variant-filled-primary" type="submit">Submit</button>
-            </div>
-        </svelte:fragment>
-    </MotionForm>
+<EditModal title="Editing Motion">
+    {#snippet children({ submit, close })}
+        <MotionForm {submit} inputMotion={inputifyMotion(motion, $delegateAttributes)}>
+            {#snippet buttons()}
+                <div class="flex justify-end gap-3">
+                    <button class="btn variant-filled-error" type="button" onclick={close}>Cancel</button>
+                    <button class="btn variant-filled-primary" type="submit">Submit</button>
+                </div>
+            {/snippet}
+        </MotionForm>
+    {/snippet}
 </EditModal>

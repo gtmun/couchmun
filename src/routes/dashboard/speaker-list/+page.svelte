@@ -8,37 +8,37 @@
     import type { Speaker } from "$lib/types";
     import { parseTime } from "$lib/util/time";
     import { tick } from "svelte";
-    
-    import type { Readable } from "svelte/store";
 
     const { settings: { delegateAttributes }, presentDelegates, speakersList: order } = getSessionDataContext();
     const { stats } = getStatsContext();
 
     // Timer
-    let running: boolean = false;
-    let duration: number = 60;
-    let resetTimer: () => void;
-    let canReset: Readable<boolean>;
+    let running: boolean = $state(false);
+    let duration: number = $state(60);
+    let timer: ReturnType<typeof Timer> | undefined = $state();
     
     // Speakers List
-    let speakersList: SpeakerList;
-    let durInput: string;
-    let allDone: Readable<boolean>;
-    let selectedSpeaker: Speaker | undefined;
+    let speakersList: ReturnType<typeof SpeakerList> | undefined = $state();
+    let durInput: string = $state("");
+    let selectedSpeaker: Speaker | undefined = $state();
 
-    $: if (running) {
-        speakersList?.start();
-    }
+    $effect(() => {
+        if (running) {
+            speakersList?.start();
+        }
+    });
     async function reset() {
-        resetTimer?.();
+        timer?.reset();
         await tick();
     }
     // Button triggers
     async function next() {
         await reset();
-        speakersList.next();
+        speakersList?.next();
     }
-    function setDuration() {
+    function setDuration(e: SubmitEvent) {
+        e.preventDefault();
+
         let secs = parseTime(durInput);
         if (typeof secs !== "undefined") {
             duration = secs;
@@ -59,20 +59,19 @@
             name="total"
             bind:duration
             bind:running
-            bind:canReset
-            bind:reset={resetTimer}
+            bind:this={timer}
             disableKeyHandlers={typeof selectedSpeaker === "undefined"}
             onPause={(t) => updateStats(stats, selectedSpeaker?.key, dat => dat.durationSpoken += t)}
             editable
         />
         <div class="flex flex-row gap-3 justify-center">
             {#if !running}
-                <button class="btn variant-filled-primary" disabled={typeof selectedSpeaker === "undefined"} on:click={() => running = true}>Start</button>
+                <button class="btn variant-filled-primary" disabled={typeof selectedSpeaker === "undefined"} onclick={() => running = true}>Start</button>
             {:else}
-                <button class="btn variant-filled-primary" on:click={() => running = false}>Pause</button>
+                <button class="btn variant-filled-primary" onclick={() => running = false}>Pause</button>
             {/if}
-            <button class="btn variant-filled-primary" disabled={$allDone} on:click={next}>Next</button>
-            <button class="btn variant-filled-primary" disabled={!$canReset} on:click={reset}>Reset</button>
+            <button class="btn variant-filled-primary" disabled={speakersList?.isAllDone() ?? true} onclick={next}>Next</button>
+            <button class="btn variant-filled-primary" disabled={!timer?.canReset()} onclick={reset}>Reset</button>
         </div>
     </div>
     <!-- Right -->
@@ -86,14 +85,13 @@
                 presentDelegates: $presentDelegates,
                 validator: presentDelegateSchema
             }}
-            bind:allDone
             bind:selectedSpeaker
             onBeforeSpeakerUpdate={reset}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) updateStats(stats, key, dat => dat.timesSpoken++) }}
         />
         <!-- Timer config -->
         <div class="flex flex-row gap-5">
-            <form class="contents" on:submit|preventDefault={setDuration}>
+            <form class="contents" onsubmit={setDuration}>
                 <label class="flex flex-grow items-center">
                     <span>Speaker Time</span>
                     <input class="input flex-grow" bind:value={durInput} placeholder="mm:ss" />

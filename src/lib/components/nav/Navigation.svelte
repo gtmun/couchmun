@@ -2,8 +2,11 @@
     import { base } from "$app/paths";
     import { page } from "$app/stores";
 
-    export let links: Record<string, { label: string }>;
-    export let close: () => void;
+    interface Props {
+        links: Record<string, { label: string }>;
+        close: () => void;
+    }
+    let { links, close }: Props = $props();
 </script>
 
 <h3 class="h3 p-4">Dashboard</h3>
@@ -17,7 +20,7 @@
             {@const selected = $page.url.pathname === href}
             <li>
                 <a 
-                    on:click={close} 
+                    onclick={close} 
                     {href} 
                     class:variant-soft-primary={selected}
                     data-focusindex={1 - +selected}

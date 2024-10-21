@@ -102,7 +102,7 @@
       <h3 class="h3 text-center">List of Motions</h3>
       <button
         class="btn btn-icon variant-ghost-primary hover:variant-filled-primary"
-        on:click={sortMotions}
+        onclick={sortMotions}
         aria-label="Sort Motions"
         title="Sort Motions"
       >
@@ -140,7 +140,7 @@
                 <div class="flex flex-row">
                   <button
                     class="btn btn-sm btn-icon"
-                    on:click={() => removeMotion(i)}
+                    onclick={() => removeMotion(i)}
                     data-label="Reject {delName}'s Motion"
                     title="Reject {delName}'s Motion"
                   >
@@ -148,7 +148,7 @@
                   </button>
                   <a
                     class="btn btn-sm btn-icon"
-                    on:click={() => acceptMotion(motion)}
+                    onclick={() => acceptMotion(motion)}
                     href="{base}/dashboard/current-motion"
                     data-label="Accept {delName}'s Motion"
                     title="Accept {delName}'s Motion"
@@ -158,7 +158,7 @@
                   </a>
                   <button
                     class="btn btn-sm btn-icon"
-                    on:click={() => editMotion(i, motion)}
+                    onclick={() => editMotion(i, motion)}
                     data-label="Edit {delName}'s Motion"
                     title="Edit {delName}'s Motion"
                   >
