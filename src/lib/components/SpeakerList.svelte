@@ -38,10 +38,6 @@
             validator: z.ZodType<string, any, any> | ((dels: Record<string, DelegateAttrs>, presentDels: string[]) => z.ZodType<string, any, any>),
             popupID?: string
         } | undefined;
-        /**
-         * The current speaker.
-         */
-        selectedSpeaker?: Speaker | undefined;
         onBeforeSpeakerUpdate?: ((oldSpeaker: Speaker | undefined, newSpeaker: Speaker | undefined) => unknown) | undefined;
         onMarkComplete?: ((key: string, isRepeat: boolean) => unknown) | undefined;
     }
@@ -50,24 +46,42 @@
         order = $bindable([]),
         delegates = {},
         useDefaultControls = undefined,
-        selectedSpeaker = $bindable(undefined),
         onBeforeSpeakerUpdate = undefined,
         onMarkComplete = undefined
     }: Props = $props();
-    
+
+    // Special IDs to track:
+    let selectedSpeakerId: string | undefined = $state(undefined);
+    let draggingSpeakerId: string | undefined = $state(undefined);
+    // A mapping from IDs to Speakers:
+    let orderMap = $derived(Object.fromEntries(
+        order.flatMap((speaker, i) => typeof speaker?.id !== "undefined" ? [[speaker.id, { speaker, i }]] : [])
+    ));
+
     // List item elements per order item
-    let liElements = new Map<Speaker, HTMLLIElement>();
+    let liElements = new Map<string, HTMLLIElement>();
 
     // Readonly values
     export function isAllDone() {
-        return typeof selectedSpeaker === "undefined" && order.every(({ completed }) => completed);
+        return typeof selectedSpeakerId === "undefined" && order.every(({ completed }) => completed);
     }
-
+    export function selectedSpeaker() {
+        let speaker = findSpeaker(selectedSpeakerId);
+        if (typeof speaker === "undefined") return;
+        
+        return { key: speaker.key, completed: speaker.completed };
+        
+    }
     //
     function getLabel(key: string) {
         return delegates?.[key]?.name ?? key;
     }
-    function markComplete(speaker: Speaker | undefined) {
+    function findSpeaker(speakerId: string | undefined): Speaker | undefined {
+        if (typeof speakerId === "undefined") return;
+        return orderMap[speakerId]?.speaker;
+    }
+    function markComplete(speakerId: string | undefined) {
+        let speaker = findSpeaker(speakerId);
         if (typeof speaker !== "undefined") {
             onMarkComplete?.(speaker.key, speaker.completed);
             speaker.completed = true;
@@ -75,10 +89,10 @@
         order = order;
     }
     export function start() {
-        markComplete(selectedSpeaker);
+        markComplete(selectedSpeakerId);
     }
     export function next() {
-        markComplete(selectedSpeaker);
+        markComplete(selectedSpeakerId);
 
         // Find first element in the order that has not been completed yet.
         setSelectedSpeaker(order.find(({ completed }) => !completed));
@@ -89,8 +103,14 @@
         if (result.success) {
             const key = result.data;
             // Successful, so add speakers:
-            order.push({ key, completed: false });
+            let speaker = createSpeaker(key);
+            order.push(speaker);
             order = order;
+
+            // Jump to this speaker when DOM updates.
+            tick().then(() => {
+                gotoSpeaker(speaker.id);
+            });
 
             if (typeof useDefaultControls !== "undefined") {
                 dfltControlsError = undefined;
@@ -109,28 +129,29 @@
         let [removedSpeaker] = order.splice(i, 1);
         order = order;
         
-        if (removedSpeaker === selectedSpeaker) {
+        if (removedSpeaker?.id === selectedSpeakerId) {
             setSelectedSpeaker(undefined);
         }
-        if (removedSpeaker === draggingSpeaker) {
-            draggingSpeaker = undefined;
+        if (removedSpeaker?.id === draggingSpeakerId) {
+            draggingSpeakerId = undefined;
         }
     }
 
     /// Sets the selected speaker.
     function setSelectedSpeaker(speaker: Speaker | undefined) {
-        if (selectedSpeaker !== speaker) {
+        if (selectedSpeakerId !== speaker?.id) {
             // Call beforeSpeakerUpdate (and let it run to completion if is Promise) before setting speaker.
             (async () => {
+                let selectedSpeaker = findSpeaker(selectedSpeakerId);
                 await onBeforeSpeakerUpdate?.(selectedSpeaker, speaker);
-                selectedSpeaker = speaker;
+                selectedSpeakerId = speaker?.id;
             })()
         }
     }
 
     function getButton(i: number, btn: number): HTMLButtonElement | undefined {
         if (0 <= i && i < order.length) {
-            return liElements.get(order[i])?.querySelectorAll("button")[btn];
+            return liElements.get(order[i].id)?.querySelectorAll("button")[btn];
         }
     }
     async function onKeyDown(e: KeyboardEvent, i: number, btn: number) {
@@ -164,30 +185,43 @@
             }
         }
     }
+    function gotoSpeaker(speakerId: string) {
+        liElements.get(speakerId)?.scrollIntoView({ block: "nearest" });
+    }
+    // If order updates and selectedSpeaker isn't in there, then clear selectedSpeaker.
+    // Scroll to speaker if it is out of view.
+    $effect(() => {
+        if (typeof selectedSpeakerId !== "undefined") {
+            if (!(selectedSpeakerId in orderMap)) {
+                setSelectedSpeaker(undefined);
+            } else {
+                gotoSpeaker(selectedSpeakerId);
+            }
+        }
+    })
+
     const bindToMap = <K, V extends HTMLElement>(el: V, [map, key]: [Map<K, V>, K]) => {
         map.set(key, el);
         return { destroy() { map.delete(key); } }
     };
-
     // A11y dragging
-    let draggingSpeaker: Speaker | undefined = $state(undefined);
-
     async function handleDragButton(s: Speaker) {
         // No currently dragging speaker, so set:
-        if (typeof draggingSpeaker === "undefined") {
-            draggingSpeaker = s;
+        if (typeof draggingSpeakerId === "undefined") {
+            draggingSpeakerId = s.id;
             return;
         }
 
         // If we clicked on the speaker again, toggle off:
-        if (draggingSpeaker === s) {
-            draggingSpeaker = undefined;
+        if (draggingSpeakerId === s.id) {
+            draggingSpeakerId = undefined;
             return;
         }
 
-        let x = order.indexOf(draggingSpeaker);
-        let y = order.indexOf(s);
-        draggingSpeaker = undefined;
+        let { i: x } = orderMap[draggingSpeakerId];
+        let { i: y } = orderMap[s.id];
+        
+        draggingSpeakerId = undefined;
         if (x >= 0 && y >= 0) {
             [order[y], order[x]] = [order[x], order[y]];
             await tick();
@@ -200,15 +234,17 @@
         ? useDefaultControls?.validator(delegates, useDefaultControls.presentDelegates)
         : useDefaultControls?.validator ?? nonEmptyString()
     );
-    
-        // If order updates and selectedSpeaker isn't in there, then clear selectedSpeaker.
-    // Scroll to speaker if it is out of view.
-    $effect(() => {
-        if (typeof selectedSpeaker !== "undefined") {
-            if (!order.includes(selectedSpeaker)) setSelectedSpeaker(undefined);
-            liElements.get(selectedSpeaker)?.scrollIntoView({ block: "nearest" });
-        }
-    })
+</script>
+<script module lang="ts">
+    /**
+     * Creates a new speaker entry from a given key.
+     * @param key The speaker's key
+     * @param completed Whether this speaker has finished talking, by default false
+     * @return the speaker object
+     */
+    export function createSpeaker(key: string, completed: boolean = false): Speaker {
+        return { key, completed, id: crypto.randomUUID() }
+    }
 </script>
 
 <div class="card p-4 overflow-y-auto flex-grow flex flex-col items-stretch gap-3">
@@ -223,25 +259,27 @@
         handle: ".handle",
         fallbackOnBody: true,
         store: {
-            get: () => Object.keys(Array.from({ length: order.length })),
-            set: (sortable) => order = sortable.toArray().map(k => order[+k])
-        }
+            get: () => order.map(spk => spk.id),
+            set: (sortable) => order = sortable.toArray().map(k => orderMap[k].speaker)}
     }}>
-        {#each order as speaker, i (speaker)}
+        {#each order as speaker, i (speaker.id)}
             {@const speakerLabel = getLabel(speaker.key)}
-            {@const selected = selectedSpeaker === speaker}
+            {@const selected = speaker.id === selectedSpeakerId}
             
-            {@const dragSelected = draggingSpeaker === speaker}
+            {@const dragSelected = speaker.id === draggingSpeakerId}
+            {@const draggingSpeaker = findSpeaker(draggingSpeakerId)}
             {@const dragBtnLabel = 
-                dragSelected ? `Stop Dragging ${speakerLabel}` :
-                typeof draggingSpeaker !== "undefined" ? `Swap ${getLabel(draggingSpeaker.key)} (${order.indexOf(draggingSpeaker) + 1}) with ${speakerLabel} (${i + 1})` :
-                `Start Dragging ${speakerLabel}`
+                dragSelected 
+                ? `Stop Dragging ${speakerLabel}` 
+                : typeof draggingSpeaker !== "undefined" 
+                    ? `Swap ${getLabel(draggingSpeaker.key)} (${(orderMap[draggingSpeakerId ?? ""]?.i ?? -1) + 1}) with ${speakerLabel} (${i + 1})`
+                    : `Start Dragging ${speakerLabel}`
             }
             <li
                 class="!grid grid-cols-subgrid col-span-4"
-                class:variant-ghost-primary={draggingSpeaker == speaker}
-                use:bindToMap={[liElements, speaker]}
-                data-id={i}
+                class:variant-ghost-primary={dragSelected}
+                use:bindToMap={[liElements, speaker.id]}
+                data-id={speaker.id}
                 animate:flip={{ duration: 150 }}
             >
                 <button

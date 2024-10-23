@@ -5,7 +5,6 @@
     import { presentDelegateSchema } from "$lib/motions/form_validation";
     import { getSessionDataContext } from "$lib/stores/session";
     import { getStatsContext, updateStats } from "$lib/stores/stats";
-    import type { Speaker } from "$lib/types";
     import { parseTime } from "$lib/util/time";
     import { tick } from "svelte";
 
@@ -20,7 +19,7 @@
     // Speakers List
     let speakersList: ReturnType<typeof SpeakerList> | undefined = $state();
     let durInput: string = $state("");
-    let selectedSpeaker: Speaker | undefined = $state();
+    let selectedSpeaker = $derived(speakersList?.selectedSpeaker());
 
     $effect(() => {
         if (running) {
@@ -85,7 +84,6 @@
                 presentDelegates: $presentDelegates,
                 validator: presentDelegateSchema
             }}
-            bind:selectedSpeaker
             onBeforeSpeakerUpdate={reset}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) updateStats(stats, key, dat => dat.timesSpoken++) }}
         />

@@ -1,6 +1,6 @@
 <script lang="ts">
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import SpeakerList from "$lib/components/SpeakerList.svelte";
+    import SpeakerList, { createSpeaker } from "$lib/components/SpeakerList.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { getSessionDataContext } from "$lib/stores/session";
     import { getStatsContext, updateStats } from "$lib/stores/stats";
@@ -25,8 +25,8 @@
     
     // Speakers List
     let speakersList: ReturnType<typeof SpeakerList> | undefined = $state();
-    let order: Speaker[] = $state($presentDelegates.map(key => ({ key, completed: false })));
-    let selectedSpeaker: Speaker | undefined = $state();
+    let order: Speaker[] = $state($presentDelegates.map(key => createSpeaker(key)));
+    let selectedSpeaker = $derived(speakersList?.selectedSpeaker());
     $effect(() => {
         selectedSpeaker;
         reset();
@@ -79,7 +79,6 @@
             bind:order
             delegates={$delegateAttributes}
             bind:this={speakersList}
-            bind:selectedSpeaker
             onBeforeSpeakerUpdate={reset}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) updateStats(stats, key, dat => dat.timesSpoken++) }}
         />

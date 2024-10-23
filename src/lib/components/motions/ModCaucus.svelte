@@ -28,7 +28,7 @@
     // Speakers List
     let speakersList: ReturnType<typeof SpeakerList> | undefined = $state();
     let order: Speaker[] = $state([]);
-    let selectedSpeaker: Speaker | undefined = $state();
+    let selectedSpeaker = $derived(speakersList?.selectedSpeaker());
     $effect(() => {
         selectedSpeaker;
         reset();
@@ -98,7 +98,6 @@
                 presentDelegates: $presentDelegates,
                 validator: presentDelegateSchema
             }}
-            bind:selectedSpeaker
             onBeforeSpeakerUpdate={reset}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) updateStats(stats, key, dat => dat.timesSpoken++) }}
         />
