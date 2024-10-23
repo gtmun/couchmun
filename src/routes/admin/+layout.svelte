@@ -29,6 +29,7 @@
                     class="btn btn-icon"
                     aria-label="Return to Dashboard"
                     title="Return to Dashboard"
+                    tabindex={0}
                 >
                     <Icon icon="mdi:chevron-left" width="36" height="36" />
                 </a>

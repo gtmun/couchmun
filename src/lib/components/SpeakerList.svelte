@@ -10,6 +10,7 @@
     import { popup } from "@skeletonlabs/skeleton";
     import { sortable } from "$lib/util";
     import { tick } from "svelte";
+    import { flip } from "svelte/animate";
 
     /**
      * The order of speakers for the speaker's list.
@@ -227,6 +228,7 @@
                 class:variant-ghost-primary={draggingSpeaker == speaker}
                 use:bindToMap={[liElements, speaker]}
                 data-id={i}
+                animate:flip={{ duration: 150 }}
             >
                 <button
                     class="btn-icon handle cursor-grab"

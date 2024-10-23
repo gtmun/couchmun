@@ -152,6 +152,7 @@
                     href="{base}/dashboard/current-motion"
                     data-label="Accept {delName}'s Motion"
                     title="Accept {delName}'s Motion"
+                    tabindex={0}
                   >
                     <Icon icon="mdi:check" width="24" height="24" class="text-success-700" />
                   </a>
