@@ -8,7 +8,7 @@
     import Icon from "@iconify/svelte";
     import { popup } from "@skeletonlabs/skeleton";
     import { sortable } from "$lib/util";
-    import { tick } from "svelte";
+    import { tick, untrack } from "svelte";
     import { flip } from "svelte/animate";
 
     let dfltControlsInput: string = $state("");
@@ -65,11 +65,19 @@
     export function isAllDone() {
         return typeof selectedSpeakerId === "undefined" && order.every(({ completed }) => completed);
     }
+
+    /**
+     * Gets the data for the current selected speaker.
+     */
     export function selectedSpeaker() {
         let speaker = findSpeaker(selectedSpeakerId);
-        if (typeof speaker === "undefined") return;
-        
-        return { key: speaker.key, completed: speaker.completed };
+
+        // This only updates when ID updates, not when the speaker's properties update:
+        return untrack(() => {
+            if (typeof speaker !== "undefined") {
+                return { key: speaker.key, completed: speaker.completed };
+            }
+        });
         
     }
     //
