@@ -11,6 +11,9 @@ importers:
       '@floating-ui/dom':
         specifier: ^1.6.8
         version: 1.6.8
+      dexie:
+        specifier: ^4.0.8
+        version: 4.0.8
       sortablejs:
         specifier: ^1.15.2
         version: 1.15.2
@@ -560,6 +563,9 @@ packages:
 
   devalue@5.1.1:
     resolution: {integrity: sha512-maua5KUiapvEwiEAe+XnlZ3Rh0GD+qI1J/nb9vrJc3muPXvcF/8gXYTWF76+5DAqHyDUtOIImEuo0YKE9mshVw==}
+
+  dexie@4.0.8:
+    resolution: {integrity: sha512-1G6cJevS17KMDK847V3OHvK2zei899GwpDiqfEXHP1ASvme6eWJmAp9AU4s1son2TeGkWmC0g3y8ezOBPnalgQ==}
 
   didyoumean@1.2.2:
     resolution: {integrity: sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==}
@@ -1540,6 +1546,8 @@ snapshots:
   detect-indent@6.1.0: {}
 
   devalue@5.1.1: {}
+
+  dexie@4.0.8: {}
 
   didyoumean@1.2.2: {}
 
