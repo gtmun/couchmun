@@ -1,20 +1,34 @@
+<!-- @migration-task Error while migrating Svelte code: $$props is used together with named props in a way that cannot be automatically migrated. -->
 <script lang="ts">
     import { SlideToggle } from "@skeletonlabs/skeleton";
+    import { type Snippet } from "svelte";
 
-    export let name: string;
-    export let checked: boolean | undefined = undefined;
-    export let disabled: boolean | undefined = undefined;
-    export let labelClass: string = "flex items-center justify-between gap-3";
+    interface Props {
+        children: Snippet,
+        name: string,
+        checked?: boolean,
+        disabled?: boolean,
+        labelClass?: string,
+        [key: string]: any
+    }
+    let {
+        children,
+        name,
+        checked = $bindable(undefined),
+        disabled = undefined,
+        labelClass = "flex items-center justify-between gap-3",
+        ...rest
+    }: Props = $props();
 </script>
 
-<!-- svelte-ignore a11y-label-has-associated-control : SlideToggle is a control -->
+<!-- svelte-ignore a11y_label_has_associated_control : SlideToggle is a control -->
 <label class={labelClass}>
-    <slot />
+    {@render children()}
     <SlideToggle 
-        bind:name
+        {name}
         bind:checked
-        bind:disabled
+        {disabled}
         active="bg-primary-500"
-        {$$props}
+        {...rest}
     />
 </label>

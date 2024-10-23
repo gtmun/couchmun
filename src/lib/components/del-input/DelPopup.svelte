@@ -3,13 +3,23 @@
     import DelAutocomplete from "$lib/components/del-input/DelAutocomplete.svelte";
     import { type PopupSettings } from "@skeletonlabs/skeleton";
 
-    export let popupID: string;
-    export let input: string | undefined;
-    export let delegates: Record<string, DelegateAttrs>;
-    export let presentDelegates: string[];
-    export let maxHeight = "max-h-96";
+    interface Props {
+        popupID: string;
+        input: string | undefined;
+        delegates: Record<string, DelegateAttrs>;
+        presentDelegates: string[];
+        maxHeight?: string;
+    }
+    let {
+        popupID,
+        input = $bindable(),
+        delegates,
+        presentDelegates,
+        maxHeight = "max-h-96"
+    }: Props = $props();
 </script>
-<script lang="ts" context="module">
+
+<script lang="ts" module>
     export function defaultPopupSettings(target: string): PopupSettings {
         return {
             event: 'focus-click',

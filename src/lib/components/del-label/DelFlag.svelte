@@ -3,17 +3,22 @@
     import type { DelegateAttrs } from "$lib/types";
     import Icon from "@iconify/svelte";
 
-    export let key: string;
-    export let height: string = "";
-    export let attrs: DelegateAttrs | undefined;
-    export let fallback: "un" | "icon" | "none" = "none";
-
-    $: flag = attrs?.flagURL ? new URL(attrs?.flagURL) : getFlagUrl(key);
-    $: label = attrs?.name ?? key ?? "";
-
-    function getUNFlag() {
-        return getFlagUrl("un")!;
+    interface Props {
+        key: string;
+        height?: string;
+        attrs: DelegateAttrs | undefined;
+        fallback?: "un" | "icon" | "none";
     }
+
+    let {
+        key,
+        height = "",
+        attrs,
+        fallback = "none"
+    }: Props = $props();
+
+    let flag = $derived(attrs?.flagURL ? new URL(attrs?.flagURL) : getFlagUrl(key));
+    let label = $derived(attrs?.name ?? key ?? "");
 </script>
 
 {#if flag}
@@ -24,7 +29,7 @@
     >
 {:else if fallback === "un"}
     <img
-        src={getUNFlag().toString()}
+        src={getFlagUrl("un")!.toString()}
         alt="Flag of {label} (missing)"
         class={height}
     >

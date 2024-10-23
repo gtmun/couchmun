@@ -16,11 +16,10 @@
 
     const settings = getSettingsContext();
     const { delegateAttributes, sortOrder, delegatesEnabled, preferences } = settings;
-    let delsEnabledAll: boolean | undefined;
-    $: {
+    let delsEnabledAll: boolean | undefined = $derived.by(() => {
         const [first, ...rest] = Object.keys($delegateAttributes).map(key => $delegatesEnabled[key]);
-        delsEnabledAll = rest.every(k => k === first) ? first : undefined;
-    }
+        return rest.every(k => k === first) ? first : undefined;
+    });
 
     const PREFERENCES_LABELS = {
         enableMotionRoundRobin: { label: "Enable round robin" },
@@ -29,11 +28,11 @@
     } satisfies Record<keyof Preferences, unknown>;
     const _preferences: Writable<Record<string, boolean>> = preferences;
     const modalStore = getModalStore();
-    let files: FileList;
+    let files: FileList | undefined = $state();
 
     // IMPORT & EXPORT
     async function importFile() {
-        const file = files.item(0);
+        const file = files?.item(0);
         if (file) {
             const text = await file.text();
             const json = JSON.parse(text);
@@ -62,7 +61,7 @@
     }
 
     // DELEGATES
-    let currentPreset: keyof typeof PRESETS;
+    let currentPreset: keyof typeof PRESETS = $state(defaultPresetKey());
     async function setPreset() {
         const preset = await getPreset(currentPreset);
         if (typeof preset !== "undefined") {
@@ -180,13 +179,13 @@
             </FileButton>
             <button
                 class="btn variant-filled-primary"
-                on:click={exportFile}
+                onclick={exportFile}
             >
                 Export to file...
             </button>
             <button
                 class="btn variant-filled-error"
-                on:click={resetAllSettings}
+                onclick={resetAllSettings}
             >
                 Reset all settings
             </button>
@@ -225,7 +224,7 @@
                                         {#each entry.order as key}
                                             <div class="card p-1 flex items-center bg-surface-300-600-token">
                                                 <span>{SORT_PROPERTY_NAMES[key.property]}</span>
-                                                <button on:click={() => key.ascending = !key.ascending}>
+                                                <button onclick={() => key.ascending = !key.ascending}>
                                                     <!-- TODO: add aria-label, title -->
                                                     <Icon
                                                         icon="mdi:arrow-down"
@@ -252,16 +251,16 @@
             <h3 class="h3 text-center">Delegates</h3>
             <label class="flex gap-3 justify-center items-center">
                 <span>Apply Preset</span>
-                <select class="select w-1/2" bind:value={currentPreset} on:change={setPreset}>
+                <select class="select w-1/2" bind:value={currentPreset} onchange={setPreset}>
                     {#each Object.entries(PRESETS) as [value, preset]}
-                    <option {value} label={preset.label} />
+                    <option {value} label={preset.label}></option>
                     {/each}
                 </select>
             </label>
             <div class="flex gap-3 justify-center">
-                <button class="btn variant-filled-primary" on:click={() => editDelegate(undefined)}>Add Delegate</button>
-                <button class="btn variant-filled-primary" on:click={() => configureEnableDelegates()}>Enable/Disable Delegates</button>
-                <button class="btn variant-filled-error" on:click={clearDelegates}>Clear Delegates</button>
+                <button class="btn variant-filled-primary" onclick={() => editDelegate(undefined)}>Add Delegate</button>
+                <button class="btn variant-filled-primary" onclick={() => configureEnableDelegates()}>Enable/Disable Delegates</button>
+                <button class="btn variant-filled-error" onclick={clearDelegates}>Clear Delegates</button>
             </div>
         </div>
         <!-- Delegate Table -->
@@ -271,7 +270,7 @@
                     <tr>
                         <th>Key</th>
                         <th>Name</th>
-                        <th class="text-center"><input class="checkbox" type="checkbox" bind:checked={delsEnabledAll} indeterminate={typeof delsEnabledAll === "undefined"} on:click={() => setAllEnableStatuses(!delsEnabledAll)}></th>
+                        <th class="text-center"><input class="checkbox" type="checkbox" checked={delsEnabledAll} indeterminate={typeof delsEnabledAll === "undefined"} onclick={() => setAllEnableStatuses(!delsEnabledAll)}></th>
                         <th class="text-right">Configure</th>
                     </tr>
                 </thead>
@@ -287,14 +286,14 @@
                         </td>
                         <td class="text-right">
                             <button
-                                on:click={() => editDelegate(key)}
+                                onclick={() => editDelegate(key)}
                                 aria-label="Edit {attrs.name}"
                                 title="Edit {attrs.name}"
                             >
                                 <Icon icon="mdi:pencil" width="24" height="24" />
                             </button>
                             <button
-                                on:click={() => deleteDelegate(key)}
+                                onclick={() => deleteDelegate(key)}
                                 aria-label="Delete {attrs.name}"
                                 title="Delete {attrs.name}"
                             >

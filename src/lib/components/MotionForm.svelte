@@ -10,20 +10,33 @@
     
     import type { z } from "zod";
     import { popup } from "@skeletonlabs/skeleton";
+    import { type Snippet } from 'svelte';
 
     const { settings: { delegateAttributes }, presentDelegates, selectedMotion } = getSessionDataContext();
     const motionSchema = createMotionSchema($delegateAttributes, $presentDelegates);
     const defaultInputMotion = () => ({ kind: "mod" } satisfies MotionInput);
     const resetInputErrors = () => { inputError = undefined };
 
-    export let inputMotion: MotionInput = defaultInputMotion();
-    export let submit: (m: Motion) => void;
-    let inputError: z.ZodIssue | undefined = undefined;
+    interface Props {
+        inputMotion?: MotionInput;
+        submit: (m: Motion) => void;
+        buttons?: Snippet;
+    }
+
+    // Input handlers:
+    let {
+        inputMotion = $bindable(defaultInputMotion()),
+        submit,
+        buttons
+    }: Props = $props();
+    let inputError: z.ZodIssue | undefined = $state(undefined);
 
     // The input after the delegate input.
-    let afterDel: HTMLElement;
+    let afterDel: HTMLElement | undefined = $state();
 
-    function submitMotion() {
+    function submitMotion(e: SubmitEvent) {
+        e.preventDefault();
+
         const result = motionSchema.safeParse(inputMotion);
         if (result.success) {
             inputMotion = defaultInputMotion();
@@ -60,15 +73,17 @@
     }
 
     // If extension, disable "topic" and "speakingTime":
-    $: if (isExtending(inputMotion)) {
-        let inputified = inputifyMotion($selectedMotion!, $delegateAttributes);
-        
-        if ("topic" in inputified) (inputMotion as any).topic = inputified.topic;
-        if ("speakingTime" in inputified) (inputMotion as any).speakingTime = inputified.speakingTime;
-    }
+    $effect(() => {
+        if (isExtending(inputMotion)) {
+            let inputified = inputifyMotion($selectedMotion!, $delegateAttributes);
+            
+            if ("topic" in inputified) (inputMotion as any).topic = inputified.topic;
+            if ("speakingTime" in inputified) (inputMotion as any).speakingTime = inputified.speakingTime;
+        }
+    });
 </script>
 
-<script lang="ts" context="module">
+<script lang="ts" module>
     /**
      * Calculates the number of speakers string.
      * @param totalTime The total time in seconds (or as a time-formatted string)
@@ -93,7 +108,7 @@
     }
 </script>
 
-<form on:submit|preventDefault={submitMotion} on:input={resetInputErrors} class="flex flex-col gap-3 p-3">
+<form onsubmit={submitMotion} oninput={resetInputErrors} class="flex flex-col gap-3 p-3">
     <!-- Motion input form -->
     <label class="label">
         <span>Delegate</span>
@@ -113,10 +128,10 @@
             class:input-error={inputError?.path.includes("kind")}
             bind:this={afterDel}
             bind:value={inputMotion.kind}
-            on:change={() => inputMotion = { delegate: inputMotion.delegate, kind: inputMotion.kind }}
+            onchange={() => inputMotion = { delegate: inputMotion.delegate, kind: inputMotion.kind }}
             >
             {#each Object.entries(MOTION_LABELS) as [value, label]}
-            <option {value} {label} />
+            <option {value} {label}></option>
             {/each}
         </select>
     </label>
@@ -128,7 +143,7 @@
             placeholder="mm:ss" 
             class:input-error={inputError?.path.includes("totalTime")}
             bind:value={inputMotion.totalTime}
-            on:blur={() => handleBlurTime("totalTime")}
+            onblur={() => handleBlurTime("totalTime")}
             required
         >
     </label>
@@ -141,7 +156,7 @@
             placeholder="mm:ss" 
             class:input-error={inputError?.path.includes("speakingTime")}
             bind:value={inputMotion.speakingTime}
-            on:blur={() => handleBlurTime("speakingTime")}
+            onblur={() => handleBlurTime("speakingTime")}
             disabled={isExtending(inputMotion)}
         >
     </label>
@@ -168,14 +183,16 @@
     </div>
     {/if}
 
-    <slot name="buttons">
+    {#if buttons}
+        {@render buttons()}
+    {:else}
         <button 
             class="btn variant-filled-primary" 
             type="submit"
         >
             Add Motion
         </button>
-    </slot>
+    {/if}
 
     {#if typeof inputError !== "undefined"}
     <div class="text-error-500 text-center">{inputError.message}</div>

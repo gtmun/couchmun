@@ -2,10 +2,15 @@
     import type { DelegateAttrs } from "$lib/types";
     import EditModal from "./EditModal.svelte";
 
-    export let attrs: Record<string, DelegateAttrs>;
-    $: enabled = Object.fromEntries(Object.keys(attrs).map(k => [k, false]));
+    interface Props {
+        attrs: Record<string, DelegateAttrs>;
+    }
 
-    let inputText: string;
+    let { attrs }: Props = $props();
+    // TODO: Handle attribute update?
+    let enabled = $state(Object.fromEntries(Object.keys(attrs).map(k => [k, false])));
+
+    let inputText: string = $state("");
 
     function exit(submit: (value: any) => void) {
         submit(enabled);
@@ -25,7 +30,7 @@
             for (let line of text.split("\n")) {
                 line = line.trim();
                 let item = Object.entries(attrs)
-                    .find(([k, v]) => matchesKey(line, v));
+                    .find(([_, v]) => matchesKey(line, v));
                 if (item) {
                     enabled[item[0]] = true;
                 } else {
@@ -36,21 +41,25 @@
         }
     }
 
-    $: enabledText = Object.entries(enabled)
-        .filter(([_, b]) => b)
+    let enabledText = $derived(
+        Object.entries(enabled)
+        .filter(([_, e]) => e)
         .map(([k, _]) => attrs[k].name ?? k)
-        .join("\n");
+        .join("\n")
+    );
 </script>
-<EditModal title="Enable/Disable Delegates" let:submit let:close>
-    <div class="flex flex-col gap-3">
-        Enter all delegates to enable:
-        <div class="grid grid-cols-2 gap-3">
-            <textarea class="textarea" rows={10} on:keydown={keydown} bind:value={inputText} />
-            <textarea class="textarea" rows={10} readonly>{enabledText}</textarea>
+<EditModal title="Enable/Disable Delegates">
+    {#snippet children({ submit, close })}
+        <div class="flex flex-col gap-3">
+            Enter all delegates to enable:
+            <div class="grid grid-cols-2 gap-3">
+                <textarea class="textarea" rows={10} onkeydown={keydown} bind:value={inputText}></textarea>
+                <textarea class="textarea" rows={10} readonly>{enabledText}</textarea>
+            </div>
+            <div class="flex justify-end gap-1">
+                <button class="btn variant-filled-error" type="button" onclick={close}>Cancel</button>
+                <button class="btn variant-filled-primary" type="button" onclick={() => exit(submit)}>Done</button>
+            </div>
         </div>
-        <div class="flex justify-end gap-1">
-            <button class="btn variant-filled-error" type="button" on:click={close}>Cancel</button>
-            <button class="btn variant-filled-primary" type="button" on:click={() => exit(submit)}>Done</button>
-        </div>
-    </div>
+    {/snippet}
 </EditModal>

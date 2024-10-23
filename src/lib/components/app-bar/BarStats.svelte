@@ -1,16 +1,23 @@
 <script lang="ts">
     import { ConicGradient, type ConicStop } from '@skeletonlabs/skeleton';
 
-    export let total: number;
-    export let majOverride: number | undefined = undefined;
-    export let supermajOverride: number | undefined = undefined;
+    interface Props {
+        total: number;
+        majOverride?: number | undefined;
+        supermajOverride?: number | undefined;
+    }
+    let {
+        total,
+        majOverride = undefined,
+        supermajOverride = undefined
+    }: Props = $props();
 
     // given n,
     // maj is smallest integer > n/2
     // supermaj is smallest integer > 2n/3
     // TODO: make this cleaner
-    $: maj = majOverride ?? Math.min(Math.ceil(total / 2 + 0.01), total);
-    $: supermaj = supermajOverride ?? Math.min(Math.ceil(total * 2 / 3 + 0.01), total);
+    let maj = $derived(majOverride ?? total >= 1 ? Math.ceil(total / 2 + 0.01) : 0);
+    let supermaj = $derived(supermajOverride ?? total >= 1 ? Math.ceil(total * 2 / 3 + 0.01) : 0);
 
     const majConic: ConicStop[] = [
         { color: 'rgb(var(--color-primary-800))', start: 0, end: 50 },

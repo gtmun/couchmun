@@ -173,6 +173,10 @@ export type MotionKind = Motion["kind"];
 
 export type Speaker = {
     /**
+     * Identifier for this speaker entry.
+     */
+    id: string,
+    /**
      * The key of the delegate.
      */
     key: string,

@@ -6,6 +6,7 @@
     import Icon from "@iconify/svelte";
     import { AppBar, LightSwitch } from '@skeletonlabs/skeleton';
 
+    let { children } = $props();
     const { settings: { title } } = getSessionDataContext();
 </script>
 
@@ -23,7 +24,7 @@
             slotDefault="place-self-center"
             slotTrail="place-content-end"
         >
-            <svelte:fragment slot="lead">
+            {#snippet lead()}
                 <a
                     href="{base}/dashboard"
                     class="btn btn-icon"
@@ -33,18 +34,18 @@
                 >
                     <Icon icon="mdi:chevron-left" width="36" height="36" />
                 </a>
-            </svelte:fragment>
+            {/snippet}
             <div class="flex flex-col gap-1">
                 <BarTitle bind:title={$title} />
             </div>
-            <svelte:fragment slot="trail">
+            {#snippet trail()}
                 <!-- Alignment spacing -->
-                <div class="btn-icon" />
-            </svelte:fragment>
+                <div class="btn-icon"></div>
+            {/snippet}
         </AppBar>
     </header>
     <!-- Main -->
     <main class="space-y-4 p-4 overflow-auto">
-        <slot></slot>
+        {@render children()}
     </main>
 </div>

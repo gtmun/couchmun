@@ -18,10 +18,10 @@
         $stats = mapObj($da, k => [k, $stats[k] ?? defaultStats()]);
     });
 
-    let sortOrder: { item: SortKey, descending: boolean } = {
+    let sortOrder: { item: SortKey, descending: boolean } = $state({
         item: "durationSpoken",
         descending: true
-    };
+    });
     type SortKey = keyof StatsData | "delegate";
     const COLUMNS = {
         delegate: { label: "Delegate" },
@@ -48,12 +48,14 @@
         }
     }
 
-    $: maxDurationSpoken = Math.max(0, ...Object.values($stats).map(ent => ent.durationSpoken));
-    $: displayEntries = Object.entries($stats)
-        .sort((e1, e2) => {
-            let { item, descending } = sortOrder;
-            return compare(readEntryValue(e1, item), readEntryValue(e2, item), descending);
-        });
+    let maxDurationSpoken = $derived(Math.max(0, ...Object.values($stats).map(ent => ent.durationSpoken)));
+    let displayEntries = $derived(
+        Object.entries($stats)
+            .sort((e1, e2) => {
+                let { item, descending } = sortOrder;
+                return compare(readEntryValue(e1, item), readEntryValue(e2, item), descending);
+            })
+    );
 
     // Configuration
     const CONFIGURE_MODAL_SETTINGS: PopupSettings = {
@@ -102,7 +104,7 @@
                 <tr>
                     {#each Object.entries(COLUMNS) as [key, col]}
                     <th>
-                        <button on:click={() => setSort(key)}>
+                        <button onclick={() => setSort(key)}>
                             {#if sortOrder.item === key}
                             <div class="flex items-center gap-1" aria-sort={sortOrder.descending ? "descending" : "ascending"}>
                                 {col.label}
@@ -168,8 +170,8 @@
     <div class="card p-4 bg-surface-300-600-token">
         <div class="flex flex-col gap-2 overflow-hidden">
             <h4 class="h4">Configure Statistics</h4>
-            <button class="btn variant-filled-primary" on:click={exportStats}>Export Stats</button>
-            <button class="btn variant-filled-error" on:click={clearStats}>Clear Stats</button>
+            <button class="btn variant-filled-primary" onclick={exportStats}>Export Stats</button>
+            <button class="btn variant-filled-error" onclick={clearStats}>Clear Stats</button>
         </div>
     </div>
 </div>

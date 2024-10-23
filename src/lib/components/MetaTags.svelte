@@ -1,12 +1,20 @@
 <script lang="ts">
     import { page } from "$app/stores";
 
-    export let title: string;
-    export let description: string | undefined = undefined;
-    export let thumbnail: string | undefined = undefined;
+    interface Props {
+        title: string;
+        description?: string | undefined;
+        thumbnail?: string | undefined;
+    }
+
+    let {
+        title,
+        description = undefined,
+        thumbnail = undefined
+    }: Props = $props();
 
     let url = $page.url;
-    $: thumbnailURL = typeof thumbnail === "string" ? new URL(thumbnail, url.origin) : undefined;
+    let thumbnailURL = $derived(typeof thumbnail === "string" ? new URL(thumbnail, url.origin) : undefined);
 </script>
 
 <svelte:head>
