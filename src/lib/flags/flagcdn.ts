@@ -1,10 +1,19 @@
-const FLAG_CODES: Record<string, string> = 
-    await fetch("https://flagcdn.com/en/codes.json")
-    .then(r => r.json())
-    .catch(e => ({}));
+import { browser } from "$app/environment";
 
-export function getFlagUrl(key: string): URL | undefined {
-    if (key.toLowerCase() in FLAG_CODES) {
+let FLAG_CODES: Record<string, string> = {};
+async function _flag_codes(): Promise<typeof FLAG_CODES> {
+    if (Object.keys(FLAG_CODES).length > 0) return FLAG_CODES;
+
+    return FLAG_CODES = (
+        await fetch("https://flagcdn.com/en/codes.json")
+        .then(r => r.json())
+        .catch(e => {})
+    );
+}
+
+export async function getFlagUrl(key: string): Promise<URL | undefined> {
+    if (!browser) return;
+    if (key.toLowerCase() in await _flag_codes()) {
         return new URL(key.toLowerCase() + ".svg", "https://flagcdn.com/");
     }
 }

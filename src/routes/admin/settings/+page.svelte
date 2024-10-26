@@ -276,7 +276,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {#each Object.entries($delegateAttributes) as [key, attrs]}
+                    {#each Object.entries($delegateAttributes) as [key, attrs] (key)}
                     <tr>
                         <td>
                             <code>{key}</code>
