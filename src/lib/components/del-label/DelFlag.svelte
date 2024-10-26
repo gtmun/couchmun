@@ -17,19 +17,25 @@
         fallback = "none"
     }: Props = $props();
 
-    let flag = $derived(attrs?.flagURL ? new URL(attrs?.flagURL) : getFlagUrl(key));
+    // Only set flag on client-side, to prevent hydration mismatch issues.
+    // https://svelte.dev/docs/svelte/v5-migration-guide#Other-breaking-changes-img-src-and-html-hydration-mismatches-are-not-repaired
+    let flag: URL | undefined = $state();
+    $effect(() => {
+        flag = attrs?.flagURL ? new URL(attrs.flagURL) : getFlagUrl(key);
+    });
+
     let label = $derived(attrs?.name ?? key ?? "");
 </script>
 
 {#if flag}
     <img
-        src={flag.toString()}
+        src={flag.href}
         alt="Flag of {label}"
         class={height}
     >
 {:else if fallback === "un"}
     <img
-        src={getFlagUrl("un")!.toString()}
+        src={getFlagUrl("un")!.href}
         alt="Flag of {label} (missing)"
         class={height}
     >

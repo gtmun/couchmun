@@ -12,7 +12,7 @@
 
 <!-- Render a table to display participants and their statuses -->
 <div class="card grid">
-  {#each Object.entries($delegateAttributes) as [key, attrs]}
+  {#each Object.entries($delegateAttributes) as [key, attrs] (key)}
     <div class="grid grid-cols-subgrid col-span-2 even:bg-surface-100-800-token odd:bg-surface-200-700-token">
       <div class="flex items-center p-4">
           <DelLabel {key} {attrs} inline />
