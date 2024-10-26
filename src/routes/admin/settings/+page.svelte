@@ -230,8 +230,8 @@
                                                     <Icon
                                                         icon="mdi:arrow-down"
                                                         class="{key.ascending ? 'rotate-180' : ''} transition-[transform]"
-                                                        width="1.2rem"
-                                                        height="1.2rem"
+                                                        width="1.2em"
+                                                        height="1.2em"
                                                     />
                                                 </button>
                                             </div>
