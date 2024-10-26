@@ -1,10 +1,10 @@
-import { getDefaultPreset } from "$lib/delegate_presets";
+// We're assuming preset-un.json exists and is the default.
+import DEFAULT_DELEGATES from "$lib/delegate_presets/preset-un.json";
 import { DEFAULT_SORT_PRIORITY } from "$lib/motions/definitions";
 import type { AccessibleSettings, Settings } from "$lib/types";
 import { derived, readonly } from "svelte/store";
 import { createStore } from ".";
 
-const DEFAULT_DELEGATES = await getDefaultPreset();
 const { getDefaults, createContext, resetContext, getStoreContext } = createStore<Settings>("settings", 
     {
         delegateAttributes: DEFAULT_DELEGATES,

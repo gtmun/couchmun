@@ -1,7 +1,9 @@
 <script lang="ts">
+    import { browser } from "$app/environment";
     import { getFlagUrl } from "$lib/flags/flagcdn";
     import type { DelegateAttrs } from "$lib/types";
     import Icon from "@iconify/svelte";
+    import { onMount } from "svelte";
 
     interface Props {
         key: string;
@@ -21,8 +23,18 @@
     // https://svelte.dev/docs/svelte/v5-migration-guide#Other-breaking-changes-img-src-and-html-hydration-mismatches-are-not-repaired
     let flag: URL | undefined = $state();
     $effect(() => {
-        flag = attrs?.flagURL ? new URL(attrs.flagURL) : getFlagUrl(key);
+        if (attrs?.flagURL) {
+            flag = new URL(attrs.flagURL);
+        } else {
+            getFlagUrl(key).then(flagURL => {
+                flag = flagURL;
+            })
+        }
     });
+    let unFallbackFlag: URL | undefined = $state();
+    onMount(async () => {
+        unFallbackFlag = await getFlagUrl("un");
+    })
 
     let label = $derived(attrs?.name ?? key ?? "");
 </script>
@@ -33,9 +45,9 @@
         alt="Flag of {label}"
         class={height}
     >
-{:else if fallback === "un"}
+{:else if fallback === "un" && unFallbackFlag}
     <img
-        src={getFlagUrl("un")!.href}
+        src={unFallbackFlag.href}
         alt="Flag of {label} (missing)"
         class={height}
     >
