@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { browser } from "$app/environment";
     import { getFlagUrl } from "$lib/flags/flagcdn";
     import type { DelegateAttrs } from "$lib/types";
     import Icon from "@iconify/svelte";
@@ -8,23 +9,28 @@
     export let attrs: DelegateAttrs | undefined;
     export let fallback: "un" | "icon" | "none" = "none";
 
-    $: flag = attrs?.flagURL ? new URL(attrs?.flagURL) : getFlagUrl(key);
-    $: label = attrs?.name ?? key ?? "";
-
-    function getUNFlag() {
-        return getFlagUrl("un")!;
+    // Load flags on client-side, rather than server-side
+    let flag: URL | undefined = undefined;
+    let unFallbackFlag: URL | undefined = undefined;
+    $: if (browser) {
+        (async () => {
+            flag = attrs?.flagURL ? new URL(attrs.flagURL) : await getFlagUrl(key);
+            unFallbackFlag = await getFlagUrl("un");
+        })()
     }
+
+    $: label = attrs?.name ?? key ?? "";
 </script>
 
 {#if flag}
     <img
-        src={flag.toString()}
+        src={flag.href}
         alt="Flag of {label}"
         class={height}
     >
-{:else if fallback === "un"}
+{:else if fallback === "un" && unFallbackFlag}
     <img
-        src={getUNFlag().toString()}
+        src={unFallbackFlag.href}
         alt="Flag of {label} (missing)"
         class={height}
     >

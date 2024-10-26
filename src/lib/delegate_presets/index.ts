@@ -35,10 +35,3 @@ export async function getPreset(key: keyof typeof PRESETS) {
         return structuredClone<Record<string, DelegateAttrs>>(json);
     }
 }
-
-/**
- * @returns the default preset
- */
-export async function getDefaultPreset() {
-    return (await getPreset(defaultPresetKey()))!;
-}
