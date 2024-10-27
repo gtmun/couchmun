@@ -6,7 +6,6 @@
     import { getSessionDataContext } from "$lib/stores/session";
     import { parseTime } from "$lib/util/time";
 
-    import type { Readable } from "svelte/store";
     import Icon from "@iconify/svelte";
     import { popup, type PopupSettings } from "@skeletonlabs/skeleton";
 

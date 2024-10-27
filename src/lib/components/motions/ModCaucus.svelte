@@ -15,9 +15,9 @@
 
     const { settings: { delegateAttributes }, presentDelegates } = getSessionDataContext();
     const { stats } = getStatsContext();
-    const { topic } = getContext<AppBarData>("app-bar");
+    const appBarData = getContext<AppBarData>("app-bar");
     $effect(() => {
-        topic.set(motion.topic);
+        appBarData.topic = motion.topic;
     })
 
     // Timer

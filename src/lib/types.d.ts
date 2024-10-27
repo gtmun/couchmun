@@ -217,7 +217,7 @@ export type AppBarData = {
     /**
      * Topic to display on the app bar
      */
-    topic: Writable<string | undefined>
+    topic: string | undefined
 }
 
 export type ClockMessage = 

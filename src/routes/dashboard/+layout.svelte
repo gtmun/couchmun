@@ -11,7 +11,6 @@
     import Icon from "@iconify/svelte";
     import { AppBar, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
     import { setContext } from 'svelte';
-    import { writable } from 'svelte/store';
 
     let { children } = $props();
     const drawerStore = getDrawerStore();
@@ -43,11 +42,12 @@
 
     // This can be set to change the topic displayed on the app bar.
     // This must be cleared when navigating to different pages.
-    const { topic } = setContext<AppBarData>("app-bar", {
-        topic: writable(undefined)
+    const appBarData: AppBarData = $state({
+        topic: undefined
     });
+    setContext("app-bar", appBarData);
     $effect(() => {
-        if ($navigating) topic.set(undefined);
+        if ($navigating) appBarData.topic = undefined;
     })
 </script>
 
@@ -90,8 +90,8 @@
                 <BarTitle bind:title={$title} />
                 <hr class="divider border-t-4 border-surface-800-100-token" />
                 <BarStats total={$presentDelegates.length} />
-                {#if $topic}
-                    <h3 class="h3 capitalize self-center mt-3"><i>Topic: {$topic}</i></h3>
+                {#if appBarData.topic}
+                    <h3 class="h3 capitalize self-center mt-3"><i>Topic: {appBarData.topic}</i></h3>
                 {/if}
             </div>
             {#snippet trail()}
