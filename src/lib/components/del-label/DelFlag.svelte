@@ -1,9 +1,7 @@
 <script lang="ts">
-    import { browser } from "$app/environment";
     import { getFlagUrl } from "$lib/flags/flagcdn";
     import type { DelegateAttrs } from "$lib/types";
     import Icon from "@iconify/svelte";
-    import { onMount } from "svelte";
 
     interface Props {
         key: string;
@@ -31,10 +29,6 @@
             })
         }
     });
-    let unFallbackFlag: URL | undefined = $state();
-    onMount(async () => {
-        unFallbackFlag = await getFlagUrl("un");
-    })
 
     let label = $derived(attrs?.name ?? key ?? "");
 </script>
@@ -45,12 +39,14 @@
         alt="Flag of {label}"
         class={height}
     >
-{:else if fallback === "un" && unFallbackFlag}
-    <img
-        src={unFallbackFlag.href}
-        alt="Flag of {label} (missing)"
-        class={height}
-    >
+{:else if fallback === "un"}
+    {#await getFlagUrl("un") then unFallbackFlag}
+        <img
+            src={unFallbackFlag!.href}
+            alt="Flag of {label} (missing)"
+            class={height}
+        >   
+    {/await}
 {:else if fallback === "icon"}
     <!-- HACK: Just don't use this if not inline. -->
     <Icon 
