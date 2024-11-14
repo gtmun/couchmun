@@ -1,6 +1,8 @@
 import { getContext, setContext } from "svelte";
 import { persisted } from "svelte-persisted-store";
 import type { Readable, Writable } from "svelte/store";
+import { SHADOW_ITEM_MARKER_PROPERTY_NAME as isDndShadowItem } from "svelte-dnd-action";
+import { getDndItemId } from "$lib/util/dnd";
 
 // For the purposes of this project, a store consists of:
 //  1. Writable properties
@@ -116,7 +118,22 @@ export function createStore<Ctx extends {}>(
         // Create defaults with writable fields:
         const dfCtx = Object.fromEntries(
             Object.entries(getDefaults())
-                .map(([k, v]) => [k, persisted(`${key}.${k}`, v)])
+                .map(([k, v]) => [k, persisted(`${key}.${k}`, v, {
+                    beforeRead(o) {
+                        // Process changes made due to svelte-dnd-action
+                        if (o instanceof Array) {
+                            for (let item of o) {
+                                if ("id" in item) {
+                                    item.id = getDndItemId(item);
+                                }
+                                delete item[isDndShadowItem];
+                                delete item.originalId;
+                            }
+                        }
+
+                        return o;
+                    }
+                })])
         ) as unknown as WDefaults<Ctx>;
 
         // Add consts to it:

@@ -8,16 +8,19 @@
   import { getSessionDataContext } from "$lib/stores/session";
   import { getStatsContext, updateStats } from "$lib/stores/stats";
   import type { Motion } from "$lib/types";
-  import { sortable } from "$lib/util";
   import { stringifyTime } from "$lib/util/time";
 
   import Icon from "@iconify/svelte";
   import { getModalStore } from "@skeletonlabs/skeleton";
   import { flip } from "svelte/animate";
+  import { dndzone } from "svelte-dnd-action";
+  import { createDragTr, isDndShadow, processDrag } from "$lib/util/dnd";
 
   const { settings: { delegateAttributes, sortOrder }, motions, selectedMotion } = getSessionDataContext();
   const { stats } = getStatsContext();
   const modalStore = getModalStore();
+
+  let motionTable: HTMLTableElement | undefined = $state();
 
   function submitMotion(motion: Motion) {
     motions.update($m => {
@@ -99,7 +102,7 @@
   
   <div class="flex flex-col gap-2">
     <div class="grid grid-cols-[1fr_auto] items-center">
-      <h3 class="h3 text-center">List of Motions</h3>
+      <h3 class="h3 text-center" id="motion-table-header">List of Motions</h3>
       <button
         class="btn btn-icon variant-ghost-primary hover:variant-filled-primary"
         onclick={sortMotions}
@@ -111,7 +114,7 @@
     </div>
     
     <div class="table-container">
-      <table class="table motion-table">
+      <table class="table motion-table" bind:this={motionTable}>
         <thead>
           <tr>
             <td class="w-24"></td>
@@ -123,19 +126,25 @@
             <td class="px-3 w-24">No. of Speakers</td>
           </tr>
         </thead>
-        <tbody use:sortable={{
-          animation: 150,
-          ghostClass: "!bg-surface-400/25",
-          dragClass: "!bg-surface-50",
-          fallbackOnBody: true,
-          store: {
-            get: () => Object.keys(Array.from({ length: $motions.length })),
-            set: (sortable) => motions.update($m => sortable.toArray().map(k => $m[+k]))
-          }
-        }}>
+        <tbody use:dndzone={{
+          items: $motions,
+          flipDurationMs: 150,
+          dropTargetStyle: {},
+          transformDraggedElement: (el) => createDragTr(el, motionTable)
+        }}
+          onconsider={(e) => motions.set(processDrag(e))}
+          onfinalize={(e) => motions.set(processDrag(e))}
+          aria-labelledby="motion-table-header"
+        >
           {#each $motions as motion, i (motion.id)}
             {@const delName = $delegateAttributes[motion.delegate]?.name ?? motion.delegate}
-            <tr data-id={i} animate:flip={{ duration: 300 }}>
+            {@const shadow = isDndShadow(motion)}
+            <tr 
+              class="dnd-list-item"
+              class:shadow
+              animate:flip={{ duration: 150 }}
+              aria-label="{delName}'s Motion"
+            >
               <td>
                 <div class="flex flex-row">
                   <button
@@ -180,16 +189,27 @@
   </div>
 </div>
 
-<style>
+<style lang="postcss">
   .motion-table td {
     vertical-align: middle;
   }
-  .motion-table tbody {
-    cursor: grab;
-  }
 
   /* If we're NOT dragging an item, enable the hover effect. */
-  .motion-table tbody:not(:has(> :global(.sortable-chosen))) tr:hover:not(:active) {
-    background-color: rgba(var(--color-primary-500) / 0.25) !important;
+  .motion-table tbody tr:hover:not(:active) {
+    @apply !bg-primary-500/25;
+  }
+
+  /* Styling for shadow element */
+  .shadow {
+      @apply !visible;
+      @apply !bg-surface-300;
+  }
+  :global(.dark) .shadow {
+      @apply !bg-surface-600;
+  }
+
+  /* Styling for dragged element */
+  :global(#dnd-action-dragged-el).dnd-list-item {
+      @apply !opacity-90;
   }
 </style>

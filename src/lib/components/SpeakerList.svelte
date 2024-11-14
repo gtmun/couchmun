@@ -7,9 +7,10 @@
     import { type z } from "zod";
     import Icon from "@iconify/svelte";
     import { popup } from "@skeletonlabs/skeleton";
-    import { sortable } from "$lib/util";
     import { tick, untrack } from "svelte";
     import { flip } from "svelte/animate";
+    import { dragHandle, dragHandleZone } from "svelte-dnd-action";
+    import { getDndItemId, isDndShadow, processDrag } from "$lib/util/dnd";
 
     let dfltControlsInput: string = $state("");
     let dfltControlsError: string | undefined = $state(undefined);
@@ -52,10 +53,10 @@
 
     // Special IDs to track:
     let selectedSpeakerId: string | undefined = $state(undefined);
-    let draggingSpeakerId: string | undefined = $state(undefined);
     // A mapping from IDs to Speakers:
     let orderMap = $derived(Object.fromEntries(
-        order.flatMap((speaker, i) => typeof speaker?.id !== "undefined" ? [[speaker.id, { speaker, i }]] : [])
+        order.filter(s => typeof s.id === "string" && s.id)
+            .map((speaker, i) => [getDndItemId(speaker), { speaker, i }])
     ));
 
     // List item elements per order item
@@ -140,9 +141,6 @@
         if (removedSpeaker?.id === selectedSpeakerId) {
             setSelectedSpeaker(undefined);
         }
-        if (removedSpeaker?.id === draggingSpeakerId) {
-            draggingSpeakerId = undefined;
-        }
     }
 
     /// Sets the selected speaker.
@@ -157,42 +155,6 @@
         }
     }
 
-    function getButton(i: number, btn: number): HTMLButtonElement | undefined {
-        if (0 <= i && i < order.length) {
-            return liElements.get(order[i].id)?.querySelectorAll("button")[btn];
-        }
-    }
-    async function onKeyDown(e: KeyboardEvent, i: number, btn: number) {
-        // On ctrl+up or ctrl+down, move speaker's list item:
-        if (e.ctrlKey || e.metaKey) {
-            if (e.code === "ArrowUp") {
-                // Swap element with element before
-                let im1 = Math.max(i - 1, 0);
-                [order[im1], order[i]] = [order[i], order[im1]];
-                // Update DOM, then apply focus to element
-                await tick();
-                getButton(im1, btn)?.focus();
-            } else if (e.code === "ArrowDown") {
-                // Swap element with element after
-                let ip1 = Math.min(i + 1, order.length - 1);
-                [order[i], order[ip1]] = [order[ip1], order[i]];
-                // Update DOM, then apply focus to element
-                await tick();
-                getButton(ip1, btn)?.focus();
-            }
-        } else {
-            // On up or down, move active element
-            if (e.code === "ArrowUp") {
-                getButton(i - 1, btn)?.focus();
-            } else if (e.code === "ArrowDown") {
-                getButton(i + 1, btn)?.focus();
-            } else if (e.code === "ArrowLeft") {
-                getButton(i, btn - 1)?.focus();
-            } else if (e.code === "ArrowRight") {
-                getButton(i, btn + 1)?.focus();
-            }
-        }
-    }
     function gotoSpeaker(speakerId: string) {
         liElements.get(speakerId)?.scrollIntoView({ block: "nearest" });
     }
@@ -212,30 +174,6 @@
         map.set(key, el);
         return { destroy() { map.delete(key); } }
     };
-    // A11y dragging
-    async function handleDragButton(s: Speaker) {
-        // No currently dragging speaker, so set:
-        if (typeof draggingSpeakerId === "undefined") {
-            draggingSpeakerId = s.id;
-            return;
-        }
-
-        // If we clicked on the speaker again, toggle off:
-        if (draggingSpeakerId === s.id) {
-            draggingSpeakerId = undefined;
-            return;
-        }
-
-        let { i: x } = orderMap[draggingSpeakerId];
-        let { i: y } = orderMap[s.id];
-        
-        draggingSpeakerId = undefined;
-        if (x >= 0 && y >= 0) {
-            [order[y], order[x]] = [order[x], order[y]];
-            await tick();
-            getButton(y, 0)?.focus();
-        }
-    }
     // Properties which are only used with default controls:
     let validator = $derived(
         typeof useDefaultControls?.validator === "function" 
@@ -255,60 +193,48 @@
     }
 </script>
 
-<div class="card p-4 overflow-y-auto flex-grow flex flex-col items-stretch gap-3">
-    <h4 class="h4 flex justify-center">
+<div class="card p-2 overflow-y-auto flex-grow flex flex-col items-stretch gap-3">
+    <h4 class="h4 flex justify-center" id="speaker-list-header">
         Speakers List
     </h4>
-    <ol class="list grid grid-cols-[auto_auto_1fr_auto]" use:sortable={{
-        animation: 150,
-        swapThreshold: 0.9,
-        ghostClass: "!bg-surface-400/25",
-        dragClass: "!bg-surface-50",
-        handle: ".handle",
-        fallbackOnBody: true,
-        store: {
-            get: () => order.map(spk => spk.id),
-            set: (sortable) => order = sortable.toArray().map(k => orderMap[k].speaker)}
-    }}>
+    <ol class="list grid grid-cols-[auto_auto_1fr_auto] auto-rows-min p-2 flex-grow" use:dragHandleZone={{
+        items: order,
+        flipDurationMs: 150,
+        dropTargetStyle: {},
+        transformDraggedElement: (el, data, index) => {
+            // Update number on dragged element:
+            let idxEl = el?.querySelector(".enumerated-index");
+            if (idxEl && typeof index === "number") {
+                idxEl.textContent = `${index + 1}.`;
+            }
+        }
+    }}
+        onconsider={(e) => order = processDrag(e)}
+        onfinalize={(e) => order = processDrag(e)}
+        aria-labelledby="speaker-list-header"
+    >
         {#each order as speaker, i (speaker.id)}
             {@const speakerLabel = getLabel(speaker.key)}
             {@const selected = speaker.id === selectedSpeakerId}
-            
-            {@const dragSelected = speaker.id === draggingSpeakerId}
-            {@const draggingSpeaker = findSpeaker(draggingSpeakerId)}
-            {@const dragBtnLabel = 
-                dragSelected 
-                ? `Stop Dragging ${speakerLabel}` 
-                : typeof draggingSpeaker !== "undefined" 
-                    ? `Swap ${getLabel(draggingSpeaker.key)} (${(orderMap[draggingSpeakerId ?? ""]?.i ?? -1) + 1}) with ${speakerLabel} (${i + 1})`
-                    : `Start Dragging ${speakerLabel}`
-            }
+            {@const shadow = isDndShadow(speaker)}
             <li
-                class="!grid grid-cols-subgrid col-span-4"
-                class:variant-ghost-primary={dragSelected}
+                class="!grid grid-cols-subgrid col-span-4 self-start dnd-list-item"
+                class:shadow
                 use:bindToMap={[liElements, speaker.id]}
-                data-id={speaker.id}
                 animate:flip={{ duration: 150 }}
+                aria-label={speakerLabel}
             >
-                <button
-                    class="btn-icon handle cursor-grab"
-                    aria-pressed={dragSelected}
-                    onclick={() => handleDragButton(speaker)}
-                    onkeydown={(e) => onKeyDown(e, i, 0)}
-                    aria-label={dragBtnLabel}
-                    title={dragBtnLabel}
-                >
+                <div class="btn-icon" use:dragHandle>
                     <Icon icon="mdi:drag-vertical" width="24" height="24" />
-                </button>
-                <span>{i + 1}.</span>
+                </div>
+                <span class="enumerated-index">{i + 1}.</span>
                 <button 
-                    class="btn flex overflow-clip"
+                    class="btn overflow-clip"
                     class:variant-filled-primary={selected}
                     class:variant-soft-surface={!selected && speaker.completed}
                     class:variant-ringed-surface={!selected && !speaker.completed}
                     class:hover:variant-ringed-primary={!selected && !speaker.completed}
                     onclick={() => setSelectedSpeaker(speaker)}
-                    onkeydown={(e) => onKeyDown(e, i, 1)}
                     title="Select {speakerLabel}"
                     aria-label="Select {speakerLabel}"
                     aria-pressed={selected}
@@ -320,7 +246,6 @@
                         <button 
                             class="btn-icon variant-soft-surface hover:variant-filled-error" 
                             onclick={() => deleteSpeaker(i)}
-                            onkeydown={(e) => onKeyDown(e, i, 2)}
                             title="Delete {speakerLabel}"
                             aria-label="Delete {speakerLabel}"
                         >
@@ -391,3 +316,24 @@
         on:selection={e => addSpeaker(e.detail.label, true)}
     />
 {/if}
+
+<style lang="postcss">
+    /* Styling for shadow element */
+    .shadow {
+        @apply !visible;
+        @apply !bg-surface-300;
+    }
+    :global(.dark) .shadow {
+        @apply !bg-surface-600;
+    }
+
+    /* Styling for dragged element */
+    :global(#dnd-action-dragged-el).dnd-list-item {
+        @apply !bg-surface-50;
+        @apply !grid grid-cols-[auto_auto_1fr_auto] gap-4;
+        @apply !opacity-90;
+    }
+    :global(.dark #dnd-action-dragged-el).dnd-list-item {
+        @apply !bg-surface-900;
+    }
+</style>

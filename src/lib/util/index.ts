@@ -1,5 +1,4 @@
 import type { ModalSettings, ModalStore } from "@skeletonlabs/skeleton";
-import Sortable from "sortablejs";
 
 /**
  * Utility for creating a confirmation modal.
@@ -22,15 +21,6 @@ export function triggerConfirmModal(
             return r ? successCallback() : errorCallback();
         }
     } satisfies ModalSettings);
-}
-
-/**
- * A `use` action that can be used to make an element's contents draggable.
- */
-export function sortable(el: HTMLElement, options?: Sortable.Options) {
-    // Technically you can use use:Sortable.create, but it causes issues 
-    // because the destroy runs after the element is destroyed.
-    Sortable.create(el, options);
 }
 
 export type Comparator<K> = (a: K, b: K) => number;
