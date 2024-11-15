@@ -133,7 +133,7 @@
             set: (sortable) => motions.update($m => sortable.toArray().map(k => $m[+k]))
           }
         }}>
-          {#each $motions as motion, i (motion)}
+          {#each $motions as motion, i (motion.id)}
             {@const delName = $delegateAttributes[motion.delegate]?.name ?? motion.delegate}
             <tr data-id={i} animate:flip={{ duration: 300 }}>
               <td>

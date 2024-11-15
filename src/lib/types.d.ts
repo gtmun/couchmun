@@ -147,6 +147,7 @@ export type DelegatePresence = "NP" | "P" | "PV";
 
 // Motions
 export type Motion = {
+    id: string,
     delegate: string,
     kind: "mod", 
     totalTime: number,
@@ -154,16 +155,19 @@ export type Motion = {
     topic: string,
     isExtension: boolean
 } | {
+    id: string,
     delegate: string,
     kind: "unmod",
     totalTime: number,
     isExtension: boolean
 } | {
+    id: string,
     delegate: string,
     kind: "rr",
     speakingTime: number,
     topic: string
 } | {
+    id: string,
     delegate: string,
     kind: "other",
     totalTime: number,

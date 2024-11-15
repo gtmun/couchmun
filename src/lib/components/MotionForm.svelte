@@ -14,7 +14,7 @@
 
     const { settings: { delegateAttributes }, presentDelegates, selectedMotion } = getSessionDataContext();
     const motionSchema = createMotionSchema($delegateAttributes, $presentDelegates);
-    const defaultInputMotion = () => ({ kind: "mod" } satisfies MotionInput);
+    const defaultInputMotion = () => ({ id: crypto.randomUUID(), kind: "mod" } satisfies MotionInput);
     const resetInputErrors = () => { inputError = undefined };
 
     interface Props {
@@ -128,7 +128,7 @@
             class:input-error={inputError?.path.includes("kind")}
             bind:this={afterDel}
             bind:value={inputMotion.kind}
-            onchange={() => inputMotion = { delegate: inputMotion.delegate, kind: inputMotion.kind }}
+            onchange={() => inputMotion = { id: inputMotion.id, delegate: inputMotion.delegate, kind: inputMotion.kind }}
             >
             {#each Object.entries(MOTION_LABELS) as [value, label]}
             <option {value} {label}></option>

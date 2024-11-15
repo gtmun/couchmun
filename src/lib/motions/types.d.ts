@@ -19,8 +19,8 @@ type WithFields<M, Fs extends string> = Extract<M, Record<Fs, unknown>>;
 /**
  * Type of the motion input object.
  */
-export type MotionInput = Form<Motion, "kind">;
+export type MotionInput = Form<Motion, "id" | "kind">;
 /**
  * Type of motion input object, filtering only the motions with the given fields.
  */
-export type MotionInputWithFields<F extends string> = Form<WithFields<Motion, F>, "kind">;
+export type MotionInputWithFields<F extends string> = Form<WithFields<Motion, F>, "id" | "kind">;
