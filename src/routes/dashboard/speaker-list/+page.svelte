@@ -6,7 +6,7 @@
     import { getSessionDataContext } from "$lib/stores/session";
     import { getStatsContext, updateStats } from "$lib/stores/stats";
     import { parseTime } from "$lib/util/time";
-    import { tick } from "svelte";
+    import { tick, untrack } from "svelte";
 
     const { settings: { delegateAttributes }, presentDelegates, speakersList: order } = getSessionDataContext();
     const { stats } = getStatsContext();
@@ -22,9 +22,9 @@
     let selectedSpeaker = $derived(speakersList?.selectedSpeaker());
 
     $effect(() => {
-        if (running) {
+        if (running) untrack(() => {
             speakersList?.start();
-        }
+        })
     });
     async function reset() {
         timer?.reset();

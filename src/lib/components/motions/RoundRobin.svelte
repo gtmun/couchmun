@@ -5,7 +5,7 @@
     import { getSessionDataContext } from "$lib/stores/session";
     import { getStatsContext, updateStats } from "$lib/stores/stats";
     import type { AppBarData, Motion, Speaker } from "$lib/types";
-    import { getContext, tick } from "svelte";
+    import { getContext, tick, untrack } from "svelte";
 
     interface Props {
         motion: Motion & { kind: "rr" };
@@ -32,9 +32,9 @@
         reset();
     });
     $effect(() => {
-        if (running) {
+        if (running) untrack(() => {
             speakersList?.start();
-        }
+        })
     });
     
     async function reset() {
