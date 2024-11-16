@@ -12,11 +12,12 @@
     }
 
     let { motion }: Props = $props();
+    let inputMotion = $state(inputifyMotion(motion, $delegateAttributes));
 </script>
 
 <EditModal title="Editing Motion">
     {#snippet children({ submit, close })}
-        <MotionForm {submit} inputMotion={inputifyMotion(motion, $delegateAttributes)}>
+        <MotionForm {submit} bind:inputMotion>
             {#snippet buttons()}
                 <div class="flex justify-end gap-3">
                     <button class="btn variant-filled-error" type="button" onclick={close}>Cancel</button>

@@ -23,7 +23,7 @@
     }
 </script>
 
-<div class="card p-4 w-1/2">
+<div class="card p-4 w-2/3 md:w-1/2">
     <h2 class="h2 p-4">{title}</h2>
     {@render children({ submit, close })}
 </div>

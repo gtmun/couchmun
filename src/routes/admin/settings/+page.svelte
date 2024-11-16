@@ -93,12 +93,10 @@
      * @param key Key of delegate to edit (or undefined if adding a new delegate)
      */
     function editDelegate(key: string | undefined) {
+        let props = $state(key ? { key, attrs: $delegateAttributes[key] } : {});
         modalStore.trigger({
             type: "component",
-            component: {
-                ref: EditDelegateCard,
-                props: key ? { key, attrs: structuredClone($delegateAttributes[key]) } : {}
-            },
+            component: { ref: EditDelegateCard, props },
             response(data?: { key: string, attrs: DelegateAttrs }) {
                 if (!data) return;
 
