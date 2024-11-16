@@ -17,7 +17,7 @@
     
     let duration: number = $state(60);
     let running: boolean = $state(false);
-    let timer: ReturnType<typeof Timer> | undefined = $state();
+    let timer: Timer | undefined = $state();
     
     // Label
     let labelType: "delegate" | "title" | "none" = $state("title");

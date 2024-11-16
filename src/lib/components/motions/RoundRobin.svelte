@@ -21,10 +21,10 @@
 
     // Timer
     let running: boolean = $state(false);
-    let timer: ReturnType<typeof Timer> | undefined = $state();
+    let timer: Timer | undefined = $state();
     
     // Speakers List
-    let speakersList: ReturnType<typeof SpeakerList> | undefined = $state();
+    let speakersList: SpeakerList | undefined = $state();
     let order: Speaker[] = $state($presentDelegates.map(key => createSpeaker(key)));
     let selectedSpeaker = $derived(speakersList?.selectedSpeaker());
     $effect(() => {

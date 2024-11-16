@@ -7,7 +7,7 @@
     }
     let { motion }: Props = $props();
 
-    let timer: ReturnType<typeof Timer> | undefined = $state();
+    let timer: Timer | undefined = $state();
     let running: boolean = $state(false);
 </script>
 

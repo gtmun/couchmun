@@ -14,10 +14,10 @@
     // Timer
     let running: boolean = $state(false);
     let duration: number = $state(60);
-    let timer: ReturnType<typeof Timer> | undefined = $state();
+    let timer: Timer | undefined = $state();
     
     // Speakers List
-    let speakersList: ReturnType<typeof SpeakerList> | undefined = $state();
+    let speakersList: SpeakerList | undefined = $state();
     let durInput: string = $state("");
     let selectedSpeaker = $derived(speakersList?.selectedSpeaker());
 

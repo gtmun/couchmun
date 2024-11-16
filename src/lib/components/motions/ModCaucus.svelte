@@ -22,11 +22,11 @@
 
     // Timer
     let running: boolean = $state(false);
-    let delTimer: ReturnType<typeof Timer> | undefined = $state();
-    let totalTimer: ReturnType<typeof Timer> | undefined = $state();
+    let delTimer: Timer | undefined = $state();
+    let totalTimer: Timer | undefined = $state();
     
     // Speakers List
-    let speakersList: ReturnType<typeof SpeakerList> | undefined = $state();
+    let speakersList: SpeakerList | undefined = $state();
     let order: Speaker[] = $state([]);
     let selectedSpeaker = $derived(speakersList?.selectedSpeaker());
     $effect(() => {
