@@ -147,6 +147,7 @@ export type DelegatePresence = "NP" | "P" | "PV";
 
 // Motions
 export type Motion = {
+    id: string,
     delegate: string,
     kind: "mod", 
     totalTime: number,
@@ -154,16 +155,19 @@ export type Motion = {
     topic: string,
     isExtension: boolean
 } | {
+    id: string,
     delegate: string,
     kind: "unmod",
     totalTime: number,
     isExtension: boolean
 } | {
+    id: string,
     delegate: string,
     kind: "rr",
     speakingTime: number,
     topic: string
 } | {
+    id: string,
     delegate: string,
     kind: "other",
     totalTime: number,
@@ -172,6 +176,10 @@ export type Motion = {
 export type MotionKind = Motion["kind"];
 
 export type Speaker = {
+    /**
+     * Identifier for this speaker entry.
+     */
+    id: string,
     /**
      * The key of the delegate.
      */
@@ -213,7 +221,7 @@ export type AppBarData = {
     /**
      * Topic to display on the app bar
      */
-    topic: Writable<string | undefined>
+    topic: string | undefined
 }
 
 export type ClockMessage = 

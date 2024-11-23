@@ -2,13 +2,23 @@
     import DelFlag from "$lib/components/del-label/DelFlag.svelte";
     import type { DelegateAttrs } from "$lib/types";
 
-    export let key: string;
-    export let attrs: DelegateAttrs | undefined;
-    export let height: string | undefined = undefined;
-    export let inline: boolean = false;
-    export let fallback: "un" | "icon" | "none" | undefined = undefined;
+    interface Props {
+        key: string;
+        attrs: DelegateAttrs | undefined;
+        height?: string | undefined;
+        inline?: boolean;
+        fallback?: "un" | "icon" | "none" | undefined;
+    }
 
-    $: label = attrs?.name ?? key ?? "";
+    let {
+        key,
+        attrs,
+        height = undefined,
+        inline = false,
+        fallback = undefined
+    }: Props = $props();
+
+    let label = $derived(attrs?.name ?? key ?? "");
 </script>
 
 {#if inline}

@@ -7,7 +7,10 @@
     import Icon from "@iconify/svelte";
     import { getModalStore, LightSwitch } from "@skeletonlabs/skeleton";
 
-    export let close: () => void;
+    interface Props {
+        close: () => void;
+    }
+    let { close }: Props = $props();
 
     const sessionData = getSessionDataContext();
     const modalStore = getModalStore();
@@ -32,10 +35,10 @@
 
 <nav class="list-nav p-2">
     <ul>
-        <a on:click={close} href="{base}/admin/settings" tabindex="0">
+        <a onclick={close} href="{base}/admin/settings" tabindex="0">
             Settings&nbsp;<Icon icon="mdi:open-in-new" class="text-surface-400-500-token" />
         </a>
-        <a on:click={close} target="_blank" href="{base}/admin/stats" tabindex="0">
+        <a onclick={close} target="_blank" href="{base}/admin/stats" tabindex="0">
             Stats&nbsp;<Icon icon="mdi:open-in-new" class="text-surface-400-500-token" />
         </a>
     </ul>
@@ -58,7 +61,7 @@
 <div class="p-4 flex flex-col gap-3">
     <button 
         class="btn variant-ghost-error" 
-        on:click={clearSession}
+        onclick={clearSession}
     >
         Clear Session
     </button>

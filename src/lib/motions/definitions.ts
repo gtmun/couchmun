@@ -1,5 +1,5 @@
 import type { DelegateAttrs, Motion, MotionKind, SortEntry } from "$lib/types";
-import { presentDelegateSchema, refineSpeakingTime, timeSchema, topicSchema } from "$lib/motions/form_validation";
+import { nonEmptyString, presentDelegateSchema, refineSpeakingTime, timeSchema, topicSchema } from "$lib/motions/form_validation";
 import type { MotionInput } from "$lib/motions/types";
 import { z } from "zod";
 import { stringifyTime } from "$lib/util/time";
@@ -17,10 +17,10 @@ export const MOTION_LABELS: Record<MotionKind, string> = {
  * The fields that are defined on this motion kind's form.
  */
 export const MOTION_FIELDS = {
-    mod:   ["delegate", "kind", "totalTime", "speakingTime", "topic", "isExtension"],
-    unmod: ["delegate", "kind", "totalTime", "isExtension"],
-    rr:    ["delegate", "kind", "speakingTime", "topic"],
-    other: ["delegate", "kind", "totalTime", "topic"]
+    mod:   ["id", "delegate", "kind", "totalTime", "speakingTime", "topic", "isExtension"],
+    unmod: ["id", "delegate", "kind", "totalTime", "isExtension"],
+    rr:    ["id", "delegate", "kind", "speakingTime", "topic"],
+    other: ["id", "delegate", "kind", "totalTime", "topic"]
 } as const;
 
 // Ok, this is some hacky BS that needs to be explained:
@@ -57,6 +57,7 @@ export const DEFAULT_SORT_PRIORITY: SortEntry[] = [
  */
 export function createMotionSchema(delegates: Record<string, DelegateAttrs>, presentDelegates: string[]) {
     const base = <K extends MotionKind>(k: K) => z.object({
+        id: nonEmptyString({ description: "ID" }),
         delegate: presentDelegateSchema(delegates, presentDelegates),
         kind: z.literal(k)
     });
@@ -92,6 +93,7 @@ export function createMotionSchema(delegates: Record<string, DelegateAttrs>, pre
 export function inputifyMotion(m: Motion, delAttrs: Record<string, DelegateAttrs>): MotionInput {
     if (m.kind === "mod") {
         return {
+            id: m.id,
             delegate: delAttrs[m.delegate].name,
             kind: m.kind,
             totalTime: stringifyTime(m.totalTime),
@@ -101,6 +103,7 @@ export function inputifyMotion(m: Motion, delAttrs: Record<string, DelegateAttrs
         }
     } else if (m.kind === "unmod") {
         return {
+            id: m.id,
             delegate: delAttrs[m.delegate].name,
             kind: m.kind,
             totalTime: stringifyTime(m.totalTime),
@@ -108,6 +111,7 @@ export function inputifyMotion(m: Motion, delAttrs: Record<string, DelegateAttrs
         }
     } else if (m.kind === "rr") {
         return {
+            id: m.id,
             delegate: delAttrs[m.delegate].name,
             kind: m.kind,
             speakingTime: stringifyTime(m.speakingTime),
@@ -115,6 +119,7 @@ export function inputifyMotion(m: Motion, delAttrs: Record<string, DelegateAttrs
         }
     } else if (m.kind === "other") {
         return {
+            id: m.id,
             delegate: delAttrs[m.delegate].name,
             kind: m.kind,
             totalTime: stringifyTime(m.totalTime),

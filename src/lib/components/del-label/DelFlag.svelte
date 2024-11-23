@@ -1,25 +1,36 @@
 <script lang="ts">
-    import { browser } from "$app/environment";
     import { getFlagUrl } from "$lib/flags/flagcdn";
     import type { DelegateAttrs } from "$lib/types";
     import Icon from "@iconify/svelte";
 
-    export let key: string;
-    export let height: string = "";
-    export let attrs: DelegateAttrs | undefined;
-    export let fallback: "un" | "icon" | "none" = "none";
-
-    // Load flags on client-side, rather than server-side
-    let flag: URL | undefined = undefined;
-    let unFallbackFlag: URL | undefined = undefined;
-    $: if (browser) {
-        (async () => {
-            flag = attrs?.flagURL ? new URL(attrs.flagURL) : await getFlagUrl(key);
-            unFallbackFlag = await getFlagUrl("un");
-        })()
+    interface Props {
+        key: string;
+        height?: string;
+        attrs: DelegateAttrs | undefined;
+        fallback?: "un" | "icon" | "none";
     }
 
-    $: label = attrs?.name ?? key ?? "";
+    let {
+        key,
+        height = "",
+        attrs,
+        fallback = "none"
+    }: Props = $props();
+
+    // Only set flag on client-side, to prevent hydration mismatch issues.
+    // https://svelte.dev/docs/svelte/v5-migration-guide#Other-breaking-changes-img-src-and-html-hydration-mismatches-are-not-repaired
+    let flag: URL | undefined = $state();
+    $effect(() => {
+        if (attrs?.flagURL) {
+            flag = new URL(attrs.flagURL);
+        } else {
+            getFlagUrl(key).then(flagURL => {
+                flag = flagURL;
+            })
+        }
+    });
+
+    let label = $derived(attrs?.name ?? key ?? "");
 </script>
 
 {#if flag}
@@ -28,12 +39,14 @@
         alt="Flag of {label}"
         class={height}
     >
-{:else if fallback === "un" && unFallbackFlag}
-    <img
-        src={unFallbackFlag.href}
-        alt="Flag of {label} (missing)"
-        class={height}
-    >
+{:else if fallback === "un"}
+    {#await getFlagUrl("un") then unFallbackFlag}
+        <img
+            src={unFallbackFlag!.href}
+            alt="Flag of {label} (missing)"
+            class={height}
+        >   
+    {/await}
 {:else if fallback === "icon"}
     <!-- HACK: Just don't use this if not inline. -->
     <Icon 

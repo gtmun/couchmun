@@ -4,75 +4,93 @@
     import { formatValidationError, nonEmptyString } from "$lib/motions/form_validation";
     import type { DelegateAttrs, Speaker } from "$lib/types";
     
-    import { readonly, writable } from "svelte/store";
-    import type { z } from "zod";
+    import { type z } from "zod";
     import Icon from "@iconify/svelte";
     import { popup } from "@skeletonlabs/skeleton";
-    import { sortable } from "$lib/util";
-    import { tick } from "svelte";
+    import { tick, untrack } from "svelte";
     import { flip } from "svelte/animate";
+    import { dragHandle, dragHandleZone } from "svelte-dnd-action";
+    import { getDndItemId, isDndShadow, processDrag } from "$lib/util/dnd";
 
-    /**
-     * The order of speakers for the speaker's list.
-     */
-    export let order: Speaker[] = [];
+    let dfltControlsInput: string = $state("");
+    let dfltControlsError: string | undefined = $state(undefined);
 
-    /**
-     * A mapping of key to their delegate attributes.
-     * 
-     * If no entry exists for a given key, the speaker's key is displayed.
-     */
-    export let delegates: Record<string, DelegateAttrs> = {};
+    interface Props {
+        /**
+         * The order of speakers for the speaker's list.
+         */
+        order?: Speaker[];
+        /**
+         * A mapping of key to their delegate attributes.
+         * 
+         * If no entry exists for a given key, the speaker's key is displayed.
+         */
+        delegates?: Record<string, DelegateAttrs>;
+        /**
+         * If defined, this creates control options to allow for adding
+         * and removing speakers from the speakers' list.
+         * 
+         * This doesn't need to be defined if:
+         * 1. Adding delegates isn't required, or
+         * 2. A custom control is implemented instead
+         */
+        useDefaultControls?: {
+            presentDelegates: string[],
+            validator: z.ZodType<string, any, any> | ((dels: Record<string, DelegateAttrs>, presentDels: string[]) => z.ZodType<string, any, any>),
+            popupID?: string
+        } | undefined;
+        onBeforeSpeakerUpdate?: ((oldSpeaker: Speaker | undefined, newSpeaker: Speaker | undefined) => unknown) | undefined;
+        onMarkComplete?: ((key: string, isRepeat: boolean) => unknown) | undefined;
+    }
 
-    /**
-     * If defined, this creates control options to allow for adding
-     * and removing speakers from the speakers' list.
-     * 
-     * This doesn't need to be defined if:
-     * 1. Adding delegates isn't required, or
-     * 2. A custom control is implemented instead
-     */
-    export let useDefaultControls: {
-        presentDelegates: string[],
-        validator: z.ZodType<string, any, any> | ((dels: Record<string, DelegateAttrs>, presentDels: string[]) => z.ZodType<string, any, any>),
-        popupID?: string
-    } | undefined = undefined;
-    // Properties which are only used with default controls:
-    $: validator = typeof useDefaultControls?.validator === "function" 
-        ? useDefaultControls?.validator(delegates, useDefaultControls.presentDelegates)
-        : useDefaultControls?.validator ?? nonEmptyString();
-    let dfltControlsInput: string;
-    let dfltControlsError: string | undefined = undefined;
+    let {
+        order = $bindable([]),
+        delegates = {},
+        useDefaultControls = undefined,
+        onBeforeSpeakerUpdate = undefined,
+        onMarkComplete = undefined
+    }: Props = $props();
 
-    /**
-     * The current speaker.
-     */
-    export let selectedSpeaker: Speaker | undefined = undefined;
+    // Special IDs to track:
+    let selectedSpeakerId: string | undefined = $state(undefined);
+    // A mapping from IDs to Speakers:
+    let orderMap = $derived(Object.fromEntries(
+        order.filter(s => typeof s.id === "string" && s.id)
+            .map((speaker, i) => [getDndItemId(speaker), { speaker, i }])
+    ));
 
-    export let onBeforeSpeakerUpdate: ((oldSpeaker: Speaker | undefined, newSpeaker: Speaker | undefined) => unknown) | undefined = undefined;
-    export let onMarkComplete: ((key: string, isRepeat: boolean) => unknown) | undefined = undefined;
     // List item elements per order item
-    let liElements = new Map<Speaker, HTMLLIElement>();
+    let liElements = new Map<string, HTMLLIElement>();
 
     // Readonly values
-    let _adStore = writable(false);
-    $: $_adStore = typeof selectedSpeaker === "undefined" && order.every(({ completed }) => completed);
-    export const allDone = readonly(_adStore);
-
-    // If order updates and selectedSpeaker isn't in there, then clear selectedSpeaker:
-    $: if (typeof selectedSpeaker !== "undefined" && !order.includes(selectedSpeaker)) {
-        setSelectedSpeaker(undefined);
-    }
-    // Scroll to speaker if it is out of view:
-    $: if (typeof selectedSpeaker !== "undefined") {
-        liElements.get(selectedSpeaker)?.scrollIntoView({ block: "nearest" });
+    export function isAllDone() {
+        return typeof selectedSpeakerId === "undefined" && order.every(({ completed }) => completed);
     }
 
+    /**
+     * Gets the data for the current selected speaker.
+     */
+    export function selectedSpeaker() {
+        let speaker = findSpeaker(selectedSpeakerId);
+
+        // This only updates when ID updates, not when the speaker's properties update:
+        return untrack(() => {
+            if (typeof speaker !== "undefined") {
+                return { key: speaker.key, completed: speaker.completed };
+            }
+        });
+        
+    }
     //
     function getLabel(key: string) {
         return delegates?.[key]?.name ?? key;
     }
-    function markComplete(speaker: Speaker | undefined) {
+    function findSpeaker(speakerId: string | undefined): Speaker | undefined {
+        if (typeof speakerId === "undefined") return;
+        return orderMap[speakerId]?.speaker;
+    }
+    function markComplete(speakerId: string | undefined) {
+        let speaker = findSpeaker(speakerId);
         if (typeof speaker !== "undefined") {
             onMarkComplete?.(speaker.key, speaker.completed);
             speaker.completed = true;
@@ -80,10 +98,10 @@
         order = order;
     }
     export function start() {
-        markComplete(selectedSpeaker);
+        markComplete(selectedSpeakerId);
     }
     export function next() {
-        markComplete(selectedSpeaker);
+        markComplete(selectedSpeakerId);
 
         // Find first element in the order that has not been completed yet.
         setSelectedSpeaker(order.find(({ completed }) => !completed));
@@ -94,8 +112,14 @@
         if (result.success) {
             const key = result.data;
             // Successful, so add speakers:
-            order.push({ key, completed: false });
+            let speaker = createSpeaker(key);
+            order.push(speaker);
             order = order;
+
+            // Jump to this speaker when DOM updates.
+            tick().then(() => {
+                gotoSpeaker(speaker.id);
+            });
 
             if (typeof useDefaultControls !== "undefined") {
                 dfltControlsError = undefined;
@@ -106,149 +130,111 @@
             dfltControlsError = formatValidationError(result.error).message;
         }
     }
+    function submitSpeaker(e: SubmitEvent) {
+        e.preventDefault();
+        addSpeaker(dfltControlsInput, true);
+    }
     function deleteSpeaker(i: number) {
         let [removedSpeaker] = order.splice(i, 1);
         order = order;
         
-        if (removedSpeaker === selectedSpeaker) {
+        if (removedSpeaker?.id === selectedSpeakerId) {
             setSelectedSpeaker(undefined);
-        }
-        if (removedSpeaker === draggingSpeaker) {
-            draggingSpeaker = undefined;
         }
     }
 
     /// Sets the selected speaker.
     function setSelectedSpeaker(speaker: Speaker | undefined) {
-        if (selectedSpeaker !== speaker) {
+        if (selectedSpeakerId !== speaker?.id) {
             // Call beforeSpeakerUpdate (and let it run to completion if is Promise) before setting speaker.
             (async () => {
+                let selectedSpeaker = findSpeaker(selectedSpeakerId);
                 await onBeforeSpeakerUpdate?.(selectedSpeaker, speaker);
-                selectedSpeaker = speaker;
+                selectedSpeakerId = speaker?.id;
             })()
         }
     }
 
-    function getButton(i: number, btn: number): HTMLButtonElement | undefined {
-        if (0 <= i && i < order.length) {
-            return liElements.get(order[i])?.querySelectorAll("button")[btn];
-        }
+    function gotoSpeaker(speakerId: string) {
+        liElements.get(speakerId)?.scrollIntoView({ block: "nearest" });
     }
-    async function onKeyDown(e: KeyboardEvent, i: number, btn: number) {
-        // On ctrl+up or ctrl+down, move speaker's list item:
-        if (e.ctrlKey || e.metaKey) {
-            if (e.code === "ArrowUp") {
-                // Swap element with element before
-                let im1 = Math.max(i - 1, 0);
-                [order[im1], order[i]] = [order[i], order[im1]];
-                // Update DOM, then apply focus to element
-                await tick();
-                getButton(im1, btn)?.focus();
-            } else if (e.code === "ArrowDown") {
-                // Swap element with element after
-                let ip1 = Math.min(i + 1, order.length - 1);
-                [order[i], order[ip1]] = [order[ip1], order[i]];
-                // Update DOM, then apply focus to element
-                await tick();
-                getButton(ip1, btn)?.focus();
-            }
-        } else {
-            // On up or down, move active element
-            if (e.code === "ArrowUp") {
-                getButton(i - 1, btn)?.focus();
-            } else if (e.code === "ArrowDown") {
-                getButton(i + 1, btn)?.focus();
-            } else if (e.code === "ArrowLeft") {
-                getButton(i, btn - 1)?.focus();
-            } else if (e.code === "ArrowRight") {
-                getButton(i, btn + 1)?.focus();
+    // If order updates and selectedSpeaker isn't in there, then clear selectedSpeaker.
+    // Scroll to speaker if it is out of view.
+    $effect(() => {
+        if (typeof selectedSpeakerId !== "undefined") {
+            if (!(selectedSpeakerId in orderMap)) {
+                setSelectedSpeaker(undefined);
+            } else {
+                gotoSpeaker(selectedSpeakerId);
             }
         }
-    }
+    })
+
     const bindToMap = <K, V extends HTMLElement>(el: V, [map, key]: [Map<K, V>, K]) => {
         map.set(key, el);
         return { destroy() { map.delete(key); } }
     };
-
-    // A11y dragging
-    let draggingSpeaker: Speaker | undefined = undefined;
-
-    async function handleDragButton(s: Speaker) {
-        // No currently dragging speaker, so set:
-        if (typeof draggingSpeaker === "undefined") {
-            draggingSpeaker = s;
-            return;
-        }
-
-        // If we clicked on the speaker again, toggle off:
-        if (draggingSpeaker === s) {
-            draggingSpeaker = undefined;
-            return;
-        }
-
-        let x = order.indexOf(draggingSpeaker);
-        let y = order.indexOf(s);
-        draggingSpeaker = undefined;
-        if (x >= 0 && y >= 0) {
-            [order[y], order[x]] = [order[x], order[y]];
-            await tick();
-            getButton(y, 0)?.focus();
-        }
+    // Properties which are only used with default controls:
+    let validator = $derived(
+        typeof useDefaultControls?.validator === "function" 
+        ? useDefaultControls?.validator(delegates, useDefaultControls.presentDelegates)
+        : useDefaultControls?.validator ?? nonEmptyString()
+    );
+</script>
+<script module lang="ts">
+    /**
+     * Creates a new speaker entry from a given key.
+     * @param key The speaker's key
+     * @param completed Whether this speaker has finished talking, by default false
+     * @return the speaker object
+     */
+    export function createSpeaker(key: string, completed: boolean = false): Speaker {
+        return { key, completed, id: crypto.randomUUID() }
     }
 </script>
 
-<div class="card p-4 overflow-y-auto flex-grow flex flex-col items-stretch gap-3">
-    <h4 class="h4 flex justify-center">
+<div class="card p-2 overflow-y-auto flex-grow flex flex-col items-stretch gap-3">
+    <h4 class="h4 flex justify-center" id="speaker-list-header">
         Speakers List
     </h4>
-    <ol class="list grid grid-cols-[auto_auto_1fr_auto]" use:sortable={{
-        animation: 150,
-        swapThreshold: 0.9,
-        ghostClass: "!bg-surface-400/25",
-        dragClass: "!bg-surface-50",
-        handle: ".handle",
-        fallbackOnBody: true,
-        store: {
-            get: () => Object.keys(Array.from({ length: order.length })),
-            set: (sortable) => order = sortable.toArray().map(k => order[+k])
-        }
-    }}>
-        {#each order as speaker, i (speaker)}
-            {@const speakerLabel = getLabel(speaker.key)}
-            {@const selected = selectedSpeaker === speaker}
-            
-            {@const dragSelected = draggingSpeaker === speaker}
-            {@const dragBtnLabel = 
-                dragSelected ? `Stop Dragging ${speakerLabel}` :
-                typeof draggingSpeaker !== "undefined" ? `Swap ${getLabel(draggingSpeaker.key)} (${order.indexOf(draggingSpeaker) + 1}) with ${speakerLabel} (${i + 1})` :
-                `Start Dragging ${speakerLabel}`
+    <ol class="list grid grid-cols-[auto_auto_1fr_auto] auto-rows-min p-2 flex-grow" use:dragHandleZone={{
+        items: order,
+        flipDurationMs: 150,
+        dropTargetStyle: {},
+        transformDraggedElement: (el, data, index) => {
+            // Update number on dragged element:
+            let idxEl = el?.querySelector(".enumerated-index");
+            if (idxEl && typeof index === "number") {
+                idxEl.textContent = `${index + 1}.`;
             }
+        }
+    }}
+        onconsider={(e) => order = processDrag(e)}
+        onfinalize={(e) => order = processDrag(e)}
+        aria-labelledby="speaker-list-header"
+    >
+        {#each order as speaker, i (speaker.id)}
+            {@const speakerLabel = getLabel(speaker.key)}
+            {@const selected = speaker.id === selectedSpeakerId}
+            {@const shadow = isDndShadow(speaker)}
             <li
-                class="!grid grid-cols-subgrid col-span-4"
-                class:variant-ghost-primary={draggingSpeaker == speaker}
-                use:bindToMap={[liElements, speaker]}
-                data-id={i}
+                class="!grid grid-cols-subgrid col-span-4 self-start dnd-list-item"
+                class:shadow
+                use:bindToMap={[liElements, speaker.id]}
                 animate:flip={{ duration: 150 }}
+                aria-label={speakerLabel}
             >
-                <button
-                    class="btn-icon handle cursor-grab"
-                    aria-pressed={dragSelected}
-                    on:click={() => handleDragButton(speaker)}
-                    on:keydown={(e) => onKeyDown(e, i, 0)}
-                    aria-label={dragBtnLabel}
-                    title={dragBtnLabel}
-                >
+                <div class="btn-icon" use:dragHandle>
                     <Icon icon="mdi:drag-vertical" width="24" height="24" />
-                </button>
-                <span>{i + 1}.</span>
+                </div>
+                <span class="enumerated-index">{i + 1}.</span>
                 <button 
-                    class="btn flex overflow-clip"
+                    class="btn overflow-clip"
                     class:variant-filled-primary={selected}
                     class:variant-soft-surface={!selected && speaker.completed}
                     class:variant-ringed-surface={!selected && !speaker.completed}
                     class:hover:variant-ringed-primary={!selected && !speaker.completed}
-                    on:click={() => setSelectedSpeaker(speaker)}
-                    on:keydown={(e) => onKeyDown(e, i, 1)}
+                    onclick={() => setSelectedSpeaker(speaker)}
                     title="Select {speakerLabel}"
                     aria-label="Select {speakerLabel}"
                     aria-pressed={selected}
@@ -259,8 +245,7 @@
                     {#if !speaker.completed}
                         <button 
                             class="btn-icon variant-soft-surface hover:variant-filled-error" 
-                            on:click={() => deleteSpeaker(i)}
-                            on:keydown={(e) => onKeyDown(e, i, 2)}
+                            onclick={() => deleteSpeaker(i)}
                             title="Delete {speakerLabel}"
                             aria-label="Delete {speakerLabel}"
                         >
@@ -281,7 +266,7 @@
     <div class="flex flex-col gap-1">
         <div class="flex flex-row gap-3">
             <!-- Add delegate -->
-            <form class="contents" on:submit|preventDefault={() => addSpeaker(dfltControlsInput ?? "", true)} on:input={() => dfltControlsError = undefined}>
+            <form class="contents" onsubmit={submitSpeaker} oninput={() => dfltControlsError = undefined}>
                 <input 
                     class="input" 
                     class:input-error={error}
@@ -304,7 +289,7 @@
                 type="submit"
                 class="btn variant-filled-primary"
                 disabled={order.length === 0}
-                on:click={() => order = []}
+                onclick={() => order = []}
                 aria-label="Clear Speakers List"
                 title="Clear Speakers List"
             >
@@ -331,3 +316,24 @@
         on:selection={e => addSpeaker(e.detail.label, true)}
     />
 {/if}
+
+<style lang="postcss">
+    /* Styling for shadow element */
+    .shadow {
+        @apply !visible;
+        @apply !bg-surface-300;
+    }
+    :global(.dark) .shadow {
+        @apply !bg-surface-600;
+    }
+
+    /* Styling for dragged element */
+    :global(#dnd-action-dragged-el).dnd-list-item {
+        @apply !bg-surface-50;
+        @apply !grid grid-cols-[auto_auto_1fr_auto] gap-4;
+        @apply !opacity-90;
+    }
+    :global(.dark #dnd-action-dragged-el).dnd-list-item {
+        @apply !bg-surface-900;
+    }
+</style>

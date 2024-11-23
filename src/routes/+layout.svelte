@@ -6,6 +6,8 @@
     import { createSessionDataContext } from "$lib/stores/session";
     import { createStatsContext } from "$lib/stores/stats";
 
+    let { children } = $props();
+
     initializeStores();
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow, size });
 
@@ -39,6 +41,6 @@
 
 <Modal />
 
-<slot></slot>
+{@render children()}
 
-<svelte:window on:keydown={keydown} on:storage={storage} />
+<svelte:window onkeydown={keydown} onstorage={storage} />
