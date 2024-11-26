@@ -8,13 +8,14 @@
   import { getSessionDataContext } from "$lib/stores/session";
   import { getStatsContext, updateStats } from "$lib/stores/stats";
   import type { Motion } from "$lib/types";
+  import { createDragTr, isDndShadow, processDrag } from "$lib/util/dnd";
   import { stringifyTime } from "$lib/util/time";
 
   import Icon from "@iconify/svelte";
   import { getModalStore } from "@skeletonlabs/skeleton";
   import { flip } from "svelte/animate";
+  import { derived } from "svelte/store";
   import { dndzone } from "svelte-dnd-action";
-  import { createDragTr, isDndShadow, processDrag } from "$lib/util/dnd";
 
   const { settings: { delegateAttributes, sortOrder }, motions, selectedMotion } = getSessionDataContext();
   const { stats } = getStatsContext();
@@ -93,6 +94,10 @@
   function sortMotions() {
     $motions = $motions.sort(motionComparator($sortOrder));
   }
+  // Check every window of two motions is in the right order:
+  const motionsSorted = derived(motions, $m => 
+    $m.slice(0, -1).every((motion, i) => motionComparator($sortOrder)(motion, $m[i + 1]) <= 0)
+  );
 </script>
 
 <div class="grid gap-5 sm:grid-cols-[1fr_2fr] h-full">
@@ -100,14 +105,17 @@
     <MotionForm submit={submitMotion} />
   </div>
   
-  <div class="flex flex-col gap-2 overflow-y-auto">
+  <div class="flex flex-col gap-2">
     <div class="grid grid-cols-[1fr_auto] items-center">
       <h3 class="h3 text-center" id="motion-table-header">List of Motions</h3>
       <button
-        class="btn btn-icon variant-ghost-primary hover:variant-filled-primary"
+        class="btn btn-icon variant-filled-primary"
         onclick={sortMotions}
         aria-label="Sort Motions"
         title="Sort Motions"
+
+        class:!variant-filled-surface={$motionsSorted}
+        disabled={$motionsSorted}
       >
         <Icon icon="mdi:sort" width="24" height="24" />
       </button>
