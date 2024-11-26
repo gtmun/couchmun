@@ -6,14 +6,17 @@
     
     import { type z } from "zod";
     import Icon from "@iconify/svelte";
-    import { popup } from "@skeletonlabs/skeleton";
+    import { getModalStore, popup } from "@skeletonlabs/skeleton";
     import { tick, untrack } from "svelte";
     import { flip } from "svelte/animate";
     import { dragHandle, dragHandleZone } from "svelte-dnd-action";
     import { getDndItemId, isDndShadow, processDrag } from "$lib/util/dnd";
+    import { triggerConfirmModal } from "$lib/util";
 
     let dfltControlsInput: string = $state("");
     let dfltControlsError: string | undefined = $state(undefined);
+
+    const modalStore = getModalStore();
 
     interface Props {
         /**
@@ -142,7 +145,12 @@
             setSelectedSpeaker(undefined);
         }
     }
-
+    function clearSpeakers() {
+        triggerConfirmModal(
+            modalStore, "Are you sure you want to clear the Speakers List?",
+            () => order = []
+        );
+    }
     /// Sets the selected speaker.
     function setSelectedSpeaker(speaker: Speaker | undefined) {
         if (selectedSpeakerId !== speaker?.id) {
@@ -193,11 +201,12 @@
     }
 </script>
 
-<div class="card p-2 overflow-y-auto flex-grow flex flex-col items-stretch gap-3">
+<div class="card p-4 overflow-y-hidden flex-grow flex flex-col items-stretch gap-4">
     <h4 class="h4 flex justify-center" id="speaker-list-header">
         Speakers List
     </h4>
-    <ol class="list grid grid-cols-[auto_auto_1fr_auto] auto-rows-min p-2 flex-grow" use:dragHandleZone={{
+
+    <ol class="p-2 list overflow-y-auto grid grid-cols-[auto_auto_1fr_auto] auto-rows-min flex-grow" use:dragHandleZone={{
         items: order,
         flipDurationMs: 150,
         dropTargetStyle: {},
@@ -256,10 +265,9 @@
             </li>
         {/each}
     </ol>
-</div>
 
-<!-- Default controls, consisting of a delegate input, an add button, and a clear button. -->
-{#if typeof useDefaultControls !== "undefined"}
+    <!-- Default controls, consisting of a delegate input, an add button, and a clear button. -->
+    {#if typeof useDefaultControls !== "undefined"}
     {@const popupID = useDefaultControls.popupID ?? "addDelegatePopup"}
     {@const error = typeof dfltControlsError !== "undefined"}
 
@@ -289,7 +297,7 @@
                 type="submit"
                 class="btn variant-filled-primary"
                 disabled={order.length === 0}
-                onclick={() => order = []}
+                onclick={clearSpeakers}
                 aria-label="Clear Speakers List"
                 title="Clear Speakers List"
             >
@@ -315,7 +323,8 @@
         presentDelegates={useDefaultControls.presentDelegates}
         on:selection={e => addSpeaker(e.detail.label, true)}
     />
-{/if}
+    {/if}
+</div>
 
 <style lang="postcss">
     /* Styling for shadow element */
