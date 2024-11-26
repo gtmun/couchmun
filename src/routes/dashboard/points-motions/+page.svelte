@@ -100,7 +100,7 @@
     <MotionForm submit={submitMotion} />
   </div>
   
-  <div class="flex flex-col gap-2">
+  <div class="flex flex-col gap-2 overflow-y-auto">
     <div class="grid grid-cols-[1fr_auto] items-center">
       <h3 class="h3 text-center" id="motion-table-header">List of Motions</h3>
       <button
