@@ -185,6 +185,7 @@
     >
         {#if editable && !running}
             {stringifyTime(secsRemaining())}/<span
+                class="border-b-4 border-transparent hover:border-surface-500 focus:border-surface-500 transition rounded"
                 contenteditable
                 onfocusout={setDuration}
                 onkeydown={titleKeyDown}
