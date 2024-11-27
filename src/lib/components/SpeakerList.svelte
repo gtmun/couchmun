@@ -227,14 +227,14 @@
             {@const selected = speaker.id === selectedSpeakerId}
             {@const shadow = isDndShadow(speaker)}
             <li
-                class="!grid grid-cols-subgrid col-span-4 self-start dnd-list-item"
+                class="!grid grid-cols-subgrid col-span-4 dnd-list-item"
                 class:!visible={shadow}
                 class:!bg-surface-300-600-token={shadow}
                 use:bindToMap={[liElements, speaker.id]}
                 animate:flip={{ duration: 150 }}
                 aria-label={speakerLabel}
             >
-                <div class="btn-icon" use:dragHandle>
+                <div class="btn-icon w-6" use:dragHandle>
                     <Icon icon="mdi:drag-vertical" width="24" height="24" />
                 </div>
                 <span class="enumerated-index">{i + 1}.</span>
