@@ -228,7 +228,8 @@
             {@const shadow = isDndShadow(speaker)}
             <li
                 class="!grid grid-cols-subgrid col-span-4 self-start dnd-list-item"
-                class:shadow
+                class:!visible={shadow}
+                class:!bg-surface-300-600-token={shadow}
                 use:bindToMap={[liElements, speaker.id]}
                 animate:flip={{ duration: 150 }}
                 aria-label={speakerLabel}
@@ -327,15 +328,6 @@
 </div>
 
 <style lang="postcss">
-    /* Styling for shadow element */
-    .shadow {
-        @apply !visible;
-        @apply !bg-surface-300;
-    }
-    :global(.dark) .shadow {
-        @apply !bg-surface-600;
-    }
-
     /* Styling for dragged element */
     :global(#dnd-action-dragged-el).dnd-list-item {
         @apply !bg-surface-50;

@@ -122,7 +122,7 @@
     </div>
     
     <div class="table-container">
-      <table class="table motion-table" bind:this={motionTable}>
+      <table class="table [&_td]:!align-middle [&_td]:!text-wrap" bind:this={motionTable}>
         <thead>
           <tr>
             <td class="w-24"></td>
@@ -134,12 +134,13 @@
             <td class="px-3 w-24">No. of Speakers</td>
           </tr>
         </thead>
-        <tbody use:dndzone={{
-          items: $motions,
-          flipDurationMs: 150,
-          dropTargetStyle: {},
-          transformDraggedElement: (el) => createDragTr(el, motionTable)
-        }}
+        <tbody
+          use:dndzone={{
+            items: $motions,
+            flipDurationMs: 150,
+            dropTargetStyle: {},
+            transformDraggedElement: (el) => createDragTr(el, motionTable)
+          }}
           onconsider={(e) => motions.set(processDrag(e))}
           onfinalize={(e) => motions.set(processDrag(e))}
           aria-labelledby="motion-table-header"
@@ -148,8 +149,9 @@
             {@const delName = $delegateAttributes[motion.delegate]?.name ?? motion.delegate}
             {@const shadow = isDndShadow(motion)}
             <tr 
-              class="dnd-list-item"
-              class:shadow
+              class="dnd-list-item hover:!bg-primary-500/25"
+              class:!visible={shadow}
+              class:!bg-surface-300-600-token={shadow}
               animate:flip={{ duration: 150 }}
               aria-label="{delName}'s Motion"
             >
@@ -198,24 +200,6 @@
 </div>
 
 <style lang="postcss">
-  .motion-table td {
-    vertical-align: middle;
-  }
-
-  /* If we're NOT dragging an item, enable the hover effect. */
-  .motion-table tbody tr:hover:not(:active) {
-    @apply !bg-primary-500/25;
-  }
-
-  /* Styling for shadow element */
-  .shadow {
-      @apply !visible;
-      @apply !bg-surface-300;
-  }
-  :global(.dark) .shadow {
-      @apply !bg-surface-600;
-  }
-
   /* Styling for dragged element */
   :global(#dnd-action-dragged-el).dnd-list-item {
       @apply !opacity-90;
