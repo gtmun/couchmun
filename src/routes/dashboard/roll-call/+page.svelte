@@ -1,10 +1,10 @@
 <script lang="ts">
     import { base } from "$app/paths";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
+    import IconLabel from "$lib/components/IconLabel.svelte";
     import { getSessionDataContext } from "$lib/stores/session";
     import type { DelegatePresence } from "$lib/types";
     import { mapObj } from "$lib/util";
-    import Icon from "@iconify/svelte";
     import { RadioGroup, RadioItem } from "@skeletonlabs/skeleton";
 
     const { settings: { delegateAttributes }, delegateAttendance } = getSessionDataContext();
@@ -31,12 +31,7 @@
                 <RadioGroup active="variant-filled-primary" hover="hover:variant-soft-primary" border="" background="bg-surface-300-600-token">
                     {#each Object.entries(radio) as [value, { label, icon }]}
                         <RadioItem bind:group={$delegateAttendance[key]} name="presence-{key}" {value}>
-                            <!-- If on a small device, use an icon -->
-                            <div class="flex justify-center items-center md:hidden" aria-label={label} title={label}>
-                                <Icon {icon} width="24" height="24" />
-                            </div>
-                            <!-- If on a larger device, use the full text -->
-                            <span class="hidden md:block">{label}</span>
+                            <IconLabel {icon} {label} />
                         </RadioItem>
                     {/each}
                 </RadioGroup>
