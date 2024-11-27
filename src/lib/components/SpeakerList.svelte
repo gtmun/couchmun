@@ -158,6 +158,7 @@
             (async () => {
                 let selectedSpeaker = findSpeaker(selectedSpeakerId);
                 await onBeforeSpeakerUpdate?.(selectedSpeaker, speaker);
+                await tick();
                 selectedSpeakerId = speaker?.id;
             })()
         }

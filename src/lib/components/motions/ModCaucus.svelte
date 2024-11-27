@@ -6,7 +6,7 @@
     import { getSessionDataContext } from "$lib/stores/session";
     import { getStatsContext, updateStats } from "$lib/stores/stats";
     import type { AppBarData, Motion, Speaker } from "$lib/types";
-    import { getContext, tick, untrack } from "svelte";
+    import { getContext, untrack } from "svelte";
 
     interface Props {
         motion: Motion & { kind: "mod" };
@@ -30,27 +30,20 @@
     let order: Speaker[] = $state([]);
     let selectedSpeaker = $derived(speakersList?.selectedSpeaker());
     $effect(() => {
-        selectedSpeaker;
-        reset();
-    });
-    $effect(() => {
         if (running) untrack(() => {
             speakersList?.start();
         })
     });
 
     // Button triggers
-    async function reset() {
+    function reset() {
         delTimer?.reset();
-        await tick();
     }
-    async function resetAll() {
+    function resetAll() {
         delTimer?.reset();
         totalTimer?.reset();
-        await tick();
     }
-    async function next() {
-        await reset();
+    function next() {
         speakersList?.next();
     }
 </script>

@@ -6,7 +6,7 @@
     import { getSessionDataContext } from "$lib/stores/session";
     import { getStatsContext, updateStats } from "$lib/stores/stats";
     import { parseTime } from "$lib/util/time";
-    import { tick, untrack } from "svelte";
+    import { untrack } from "svelte";
 
     const { settings: { delegateAttributes }, presentDelegates, speakersList: order } = getSessionDataContext();
     const { stats } = getStatsContext();
@@ -26,13 +26,11 @@
             speakersList?.start();
         })
     });
-    async function reset() {
+    function reset() {
         timer?.reset();
-        await tick();
     }
     // Button triggers
-    async function next() {
-        await reset();
+    function next() {
         speakersList?.next();
     }
     function setDuration(e: SubmitEvent) {
