@@ -274,7 +274,7 @@
     {@const error = typeof dfltControlsError !== "undefined"}
 
     <div class="flex flex-col gap-1">
-        <div class="flex flex-row gap-3">
+        <div class="flex flex-row gap-1">
             <!-- Add delegate -->
             <form class="contents" onsubmit={submitSpeaker} oninput={() => dfltControlsError = undefined}>
                 <input 
@@ -284,27 +284,31 @@
                     use:popup={{ ...defaultPopupSettings(popupID), placement: "left-end", event: "focus-click" }}
                     {...defaultPlaceholder(useDefaultControls.presentDelegates.length === 0)}
                 />
-                <button
-                    type="submit"
-                    class="btn variant-filled-primary"
-                    disabled={useDefaultControls.presentDelegates.length === 0}
-                    aria-label="Add to Speakers List"
-                    title="Add to Speakers List"
-                >
-                    Add
-                </button>
+                <div class="ml-2">
+                    <button
+                        type="submit"
+                        class="btn btn-icon variant-filled-primary"
+                        disabled={useDefaultControls.presentDelegates.length === 0}
+                        aria-label="Add to Speakers List"
+                        title="Add to Speakers List"
+                    >
+                        <Icon icon="mdi:plus" width="24" height="24" />
+                    </button>
+                </div>
+                <div>
+                    <!-- Clear order -->
+                    <button
+                        type="button"
+                        class="btn btn-icon variant-filled-primary"
+                        disabled={order.length === 0}
+                        onclick={clearSpeakers}
+                        aria-label="Clear Speakers List"
+                        title="Clear Speakers List"
+                    >
+                        <Icon icon="mdi:delete-outline" width="24" height="24" />
+                    </button>
+                </div>
             </form>
-            <!-- Clear order -->
-            <button
-                type="submit"
-                class="btn variant-filled-primary"
-                disabled={order.length === 0}
-                onclick={clearSpeakers}
-                aria-label="Clear Speakers List"
-                title="Clear Speakers List"
-            >
-                Clear
-            </button>
         </div>
         <!-- Error messages! -->
         <div class="text-error-500 text-center transition-[height] overflow-hidden {error ? 'h-6' : 'h-0'}">
