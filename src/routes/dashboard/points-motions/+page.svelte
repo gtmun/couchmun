@@ -1,6 +1,7 @@
 <script lang="ts">
   import { base } from "$app/paths";
   import DelLabel from "$lib/components/del-label/DelLabel.svelte";
+  import IconLabel from "$lib/components/IconLabel.svelte";
   import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
   import { MOTION_LABELS } from "$lib/motions/definitions";
@@ -100,12 +101,12 @@
   );
 </script>
 
-<div class="grid gap-5 sm:grid-cols-[1fr_2fr] h-full">
+<div class="grid gap-5 min-h-full md:grid-cols-[1fr_2fr] md:h-full">
   <div class="card motion-form">
     <MotionForm submit={submitMotion} />
   </div>
   
-  <div class="flex flex-col gap-2">
+  <div class="flex flex-col gap-2 overflow-x-auto">
     <div class="grid grid-cols-[1fr_auto] items-center">
       <h3 class="h3 text-center" id="motion-table-header">List of Motions</h3>
       <button
@@ -125,13 +126,13 @@
       <table class="table [&_td]:!align-middle [&_td]:!text-wrap" bind:this={motionTable}>
         <thead>
           <tr>
-            <td class="w-24"></td>
+            <td class="w-[7.5rem]"></td>
             <td class="px-3 w-24">Motion</td>
             <td class="px-3 w-32">By</td>
             <td class="px-3">Topic</td>
-            <td class="px-3 w-24">Total Time</td>
-            <td class="px-3 w-24">Speaking Time</td>
-            <td class="px-3 w-24">No. of Speakers</td>
+            <td class="px-3 w-16"><IconLabel icon="mdi:clock" label="Total Time" /></td>
+            <td class="px-3 w-16"><IconLabel icon="mdi:account-clock" label="Speaking Time" /></td>
+            <td class="px-3 w-16"><IconLabel icon="mdi:account-multiple" label="No. of Speakers" /></td>
           </tr>
         </thead>
         <tbody
@@ -158,7 +159,7 @@
               <td>
                 <div class="flex flex-row">
                   <button
-                    class="btn btn-sm btn-icon"
+                    class="btn btn-sm btn-icon w-8"
                     onclick={() => removeMotion(i)}
                     data-label="Reject {delName}'s Motion"
                     title="Reject {delName}'s Motion"
@@ -166,9 +167,10 @@
                     <Icon icon="mdi:cancel" width="24" height="24" class="text-error-500" />
                   </button>
                   <a
-                    class="btn btn-sm btn-icon"
+                    class="btn btn-sm btn-icon w-8"
                     onclick={() => acceptMotion(motion)}
                     href="{base}/dashboard/current-motion"
+                    role="button"
                     data-label="Accept {delName}'s Motion"
                     title="Accept {delName}'s Motion"
                     tabindex={0}
@@ -176,7 +178,7 @@
                     <Icon icon="mdi:check" width="24" height="24" class="text-success-700" />
                   </a>
                   <button
-                    class="btn btn-sm btn-icon"
+                    class="btn btn-sm btn-icon w-8"
                     onclick={() => editMotion(i, motion)}
                     data-label="Edit {delName}'s Motion"
                     title="Edit {delName}'s Motion"
