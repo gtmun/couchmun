@@ -32,7 +32,7 @@
     ];
 </script>
 
-<div class="flex flex-row gap-5 justify-center">
+<div class="flex flex-row gap-3 justify-center">
     <div class="flex flex-row gap-1 align-center" aria-label="Majority ({maj})" title="Majority ({maj})">
         <ConicGradient width="w-6" height="h-6" stops={majConic} />
         {maj}
