@@ -13,6 +13,8 @@
     import Icon from "@iconify/svelte";
     import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
     import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
+    import { liveQuery } from "dexie";
+    import { db } from "$lib/db";
 
     const settings = getSettingsContext();
     const { delegateAttributes, sortOrder, delegatesEnabled, preferences } = settings;
@@ -185,6 +187,8 @@
             return $attrs;
         })
     }
+
+    let delegates = liveQuery(() => db.delegates.toCollection().sortBy("order"));
 </script>
 
 <MetaTags title="Settings &middot; CouchMUN (Admin)" />
@@ -314,14 +318,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {#each Object.entries($delegateAttributes) as [key, attrs] (key)}
+                    {#each ($delegates ?? []) as attrs (attrs.id)}
+                    <!-- TODO: Remove this key const -->
+                    {@const key = String(attrs.id)}
                     <tr>
                         <td>
                             <code>{key}</code>
                         </td>
                         <td class="w-full"><DelLabel {key} {attrs} inline fallback="icon" /></td>
                         <td class="text-center">
-                            <input class="checkbox" type="checkbox" bind:checked={$delegatesEnabled[key]}>
+                            <input class="checkbox" type="checkbox" bind:checked={attrs.enabled}>
                         </td>
                         <td class="text-right">
                             <button
