@@ -6,14 +6,17 @@
     
     import { type z } from "zod";
     import Icon from "@iconify/svelte";
-    import { popup } from "@skeletonlabs/skeleton";
+    import { getModalStore, popup } from "@skeletonlabs/skeleton";
     import { tick, untrack } from "svelte";
     import { flip } from "svelte/animate";
     import { dragHandle, dragHandleZone } from "svelte-dnd-action";
     import { getDndItemId, isDndShadow, processDrag } from "$lib/util/dnd";
+    import { triggerConfirmModal } from "$lib/util";
 
     let dfltControlsInput: string = $state("");
     let dfltControlsError: string | undefined = $state(undefined);
+
+    const modalStore = getModalStore();
 
     interface Props {
         /**
@@ -142,7 +145,12 @@
             setSelectedSpeaker(undefined);
         }
     }
-
+    function clearSpeakers() {
+        triggerConfirmModal(
+            modalStore, "Are you sure you want to clear the Speakers List?",
+            () => order = []
+        );
+    }
     /// Sets the selected speaker.
     function setSelectedSpeaker(speaker: Speaker | undefined) {
         if (selectedSpeakerId !== speaker?.id) {
@@ -150,6 +158,7 @@
             (async () => {
                 let selectedSpeaker = findSpeaker(selectedSpeakerId);
                 await onBeforeSpeakerUpdate?.(selectedSpeaker, speaker);
+                await tick();
                 selectedSpeakerId = speaker?.id;
             })()
         }
@@ -193,11 +202,12 @@
     }
 </script>
 
-<div class="card p-2 overflow-y-auto flex-grow flex flex-col items-stretch gap-3">
+<div class="card p-4 overflow-y-hidden flex-grow flex flex-col items-stretch gap-4">
     <h4 class="h4 flex justify-center" id="speaker-list-header">
         Speakers List
     </h4>
-    <ol class="list grid grid-cols-[auto_auto_1fr_auto] auto-rows-min p-2 flex-grow" use:dragHandleZone={{
+
+    <ol class="p-2 list overflow-y-auto grid grid-cols-[auto_auto_1fr_auto] auto-rows-min flex-grow" use:dragHandleZone={{
         items: order,
         flipDurationMs: 150,
         dropTargetStyle: {},
@@ -218,18 +228,19 @@
             {@const selected = speaker.id === selectedSpeakerId}
             {@const shadow = isDndShadow(speaker)}
             <li
-                class="!grid grid-cols-subgrid col-span-4 self-start dnd-list-item"
-                class:shadow
+                class="!grid grid-cols-subgrid col-span-4 dnd-list-item"
+                class:!visible={shadow}
+                class:!bg-surface-300-600-token={shadow}
                 use:bindToMap={[liElements, speaker.id]}
                 animate:flip={{ duration: 150 }}
                 aria-label={speakerLabel}
             >
-                <div class="btn-icon" use:dragHandle>
+                <div class="btn-icon w-6" use:dragHandle>
                     <Icon icon="mdi:drag-vertical" width="24" height="24" />
                 </div>
                 <span class="enumerated-index">{i + 1}.</span>
                 <button 
-                    class="btn overflow-clip"
+                    class="btn !text-wrap p-2 rounded-lg overflow-hidden"
                     class:variant-filled-primary={selected}
                     class:variant-soft-surface={!selected && speaker.completed}
                     class:variant-ringed-surface={!selected && !speaker.completed}
@@ -256,15 +267,14 @@
             </li>
         {/each}
     </ol>
-</div>
 
-<!-- Default controls, consisting of a delegate input, an add button, and a clear button. -->
-{#if typeof useDefaultControls !== "undefined"}
+    <!-- Default controls, consisting of a delegate input, an add button, and a clear button. -->
+    {#if typeof useDefaultControls !== "undefined"}
     {@const popupID = useDefaultControls.popupID ?? "addDelegatePopup"}
     {@const error = typeof dfltControlsError !== "undefined"}
 
     <div class="flex flex-col gap-1">
-        <div class="flex flex-row gap-3">
+        <div class="flex flex-row gap-1">
             <!-- Add delegate -->
             <form class="contents" onsubmit={submitSpeaker} oninput={() => dfltControlsError = undefined}>
                 <input 
@@ -274,27 +284,31 @@
                     use:popup={{ ...defaultPopupSettings(popupID), placement: "left-end", event: "focus-click" }}
                     {...defaultPlaceholder(useDefaultControls.presentDelegates.length === 0)}
                 />
-                <button
-                    type="submit"
-                    class="btn variant-filled-primary"
-                    disabled={useDefaultControls.presentDelegates.length === 0}
-                    aria-label="Add to Speakers List"
-                    title="Add to Speakers List"
-                >
-                    Add
-                </button>
+                <div class="ml-2">
+                    <button
+                        type="submit"
+                        class="btn btn-icon variant-filled-primary"
+                        disabled={useDefaultControls.presentDelegates.length === 0}
+                        aria-label="Add to Speakers List"
+                        title="Add to Speakers List"
+                    >
+                        <Icon icon="mdi:plus" width="24" height="24" />
+                    </button>
+                </div>
+                <div>
+                    <!-- Clear order -->
+                    <button
+                        type="button"
+                        class="btn btn-icon variant-filled-primary"
+                        disabled={order.length === 0}
+                        onclick={clearSpeakers}
+                        aria-label="Clear Speakers List"
+                        title="Clear Speakers List"
+                    >
+                        <Icon icon="mdi:delete-outline" width="24" height="24" />
+                    </button>
+                </div>
             </form>
-            <!-- Clear order -->
-            <button
-                type="submit"
-                class="btn variant-filled-primary"
-                disabled={order.length === 0}
-                onclick={() => order = []}
-                aria-label="Clear Speakers List"
-                title="Clear Speakers List"
-            >
-                Clear
-            </button>
         </div>
         <!-- Error messages! -->
         <div class="text-error-500 text-center transition-[height] overflow-hidden {error ? 'h-6' : 'h-0'}">
@@ -315,18 +329,10 @@
         presentDelegates={useDefaultControls.presentDelegates}
         on:selection={e => addSpeaker(e.detail.label, true)}
     />
-{/if}
+    {/if}
+</div>
 
 <style lang="postcss">
-    /* Styling for shadow element */
-    .shadow {
-        @apply !visible;
-        @apply !bg-surface-300;
-    }
-    :global(.dark) .shadow {
-        @apply !bg-surface-600;
-    }
-
     /* Styling for dragged element */
     :global(#dnd-action-dragged-el).dnd-list-item {
         @apply !bg-surface-50;

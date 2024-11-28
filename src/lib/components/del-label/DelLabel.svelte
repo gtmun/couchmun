@@ -29,6 +29,6 @@
 {:else}
 <div class="flex flex-col items-center gap-3">
     <h2 class="h2">{label}</h2>
-    <DelFlag {key} {attrs} height={height ?? "h-[25dvh]"} fallback={fallback ?? "un"} />
+    <DelFlag {key} {attrs} height={height ?? "h-48"} fallback={fallback ?? "un"} />
 </div>
 {/if}

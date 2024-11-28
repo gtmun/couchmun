@@ -1,7 +1,9 @@
 <script lang="ts">
     import { base } from "$app/paths";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
+    import IconLabel from "$lib/components/IconLabel.svelte";
     import { getSessionDataContext } from "$lib/stores/session";
+    import type { DelegatePresence } from "$lib/types";
     import { mapObj } from "$lib/util";
     import { RadioGroup, RadioItem } from "@skeletonlabs/skeleton";
 
@@ -9,6 +11,12 @@
     delegateAttributes.subscribe($da => {
         $delegateAttendance = mapObj($da, k => [k, $delegateAttendance[k] ?? "NP"]);
     });
+
+    const radio: Record<DelegatePresence, { label: string, icon: string }> = {
+        NP: { label: "Absent", icon: "mdi:account-off" },
+        P:  { label: "Present", icon: "mdi:account" },
+        PV: { label: "Present and Voting", icon: "mdi:account-check" },
+    };
 </script>
 
 <!-- Render a table to display participants and their statuses -->
@@ -21,9 +29,11 @@
             </div>
             <div class="flex flex-col justify-center p-2">
                 <RadioGroup active="variant-filled-primary" hover="hover:variant-soft-primary" border="" background="bg-surface-300-600-token">
-                    <RadioItem bind:group={$delegateAttendance[key]} name="presence-{key}" value={"NP"}>Absent</RadioItem>
-                    <RadioItem bind:group={$delegateAttendance[key]} name="presence-{key}" value={"P"}>Present</RadioItem>
-                    <RadioItem bind:group={$delegateAttendance[key]} name="presence-{key}" value={"PV"}>Present and Voting</RadioItem>
+                    {#each Object.entries(radio) as [value, { label, icon }]}
+                        <RadioItem bind:group={$delegateAttendance[key]} name="presence-{key}" {value}>
+                            <IconLabel {icon} {label} />
+                        </RadioItem>
+                    {/each}
                 </RadioGroup>
             </div>
         </div>

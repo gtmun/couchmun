@@ -22,7 +22,7 @@
 </script>
 
 <h2 
-    class="h2 text-center break-all" 
+    class="h2 text-center break-all border-b-4 border-transparent hover:border-surface-500 focus:border-surface-500 transition rounded" 
     contenteditable 
     onfocusout={updateTitle} 
     onkeydown={keyDown} 

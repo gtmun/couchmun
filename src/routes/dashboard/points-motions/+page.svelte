@@ -1,6 +1,7 @@
 <script lang="ts">
   import { base } from "$app/paths";
   import DelLabel from "$lib/components/del-label/DelLabel.svelte";
+  import IconLabel from "$lib/components/IconLabel.svelte";
   import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
   import { MOTION_LABELS } from "$lib/motions/definitions";
@@ -8,13 +9,14 @@
   import { getSessionDataContext } from "$lib/stores/session";
   import { getStatsContext, updateStats } from "$lib/stores/stats";
   import type { Motion } from "$lib/types";
+  import { createDragTr, isDndShadow, processDrag } from "$lib/util/dnd";
   import { stringifyTime } from "$lib/util/time";
 
   import Icon from "@iconify/svelte";
   import { getModalStore } from "@skeletonlabs/skeleton";
   import { flip } from "svelte/animate";
+  import { derived } from "svelte/store";
   import { dndzone } from "svelte-dnd-action";
-  import { createDragTr, isDndShadow, processDrag } from "$lib/util/dnd";
 
   const { settings: { delegateAttributes, sortOrder }, motions, selectedMotion } = getSessionDataContext();
   const { stats } = getStatsContext();
@@ -93,45 +95,53 @@
   function sortMotions() {
     $motions = $motions.sort(motionComparator($sortOrder));
   }
+  // Check every window of two motions is in the right order:
+  const motionsSorted = derived(motions, $m => 
+    $m.slice(0, -1).every((motion, i) => motionComparator($sortOrder)(motion, $m[i + 1]) <= 0)
+  );
 </script>
 
-<div class="grid gap-5 sm:grid-cols-[1fr_2fr] h-full">
+<div class="grid gap-5 min-h-full md:grid-cols-[1fr_2fr] md:h-full">
   <div class="card motion-form">
     <MotionForm submit={submitMotion} />
   </div>
   
-  <div class="flex flex-col gap-2">
+  <div class="flex flex-col gap-2 overflow-x-auto">
     <div class="grid grid-cols-[1fr_auto] items-center">
       <h3 class="h3 text-center" id="motion-table-header">List of Motions</h3>
       <button
-        class="btn btn-icon variant-ghost-primary hover:variant-filled-primary"
+        class="btn btn-icon variant-filled-primary"
         onclick={sortMotions}
         aria-label="Sort Motions"
         title="Sort Motions"
+
+        class:!variant-filled-surface={$motionsSorted}
+        disabled={$motionsSorted}
       >
         <Icon icon="mdi:sort" width="24" height="24" />
       </button>
     </div>
     
     <div class="table-container">
-      <table class="table motion-table" bind:this={motionTable}>
+      <table class="table [&_td]:!align-middle [&_td]:!text-wrap" bind:this={motionTable}>
         <thead>
           <tr>
-            <td class="w-24"></td>
+            <td class="w-[7.5rem]"></td>
             <td class="px-3 w-24">Motion</td>
             <td class="px-3 w-32">By</td>
             <td class="px-3">Topic</td>
-            <td class="px-3 w-24">Total Time</td>
-            <td class="px-3 w-24">Speaking Time</td>
-            <td class="px-3 w-24">No. of Speakers</td>
+            <td class="px-3 w-16"><IconLabel icon="mdi:clock" label="Total Time" /></td>
+            <td class="px-3 w-16"><IconLabel icon="mdi:account-clock" label="Speaking Time" /></td>
+            <td class="px-3 w-16"><IconLabel icon="mdi:account-multiple" label="No. of Speakers" /></td>
           </tr>
         </thead>
-        <tbody use:dndzone={{
-          items: $motions,
-          flipDurationMs: 150,
-          dropTargetStyle: {},
-          transformDraggedElement: (el) => createDragTr(el, motionTable)
-        }}
+        <tbody
+          use:dndzone={{
+            items: $motions,
+            flipDurationMs: 150,
+            dropTargetStyle: {},
+            transformDraggedElement: (el) => createDragTr(el, motionTable)
+          }}
           onconsider={(e) => motions.set(processDrag(e))}
           onfinalize={(e) => motions.set(processDrag(e))}
           aria-labelledby="motion-table-header"
@@ -140,15 +150,16 @@
             {@const delName = $delegateAttributes[motion.delegate]?.name ?? motion.delegate}
             {@const shadow = isDndShadow(motion)}
             <tr 
-              class="dnd-list-item"
-              class:shadow
+              class="dnd-list-item hover:!bg-primary-500/25"
+              class:!visible={shadow}
+              class:!bg-surface-300-600-token={shadow}
               animate:flip={{ duration: 150 }}
               aria-label="{delName}'s Motion"
             >
               <td>
                 <div class="flex flex-row">
                   <button
-                    class="btn btn-sm btn-icon"
+                    class="btn btn-sm btn-icon w-8"
                     onclick={() => removeMotion(i)}
                     data-label="Reject {delName}'s Motion"
                     title="Reject {delName}'s Motion"
@@ -156,9 +167,10 @@
                     <Icon icon="mdi:cancel" width="24" height="24" class="text-error-500" />
                   </button>
                   <a
-                    class="btn btn-sm btn-icon"
+                    class="btn btn-sm btn-icon w-8"
                     onclick={() => acceptMotion(motion)}
                     href="{base}/dashboard/current-motion"
+                    role="button"
                     data-label="Accept {delName}'s Motion"
                     title="Accept {delName}'s Motion"
                     tabindex={0}
@@ -166,7 +178,7 @@
                     <Icon icon="mdi:check" width="24" height="24" class="text-success-700" />
                   </a>
                   <button
-                    class="btn btn-sm btn-icon"
+                    class="btn btn-sm btn-icon w-8"
                     onclick={() => editMotion(i, motion)}
                     data-label="Edit {delName}'s Motion"
                     title="Edit {delName}'s Motion"
@@ -190,24 +202,6 @@
 </div>
 
 <style lang="postcss">
-  .motion-table td {
-    vertical-align: middle;
-  }
-
-  /* If we're NOT dragging an item, enable the hover effect. */
-  .motion-table tbody tr:hover:not(:active) {
-    @apply !bg-primary-500/25;
-  }
-
-  /* Styling for shadow element */
-  .shadow {
-      @apply !visible;
-      @apply !bg-surface-300;
-  }
-  :global(.dark) .shadow {
-      @apply !bg-surface-600;
-  }
-
   /* Styling for dragged element */
   :global(#dnd-action-dragged-el).dnd-list-item {
       @apply !opacity-90;

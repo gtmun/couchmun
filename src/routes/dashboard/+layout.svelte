@@ -86,10 +86,12 @@
                     <Icon icon="mdi:menu" width="24" height="24" />
                 </button>
             {/snippet}
-            <div class="flex flex-col gap-1">
-                <BarTitle bind:title={$title} />
-                <hr class="divider border-t-4 border-surface-800-100-token" />
-                <BarStats total={$presentDelegates.length} />
+            <div class="flex flex-col">
+                <div class="flex flex-col gap-1">
+                    <BarTitle bind:title={$title} />
+                    <hr class="divider border-t-4 mb-1 border-surface-800-100-token" />
+                    <BarStats total={$presentDelegates.length} />
+                </div>
                 {#if appBarData.topic}
                     <h3 class="h3 capitalize self-center mt-3"><i>Topic: {appBarData.topic}</i></h3>
                 {/if}
