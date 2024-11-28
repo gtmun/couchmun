@@ -60,6 +60,32 @@
         )
     }
 
+    // SORT ORDER
+    function mergeUnmergeOrder(entryIndex: number, kindIndex: number) {
+        if (entryIndex == 0 && kindIndex == 0) return;
+        sortOrder.update($o => {
+            if (kindIndex == 0) {
+                // Merge
+                let [entry] = $o.splice(entryIndex, 1);
+                if (entry) {
+                    $o[entryIndex - 1].kind.push(...entry.kind);
+                    // TODO: merge order
+                }
+            } else {
+                // Unmerge
+                let origKinds = $o[entryIndex].kind;
+                let newKinds = origKinds.splice(kindIndex, origKinds.length - kindIndex);
+                if (newKinds.length > 0) {
+                    $o.splice(entryIndex + 1, 0, {
+                        kind: newKinds,
+                        order: $state.snapshot($o[entryIndex].order)
+                    });
+                }
+            }
+
+            return $o;
+        });
+    }
     // DELEGATES
     let currentPreset: keyof typeof PRESETS = $state(defaultPresetKey());
     async function setPreset() {
@@ -214,28 +240,43 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {#each $sortOrder as entry}
-                            {#each entry.kind as k}
-                                <tr>
-                                    <td>{SORT_KIND_NAMES[k]}</td>
-                                    <td class="flex gap-3">
-                                        {#each entry.order as key}
-                                            <div class="card p-1 flex items-center bg-surface-300-600-token">
-                                                <span>{SORT_PROPERTY_NAMES[key.property]}</span>
-                                                <button onclick={() => key.ascending = !key.ascending}>
-                                                    <!-- TODO: add aria-label, title -->
-                                                    <Icon
-                                                        icon="mdi:arrow-down"
-                                                        class="{key.ascending ? 'rotate-180' : ''} transition-[transform]"
-                                                        width="1.2em"
-                                                        height="1.2em"
-                                                    />
-                                                </button>
-                                            </div>
-                                        {/each}
-                                    </td>
-                                </tr>
-                            {/each}
+                        {#each $sortOrder as entry, ei}
+                        <tr>
+                            <td>
+                                {#each entry.kind as k, ki}
+                                    <div class="flex items-center">
+                                        <button 
+                                            class="btn btn-icon" 
+                                            onclick={() => mergeUnmergeOrder(ei, ki)} 
+                                            disabled={ei == 0 && ki == 0}
+                                            aria-label="Merge With Above Cell"
+                                            title="Merge With Above Cell"
+                                        >
+                                            <Icon icon={ki == 0 ? "mdi:merge" : "mdi:circle-small"} width="24" height="24" />
+                                        </button>
+                                        {SORT_KIND_NAMES[k]}
+                                    </div>
+                                {/each}
+                            </td>
+                            <td>
+                                <div class="flex gap-3 items-center">
+                                    {#each entry.order as key}
+                                    <div class="card p-1 flex items-center bg-surface-300-600-token">
+                                        <span>{SORT_PROPERTY_NAMES[key.property]}</span>
+                                        <button onclick={() => {key.ascending = !key.ascending; $sortOrder = $sortOrder}}>
+                                            <!-- TODO: add aria-label, title -->
+                                            <Icon
+                                                icon="mdi:arrow-down"
+                                                class="{key.ascending ? 'rotate-180' : ''} transition-[transform]"
+                                                width="1.2em"
+                                                height="1.2em"
+                                            />
+                                        </button>
+                                    </div>
+                                    {/each}
+                                </div>
+                            </td>
+                        </tr>
                         {/each}
                     </tbody>
                 </table>
