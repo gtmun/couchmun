@@ -1,9 +1,9 @@
 import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
 import { getFlagUrl } from "$lib/flags/flagcdn";
-import type { DelegatePresence, StatsData } from "$lib/types";
+import type { DelegateAttrs, DelegatePresence, StatsData } from "$lib/types";
 import { Dexie, type EntityTable } from "dexie";
 
-interface Delegate {
+export interface Delegate {
     // Indexes:
     id: number,
     name: string,
@@ -24,22 +24,37 @@ export const db = new Dexie("sessionDatabase") as SessionDatabase;
 db.version(1).stores({
     delegates: "++id, name, *aliases"
 });
-db.on("populate", (tx) => {
-    let { delegates }: { delegates: SessionDatabase["delegates"] } = tx as any;
-    delegates.bulkAdd(
-        Object.entries(DEFAULT_DELEGATES)
-            .map(([key, { name, aliases, flagURL }], i) => ({
-                name, aliases,
-                order: i,
-                enabled: true,
-                flagURL: flagURL ?? getFlagUrl(key)?.toString() ?? getFlagUrl("un")!.toString(),
-                presence: "NP",
-                stats: {
-                    motionsProposed: 0,
-                    motionsAccepted: 0,
-                    timesSpoken: 0,
-                    durationSpoken: 0
-                }
-            }))
-    )
-});
+
+db.on("ready", async (tx) => {
+    let txdb = tx as typeof db;
+    if (await txdb.delegates.count() == 0) {
+        // Populate:
+        await addDelPresetData(txdb.delegates, DEFAULT_DELEGATES);
+    }
+})
+
+export async function populateSessionData(attrs: DelegateAttrs, key: string, order: number): Promise<Omit<Delegate, "id">> {
+    let { name, aliases, flagURL: mFlagURL } = attrs;
+    let flagURL = mFlagURL ?? (await getFlagUrl(key))?.href ?? (await getFlagUrl("un"))!.href;
+    return {
+        name, aliases,
+
+        order: order,
+        enabled: true,
+        flagURL,
+        presence: "NP",
+        stats: {
+            motionsProposed: 0,
+            motionsAccepted: 0,
+            timesSpoken: 0,
+            durationSpoken: 0
+        }
+    };
+}
+export async function addDelPresetData(table: EntityTable<Delegate, "id">, attrs: Record<string, DelegateAttrs>) {
+    let items = await Promise.all(
+        Object.entries(attrs)
+            .map(([key, attrs], i) => populateSessionData(attrs, key, i))
+    );
+    return table.bulkAdd(items);
+}

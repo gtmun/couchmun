@@ -1,4 +1,6 @@
 import type { ModalSettings, ModalStore } from "@skeletonlabs/skeleton";
+import type { Observable } from "dexie";
+import type { Readable } from "svelte/store";
 
 /**
  * Utility for creating a confirmation modal.
@@ -70,4 +72,17 @@ export function downloadFile(filename: string, contents: string, type: string) {
         URL.revokeObjectURL(href);
         document.body.removeChild(a);
     }, 0);
+}
+
+/**
+ * This cast converts an `Observable` to `Readable`, without having to fight TypeScript errors.
+ * 
+ * This cast is always acceptable, because `Readable` *does* accept the `Observable` interface,
+ * it is just not documented in the TypeScript typing (as of Svelte 5.2.10).
+ * 
+ * @param t the observable to wrap
+ * @returns the readable that results (note that `t == wrapQuery(t)`)
+ */
+export function wrapQuery<T>(t: Observable<T>): Readable<T> {
+    return t as any;
 }

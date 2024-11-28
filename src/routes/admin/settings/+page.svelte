@@ -7,19 +7,21 @@
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
     import { getSettingsContext, resetSettingsContext } from "$lib/stores/settings";
     import type { DelegateAttrs, Preferences } from "$lib/types";
-    import { compare, downloadFile, triggerConfirmModal } from "$lib/util";
+    import { downloadFile, triggerConfirmModal, wrapQuery } from "$lib/util";
 
-    import { get, type Writable } from "svelte/store";
+    import { derived, get, type Writable } from "svelte/store";
     import Icon from "@iconify/svelte";
     import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
     import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
+    import { addDelPresetData, db, populateSessionData } from "$lib/db";
     import { liveQuery } from "dexie";
-    import { db } from "$lib/db";
 
     const settings = getSettingsContext();
-    const { delegateAttributes, sortOrder, delegatesEnabled, preferences } = settings;
-    let delsEnabledAll: boolean | undefined = $derived.by(() => {
-        const [first, ...rest] = Object.keys($delegateAttributes).map(key => $delegatesEnabled[key]);
+    const { sortOrder, preferences } = settings;
+
+    let delegates = wrapQuery(liveQuery(() => db.delegates.toCollection().sortBy("order")));
+    let delsEnabledAll = derived(delegates, $d => {
+        const [first, ...rest] = ($d ?? []).map(del => del.enabled);
         return rest.every(k => k === first) ? first : undefined;
     });
 
@@ -93,73 +95,58 @@
     async function setPreset() {
         const preset = await getPreset(currentPreset);
         if (typeof preset !== "undefined") {
-            delegateAttributes.set(preset);
-            setAllEnableStatuses(true);
+            await db.transaction("rw", db.delegates, async () => {
+                db.delegates.clear();
+                addDelPresetData(db.delegates, preset);
+            });
         }
     }
-    function setAllEnableStatuses(status: boolean) {
-        delegatesEnabled.update($enables => {
-            for (let key of Object.keys($enables)) {
-                $enables[key] = status;
-            }
-            return $enables;
+    async function setEnableStatus(id: number, status: boolean) {
+        db.transaction("rw", db.delegates, async () => {
+            await db.delegates.update(id, { enabled: status });
+        })
+    }
+    async function setAllEnableStatuses(status: boolean) {
+        db.transaction("rw", db.delegates, async () => {
+            await db.delegates.toCollection().modify({ enabled: status });
         })
     }
     function clearDelegates() {
         triggerConfirmModal(modalStore,
             "Are you sure you want to remove all delegates?", 
-            () => {
-                delegateAttributes.set({});
-                delegatesEnabled.set({});
+            async () => {
                 currentPreset = "custom";
+                await db.transaction("rw", db.delegates, async () => {
+                    await db.delegates.clear();
+                });
             }
         );
     }
 
     /**
      * Opens the delegate editing modal. This can also be used to add a new delegate.
-     * @param key Key of delegate to edit (or undefined if adding a new delegate)
+     * @param id Key of delegate to edit (or undefined if adding a new delegate)
      */
-    function editDelegate(key: string | undefined) {
-        let props = $state(key ? { key, attrs: $delegateAttributes[key] } : {});
+    async function editDelegate(id: number | undefined) {
+        let props = $state(typeof id === "number" ? { attrs: await db.delegates.get(id) } : {});
+
         modalStore.trigger({
             type: "component",
             component: { ref: EditDelegateCard, props },
-            response(data?: { key: string, attrs: DelegateAttrs }) {
+            response(data?: { attrs: DelegateAttrs }) {
                 if (!data) return;
 
-                let { key: newKey, attrs: newAttrs } = data;
-                delegateAttributes.update($attrs => {
-                    let update = false;
-
-                    if (typeof key === "undefined") {
-                        update = true;
-                    } else if (key !== newKey) {
-                        if (!(newKey in $attrs)) {
-                            // If key changed to a different key (which doesn't already exist),
-                            // delete the old key
-                            delete $attrs[key];
-                            $delegatesEnabled[newKey] = $delegatesEnabled[key];
-                            update = true;
-                        } else {
-                            // If key changed to key that already exists, don't do anything
-                            update = false;
-                        }
-
+                let newAttrs = $state.snapshot(data.attrs);
+                db.transaction("rw", db.delegates, async () => {
+                    // TODO: reject update if name conflict
+                    currentPreset = "custom";
+                    if (typeof id === "number") {
+                        await db.delegates.update(id, newAttrs);
                     } else {
-                        update = true;
+                        let order = await db.delegates.count();
+                        let del = await populateSessionData(newAttrs, "un", order);
+                        await db.delegates.add(del);
                     }
-                    
-                    if (update) {
-                        currentPreset = "custom";
-                        $attrs[newKey] = newAttrs;
-                        $delegatesEnabled[newKey] ??= true;
-                        $attrs = Object.fromEntries(
-                            Object.entries($attrs)
-                                .sort(([_k1, a1], [_k2, a2]) => compare(a1.name, a2.name))
-                        );
-                    }
-                    return $attrs;
                 });
             }
         });
@@ -169,26 +156,26 @@
             type: "component",
             component: {
                 ref: EnableDelegatesCard,
-                props: { attrs: $delegateAttributes }
+                props: { attrs: $delegates }
             },
-            response(data?: Record<string, boolean>) {
+            response(data?: Set<number>) {
                 if (!data) return;
 
-                $delegatesEnabled = Object.fromEntries(
-                    Object.keys($delegateAttributes).map(k => [k, data[k] ?? false])
-                );
+                db.transaction("rw", db.delegates, async () => {
+                    await db.delegates.toCollection().modify((del) => {
+                        del.enabled = data.has(del.id);
+                    })
+                });
             }
         })
     }
-    function deleteDelegate(key: string) {
+
+    async function deleteDelegate(id: number) {
         currentPreset = "custom";
-        delegateAttributes.update($attrs => {
-            delete $attrs[key];
-            return $attrs;
+        await db.transaction("rw", db.delegates, async () => {
+            await db.delegates.delete(id);
         })
     }
-
-    let delegates = liveQuery(() => db.delegates.toCollection().sortBy("order"));
 </script>
 
 <MetaTags title="Settings &middot; CouchMUN (Admin)" />
@@ -311,9 +298,8 @@
             <table class="table table-compact del-table">
                 <thead>
                     <tr>
-                        <th>Key</th>
                         <th>Name</th>
-                        <th class="text-center"><input class="checkbox" type="checkbox" checked={delsEnabledAll} indeterminate={typeof delsEnabledAll === "undefined"} onclick={() => setAllEnableStatuses(!delsEnabledAll)}></th>
+                        <th class="text-center"><input class="checkbox" type="checkbox" checked={$delsEnabledAll} indeterminate={typeof $delsEnabledAll === "undefined"} onclick={() => setAllEnableStatuses(!$delsEnabledAll)}></th>
                         <th class="text-right">Configure</th>
                     </tr>
                 </thead>
@@ -322,23 +308,20 @@
                     <!-- TODO: Remove this key const -->
                     {@const key = String(attrs.id)}
                     <tr>
-                        <td>
-                            <code>{key}</code>
-                        </td>
                         <td class="w-full"><DelLabel {key} {attrs} inline fallback="icon" /></td>
                         <td class="text-center">
-                            <input class="checkbox" type="checkbox" bind:checked={attrs.enabled}>
+                            <input class="checkbox" type="checkbox" checked={attrs.enabled} onclick={() => setEnableStatus(attrs.id, !attrs.enabled)}>
                         </td>
                         <td class="text-right">
                             <button
-                                onclick={() => editDelegate(key)}
+                                onclick={() => editDelegate(attrs.id)}
                                 aria-label="Edit {attrs.name}"
                                 title="Edit {attrs.name}"
                             >
                                 <Icon icon="mdi:pencil" width="24" height="24" />
                             </button>
                             <button
-                                onclick={() => deleteDelegate(key)}
+                                onclick={() => deleteDelegate(attrs.id)}
                                 aria-label="Delete {attrs.name}"
                                 title="Delete {attrs.name}"
                             >
