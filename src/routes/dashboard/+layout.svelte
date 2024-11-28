@@ -86,14 +86,25 @@
                     <Icon icon="mdi:menu" width="24" height="24" />
                 </button>
             {/snippet}
-            <div class="flex flex-col">
-                <div class="flex flex-col gap-1">
-                    <BarTitle bind:title={$title} />
-                    <hr class="divider border-t-4 mb-1 border-surface-800-100-token" />
-                    <BarStats total={$presentDelegates.length} />
+            <!--
+                Committee & topic title
+                if committeeMain == true: the committee title are front and center
+                if commiteeMain == false: the committee title are relegated for something else
+            -->
+            {@const committeeMain = !appBarData.topic}
+            <div class="flex flex-col items-center gap-3">
+                <div
+                    class="flex max-sm:flex-col gap-1 items-stretch"
+                    class:flex-col={committeeMain}
+                >
+                    <BarTitle bind:title={$title} size={committeeMain ? "md" : "sm"} />
+                    <div class="border-2 m-1 mt-0 border-surface-800-100-token" role="separator"></div>
+                    <div class="flex items-center justify-center">
+                        <BarStats total={$presentDelegates.length} />
+                    </div>
                 </div>
                 {#if appBarData.topic}
-                    <h3 class="h3 capitalize self-center mt-3"><i>Topic: {appBarData.topic}</i></h3>
+                    <h2 class="h2 capitalize text-center"><i>Topic: {appBarData.topic}</i></h2>
                 {/if}
             </div>
             {#snippet trail()}
