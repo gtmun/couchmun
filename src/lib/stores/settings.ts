@@ -1,5 +1,4 @@
-// We're assuming preset-un.json exists and is the default.
-import DEFAULT_DELEGATES from "$lib/delegate_presets/preset-un.json";
+import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
 import { DEFAULT_SORT_PRIORITY } from "$lib/motions/definitions";
 import type { AccessibleSettings, Settings } from "$lib/types";
 import { derived, readonly } from "svelte/store";

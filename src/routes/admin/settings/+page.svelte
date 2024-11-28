@@ -3,7 +3,7 @@
     import MetaTags from "$lib/components/MetaTags.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import EditDelegateCard from "$lib/components/modals/EditDelegateCard.svelte";
-    import { defaultPresetKey, getPreset, PRESETS } from "$lib/delegate_presets";
+    import { DEFAULT_PRESET_KEY, getPreset, PRESETS } from "$lib/delegate_presets";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
     import { getSettingsContext, resetSettingsContext } from "$lib/stores/settings";
     import type { DelegateAttrs, Preferences } from "$lib/types";
@@ -53,7 +53,7 @@
             "Are you sure you want to reset all settings?", 
             () => {
                 // Reset preset state cause it's not bound to settings
-                currentPreset = defaultPresetKey();
+                currentPreset = DEFAULT_PRESET_KEY;
                 // Reset settings
                 resetSettingsContext(settings);
             }
@@ -87,7 +87,7 @@
         });
     }
     // DELEGATES
-    let currentPreset: keyof typeof PRESETS = $state(defaultPresetKey());
+    let currentPreset: keyof typeof PRESETS = $state(DEFAULT_PRESET_KEY);
     async function setPreset() {
         const preset = await getPreset(currentPreset);
         if (typeof preset !== "undefined") {
