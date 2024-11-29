@@ -5,8 +5,10 @@
     import BarTitle from '$lib/components/app-bar/BarTitle.svelte';
     import Navigation from '$lib/components/nav/Navigation.svelte';
     import SettingsNavigation from '$lib/components/nav/SettingsNavigation.svelte';
+    import { db, queryStore } from '$lib/db';
     import { getSessionDataContext } from '$lib/stores/session';
     import type { AppBarData } from '$lib/types';
+    import { isPresent } from '$lib/util';
     
     import Icon from "@iconify/svelte";
     import { AppBar, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
@@ -29,7 +31,8 @@
         })
     }
 
-    const { settings: { title }, presentDelegates } = getSessionDataContext();
+    const { settings: { title } } = getSessionDataContext();
+    const delegateCount = queryStore(() => db.delegates.filter(d => isPresent(d.presence)).count(), 0);
 
     const links: Record<string, { label: string }> = {
         "/dashboard/roll-call":      { label: "Roll Call" },
@@ -100,7 +103,7 @@
                     <BarTitle bind:title={$title} size={committeeMain ? "md" : "sm"} />
                     <div class="border-2 m-1 mt-0 border-surface-800-100-token" role="separator"></div>
                     <div class="flex items-center justify-center">
-                        <BarStats total={$presentDelegates.length} />
+                        <BarStats total={$delegateCount} />
                     </div>
                 </div>
                 {#if appBarData.topic}

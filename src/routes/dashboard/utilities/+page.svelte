@@ -3,13 +3,15 @@
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
     import Timer from "$lib/components/Timer.svelte";
-    import { getSessionDataContext } from "$lib/stores/session";
+    import { db } from "$lib/db";
+    import { enabledDelegatesStore } from "$lib/db/del";
+    import { nameEq } from "$lib/util";
     import { parseTime } from "$lib/util/time";
 
     import Icon from "@iconify/svelte";
     import { popup, type PopupSettings } from "@skeletonlabs/skeleton";
 
-    const { settings: { delegateAttributes }, presentDelegates } = getSessionDataContext();
+    const delegates = enabledDelegatesStore(db.delegates);
 
     // Timer
     let timerEnabled: boolean = $state(true);
@@ -23,9 +25,6 @@
     let labelType: "delegate" | "title" | "none" = $state("title");
     let labelText: string = $state("");
 
-    function getKey(label: string) {
-        return Object.keys($delegateAttributes).find(k => $delegateAttributes[k].name === label) ?? label;
-    }
     // Configuration
     const CONFIGURE_MODAL_SETTINGS: PopupSettings = {
         event: "click",
@@ -56,8 +55,12 @@
     </button>
     <div class="flex flex-col flex-grow gap-5 justify-center">
         {#if labelType === "delegate"}
-            {@const key = getKey(labelText)}
-            <DelLabel {key} attrs={$delegateAttributes[key]} />
+            {@const attrs = $delegates.find(d => nameEq(labelText, d))}
+            {#if attrs}
+                <DelLabel {attrs} />
+            {:else}
+                <h2 class="h2 text-center">{labelText}</h2>
+            {/if}
         {:else if labelType === "title"}
             <h2 class="h2 text-center">{labelText}</h2>
         {/if}
@@ -119,8 +122,7 @@
                         <div class="card bg-surface-200-700-token">
                             <DelAutocomplete
                                 bind:input={labelText}
-                                delegates={$delegateAttributes}
-                                presentDelegates={$presentDelegates}
+                                delegates={$delegates}
                                 maxHeight="max-h-36"
                                 on:selection={e => labelText = e.detail.label}
                             />

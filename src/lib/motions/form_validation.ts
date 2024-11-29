@@ -1,4 +1,5 @@
-import type { DelegateAttrs } from "$lib/types";
+import type { Delegate } from "$lib/db";
+import { isPresent, nameEq } from "$lib/util";
 import { parseTime } from "$lib/util/time";
 import { z } from "zod";
 
@@ -25,30 +26,29 @@ export function formatValidationError(error: z.ZodError) {
  * Creates a schema that requires the input is the name of a present delegate.
  * This also transforms the input to the key of the delegate.
  * 
- * @param delegates record of delegates
- * @param presentDelegates the list of present delegates
+ * @param delegates record of delegates and their presence
  * @returns the schema
  */
-export function presentDelegateSchema(delegates: Record<string, DelegateAttrs>, presentDelegates: string[]) {
+export function presentDelegateSchema(delegates: Delegate[]) {
     return nonEmptyString({ description: "Delegate name", required_error: "Delegate name is a required field" })
         .transform((name, ctx) => {
-            const key = Object.keys(delegates).find(k => delegates[k].name.localeCompare(name, undefined, { sensitivity: "base" }) == 0);
-            if (!key) {
+            const del = delegates.find(d => nameEq(name, d));
+            if (!del) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
                     message: `${name} is not a delegate`
                 })
 
                 return z.NEVER;
-            } else if (!presentDelegates.includes(key)) {
+            } else if (!isPresent(del.presence)) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
-                    message: `${delegates[key].name} is not a present delegate`
+                    message: `${del.name} is not a present delegate`
                 })
 
                 return z.NEVER;
             } else {
-                return key;
+                return del.id;
             }
         })
 }

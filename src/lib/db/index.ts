@@ -1,12 +1,12 @@
 import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
 import { getFlagUrl } from "$lib/flags/flagcdn";
-import type { DelegateAttrs, DelegatePresence, StatsData } from "$lib/types";
+import type { DelegateAttrs, DelegateID, DelegatePresence, StatsData } from "$lib/types";
 import { Dexie, liveQuery, type EntityTable, type Observable } from "dexie";
-import { get, type Readable, type Updater, type Writable } from "svelte/store";
+import { derived, get, type Readable, type Updater, type Writable } from "svelte/store";
 
 export interface Delegate {
     // Indexes:
-    id: number,
+    id: DelegateID,
     name: string,
     aliases: string[]
     order: number,
@@ -73,11 +73,13 @@ export async function addDelPresetData(table: EntityTable<Delegate, "id">, attrs
 function wrapQuery<T>(t: Observable<T>): Readable<T> {
     return t as any;
 }
-export function queryStore<T>(cb: () => T | Promise<T>): Readable<T> {
-    return wrapQuery(liveQuery(cb));
+export function queryStore<T>(cb: () => T | Promise<T>): Readable<T | undefined>;
+export function queryStore<T>(cb: () => T | Promise<T>, fallback: T): Readable<T>;
+export function queryStore<T>(cb: () => T | Promise<T>, fallback?: T) {
+    return derived(wrapQuery(liveQuery(cb)), $q => $q ?? fallback);
 }
 export function writableTableStore<T, U extends keyof T>(table: EntityTable<T, U>, mapper: (data: EntityTable<T, U>) => (T[] | Promise<T[]>)): Writable<T[]> {
-    let query = queryStore(() => mapper(table));
+    let query = queryStore(() => mapper(table), []);
     let set = (v: T[]) => table.db.transaction("rw", table, () => table.bulkPut(v));
     let update = (cb: Updater<T[]>) => set(cb(get(query)));
     

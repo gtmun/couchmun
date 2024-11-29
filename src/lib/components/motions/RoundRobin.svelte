@@ -2,9 +2,10 @@
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import SpeakerList, { createSpeaker } from "$lib/components/SpeakerList.svelte";
     import Timer from "$lib/components/Timer.svelte";
-    import { getSessionDataContext } from "$lib/stores/session";
-    import { getStatsContext, updateStats } from "$lib/stores/stats";
+    import { db } from "$lib/db";
+    import { enabledDelegatesStore, findDelegate, updateDelegate } from "$lib/db/del";
     import type { AppBarData, Motion, Speaker } from "$lib/types";
+    import { isPresent } from "$lib/util";
     import Icon from "@iconify/svelte";
     import { getContext, untrack } from "svelte";
 
@@ -13,8 +14,7 @@
     }
     let { motion }: Props = $props();
 
-    const { settings: { delegateAttributes }, presentDelegates } = getSessionDataContext();
-    const { stats } = getStatsContext();
+    const delegates = enabledDelegatesStore(db.delegates);
     const appBarData = getContext<AppBarData>("app-bar");
     $effect(() => {
         appBarData.topic = motion.topic;
@@ -26,7 +26,7 @@
     
     // Speakers List
     let speakersList: SpeakerList | undefined = $state();
-    let order: Speaker[] = $state($presentDelegates.map(key => createSpeaker(key)));
+    let order: Speaker[] = $state($delegates.filter(d => isPresent(d.presence)).map(d => createSpeaker(d.id)));
     let selectedSpeaker = $derived(speakersList?.selectedSpeaker());
     $effect(() => {
         if (running) untrack(() => {
@@ -55,7 +55,10 @@
     <div class="flex flex-col flex-grow flex-shrink-0 basis-full lg:basis-auto">
         <div class="flex flex-col gap-5 justify-center flex-grow">
             {#if typeof selectedSpeaker !== "undefined"}
-                <DelLabel key={selectedSpeaker.key} attrs={$delegateAttributes[selectedSpeaker.key]} />
+                {@const attrs = findDelegate($delegates, selectedSpeaker.key)}
+                {#if attrs}
+                    <DelLabel {attrs} />
+                {/if}
             {/if}
             <Timer 
                 name="total"
@@ -63,7 +66,7 @@
                 bind:this={timer}
                 bind:running 
                 disableKeyHandlers={typeof selectedSpeaker === "undefined"}
-                onPause={(t) => updateStats(stats, selectedSpeaker?.key, dat => dat.durationSpoken += t)}
+                onPause={(t) => updateDelegate(db.delegates, selectedSpeaker?.key, d => { d.stats.durationSpoken += t; })}
             />
             <div class="flex flex-row gap-3 justify-center">
                 {#if !running}
@@ -85,10 +88,10 @@
         <!-- List -->
         <SpeakerList
             bind:order
-            delegates={$delegateAttributes}
+            delegates={$delegates}
             bind:this={speakersList}
             onBeforeSpeakerUpdate={reset}
-            onMarkComplete={(key, isRepeat) => { if (!isRepeat) updateStats(stats, key, dat => dat.timesSpoken++) }}
+            onMarkComplete={(key, isRepeat) => { if (!isRepeat) updateDelegate(db.delegates, key, d => { d.stats.timesSpoken++; }) }}
         />
     </div>
 </div>

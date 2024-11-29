@@ -1,17 +1,19 @@
 <script lang="ts">
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/components/del-input/DelPopup.svelte";
-    import { formatValidationError, nonEmptyString } from "$lib/motions/form_validation";
-    import type { DelegateAttrs, Speaker } from "$lib/types";
+    import type { Delegate } from "$lib/db";
+    import { findDelegate } from "$lib/db/del";
+    import { formatValidationError } from "$lib/motions/form_validation";
+    import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
+    import { getDndItemId, isDndShadow, processDrag } from "$lib/util/dnd";
+    import { isPresent, triggerConfirmModal } from "$lib/util";
     
-    import { type z } from "zod";
+    import { z } from "zod";
     import Icon from "@iconify/svelte";
     import { getModalStore, popup } from "@skeletonlabs/skeleton";
     import { tick, untrack } from "svelte";
     import { flip } from "svelte/animate";
     import { dragHandle, dragHandleZone } from "svelte-dnd-action";
-    import { getDndItemId, isDndShadow, processDrag } from "$lib/util/dnd";
-    import { triggerConfirmModal } from "$lib/util";
 
     let dfltControlsInput: string = $state("");
     let dfltControlsError: string | undefined = $state(undefined);
@@ -24,11 +26,9 @@
          */
         order?: Speaker[];
         /**
-         * A mapping of key to their delegate attributes.
-         * 
-         * If no entry exists for a given key, the speaker's key is displayed.
+         * The list of all delegates recognized by this component.
          */
-        delegates?: Record<string, DelegateAttrs>;
+        delegates?: Delegate[];
         /**
          * If defined, this creates control options to allow for adding
          * and removing speakers from the speakers' list.
@@ -38,17 +38,16 @@
          * 2. A custom control is implemented instead
          */
         useDefaultControls?: {
-            presentDelegates: string[],
-            validator: z.ZodType<string, any, any> | ((dels: Record<string, DelegateAttrs>, presentDels: string[]) => z.ZodType<string, any, any>),
+            validator: z.ZodType<DelegateID, any, any> | ((dels: Delegate[]) => z.ZodType<DelegateID, any, any>),
             popupID?: string
         } | undefined;
         onBeforeSpeakerUpdate?: ((oldSpeaker: Speaker | undefined, newSpeaker: Speaker | undefined) => unknown) | undefined;
-        onMarkComplete?: ((key: string, isRepeat: boolean) => unknown) | undefined;
+        onMarkComplete?: ((key: DelegateID, isRepeat: boolean) => unknown) | undefined;
     }
 
     let {
         order = $bindable([]),
-        delegates = {},
+        delegates = [],
         useDefaultControls = undefined,
         onBeforeSpeakerUpdate = undefined,
         onMarkComplete = undefined
@@ -85,14 +84,11 @@
         
     }
     //
-    function getLabel(key: string) {
-        return delegates?.[key]?.name ?? key;
-    }
-    function findSpeaker(speakerId: string | undefined): Speaker | undefined {
+    function findSpeaker(speakerId: SpeakerEntryID | undefined): Speaker | undefined {
         if (typeof speakerId === "undefined") return;
         return orderMap[speakerId]?.speaker;
     }
-    function markComplete(speakerId: string | undefined) {
+    function markComplete(speakerId: SpeakerEntryID | undefined) {
         let speaker = findSpeaker(speakerId);
         if (typeof speaker !== "undefined") {
             onMarkComplete?.(speaker.key, speaker.completed);
@@ -186,9 +182,11 @@
     // Properties which are only used with default controls:
     let validator = $derived(
         typeof useDefaultControls?.validator === "function" 
-        ? useDefaultControls?.validator(delegates, useDefaultControls.presentDelegates)
-        : useDefaultControls?.validator ?? nonEmptyString()
+        ? useDefaultControls?.validator(delegates)
+        : useDefaultControls?.validator ?? z.never()
     );
+
+    let noDelegatesPresent = $derived(delegates.every(d => !isPresent(d.presence)));
 </script>
 <script module lang="ts">
     /**
@@ -197,7 +195,7 @@
      * @param completed Whether this speaker has finished talking, by default false
      * @return the speaker object
      */
-    export function createSpeaker(key: string, completed: boolean = false): Speaker {
+    export function createSpeaker(key: DelegateID, completed: boolean = false): Speaker {
         return { key, completed, id: crypto.randomUUID() }
     }
 </script>
@@ -224,9 +222,11 @@
         aria-labelledby="speaker-list-header"
     >
         {#each order as speaker, i (speaker.id)}
-            {@const speakerLabel = getLabel(speaker.key)}
             {@const selected = speaker.id === selectedSpeakerId}
             {@const shadow = isDndShadow(speaker)}
+            {@const delAttrs = findDelegate(delegates, speaker.key)}
+            {@const speakerLabel = delAttrs?.name ?? "unknown"}
+
             <li
                 class="!grid grid-cols-subgrid col-span-4 dnd-list-item"
                 class:!visible={shadow}
@@ -250,7 +250,9 @@
                     aria-label="Select {speakerLabel}"
                     aria-pressed={selected}
                 >
-                    <DelLabel key={speaker.key} attrs={delegates[speaker.key]} inline />
+                    {#if delAttrs}
+                        <DelLabel attrs={delAttrs} inline />
+                    {/if}
                 </button>
                 <div class="btn-icon">
                     {#if !speaker.completed}
@@ -282,13 +284,13 @@
                     class:input-error={error}
                     bind:value={dfltControlsInput}
                     use:popup={{ ...defaultPopupSettings(popupID), placement: "left-end", event: "focus-click" }}
-                    {...defaultPlaceholder(useDefaultControls.presentDelegates.length === 0)}
+                    {...defaultPlaceholder(noDelegatesPresent)}
                 />
                 <div class="ml-2">
                     <button
                         type="submit"
                         class="btn btn-icon variant-filled-primary"
-                        disabled={useDefaultControls.presentDelegates.length === 0}
+                        disabled={noDelegatesPresent}
                         aria-label="Add to Speakers List"
                         title="Add to Speakers List"
                     >
@@ -326,7 +328,6 @@
         {popupID}
         bind:input={dfltControlsInput}
         {delegates}
-        presentDelegates={useDefaultControls.presentDelegates}
         on:selection={e => addSpeaker(e.detail.label, true)}
     />
     {/if}

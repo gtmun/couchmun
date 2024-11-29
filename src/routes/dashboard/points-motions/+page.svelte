@@ -4,10 +4,11 @@
   import IconLabel from "$lib/components/IconLabel.svelte";
   import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
+  import { db } from "$lib/db";
+  import { enabledDelegatesStore, findDelegate, updateDelegate } from "$lib/db/del";
   import { MOTION_LABELS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import { getSessionDataContext } from "$lib/stores/session";
-  import { getStatsContext, updateStats } from "$lib/stores/stats";
   import type { Motion } from "$lib/types";
   import { createDragTr, isDndShadow, processDrag } from "$lib/util/dnd";
   import { stringifyTime } from "$lib/util/time";
@@ -18,8 +19,8 @@
   import { derived } from "svelte/store";
   import { dndzone } from "svelte-dnd-action";
 
-  const { settings: { delegateAttributes, sortOrder }, motions, selectedMotion } = getSessionDataContext();
-  const { stats } = getStatsContext();
+  const { settings: { sortOrder }, motions, selectedMotion } = getSessionDataContext();
+  const delegates = enabledDelegatesStore(db.delegates);
   const modalStore = getModalStore();
 
   let motionTable: HTMLTableElement | undefined = $state();
@@ -29,7 +30,7 @@
       $m.push(motion);
       return $m;
     });
-    updateStats(stats, motion.delegate, dat => dat.motionsProposed++);
+    updateDelegate(db.delegates, motion.delegate, d => { d.stats.motionsProposed++; });
   }
 
   /**
@@ -72,7 +73,7 @@
   function acceptMotion(motion: Motion) {
     $selectedMotion = motion;
     $motions = [];
-    updateStats(stats, motion.delegate, dat => dat.motionsAccepted++);
+    updateDelegate(db.delegates, motion.delegate, d => { d.stats.motionsAccepted++; });
   }
   function editMotion(i: number, motion: Motion) {
     modalStore.trigger({
@@ -84,8 +85,8 @@
         response(motion?: Motion) {
           if (!motion) return;
           motions.update($m => {
-            updateStats(stats, $m[i].delegate, dat => dat.motionsProposed--);
-            updateStats(stats, motion.delegate, dat => dat.motionsProposed++);
+            updateDelegate(db.delegates, $m[i].delegate, d => { d.stats.motionsProposed--; });
+            updateDelegate(db.delegates, motion.delegate, d => { d.stats.motionsProposed++; });
             $m[i] = motion;
             return $m;
           });
@@ -147,7 +148,8 @@
           aria-labelledby="motion-table-header"
         >
           {#each $motions as motion, i (motion.id)}
-            {@const delName = $delegateAttributes[motion.delegate]?.name ?? motion.delegate}
+            {@const delAttrs = findDelegate($delegates, motion.delegate)}
+            {@const delName = delAttrs?.name ?? "unknown"}
             {@const shadow = isDndShadow(motion)}
             <tr 
               class="dnd-list-item hover:!bg-primary-500/25"
@@ -188,7 +190,13 @@
                 </div>
               </td>
               <td>{motionName(motion)}</td>
-              <td><DelLabel key={motion.delegate} attrs={$delegateAttributes[motion.delegate]} inline /></td>
+              <td>
+                {#if delAttrs}
+                  <DelLabel attrs={delAttrs} inline />
+                {:else}
+                  {delName}
+                {/if}
+              </td>
               <td>{apply(motion, ["topic"], m => m.topic, "-")}</td>
               <td>{apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
               <td>{apply(motion, ["speakingTime"], m => stringifyTime(m.speakingTime), "-")}</td>

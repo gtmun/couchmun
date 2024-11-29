@@ -1,6 +1,19 @@
 import type { Readable, Writable } from "svelte/store";
 
 /**
+ * ID of a delegate
+ */
+export type DelegateID = number;
+/**
+ * ID of a given motion in the motion table.
+ */
+export type MotionID = string;
+/**
+ * ID of a given speaker slot in the speaker list.
+ */
+export type SpeakerEntryID = string;
+
+/**
  * Attributes each delegate in a given preset should have.
  * 
  * A given preset in `delegate_presets` 
@@ -147,28 +160,28 @@ export type DelegatePresence = "NP" | "P" | "PV";
 
 // Motions
 export type Motion = {
-    id: string,
-    delegate: string,
+    id: MotionID,
+    delegate: DelegateID,
     kind: "mod", 
     totalTime: number,
     speakingTime: number,
     topic: string,
     isExtension: boolean
 } | {
-    id: string,
-    delegate: string,
+    id: MotionID,
+    delegate: DelegateID,
     kind: "unmod",
     totalTime: number,
     isExtension: boolean
 } | {
-    id: string,
-    delegate: string,
+    id: MotionID,
+    delegate: DelegateID,
     kind: "rr",
     speakingTime: number,
     topic: string
 } | {
-    id: string,
-    delegate: string,
+    id: MotionID,
+    delegate: DelegateID,
     kind: "other",
     totalTime: number,
     topic: string
@@ -179,11 +192,11 @@ export type Speaker = {
     /**
      * Identifier for this speaker entry.
      */
-    id: string,
+    id: SpeakerEntryID,
     /**
-     * The key of the delegate.
+     * The key/delegate ID of the delegate.
      */
-    key: string,
+    key: DelegateID,
     /**
      * Whether they have completed speaking.
      */

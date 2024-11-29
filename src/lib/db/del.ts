@@ -2,7 +2,9 @@
  * Utilities for accessing delegate data from IndexedDB.
  */
 
-import { queryStore, type db } from ".";
+import type { DelegateID } from "$lib/types";
+import type { IndexableType } from "dexie";
+import { queryStore, type db, type Delegate } from ".";
 
 /**
  * Gets a collection of all of the enabled delegates (controlled in settings) 
@@ -19,8 +21,20 @@ export function getEnabledDelegates(table: typeof db.delegates) {
  * @returns the store
  */
 export function enabledDelegatesStore(table: typeof db.delegates) {
-    return queryStore(() => getEnabledDelegates(table).toArray());
+    return queryStore(() => getEnabledDelegates(table).toArray(), []);
 }
+
+/**
+ * Find the delegate with the matching ID (note this is linear search).
+ * @param d Delegate list
+ * @param searchId Search ID
+ * @returns The matching delegate (if they exist)
+ */
+export function findDelegate(d: Delegate[], searchId: DelegateID): Delegate | undefined {
+    // linear but bleh it's synchronous so whatever
+    return d.find(({id}) => id == searchId);
+}
+
 /**
  * Updates one entry from the delegate table.
  * 
@@ -34,7 +48,9 @@ export function enabledDelegatesStore(table: typeof db.delegates) {
  *     (either a callback that updates an item or an object indicating what parameters to update)
  * @returns a promise on completion
  */
-export async function updateDel(table: typeof db.delegates, id: number | undefined, param: Parameters<typeof db.delegates.update>[1]) {
+export async function updateDelegate(table: typeof db.delegates, id: number | undefined, param: Parameters<typeof db.delegates.update>[1]): Promise<void>; 
+export async function updateDelegate(table: typeof db.delegates, id: number | undefined, param: ((obj: Delegate, ctx: { value: any; primKey: IndexableType; }) => void | boolean)): Promise<void>;
+export async function updateDelegate(table: typeof db.delegates, id: number | undefined, param: any): Promise<void> {
     if (typeof id !== "number") return;
     return table.db.transaction("rw", table, () => {
         table.update(id, param);

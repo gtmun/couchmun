@@ -1,8 +1,10 @@
-import type { DelegateAttrs, Motion, MotionKind, SortEntry } from "$lib/types";
+import type { Motion, MotionKind, SortEntry } from "$lib/types";
 import { nonEmptyString, presentDelegateSchema, refineSpeakingTime, timeSchema, topicSchema } from "$lib/motions/form_validation";
 import type { MotionInput } from "$lib/motions/types";
 import { z } from "zod";
 import { stringifyTime } from "$lib/util/time";
+import type { Delegate } from "$lib/db";
+import { findDelegate } from "$lib/db/del";
 
 /**
  * The label/name given to each motion kind.
@@ -55,10 +57,10 @@ export const DEFAULT_SORT_PRIORITY: SortEntry[] = [
  * Schema verification for a given form.
  * This takes the form inputs and verifies & creates the motion object associated with the form.
  */
-export function createMotionSchema(delegates: Record<string, DelegateAttrs>, presentDelegates: string[]) {
+export function createMotionSchema(delegates: Delegate[]) {
     const base = <K extends MotionKind>(k: K) => z.object({
         id: nonEmptyString({ description: "ID" }),
-        delegate: presentDelegateSchema(delegates, presentDelegates),
+        delegate: presentDelegateSchema(delegates),
         kind: z.literal(k)
     });
 
@@ -87,14 +89,14 @@ export function createMotionSchema(delegates: Record<string, DelegateAttrs>, pre
 /**
  * Defines how to convert a motion back into an input motion.
  * @param m 
- * @param delAttrs 
+ * @param dels 
  * @returns 
  */
-export function inputifyMotion(m: Motion, delAttrs: Record<string, DelegateAttrs>): MotionInput {
+export function inputifyMotion(m: Motion, dels: Delegate[]): MotionInput {
     if (m.kind === "mod") {
         return {
             id: m.id,
-            delegate: delAttrs[m.delegate].name,
+            delegate: findDelegate(dels, m.delegate)?.name ?? "",
             kind: m.kind,
             totalTime: stringifyTime(m.totalTime),
             speakingTime: stringifyTime(m.speakingTime),
@@ -104,7 +106,7 @@ export function inputifyMotion(m: Motion, delAttrs: Record<string, DelegateAttrs
     } else if (m.kind === "unmod") {
         return {
             id: m.id,
-            delegate: delAttrs[m.delegate].name,
+            delegate: findDelegate(dels, m.delegate)?.name ?? "",
             kind: m.kind,
             totalTime: stringifyTime(m.totalTime),
             isExtension: m.isExtension
@@ -112,7 +114,7 @@ export function inputifyMotion(m: Motion, delAttrs: Record<string, DelegateAttrs
     } else if (m.kind === "rr") {
         return {
             id: m.id,
-            delegate: delAttrs[m.delegate].name,
+            delegate: findDelegate(dels, m.delegate)?.name ?? "",
             kind: m.kind,
             speakingTime: stringifyTime(m.speakingTime),
             topic: m.topic,
@@ -120,7 +122,7 @@ export function inputifyMotion(m: Motion, delAttrs: Record<string, DelegateAttrs
     } else if (m.kind === "other") {
         return {
             id: m.id,
-            delegate: delAttrs[m.delegate].name,
+            delegate: findDelegate(dels, m.delegate)?.name ?? "",
             kind: m.kind,
             totalTime: stringifyTime(m.totalTime),
             topic: m.topic,

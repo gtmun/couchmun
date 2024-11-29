@@ -1,4 +1,4 @@
-import type { DelegatePresence } from "$lib/types";
+import type { DelegateAttrs, DelegatePresence } from "$lib/types";
 import type { ModalSettings, ModalStore } from "@skeletonlabs/skeleton";
 import type { Observable } from "dexie";
 import type { Readable } from "svelte/store";
@@ -65,4 +65,15 @@ export function downloadFile(filename: string, contents: string, type: string) {
  */
 export function isPresent(p: DelegatePresence): boolean {
     return p !== "NP";
+}
+
+/**
+ * Checks if name is associated with a given delegate.
+ * @param name name we're looking at
+ * @param attr delegate we're looking at
+ * @returns whether this delegate could correctly be referred to by the given name
+ */
+export function nameEq(name: string, attr: DelegateAttrs) {
+    const eq = (a: string, b: string) => a.localeCompare(b, undefined, { sensitivity: "base" }) == 0;
+    return [attr.name, ...attr.aliases].some(n => eq(n, name));
 }
