@@ -15,6 +15,7 @@
     import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
     import { addDelPresetData, db, populateSessionData } from "$lib/db";
     import { liveQuery } from "dexie";
+    import { updateDel } from "$lib/db/del";
 
     const settings = getSettingsContext();
     const { sortOrder, preferences } = settings;
@@ -100,11 +101,6 @@
                 addDelPresetData(db.delegates, preset);
             });
         }
-    }
-    async function setEnableStatus(id: number, status: boolean) {
-        db.transaction("rw", db.delegates, async () => {
-            await db.delegates.update(id, { enabled: status });
-        })
     }
     async function setAllEnableStatuses(status: boolean) {
         db.transaction("rw", db.delegates, async () => {
@@ -318,7 +314,7 @@
                     <tr>
                         <td class="w-full"><DelLabel {key} {attrs} inline fallback="icon" /></td>
                         <td class="text-center">
-                            <input class="checkbox" type="checkbox" checked={attrs.enabled} onclick={() => setEnableStatus(attrs.id, !attrs.enabled)}>
+                            <input class="checkbox" type="checkbox" checked={attrs.enabled} onclick={() => updateDel(db.delegates, attrs.id, { enabled: !attrs.enabled })}>
                         </td>
                         <td class="text-right">
                             <button

@@ -2,6 +2,7 @@
     import MetaTags from "$lib/components/MetaTags.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import { db, type Delegate } from "$lib/db";
+    import { getEnabledDelegates } from "$lib/db/del";
     import { getSessionDataContext } from "$lib/stores/session";
     import { defaultStats } from "$lib/stores/stats";
     import type { StatsData } from "$lib/types";
@@ -14,8 +15,8 @@
     import type { Readable } from "svelte/store";
 
     const { settings: { title } } = getSessionDataContext();
-    const delegates: Readable<Delegate[]> = wrapQuery(liveQuery(() => 
-        db.delegates.orderBy("order").filter(d => d.enabled).toArray()
+    const delegates: Readable<Delegate[]> = wrapQuery(liveQuery(
+        () => getEnabledDelegates(db.delegates).toArray()
     ));
     const modalStore = getModalStore();
 

@@ -3,12 +3,13 @@
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import IconLabel from "$lib/components/IconLabel.svelte";
     import { db, writableTableStore } from "$lib/db";
+    import { getEnabledDelegates } from "$lib/db/del";
     import type { DelegatePresence } from "$lib/types";
     import { RadioGroup, RadioItem } from "@skeletonlabs/skeleton";
 
     let delegates = writableTableStore(
         db.delegates,
-        (table) => table.orderBy("order").filter(d => d.enabled).toArray()
+        (table) => getEnabledDelegates(table).toArray()
     );
 
     const radio: Record<DelegatePresence, { label: string, icon: string }> = {
