@@ -2,22 +2,18 @@
     import MetaTags from "$lib/components/MetaTags.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import { db, type Delegate } from "$lib/db";
-    import { getEnabledDelegates } from "$lib/db/del";
+    import { enabledDelegatesStore } from "$lib/db/del";
     import { getSessionDataContext } from "$lib/stores/session";
     import { defaultStats } from "$lib/stores/stats";
     import type { StatsData } from "$lib/types";
-    import { compare, downloadFile, isPresent, triggerConfirmModal, wrapQuery } from "$lib/util";
+    import { compare, downloadFile, isPresent, triggerConfirmModal } from "$lib/util";
     import { stringifyTime } from "$lib/util/time";
     
     import Icon from "@iconify/svelte";
     import { ProgressBar, type PopupSettings, getModalStore, popup } from "@skeletonlabs/skeleton";
-    import { liveQuery } from "dexie";
-    import type { Readable } from "svelte/store";
 
     const { settings: { title } } = getSessionDataContext();
-    const delegates: Readable<Delegate[]> = wrapQuery(liveQuery(
-        () => getEnabledDelegates(db.delegates).toArray()
-    ));
+    const delegates = enabledDelegatesStore(db.delegates);
     const modalStore = getModalStore();
 
     let sortOrder: { item: SortKey, descending: boolean } = $state({

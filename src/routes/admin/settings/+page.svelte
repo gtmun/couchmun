@@ -7,20 +7,19 @@
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
     import { getSettingsContext, resetSettingsContext } from "$lib/stores/settings";
     import type { DelegateAttrs, Preferences } from "$lib/types";
-    import { downloadFile, triggerConfirmModal, wrapQuery } from "$lib/util";
+    import { downloadFile, triggerConfirmModal } from "$lib/util";
 
     import { derived, get, type Writable } from "svelte/store";
     import Icon from "@iconify/svelte";
     import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
     import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
-    import { addDelPresetData, db, populateSessionData } from "$lib/db";
-    import { liveQuery } from "dexie";
+    import { addDelPresetData, db, populateSessionData, queryStore } from "$lib/db";
     import { updateDel } from "$lib/db/del";
 
     const settings = getSettingsContext();
     const { sortOrder, preferences } = settings;
 
-    let delegates = wrapQuery(liveQuery(() => db.delegates.orderBy("order").toArray()));
+    let delegates = queryStore(() => db.delegates.orderBy("order").toArray());
     let delsEnabledAll = derived(delegates, $d => {
         const [first, ...rest] = ($d ?? []).map(del => del.enabled);
         return rest.every(k => k === first) ? first : undefined;

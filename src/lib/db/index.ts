@@ -1,9 +1,8 @@
 import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
 import { getFlagUrl } from "$lib/flags/flagcdn";
 import type { DelegateAttrs, DelegatePresence, StatsData } from "$lib/types";
-import { wrapQuery } from "$lib/util";
 import { Dexie, liveQuery, type EntityTable, type Observable } from "dexie";
-import { get, type Updater, type Writable } from "svelte/store";
+import { get, type Readable, type Updater, type Writable } from "svelte/store";
 
 export interface Delegate {
     // Indexes:
@@ -60,8 +59,25 @@ export async function addDelPresetData(table: EntityTable<Delegate, "id">, attrs
     );
     return table.bulkAdd(items);
 }
+
+
+/**
+ * This cast converts an `Observable` to `Readable`, without having to fight TypeScript errors.
+ * 
+ * This cast is always acceptable, because `Readable` *does* accept the `Observable` interface,
+ * it is just not documented in the TypeScript typing (as of Svelte 5.2.10).
+ * 
+ * @param t the observable to wrap
+ * @returns the readable that results (note that `t == wrapQuery(t)`)
+ */
+function wrapQuery<T>(t: Observable<T>): Readable<T> {
+    return t as any;
+}
+export function queryStore<T>(cb: () => T | Promise<T>): Readable<T> {
+    return wrapQuery(liveQuery(cb));
+}
 export function writableTableStore<T, U extends keyof T>(table: EntityTable<T, U>, mapper: (data: EntityTable<T, U>) => (T[] | Promise<T[]>)): Writable<T[]> {
-    let query = wrapQuery(liveQuery(() => mapper(table)));
+    let query = queryStore(() => mapper(table));
     let set = (v: T[]) => table.db.transaction("rw", table, () => table.bulkPut(v));
     let update = (cb: Updater<T[]>) => set(cb(get(query)));
     

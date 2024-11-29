@@ -2,7 +2,7 @@
  * Utilities for accessing delegate data from IndexedDB.
  */
 
-import type { db } from ".";
+import { queryStore, type db } from ".";
 
 /**
  * Gets a collection of all of the enabled delegates (controlled in settings) 
@@ -13,7 +13,14 @@ import type { db } from ".";
 export function getEnabledDelegates(table: typeof db.delegates) {
     return table.orderBy("order").filter(e => e.enabled);
 }
-
+/**
+ * Makes a readable array store of all the enabled delegates.
+ * @param table the delegate table
+ * @returns the store
+ */
+export function enabledDelegatesStore(table: typeof db.delegates) {
+    return queryStore(() => getEnabledDelegates(table).toArray());
+}
 /**
  * Updates one entry from the delegate table.
  * 
