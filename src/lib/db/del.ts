@@ -2,7 +2,7 @@
  * Utilities for accessing delegate data from IndexedDB.
  */
 
-import type { DelegateID } from "$lib/types";
+import type { DelegateID, StatsData } from "$lib/types";
 import type { IndexableType } from "dexie";
 import { queryStore, type db, type Delegate } from ".";
 
@@ -55,4 +55,16 @@ export async function updateDelegate(table: typeof db.delegates, id: number | un
     return table.db.transaction("rw", table, () => {
         table.update(id, param);
     });
+}
+
+/**
+ * @returns the defaults for stats
+ */
+export function defaultStats(): StatsData {
+    return {
+        motionsProposed: 0,
+        motionsAccepted: 0,
+        timesSpoken: 0,
+        durationSpoken: 0
+    };
 }

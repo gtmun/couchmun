@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { Delegate } from "$lib/db";
+    import { isPresent } from "$lib/util";
     import { Autocomplete, type AutocompleteOption } from "@skeletonlabs/skeleton";
 
     interface Props {
@@ -15,11 +16,13 @@
     }: Props = $props();
 
     let options = $derived(
-        delegates.map(d => ({
-            value: d.id,
-            label: d.name,
-            keywords: d.aliases.join(",")
-        }) satisfies AutocompleteOption<number>)
+        delegates
+            .filter(d => isPresent(d.presence))
+            .map(d => ({
+                value: d.id,
+                label: d.name,
+                keywords: d.aliases.join(",")
+            }) satisfies AutocompleteOption<number>)
     );
 </script>
 

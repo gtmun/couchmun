@@ -19,9 +19,9 @@
     const settings = getSettingsContext();
     const { sortOrder, preferences } = settings;
 
-    let delegates = queryStore(() => db.delegates.orderBy("order").toArray());
+    let delegates = queryStore(() => db.delegates.orderBy("order").toArray(), []);
     let delsEnabledAll = derived(delegates, $d => {
-        const [first, ...rest] = ($d ?? []).map(del => del.enabled);
+        const [first, ...rest] = $d.map(del => del.enabled);
         return rest.every(k => k === first) ? first : undefined;
     });
 
@@ -307,7 +307,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {#each ($delegates ?? []) as attrs (attrs.id)}
+                    {#each $delegates as attrs (attrs.id)}
                     <tr>
                         <td class="w-full"><DelLabel {attrs} inline fallback="icon" /></td>
                         <td class="text-center">

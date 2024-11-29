@@ -241,6 +241,3 @@ export type StatsData = {
      */
     durationSpoken: number
 }
-export type StatsDataStore = {
-    stats: Writable<Record<string, StatsData>>
-}

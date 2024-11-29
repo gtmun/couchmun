@@ -17,7 +17,7 @@
 
     const { selectedMotion } = getSessionDataContext();
     const delegates = enabledDelegatesStore(db.delegates);
-    const motionSchema = createMotionSchema($delegates);
+    const motionSchema = $derived(createMotionSchema($delegates));
     const defaultInputMotion = () => ({ id: crypto.randomUUID(), kind: "mod" } satisfies MotionInput);
     const resetInputErrors = () => { inputError = undefined };
 

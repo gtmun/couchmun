@@ -2,9 +2,8 @@
     import MetaTags from "$lib/components/MetaTags.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import { db, type Delegate } from "$lib/db";
-    import { enabledDelegatesStore } from "$lib/db/del";
+    import { defaultStats, enabledDelegatesStore } from "$lib/db/del";
     import { getSessionDataContext } from "$lib/stores/session";
-    import { defaultStats } from "$lib/stores/stats";
     import type { StatsData } from "$lib/types";
     import { compare, downloadFile, isPresent, triggerConfirmModal } from "$lib/util";
     import { stringifyTime } from "$lib/util/time";
@@ -46,9 +45,9 @@
         }
     }
 
-    let maxDurationSpoken = $derived(Math.max(0, ...($delegates ?? []).map(({ stats }) => stats.durationSpoken)));
+    let maxDurationSpoken = $derived(Math.max(0, ...$delegates.map(({ stats }) => stats.durationSpoken)));
     let displayEntries = $derived(
-        Array.from($delegates ?? [])
+        Array.from($delegates)
             .sort((e1, e2) => {
                 let { item, descending } = sortOrder;
                 return compare(readEntryValue(e1, item), readEntryValue(e2, item), descending);
@@ -64,7 +63,7 @@
     function exportStats() {
         let data = {
             committee: $title,
-            delegates: Array.from($delegates ?? [])
+            delegates: $delegates
         };
         downloadFile("couchmun-del-stats.json", JSON.stringify(data), "application/json");
     }
@@ -118,22 +117,20 @@
             </thead>
             <tbody>
                 {#each displayEntries as attrs (attrs.id)}
-                <!-- TODO: remove key -->
-                {@const key = String(attrs.id)}
                 {@const absent = !isPresent(attrs.presence)}
                 <tr class:!bg-surface-300-600-token={absent}>
                     <td class="!align-middle">
                         {#if absent}
                         <div class="flex gap-1">
                             <span class="line-through italic">
-                                <DelLabel {key} {attrs} inline />
+                                <DelLabel {attrs} inline />
                             </span>
                             <span class="text-error-500-400-token">
                                 (Absent)
                             </span>
                         </div>
                         {:else}
-                        <DelLabel {key} {attrs} inline />
+                        <DelLabel {attrs} inline />
                         {/if}
                     </td>
                     <td class="!align-middle">{attrs.stats.motionsProposed}</td>
