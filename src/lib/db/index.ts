@@ -8,9 +8,9 @@ export interface Delegate {
     id: number,
     name: string,
     aliases: string[]
+    order: number,
 
     // Non-indexes:
-    order: number,
     enabled: boolean,
     flagURL: string,
     presence: DelegatePresence,
@@ -22,7 +22,7 @@ interface SessionDatabase extends Dexie {
 
 export const db = new Dexie("sessionDatabase") as SessionDatabase;
 db.version(1).stores({
-    delegates: "++id, name, *aliases"
+    delegates: "++id, name, *aliases, order"
 });
 
 db.on("ready", async (tx) => {

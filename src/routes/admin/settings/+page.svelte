@@ -19,7 +19,7 @@
     const settings = getSettingsContext();
     const { sortOrder, preferences } = settings;
 
-    let delegates = wrapQuery(liveQuery(() => db.delegates.toCollection().sortBy("order")));
+    let delegates = wrapQuery(liveQuery(() => db.delegates.orderBy("order").toArray()));
     let delsEnabledAll = derived(delegates, $d => {
         const [first, ...rest] = ($d ?? []).map(del => del.enabled);
         return rest.every(k => k === first) ? first : undefined;
@@ -173,7 +173,15 @@
     async function deleteDelegate(id: number) {
         currentPreset = "custom";
         await db.transaction("rw", db.delegates, async () => {
+            let del = await db.delegates.get(id);
             await db.delegates.delete(id);
+
+            // Decrement all orders above this one:
+            if (typeof del?.order !== "undefined") {
+                db.delegates.where("order")
+                    .aboveOrEqual(del.order)
+                    .modify(d => { d.order--; });
+            }
         })
     }
 </script>
