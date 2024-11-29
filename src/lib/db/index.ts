@@ -1,7 +1,9 @@
 import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
 import { getFlagUrl } from "$lib/flags/flagcdn";
 import type { DelegateAttrs, DelegatePresence, StatsData } from "$lib/types";
-import { Dexie, type EntityTable } from "dexie";
+import { wrapQuery } from "$lib/util";
+import { Dexie, liveQuery, type EntityTable, type Observable } from "dexie";
+import { get, type Updater, type Writable } from "svelte/store";
 
 export interface Delegate {
     // Indexes:
@@ -57,4 +59,11 @@ export async function addDelPresetData(table: EntityTable<Delegate, "id">, attrs
             .map(([key, attrs], i) => populateSessionData(attrs, key, i))
     );
     return table.bulkAdd(items);
+}
+export function writableTableStore<T, U extends keyof T>(table: EntityTable<T, U>, mapper: (data: EntityTable<T, U>) => (T[] | Promise<T[]>)): Writable<T[]> {
+    let query = wrapQuery(liveQuery(() => mapper(table)));
+    let set = (v: T[]) => table.db.transaction("rw", table, () => table.bulkPut(v));
+    let update = (cb: Updater<T[]>) => set(cb(get(query)));
+    
+    return Object.assign(query, { set, update });
 }
