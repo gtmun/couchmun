@@ -13,7 +13,7 @@
     import Icon from "@iconify/svelte";
     import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
     import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
-    import { addDelPresetData, db, populateSessionData, queryStore } from "$lib/db";
+    import { db, populateDelegate, populateDelegatePreset, queryStore } from "$lib/db";
     import { updateDelegate } from "$lib/db/del";
 
     const settings = getSettingsContext();
@@ -60,6 +60,7 @@
                 currentPreset = DEFAULT_PRESET_KEY;
                 // Reset settings
                 resetSettingsContext(settings);
+                setPreset();
             }
         )
     }
@@ -95,9 +96,10 @@
     async function setPreset() {
         const preset = await getPreset(currentPreset);
         if (typeof preset !== "undefined") {
+            let presetEntries = await populateDelegatePreset(preset);
             await db.transaction("rw", db.delegates, async () => {
-                db.delegates.clear();
-                addDelPresetData(db.delegates, preset);
+                await db.delegates.clear();
+                await db.delegates.bulkAdd(presetEntries);
             });
         }
     }
@@ -139,7 +141,7 @@
                         await db.delegates.update(id, newAttrs);
                     } else {
                         let order = await db.delegates.count();
-                        let del = await populateSessionData(newAttrs, "un", order);
+                        let del = await populateDelegate(newAttrs, "un", order);
                         await db.delegates.add(del);
                     }
                 });

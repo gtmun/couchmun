@@ -20,7 +20,7 @@
 </script>
 
 <!-- Render a table to display participants and their statuses -->
-{#if typeof $delegates !== "undefined" && $delegates.length}
+{#if $delegates.length}
 <div class="card grid">
     {#each $delegates as attrs, i (attrs.id)}
         <div class="grid grid-cols-subgrid col-span-2 even:bg-surface-100-800-token odd:bg-surface-200-700-token">
