@@ -2,6 +2,7 @@
     import type { DelegateAttrs } from "$lib/types";
     import { SvelteSet } from "svelte/reactivity";
     import EditModal from "./EditModal.svelte";
+    import { nameEq } from "$lib/util";
 
     interface Props {
         attrs: (DelegateAttrs & {id: number})[];
@@ -15,11 +16,6 @@
         submit(enabled);
     }
 
-    function matchesName(name: string, attr: DelegateAttrs) {
-        const eq = (a: string, b: string) => a.localeCompare(b, undefined, { sensitivity: "base" }) == 0;
-        return [attr.name, ...attr.aliases].some(n => eq(n, name));
-        
-    }
     function keydown(k: KeyboardEvent) {
         if (k.code === "Enter") {
             k.preventDefault();
@@ -28,7 +24,7 @@
             inputText = "";
             for (let line of text.split("\n")) {
                 line = line.trim();
-                let item = attrs.find(d => matchesName(line, d));
+                let item = attrs.find(d => nameEq(line, d));
                 if (item) {
                     enabled.add(item.id);
                 } else {
