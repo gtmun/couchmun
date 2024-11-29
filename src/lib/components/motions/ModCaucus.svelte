@@ -61,10 +61,7 @@
     <div class="flex flex-col flex-grow flex-shrink-0 basis-full lg:basis-auto">
         <div class="flex flex-col gap-5 justify-center flex-grow">
             {#if typeof selectedSpeaker !== "undefined"}
-                {@const attrs = findDelegate($delegates, selectedSpeaker.key)}
-                {#if attrs}
-                    <DelLabel {attrs} />
-                {/if}
+                <DelLabel attrs={findDelegate($delegates, selectedSpeaker.key)} />
             {/if}
             <Timer 
                 name="delegate"

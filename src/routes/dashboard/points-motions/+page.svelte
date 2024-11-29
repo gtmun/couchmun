@@ -191,11 +191,7 @@
               </td>
               <td>{motionName(motion)}</td>
               <td>
-                {#if delAttrs}
-                  <DelLabel attrs={delAttrs} inline />
-                {:else}
-                  {delName}
-                {/if}
+                <DelLabel attrs={delAttrs} fallbackName={delName} inline />
               </td>
               <td>{apply(motion, ["topic"], m => m.topic, "-")}</td>
               <td>{apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>

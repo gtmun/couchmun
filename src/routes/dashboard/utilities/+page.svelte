@@ -55,12 +55,7 @@
     </button>
     <div class="flex flex-col flex-grow gap-5 justify-center">
         {#if labelType === "delegate"}
-            {@const attrs = $delegates.find(d => nameEq(labelText, d))}
-            {#if attrs}
-                <DelLabel {attrs} />
-            {:else}
-                <h2 class="h2 text-center">{labelText}</h2>
-            {/if}
+            <DelLabel attrs={$delegates.find(d => nameEq(labelText, d))} fallbackName={labelText} />
         {:else if labelType === "title"}
             <h2 class="h2 text-center">{labelText}</h2>
         {/if}

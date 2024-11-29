@@ -252,9 +252,7 @@
                     aria-label="Select {speakerLabel}"
                     aria-pressed={selected}
                 >
-                    {#if delAttrs}
-                        <DelLabel attrs={delAttrs} inline />
-                    {/if}
+                    <DelLabel attrs={delAttrs} fallbackName={speakerLabel} inline />
                 </button>
                 <div class="btn-icon">
                     {#if !speaker.completed}

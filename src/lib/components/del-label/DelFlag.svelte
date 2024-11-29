@@ -4,33 +4,35 @@
     import Icon from "@iconify/svelte";
 
     interface Props {
-        attrs: DelegateAttrs;
+        label: string,
+        url: string | undefined,
         height?: string;
         fallback?: "un" | "icon" | "none";
     }
 
     let {
-        attrs,
+        label,
+        url,
         height = "",
         fallback = "none"
     }: Props = $props();
 
     // Only set flag on client-side, to prevent hydration mismatch issues.
     // https://svelte.dev/docs/svelte/v5-migration-guide#Other-breaking-changes-img-src-and-html-hydration-mismatches-are-not-repaired
-    let flag: URL | undefined = $derived(attrs.flagURL ? new URL(attrs.flagURL) : undefined);
+    let flag: URL | undefined = $derived(url ? new URL(url) : undefined);
 </script>
 
 {#if flag}
     <img
         src={flag.href}
-        alt="Flag of {attrs.name}"
+        alt="Flag of {label}"
         class={height}
     >
 {:else if fallback === "un"}
     {#await getFlagUrl("un") then unFallbackFlag}
         <img
             src={unFallbackFlag!.href}
-            alt="Flag of {attrs.name} (missing)"
+            alt="Flag of {label} (missing)"
             class={height}
         >   
     {/await}
@@ -39,7 +41,7 @@
     <Icon 
         icon="mdi:flag-off" 
         role="img" 
-        aria-label="Flag of {attrs.name} (missing)"
+        aria-label="Flag of {label} (missing)"
         height={24} 
     />
 {:else}

@@ -309,7 +309,7 @@
                 <tbody>
                     {#each $delegates as attrs (attrs.id)}
                     <tr>
-                        <td class="w-full"><DelLabel {attrs} inline fallback="icon" /></td>
+                        <td class="w-full"><DelLabel {attrs} inline fallbackFlag="icon" /></td>
                         <td class="text-center">
                             <input class="checkbox" type="checkbox" checked={attrs.enabled} onclick={() => updateDelegate(db.delegates, attrs.id, { enabled: !attrs.enabled })}>
                         </td>
