@@ -179,14 +179,16 @@
         map.set(key, el);
         return { destroy() { map.delete(key); } }
     };
-    // Properties which are only used with default controls:
-    let validator = $derived(
-        typeof useDefaultControls?.validator === "function" 
-        ? useDefaultControls?.validator(delegates)
-        : useDefaultControls?.validator ?? z.never()
-    );
-
     let noDelegatesPresent = $derived(delegates.every(d => !isPresent(d.presence)));
+
+    // Properties which are only used with default controls:
+    let validator = $derived.by(() => {
+        if (typeof useDefaultControls?.validator === "function") {
+            return useDefaultControls.validator(delegates);
+        } else {
+            return useDefaultControls?.validator ?? z.never();
+        }
+    });
 </script>
 <script module lang="ts">
     /**

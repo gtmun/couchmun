@@ -40,7 +40,8 @@ export function findDelegate(d: Delegate[], searchId: DelegateID): Delegate | un
  * 
  * This should only be used for single-time, short updates.
  * Large changes (such as changing multiple delegates at once) 
- * should go through Dexie's bulk update methods.
+ * should go through Dexie's bulk update methods
+ * and multiple operations should go through transactions.
  * 
  * @param table the delegate table
  * @param id the ID of the entry to update
@@ -48,13 +49,11 @@ export function findDelegate(d: Delegate[], searchId: DelegateID): Delegate | un
  *     (either a callback that updates an item or an object indicating what parameters to update)
  * @returns a promise on completion
  */
-export async function updateDelegate(table: typeof db.delegates, id: number | undefined, param: Parameters<typeof db.delegates.update>[1]): Promise<void>; 
-export async function updateDelegate(table: typeof db.delegates, id: number | undefined, param: ((obj: Delegate, ctx: { value: any; primKey: IndexableType; }) => void | boolean)): Promise<void>;
-export async function updateDelegate(table: typeof db.delegates, id: number | undefined, param: any): Promise<void> {
+export async function updateDelegate(table: typeof db.delegates, id: DelegateID | undefined, param: Parameters<typeof db.delegates.update>[1]): Promise<void>; 
+export async function updateDelegate(table: typeof db.delegates, id: DelegateID | undefined, param: ((obj: Delegate, ctx: { value: any; primKey: IndexableType; }) => void | boolean)): Promise<void>;
+export async function updateDelegate(table: typeof db.delegates, id: DelegateID | undefined, param: any): Promise<void> {
     if (typeof id !== "number") return;
-    return table.db.transaction("rw", table, () => {
-        table.update(id, param);
-    });
+    await table.update(id, param);
 }
 
 /**
