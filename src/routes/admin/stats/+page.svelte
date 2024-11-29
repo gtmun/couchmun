@@ -6,7 +6,7 @@
     import { getSessionDataContext } from "$lib/stores/session";
     import { defaultStats } from "$lib/stores/stats";
     import type { StatsData } from "$lib/types";
-    import { compare, downloadFile, triggerConfirmModal, wrapQuery } from "$lib/util";
+    import { compare, downloadFile, isPresent, triggerConfirmModal, wrapQuery } from "$lib/util";
     import { stringifyTime } from "$lib/util/time";
     
     import Icon from "@iconify/svelte";
@@ -124,7 +124,7 @@
                 {#each displayEntries as attrs (attrs.id)}
                 <!-- TODO: remove key -->
                 {@const key = String(attrs.id)}
-                {@const absent = attrs.presence == "NP"}
+                {@const absent = !isPresent(attrs.presence)}
                 <tr class:!bg-surface-300-600-token={absent}>
                     <td class="!align-middle">
                         {#if absent}

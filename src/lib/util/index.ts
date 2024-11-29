@@ -1,3 +1,4 @@
+import type { DelegatePresence } from "$lib/types";
 import type { ModalSettings, ModalStore } from "@skeletonlabs/skeleton";
 import type { Observable } from "dexie";
 import type { Readable } from "svelte/store";
@@ -68,4 +69,13 @@ export function downloadFile(filename: string, contents: string, type: string) {
  */
 export function wrapQuery<T>(t: Observable<T>): Readable<T> {
     return t as any;
+}
+
+/**
+ * Checks a delegate presence status is present.
+ * @param p the presence status
+ * @returns whether it indicates presence
+ */
+export function isPresent(p: DelegatePresence): boolean {
+    return p !== "NP";
 }
