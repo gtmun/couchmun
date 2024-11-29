@@ -81,7 +81,7 @@
     // If extension, disable "topic" and "speakingTime":
     $effect(() => {
         if (isExtending(inputMotion)) {
-            let inputified = inputifyMotion($selectedMotion!, $delegates);
+            let inputified = inputifyMotion($selectedMotion!, []);
             
             if ("topic" in inputified) (inputMotion as any).topic = inputified.topic;
             if ("speakingTime" in inputified) (inputMotion as any).speakingTime = inputified.speakingTime;

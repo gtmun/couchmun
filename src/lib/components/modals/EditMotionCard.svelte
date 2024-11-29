@@ -5,6 +5,7 @@
     import { db } from "$lib/db";
     import { enabledDelegatesStore } from "$lib/db/del";
     import { inputifyMotion } from "$lib/motions/definitions";
+    import { untrack } from "svelte";
 
     const delegates = enabledDelegatesStore(db.delegates);
     
@@ -13,7 +14,16 @@
     }
 
     let { motion }: Props = $props();
-    let inputMotion = $state(inputifyMotion(motion, $delegates));
+    let inputMotion = $state(inputifyMotion(motion, []));
+
+    // `delegates` doesn't exist at first, so wait before populating the delegate field
+    let done = false;
+    $effect(() => {
+        if ($delegates.length > 0 && !done) untrack(() => {
+            inputMotion = inputifyMotion(motion, $delegates);
+            done = true;
+        })
+    })
 </script>
 
 <EditModal title="Editing Motion">
