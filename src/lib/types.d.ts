@@ -117,11 +117,6 @@ export type Preferences = {
  */
 export type Settings = {
     /**
-     * Delegate keys to characteristic data about the delegate (e.g., name and aliases)
-     */
-    delegateAttributes: Writable<Record<string, DelegateAttrs>>,
-
-    /**
      * The established sort order.
      * Values first in the list are prioritized, with the order parameter handling ties.
      * 
@@ -129,11 +124,6 @@ export type Settings = {
      */
     sortOrder: Writable<SortEntry[]>,
     
-    /**
-     * Keys of delegates enabled for this assembly.
-     */
-    delegatesEnabled: Writable<Record<string, boolean>>,
-
     /**
      * The title of the assembly.
      */
@@ -150,7 +140,6 @@ export type Settings = {
  * in `SessionData`.
  */
 export type AccessibleSettings = {
-    delegateAttributes: Readable<Record<string, DelegateAttrs>>,
     sortOrder: Readable<SortEntry[]>,
     title: Writable<string>
 }
@@ -206,14 +195,6 @@ export type Speaker = {
 // Session Data
 export type SessionData = {
     settings: AccessibleSettings,
-    /**
-     * Attendance status of each delegate in the current session.
-     */
-    delegateAttendance: Writable<Record<string, DelegatePresence>>,
-    /**
-     * Derived attribute (based on delegateAttendance) that produces the list of present delegates.
-     */
-    presentDelegates: Readable<string[]>,
 
     /**
      * All specified motions (from the points & motions page).
