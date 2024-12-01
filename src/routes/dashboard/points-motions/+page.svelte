@@ -16,7 +16,6 @@
   import Icon from "@iconify/svelte";
   import { getModalStore } from "@skeletonlabs/skeleton";
   import { flip } from "svelte/animate";
-  import { derived } from "svelte/store";
   import { dndzone } from "svelte-dnd-action";
 
   const { settings: { sortOrder }, motions, selectedMotion } = getSessionDataContext();
@@ -97,8 +96,9 @@
     $motions = $motions.sort(motionComparator($sortOrder));
   }
   // Check every window of two motions is in the right order:
-  const motionsSorted = derived(motions, $m => 
-    $m.slice(0, -1).every((motion, i) => motionComparator($sortOrder)(motion, $m[i + 1]) <= 0)
+  let motionsSorted = $derived(
+    Array.from({ length: $motions.length - 1 }, (_, i) => motionComparator($sortOrder)($motions[i], $motions[i + 1]) <= 0)
+      .every(b => b)
   );
 </script>
 
@@ -116,8 +116,8 @@
         aria-label="Sort Motions"
         title="Sort Motions"
 
-        class:!variant-filled-surface={$motionsSorted}
-        disabled={$motionsSorted}
+        class:!variant-filled-surface={motionsSorted}
+        disabled={motionsSorted}
       >
         <Icon icon="mdi:sort" width="24" height="24" />
       </button>

@@ -1,7 +1,5 @@
 import type { DelegateAttrs, DelegatePresence } from "$lib/types";
 import type { ModalSettings, ModalStore } from "@skeletonlabs/skeleton";
-import type { Observable } from "dexie";
-import type { Readable } from "svelte/store";
 
 /**
  * Utility for creating a confirmation modal.

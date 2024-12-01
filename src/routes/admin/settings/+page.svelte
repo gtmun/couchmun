@@ -9,7 +9,7 @@
     import type { DelegateAttrs, Preferences } from "$lib/types";
     import { downloadFile, triggerConfirmModal } from "$lib/util";
 
-    import { derived, get, type Writable } from "svelte/store";
+    import { get, type Writable } from "svelte/store";
     import Icon from "@iconify/svelte";
     import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
     import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
@@ -20,8 +20,8 @@
     const { sortOrder, preferences } = settings;
 
     let delegates = queryStore(() => db.delegates.orderBy("order").toArray(), []);
-    let delsEnabledAll = derived(delegates, $d => {
-        const [first, ...rest] = $d.map(del => del.enabled);
+    let delsEnabledAll = $derived.by(() => {
+        const [first, ...rest] = $delegates.map(del => del.enabled);
         return rest.every(k => k === first) ? first : undefined;
     });
 
@@ -304,7 +304,7 @@
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th class="text-center"><input class="checkbox" type="checkbox" checked={$delsEnabledAll} indeterminate={typeof $delsEnabledAll === "undefined"} onclick={() => setAllEnableStatuses(!$delsEnabledAll)}></th>
+                        <th class="text-center"><input class="checkbox" type="checkbox" checked={delsEnabledAll} indeterminate={typeof delsEnabledAll === "undefined"} onclick={() => setAllEnableStatuses(!delsEnabledAll)}></th>
                         <th class="text-right">Configure</th>
                     </tr>
                 </thead>

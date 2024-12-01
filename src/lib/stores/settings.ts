@@ -1,6 +1,6 @@
 import { DEFAULT_SORT_PRIORITY } from "$lib/motions/definitions";
 import type { AccessibleSettings, Settings } from "$lib/types";
-import { derived, readonly } from "svelte/store";
+import { readonly } from "svelte/store";
 import { createStore } from ".";
 
 const { getDefaults, createContext, resetContext, getStoreContext } = createStore<Settings>("settings", 
