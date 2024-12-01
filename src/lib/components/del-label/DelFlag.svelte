@@ -1,6 +1,5 @@
 <script lang="ts">
     import { getFlagUrl } from "$lib/flags/flagcdn";
-    import type { DelegateAttrs } from "$lib/types";
     import Icon from "@iconify/svelte";
 
     interface Props {

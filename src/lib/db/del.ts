@@ -2,9 +2,9 @@
  * Utilities for accessing delegate data from IndexedDB.
  */
 
-import type { DelegateID, StatsData } from "$lib/types";
+import type { Delegate, DelegateID, StatsData } from "$lib/types";
 import type { IndexableType } from "dexie";
-import { queryStore, type db, type Delegate } from ".";
+import { queryStore, type db } from ".";
 
 /**
  * Gets a collection of all of the enabled delegates (controlled in settings) 

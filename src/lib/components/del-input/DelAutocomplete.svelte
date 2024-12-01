@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Delegate } from "$lib/db";
+    import type { Delegate } from "$lib/types";
     import { isPresent } from "$lib/util";
     import { Autocomplete, type AutocompleteOption } from "@skeletonlabs/skeleton";
 

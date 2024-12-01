@@ -1,7 +1,7 @@
 <script lang="ts">
     import DelAutocomplete from "$lib/components/del-input/DelAutocomplete.svelte";
+    import type { Delegate } from "$lib/types";
     import { type PopupSettings } from "@skeletonlabs/skeleton";
-    import type { Delegate } from "$lib/db";
 
     interface Props {
         popupID: string;

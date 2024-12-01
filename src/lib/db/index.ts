@@ -1,22 +1,9 @@
 import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
 import { getFlagUrl } from "$lib/flags/flagcdn";
-import type { DelegateAttrs, DelegateID, DelegatePresence, StatsData } from "$lib/types";
+import type { Delegate, DelegateAttrs } from "$lib/types";
 import { Dexie, liveQuery, type EntityTable, type InsertType, type Observable } from "dexie";
 import { derived, type Readable, type Updater, type Writable } from "svelte/store";
 
-export interface Delegate {
-    // Indexes:
-    id: DelegateID,
-    name: string,
-    aliases: string[]
-    order: number,
-
-    // Non-indexes:
-    enabled: boolean,
-    flagURL: string,
-    presence: DelegatePresence,
-    stats: StatsData
-}
 interface SessionDatabase extends Dexie {
     delegates: EntityTable<Delegate, "id">
 }
