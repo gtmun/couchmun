@@ -2,15 +2,11 @@
     import { base } from "$app/paths";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import IconLabel from "$lib/components/IconLabel.svelte";
-    import { db, writableTableStore } from "$lib/db";
-    import { getEnabledDelegates } from "$lib/db/del";
+    import { getSessionStores } from "$lib/stores/session";
     import type { DelegatePresence } from "$lib/types";
     import { RadioGroup, RadioItem } from "@skeletonlabs/skeleton";
 
-    let delegates = writableTableStore(
-        db.delegates,
-        (table) => getEnabledDelegates(table).toArray()
-    );
+    let { delegates } = getSessionStores();
 
     const radio: Record<DelegatePresence, { label: string, icon: string }> = {
         NP: { label: "Absent", icon: "mdi:account-off" },

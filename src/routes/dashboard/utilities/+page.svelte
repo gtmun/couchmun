@@ -3,15 +3,14 @@
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
     import Timer from "$lib/components/Timer.svelte";
-    import { db } from "$lib/db";
-    import { enabledDelegatesStore } from "$lib/db/del";
+    import { getSessionStores } from "$lib/stores/session";
     import { nameEq } from "$lib/util";
     import { parseTime } from "$lib/util/time";
 
     import Icon from "@iconify/svelte";
     import { popup, type PopupSettings } from "@skeletonlabs/skeleton";
 
-    const delegates = enabledDelegatesStore(db.delegates);
+    const { delegates } = getSessionStores();
 
     // Timer
     let timerEnabled: boolean = $state(true);

@@ -2,12 +2,11 @@
     import type { Motion } from "$lib/types";
     import MotionForm from "$lib/components/MotionForm.svelte";
     import EditModal from "$lib/components/modals/EditModal.svelte";
-    import { db } from "$lib/db";
-    import { enabledDelegatesStore } from "$lib/db/del";
     import { inputifyMotion } from "$lib/motions/definitions";
+    import { getSessionStores } from "$lib/stores/session";
     import { untrack } from "svelte";
 
-    const delegates = enabledDelegatesStore(db.delegates);
+    const { delegates } = getSessionStores();
     
     interface Props {
         motion: Motion;

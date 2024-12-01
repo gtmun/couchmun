@@ -50,6 +50,10 @@ export interface Delegate {
     stats: StatsData
 }
 
+export type Stores = {
+    delegates: Readable<Delegate[]>
+};
+
 // These types are used to define motion sorting.
 
 /**

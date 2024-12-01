@@ -5,10 +5,10 @@
   import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
   import { db } from "$lib/db";
-  import { enabledDelegatesStore, findDelegate, updateDelegate } from "$lib/db/del";
+  import { findDelegate, updateDelegate } from "$lib/db/del";
   import { MOTION_LABELS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
-  import { getSessionDataContext } from "$lib/stores/session";
+  import { getSessionDataContext, getSessionStores } from "$lib/stores/session";
   import type { Motion } from "$lib/types";
   import { createDragTr, isDndShadow, processDrag } from "$lib/util/dnd";
   import { stringifyTime } from "$lib/util/time";
@@ -20,7 +20,7 @@
   import { dndzone } from "svelte-dnd-action";
 
   const { settings: { sortOrder }, motions, selectedMotion } = getSessionDataContext();
-  const delegates = enabledDelegatesStore(db.delegates);
+  const { delegates } = getSessionStores();
   const modalStore = getModalStore();
 
   let motionTable: HTMLTableElement | undefined = $state();

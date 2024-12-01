@@ -2,8 +2,8 @@
     import MetaTags from "$lib/components/MetaTags.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import { db } from "$lib/db";
-    import { defaultStats, enabledDelegatesStore } from "$lib/db/del";
-    import { getSessionDataContext } from "$lib/stores/session";
+    import { defaultStats } from "$lib/db/del";
+    import { getSessionDataContext, getSessionStores } from "$lib/stores/session";
     import type { Delegate, StatsData } from "$lib/types";
     import { compare, downloadFile, isPresent, triggerConfirmModal } from "$lib/util";
     import { stringifyTime } from "$lib/util/time";
@@ -12,7 +12,7 @@
     import { ProgressBar, type PopupSettings, getModalStore, popup } from "@skeletonlabs/skeleton";
 
     const { settings: { title } } = getSessionDataContext();
-    const delegates = enabledDelegatesStore(db.delegates);
+    const { delegates } = getSessionStores();
     const modalStore = getModalStore();
 
     let sortOrder: { item: SortKey, descending: boolean } = $state({

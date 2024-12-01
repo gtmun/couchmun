@@ -32,7 +32,7 @@
     }
 
     const { settings: { title } } = getSessionDataContext();
-    const delegateCount = queryStore(() => db.delegates.filter(d => isPresent(d.presence)).count(), 0);
+    let delegateCount = queryStore(() => db.delegates.filter(d => d.enabled && isPresent(d.presence)).count(), 0);
 
     const links: Record<string, { label: string }> = {
         "/dashboard/roll-call":      { label: "Roll Call" },

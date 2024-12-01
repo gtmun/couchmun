@@ -3,15 +3,15 @@
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { db } from "$lib/db";
-    import { enabledDelegatesStore, findDelegate, updateDelegate } from "$lib/db/del";
+    import { findDelegate, updateDelegate } from "$lib/db/del";
     import { presentDelegateSchema } from "$lib/motions/form_validation";
-    import { getSessionDataContext } from "$lib/stores/session";
+    import { getSessionDataContext, getSessionStores } from "$lib/stores/session";
     import { parseTime } from "$lib/util/time";
     import Icon from "@iconify/svelte";
     import { untrack } from "svelte";
 
     const { speakersList: order } = getSessionDataContext();
-    const delegates = enabledDelegatesStore(db.delegates);
+    const { delegates } = getSessionStores();
 
     // Timer
     let running: boolean = $state(false);

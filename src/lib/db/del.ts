@@ -4,25 +4,7 @@
 
 import type { Delegate, DelegateID, StatsData } from "$lib/types";
 import type { IndexableType } from "dexie";
-import { queryStore, type db } from ".";
-
-/**
- * Gets a collection of all of the enabled delegates (controlled in settings) 
- * from the given delegate table in the database.
- * @param table the delegate table
- * @returns the collection
- */
-export function getEnabledDelegates(table: typeof db.delegates) {
-    return table.orderBy("order").filter(e => e.enabled);
-}
-/**
- * Makes a readable array store of all the enabled delegates.
- * @param table the delegate table
- * @returns the store
- */
-export function enabledDelegatesStore(table: typeof db.delegates) {
-    return queryStore(() => getEnabledDelegates(table).toArray(), []);
-}
+import { type db } from ".";
 
 /**
  * Find the delegate with the matching ID (note this is linear search).
