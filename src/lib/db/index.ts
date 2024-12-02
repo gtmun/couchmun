@@ -8,7 +8,7 @@ interface SessionDatabase extends Dexie {
     delegates: EntityTable<Delegate, "id">
 }
 
-export const db = new Dexie("sessionDatabase") as SessionDatabase;
+export const db = new Dexie("sessionDatabase", { cache: "immutable" }) as SessionDatabase;
 db.version(1).stores({
     delegates: "++id, name, *aliases, order"
 });
