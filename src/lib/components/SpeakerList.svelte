@@ -202,7 +202,7 @@
     }
 </script>
 
-<div class="card p-4 overflow-y-hidden flex-grow flex flex-col items-stretch gap-4">
+<div class="card p-4 overflow-y-hidden flex-grow flex flex-col items-stretch gap-4 min-w-[25rem]">
     <h4 class="h4 flex justify-center" id="speaker-list-header">
         Speakers List
     </h4>
@@ -329,9 +329,6 @@
             presentDelegates={useDefaultControls.presentDelegates}
             on:selection={e => addSpeaker(e.detail.label, true)}
         />
-    {:else}
-        <!-- Placeholder space if no default controls are present -->
-        <div class="h-11"></div>
     {/if}
 </div>
 
