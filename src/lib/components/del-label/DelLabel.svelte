@@ -3,32 +3,32 @@
     import type { DelegateAttrs } from "$lib/types";
 
     interface Props {
-        key: string;
         attrs: DelegateAttrs | undefined;
         height?: string | undefined;
         inline?: boolean;
-        fallback?: "un" | "icon" | "none" | undefined;
+        fallbackFlag?: "un" | "icon" | "none" | undefined;
+        fallbackName?: string | undefined;
     }
 
     let {
-        key,
         attrs,
         height = undefined,
         inline = false,
-        fallback = undefined
+        fallbackFlag = undefined,
+        fallbackName = undefined
     }: Props = $props();
 
-    let label = $derived(attrs?.name ?? key ?? "");
+    let label = $derived(attrs?.name ?? fallbackName ?? "");
 </script>
 
 {#if inline}
 <div class="flex items-center gap-1">
-    <DelFlag {key} {attrs} height={height ?? "h-4"} fallback={fallback ?? "none"} />
+    <DelFlag {label} url={attrs?.flagURL} height={height ?? "h-4"} fallback={fallbackFlag ?? "none"} />
     {label}
 </div>
 {:else}
 <div class="flex flex-col items-center gap-3">
     <h2 class="h2">{label}</h2>
-    <DelFlag {key} {attrs} height={height ?? "h-48"} fallback={fallback ?? "un"} />
+    <DelFlag {label} url={attrs?.flagURL} height={height ?? "h-48"} fallback={fallbackFlag ?? "un"} />
 </div>
 {/if}

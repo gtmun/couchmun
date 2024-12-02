@@ -1,36 +1,24 @@
 <script lang="ts">
     import { getFlagUrl } from "$lib/flags/flagcdn";
-    import type { DelegateAttrs } from "$lib/types";
     import Icon from "@iconify/svelte";
 
     interface Props {
-        key: string;
+        label: string,
+        url: string | undefined,
         height?: string;
-        attrs: DelegateAttrs | undefined;
         fallback?: "un" | "icon" | "none";
     }
 
     let {
-        key,
+        label,
+        url,
         height = "",
-        attrs,
         fallback = "none"
     }: Props = $props();
 
     // Only set flag on client-side, to prevent hydration mismatch issues.
     // https://svelte.dev/docs/svelte/v5-migration-guide#Other-breaking-changes-img-src-and-html-hydration-mismatches-are-not-repaired
-    let flag: URL | undefined = $state();
-    $effect(() => {
-        if (attrs?.flagURL) {
-            flag = new URL(attrs.flagURL);
-        } else {
-            getFlagUrl(key).then(flagURL => {
-                flag = flagURL;
-            })
-        }
-    });
-
-    let label = $derived(attrs?.name ?? key ?? "");
+    let flag: URL | undefined = $derived(url ? new URL(url) : undefined);
 </script>
 
 {#if flag}

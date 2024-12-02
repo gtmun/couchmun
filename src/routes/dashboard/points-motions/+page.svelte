@@ -4,10 +4,11 @@
   import IconLabel from "$lib/components/IconLabel.svelte";
   import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
+  import { db } from "$lib/db";
+  import { findDelegate, updateDelegate } from "$lib/db/del";
   import { MOTION_LABELS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import { getSessionDataContext } from "$lib/stores/session";
-  import { getStatsContext, updateStats } from "$lib/stores/stats";
   import type { Motion } from "$lib/types";
   import { createDragTr, isDndShadow, processDrag } from "$lib/util/dnd";
   import { stringifyTime } from "$lib/util/time";
@@ -15,11 +16,9 @@
   import Icon from "@iconify/svelte";
   import { getModalStore } from "@skeletonlabs/skeleton";
   import { flip } from "svelte/animate";
-  import { derived } from "svelte/store";
   import { dndzone } from "svelte-dnd-action";
 
-  const { settings: { delegateAttributes, sortOrder }, motions, selectedMotion } = getSessionDataContext();
-  const { stats } = getStatsContext();
+  const { settings: { sortOrder }, motions, selectedMotion, delegates } = getSessionDataContext();
   const modalStore = getModalStore();
 
   let motionTable: HTMLTableElement | undefined = $state();
@@ -29,7 +28,7 @@
       $m.push(motion);
       return $m;
     });
-    updateStats(stats, motion.delegate, dat => dat.motionsProposed++);
+    updateDelegate(db.delegates, motion.delegate, d => { d.stats.motionsProposed++; });
   }
 
   /**
@@ -72,7 +71,7 @@
   function acceptMotion(motion: Motion) {
     $selectedMotion = motion;
     $motions = [];
-    updateStats(stats, motion.delegate, dat => dat.motionsAccepted++);
+    updateDelegate(db.delegates, motion.delegate, d => { d.stats.motionsAccepted++; });
   }
   function editMotion(i: number, motion: Motion) {
     modalStore.trigger({
@@ -84,8 +83,8 @@
         response(motion?: Motion) {
           if (!motion) return;
           motions.update($m => {
-            updateStats(stats, $m[i].delegate, dat => dat.motionsProposed--);
-            updateStats(stats, motion.delegate, dat => dat.motionsProposed++);
+            updateDelegate(db.delegates, $m[i].delegate, d => { d.stats.motionsProposed--; });
+            updateDelegate(db.delegates, motion.delegate, d => { d.stats.motionsProposed++; });
             $m[i] = motion;
             return $m;
           });
@@ -96,8 +95,9 @@
     $motions = $motions.sort(motionComparator($sortOrder));
   }
   // Check every window of two motions is in the right order:
-  const motionsSorted = derived(motions, $m => 
-    $m.slice(0, -1).every((motion, i) => motionComparator($sortOrder)(motion, $m[i + 1]) <= 0)
+  let motionsSorted = $derived(
+    Array.from({ length: $motions.length - 1 }, (_, i) => motionComparator($sortOrder)($motions[i], $motions[i + 1]) <= 0)
+      .every(b => b)
   );
 </script>
 
@@ -115,8 +115,8 @@
         aria-label="Sort Motions"
         title="Sort Motions"
 
-        class:!variant-filled-surface={$motionsSorted}
-        disabled={$motionsSorted}
+        class:!variant-filled-surface={motionsSorted}
+        disabled={motionsSorted}
       >
         <Icon icon="mdi:sort" width="24" height="24" />
       </button>
@@ -147,7 +147,8 @@
           aria-labelledby="motion-table-header"
         >
           {#each $motions as motion, i (motion.id)}
-            {@const delName = $delegateAttributes[motion.delegate]?.name ?? motion.delegate}
+            {@const delAttrs = findDelegate($delegates, motion.delegate)}
+            {@const delName = delAttrs?.name ?? "unknown"}
             {@const shadow = isDndShadow(motion)}
             <tr 
               class="dnd-list-item hover:!bg-primary-500/25"
@@ -188,7 +189,9 @@
                 </div>
               </td>
               <td>{motionName(motion)}</td>
-              <td><DelLabel key={motion.delegate} attrs={$delegateAttributes[motion.delegate]} inline /></td>
+              <td>
+                <DelLabel attrs={delAttrs} fallbackName={delName} inline />
+              </td>
               <td>{apply(motion, ["topic"], m => m.topic, "-")}</td>
               <td>{apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
               <td>{apply(motion, ["speakingTime"], m => stringifyTime(m.speakingTime), "-")}</td>

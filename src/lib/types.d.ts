@@ -1,6 +1,19 @@
 import type { Readable, Writable } from "svelte/store";
 
 /**
+ * ID of a delegate
+ */
+export type DelegateID = number;
+/**
+ * ID of a given motion in the motion table.
+ */
+export type MotionID = string;
+/**
+ * ID of a given speaker slot in the speaker list.
+ */
+export type SpeakerEntryID = string;
+
+/**
  * Attributes each delegate in a given preset should have.
  * 
  * A given preset in `delegate_presets` 
@@ -20,6 +33,21 @@ export type DelegateAttrs = {
     aliases: string[],
 
     flagURL?: string
+}
+
+// TODO: doc
+export interface Delegate {
+    // Indexes:
+    id: DelegateID,
+    name: string,
+    aliases: string[]
+    order: number,
+
+    // Non-indexes:
+    enabled: boolean,
+    flagURL: string,
+    presence: DelegatePresence,
+    stats: StatsData
 }
 
 // These types are used to define motion sorting.
@@ -104,11 +132,6 @@ export type Preferences = {
  */
 export type Settings = {
     /**
-     * Delegate keys to characteristic data about the delegate (e.g., name and aliases)
-     */
-    delegateAttributes: Writable<Record<string, DelegateAttrs>>,
-
-    /**
      * The established sort order.
      * Values first in the list are prioritized, with the order parameter handling ties.
      * 
@@ -116,11 +139,6 @@ export type Settings = {
      */
     sortOrder: Writable<SortEntry[]>,
     
-    /**
-     * Keys of delegates enabled for this assembly.
-     */
-    delegatesEnabled: Writable<Record<string, boolean>>,
-
     /**
      * The title of the assembly.
      */
@@ -137,7 +155,6 @@ export type Settings = {
  * in `SessionData`.
  */
 export type AccessibleSettings = {
-    delegateAttributes: Readable<Record<string, DelegateAttrs>>,
     sortOrder: Readable<SortEntry[]>,
     title: Writable<string>
 }
@@ -147,28 +164,28 @@ export type DelegatePresence = "NP" | "P" | "PV";
 
 // Motions
 export type Motion = {
-    id: string,
-    delegate: string,
+    id: MotionID,
+    delegate: DelegateID,
     kind: "mod", 
     totalTime: number,
     speakingTime: number,
     topic: string,
     isExtension: boolean
 } | {
-    id: string,
-    delegate: string,
+    id: MotionID,
+    delegate: DelegateID,
     kind: "unmod",
     totalTime: number,
     isExtension: boolean
 } | {
-    id: string,
-    delegate: string,
+    id: MotionID,
+    delegate: DelegateID,
     kind: "rr",
     speakingTime: number,
     topic: string
 } | {
-    id: string,
-    delegate: string,
+    id: MotionID,
+    delegate: DelegateID,
     kind: "other",
     totalTime: number,
     topic: string
@@ -179,11 +196,11 @@ export type Speaker = {
     /**
      * Identifier for this speaker entry.
      */
-    id: string,
+    id: SpeakerEntryID,
     /**
-     * The key of the delegate.
+     * The key/delegate ID of the delegate.
      */
-    key: string,
+    key: DelegateID,
     /**
      * Whether they have completed speaking.
      */
@@ -193,15 +210,8 @@ export type Speaker = {
 // Session Data
 export type SessionData = {
     settings: AccessibleSettings,
-    /**
-     * Attendance status of each delegate in the current session.
-     */
-    delegateAttendance: Writable<Record<string, DelegatePresence>>,
-    /**
-     * Derived attribute (based on delegateAttendance) that produces the list of present delegates.
-     */
-    presentDelegates: Readable<string[]>,
-
+    delegates: Readable<Delegate[]>,
+    
     /**
      * All specified motions (from the points & motions page).
      */
@@ -246,7 +256,4 @@ export type StatsData = {
      * Total duration this delegate has gone up to speak (in speakers list and moderated caucuses), in milliseconds.
      */
     durationSpoken: number
-}
-export type StatsDataStore = {
-    stats: Writable<Record<string, StatsData>>
 }

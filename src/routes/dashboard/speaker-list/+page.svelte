@@ -2,15 +2,15 @@
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import Timer from "$lib/components/Timer.svelte";
+    import { db } from "$lib/db";
+    import { findDelegate, updateDelegate } from "$lib/db/del";
     import { presentDelegateSchema } from "$lib/motions/form_validation";
     import { getSessionDataContext } from "$lib/stores/session";
-    import { getStatsContext, updateStats } from "$lib/stores/stats";
     import { parseTime } from "$lib/util/time";
     import Icon from "@iconify/svelte";
     import { untrack } from "svelte";
 
-    const { settings: { delegateAttributes }, presentDelegates, speakersList: order } = getSessionDataContext();
-    const { stats } = getStatsContext();
+    const { speakersList: order, delegates } = getSessionDataContext();
 
     // Timer
     let running: boolean = $state(false);
@@ -58,7 +58,7 @@
     <div class="flex flex-col flex-grow flex-shrink-0 basis-full lg:basis-auto">
         <div class="flex flex-col gap-5 justify-center flex-grow">
             {#if typeof selectedSpeaker !== "undefined"}
-                <DelLabel key={selectedSpeaker.key} attrs={$delegateAttributes[selectedSpeaker.key]} />
+                <DelLabel attrs={findDelegate($delegates, selectedSpeaker.key)} />
             {/if}
             
             <Timer
@@ -67,7 +67,7 @@
                 bind:running
                 bind:this={timer}
                 disableKeyHandlers={typeof selectedSpeaker === "undefined"}
-                onPause={(t) => updateStats(stats, selectedSpeaker?.key, dat => dat.durationSpoken += t)}
+                onPause={(t) => updateDelegate(db.delegates, selectedSpeaker?.key, d => { d.stats.durationSpoken += t; })}
                 editable
             />
             <div class="flex flex-row gap-3 justify-center">
@@ -90,14 +90,13 @@
         <!-- List -->
         <SpeakerList
             bind:order={$order}
-            delegates={$delegateAttributes}
+            delegates={$delegates}
             bind:this={speakersList}
             useDefaultControls={{
-                presentDelegates: $presentDelegates,
                 validator: presentDelegateSchema
             }}
             onBeforeSpeakerUpdate={reset}
-            onMarkComplete={(key, isRepeat) => { if (!isRepeat) updateStats(stats, key, dat => dat.timesSpoken++) }}
+            onMarkComplete={(key, isRepeat) => { if (!isRepeat) updateDelegate(db.delegates, key, d => { d.stats.timesSpoken++; }) }}
         />
         <!-- Timer config -->
         <div class="flex flex-row gap-5">

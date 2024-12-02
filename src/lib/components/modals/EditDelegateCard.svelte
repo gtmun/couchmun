@@ -3,12 +3,10 @@
     import EditModal from "$lib/components/modals/EditModal.svelte";
 
     interface Props {
-        key?: string | undefined;
-        attrs?: DelegateAttrs;
+        attrs: DelegateAttrs
     }
 
     let { 
-        key = $bindable(undefined), 
         attrs = $bindable({
             name: "",
             aliases: []
@@ -27,17 +25,13 @@
     function submitValue(e: SubmitEvent, submit: (t: any) => void) {
         e.preventDefault();
         attrs.aliases = splitAliasInput(aliasesInput);
-        submit({ key, attrs });
+        submit({ attrs });
     }
 </script>
 
 <EditModal title="Editing {attrs.name}">
     {#snippet children({ submit, close })}
         <form class="flex flex-col gap-3" onsubmit={(e) => submitValue(e, submit)}>
-            <label>
-                <span>Key</span>
-                <input class="input" bind:value={key} required placeholder="XM">
-            </label>
             <label>
                 <span>Name</span>
                 <input class="input" bind:value={attrs.name} required placeholder="Modelunia">

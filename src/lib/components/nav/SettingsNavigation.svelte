@@ -19,8 +19,8 @@
         close();
         triggerConfirmModal(modalStore,
             "Are you sure you want to reset the session?", 
-            () => {
-                resetSessionDataContext(sessionData);
+            async () => {
+                await resetSessionDataContext(sessionData);
                 goto(`${base}/dashboard/roll-call`);
             }
         )

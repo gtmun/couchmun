@@ -4,15 +4,25 @@
     import EditModal from "$lib/components/modals/EditModal.svelte";
     import { inputifyMotion } from "$lib/motions/definitions";
     import { getSessionDataContext } from "$lib/stores/session";
+    import { untrack } from "svelte";
 
-    const { settings: { delegateAttributes } } = getSessionDataContext();
+    const { delegates } = getSessionDataContext();
     
     interface Props {
         motion: Motion;
     }
 
     let { motion }: Props = $props();
-    let inputMotion = $state(inputifyMotion(motion, $delegateAttributes));
+    let inputMotion = $state(inputifyMotion(motion, []));
+
+    // `delegates` doesn't exist at first, so wait before populating the delegate field
+    let done = false;
+    $effect(() => {
+        if ($delegates.length > 0 && !done) untrack(() => {
+            inputMotion = inputifyMotion(motion, $delegates);
+            done = true;
+        })
+    })
 </script>
 
 <EditModal title="Editing Motion">

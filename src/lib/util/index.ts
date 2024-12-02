@@ -1,3 +1,4 @@
+import type { DelegateAttrs, DelegatePresence } from "$lib/types";
 import type { ModalSettings, ModalStore } from "@skeletonlabs/skeleton";
 
 /**
@@ -31,23 +32,6 @@ export type Comparator<K> = (a: K, b: K) => number;
 export const compare = ((a: any, b: any, reverse: boolean = false) => (reverse ? -1 : 1) * (a < b ? -1 : a > b ? 1 : 0)) satisfies Comparator<any>;
 
 /**
- * Creates a new object where Maps each entry in the object to a new entry.
- * @param o the object
- * @param cb the callback
- * @returns the new object
- */
-export function mapObj<
-    K extends keyof unknown, V, 
-    K1 extends keyof unknown, V1
->(o: Record<K, V>, cb: (key: K, val: V, i: number) => [K1, V1]): Record<K1, V1> {
-    return Object.fromEntries(
-        Object.entries<V>(o)
-            .map(([k, v], i) => cb(k as K, v, i)
-        )
-    );
-}
-
-/**
  * Allows user to download a file.
  * @param filename The name of the file to download
  * @param contents The string in the file
@@ -70,4 +54,24 @@ export function downloadFile(filename: string, contents: string, type: string) {
         URL.revokeObjectURL(href);
         document.body.removeChild(a);
     }, 0);
+}
+
+/**
+ * Checks a delegate presence status is present.
+ * @param p the presence status
+ * @returns whether it indicates presence
+ */
+export function isPresent(p: DelegatePresence): boolean {
+    return p !== "NP";
+}
+
+/**
+ * Checks if name is associated with a given delegate.
+ * @param name name we're looking at
+ * @param attr delegate we're looking at
+ * @returns whether this delegate could correctly be referred to by the given name
+ */
+export function nameEq(name: string, attr: DelegateAttrs) {
+    const eq = (a: string, b: string) => a.localeCompare(b, undefined, { sensitivity: "base" }) == 0;
+    return [attr.name, ...attr.aliases].some(n => eq(n, name));
 }
