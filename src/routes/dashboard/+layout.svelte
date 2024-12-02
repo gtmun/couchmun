@@ -3,6 +3,7 @@
     import MetaTags from '$lib/components/MetaTags.svelte';
     import BarStats from '$lib/components/app-bar/BarStats.svelte';
     import BarTitle from '$lib/components/app-bar/BarTitle.svelte';
+    import BarTopic from '$lib/components/app-bar/BarTopic.svelte';
     import Navigation from '$lib/components/nav/Navigation.svelte';
     import SettingsNavigation from '$lib/components/nav/SettingsNavigation.svelte';
     import { getSessionDataContext } from '$lib/stores/session';
@@ -98,13 +99,13 @@
                     class:flex-col={committeeMain}
                 >
                     <BarTitle bind:title={$title} size={committeeMain ? "md" : "sm"} />
-                    <div class="border-2 m-1 mt-0 border-surface-800-100-token" role="separator"></div>
+                    <div class={"border-2 border-surface-800-100-token " + (committeeMain ? "m-1 mt-0" : "mx-4")} role="separator"></div>
                     <div class="flex items-center justify-center">
                         <BarStats total={$presentDelegates.length} />
                     </div>
                 </div>
                 {#if appBarData.topic}
-                    <h2 class="h2 capitalize text-center"><i>Topic: {appBarData.topic}</i></h2>
+                    <BarTopic bind:topic={appBarData.topic}/>
                 {/if}
             </div>
             {#snippet trail()}
