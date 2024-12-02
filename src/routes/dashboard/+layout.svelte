@@ -1,9 +1,8 @@
 <script lang="ts">
     import { navigating, page } from '$app/stores';
     import MetaTags from '$lib/components/MetaTags.svelte';
+    import BarHeader from '$lib/components/app-bar/BarHeader.svelte';
     import BarStats from '$lib/components/app-bar/BarStats.svelte';
-    import BarTitle from '$lib/components/app-bar/BarTitle.svelte';
-    import BarTopic from '$lib/components/app-bar/BarTopic.svelte';
     import Navigation from '$lib/components/nav/Navigation.svelte';
     import SettingsNavigation from '$lib/components/nav/SettingsNavigation.svelte';
     import { getSessionDataContext } from '$lib/stores/session';
@@ -93,19 +92,19 @@
                 if commiteeMain == false: the committee title are relegated for something else
             -->
             {@const committeeMain = !appBarData.topic}
-            <div class="flex flex-col items-center gap-3">
+            <div class="flex flex-col items-center gap-2">
                 <div
                     class="flex max-sm:flex-col gap-1 items-stretch"
                     class:flex-col={committeeMain}
                 >
-                    <BarTitle bind:title={$title} size={committeeMain ? "md" : "sm"} />
+                    <BarHeader bind:title={$title} size={committeeMain ? "md" : "sm"} />
                     <div class="border-2 border-surface-800-100-token {committeeMain ? "m-1 mt-0" : "mx-4"}" role="separator"></div>
                     <div class="flex items-center justify-center">
                         <BarStats total={$presentDelegates.length} />
                     </div>
                 </div>
                 {#if appBarData.topic}
-                    <BarTopic bind:topic={appBarData.topic}/>
+                    <BarHeader bind:title={appBarData.topic} styles="italic capitalize" />
                 {/if}
             </div>
             {#snippet trail()}
