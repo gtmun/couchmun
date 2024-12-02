@@ -57,4 +57,5 @@
     />
 {:else}
     <!-- do nothing -->
+     <div class={height}></div>
 {/if}
