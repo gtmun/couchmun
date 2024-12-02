@@ -99,7 +99,7 @@
                     class:flex-col={committeeMain}
                 >
                     <BarTitle bind:title={$title} size={committeeMain ? "md" : "sm"} />
-                    <div class={"border-2 border-surface-800-100-token " + (committeeMain ? "m-1 mt-0" : "mx-4")} role="separator"></div>
+                    <div class="border-2 border-surface-800-100-token {committeeMain ? "m-1 mt-0" : "mx-4"}" role="separator"></div>
                     <div class="flex items-center justify-center">
                         <BarStats total={$presentDelegates.length} />
                     </div>

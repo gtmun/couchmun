@@ -326,20 +326,8 @@
             on:selection={e => addSpeaker(e.detail.label, true)}
         />
     {:else}
-        <div class="flex flex-col gap-1" style="visibility: hidden;">
-            <div class="flex flex-row gap-1">
-                <!-- Placeholder to preserve spacing -->
-                <form class="contents">
-                    <input {...defaultPlaceholder(false)}/>
-                    <div class="ml-2">
-                        <button class="btn btn-icon variant-filled-primary" style="width: 24; height:24;" aria-label="placeholder"></button>
-                    </div>
-                    <div>
-                        <button class="btn btn-icon variant-filled-primary" style="width: 24; height:24;" aria-label="placeholder"></button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <!-- Placeholder space if no default controls are present -->
+        <div class="h-11"></div>
     {/if}
 </div>
 
