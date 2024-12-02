@@ -50,10 +50,6 @@ export interface Delegate {
     stats: StatsData
 }
 
-export type Stores = {
-    delegates: Readable<Delegate[]>
-};
-
 // These types are used to define motion sorting.
 
 /**
@@ -214,7 +210,8 @@ export type Speaker = {
 // Session Data
 export type SessionData = {
     settings: AccessibleSettings,
-
+    delegates: Readable<Delegate[]>,
+    
     /**
      * All specified motions (from the points & motions page).
      */

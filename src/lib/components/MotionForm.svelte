@@ -4,7 +4,7 @@
     import { createMotionSchema, inputifyMotion, MOTION_FIELDS, MOTION_LABELS } from "$lib/motions/definitions";
     import { formatValidationError } from "$lib/motions/form_validation";
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
-    import { getSessionDataContext, getSessionStores } from "$lib/stores/session";
+    import { getSessionDataContext } from "$lib/stores/session";
     import { addColons, parseTime } from "$lib/util/time";
     import type { Motion } from "$lib/types";
     
@@ -13,8 +13,7 @@
     import { type Snippet } from 'svelte';
     import { isPresent } from "$lib/util";
 
-    const { selectedMotion } = getSessionDataContext();
-    const { delegates } = getSessionStores();
+    const { selectedMotion, delegates } = getSessionDataContext();
     const motionSchema = $derived(createMotionSchema($delegates));
     const defaultInputMotion = () => ({ id: crypto.randomUUID(), kind: "mod" } satisfies MotionInput);
     const resetInputErrors = () => { inputError = undefined };

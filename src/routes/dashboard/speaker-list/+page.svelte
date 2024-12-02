@@ -5,13 +5,12 @@
     import { db } from "$lib/db";
     import { findDelegate, updateDelegate } from "$lib/db/del";
     import { presentDelegateSchema } from "$lib/motions/form_validation";
-    import { getSessionDataContext, getSessionStores } from "$lib/stores/session";
+    import { getSessionDataContext } from "$lib/stores/session";
     import { parseTime } from "$lib/util/time";
     import Icon from "@iconify/svelte";
     import { untrack } from "svelte";
 
-    const { speakersList: order } = getSessionDataContext();
-    const { delegates } = getSessionStores();
+    const { speakersList: order, delegates } = getSessionDataContext();
 
     // Timer
     let running: boolean = $state(false);

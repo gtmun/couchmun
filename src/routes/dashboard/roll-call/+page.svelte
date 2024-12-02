@@ -2,11 +2,11 @@
     import { base } from "$app/paths";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import IconLabel from "$lib/components/IconLabel.svelte";
-    import { getSessionStores } from "$lib/stores/session";
+    import { getSessionDataContext } from "$lib/stores/session";
     import type { DelegatePresence } from "$lib/types";
     import { RadioGroup, RadioItem } from "@skeletonlabs/skeleton";
 
-    let { delegates } = getSessionStores();
+    const { delegates } = getSessionDataContext();
 
     const radio: Record<DelegatePresence, { label: string, icon: string }> = {
         NP: { label: "Absent", icon: "mdi:account-off" },

@@ -4,7 +4,7 @@
     import Timer from "$lib/components/Timer.svelte";
     import { db } from "$lib/db";
     import { findDelegate, updateDelegate } from "$lib/db/del";
-    import { getSessionStores } from "$lib/stores/session";
+    import { getSessionDataContext } from "$lib/stores/session";
     import type { AppBarData, Motion, Speaker } from "$lib/types";
     import { isPresent } from "$lib/util";
     import Icon from "@iconify/svelte";
@@ -15,7 +15,7 @@
     }
     let { motion }: Props = $props();
 
-    const { delegates } = getSessionStores();
+    const { delegates } = getSessionDataContext();
     const appBarData = getContext<AppBarData>("app-bar");
     $effect(() => {
         appBarData.topic = motion.topic;

@@ -3,10 +3,10 @@
     import MotionForm from "$lib/components/MotionForm.svelte";
     import EditModal from "$lib/components/modals/EditModal.svelte";
     import { inputifyMotion } from "$lib/motions/definitions";
-    import { getSessionStores } from "$lib/stores/session";
+    import { getSessionDataContext } from "$lib/stores/session";
     import { untrack } from "svelte";
 
-    const { delegates } = getSessionStores();
+    const { delegates } = getSessionDataContext();
     
     interface Props {
         motion: Motion;

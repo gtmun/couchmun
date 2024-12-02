@@ -5,7 +5,7 @@
     import { db } from "$lib/db";
     import { findDelegate, updateDelegate } from "$lib/db/del";
     import { presentDelegateSchema } from "$lib/motions/form_validation";
-    import { getSessionStores } from "$lib/stores/session";
+    import { getSessionDataContext } from "$lib/stores/session";
     import type { AppBarData, Motion, Speaker } from "$lib/types";
     import Icon from "@iconify/svelte";
     import { getContext, untrack } from "svelte";
@@ -15,7 +15,7 @@
     }
     let { motion }: Props = $props();
 
-    const { delegates } = getSessionStores();
+    const { delegates } = getSessionDataContext();
     
     const appBarData = getContext<AppBarData>("app-bar");
     $effect(() => {

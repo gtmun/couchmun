@@ -3,7 +3,7 @@
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import { db } from "$lib/db";
     import { defaultStats } from "$lib/db/del";
-    import { getSessionDataContext, getSessionStores } from "$lib/stores/session";
+    import { getSessionDataContext } from "$lib/stores/session";
     import type { Delegate, StatsData } from "$lib/types";
     import { compare, downloadFile, isPresent, triggerConfirmModal } from "$lib/util";
     import { stringifyTime } from "$lib/util/time";
@@ -11,8 +11,7 @@
     import Icon from "@iconify/svelte";
     import { ProgressBar, type PopupSettings, getModalStore, popup } from "@skeletonlabs/skeleton";
 
-    const { settings: { title } } = getSessionDataContext();
-    const { delegates } = getSessionStores();
+    const { settings: { title }, delegates } = getSessionDataContext();
     const modalStore = getModalStore();
 
     let sortOrder: { item: SortKey, descending: boolean } = $state({
