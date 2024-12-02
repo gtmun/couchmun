@@ -57,13 +57,7 @@
     <div class="flex flex-col flex-grow gap-5 justify-center">
         {#if labelType === "delegate"}
             {@const key = getKey(labelText)}
-
-            {#if labelText !== ""}
-                <DelLabel {key} attrs={$delegateAttributes[key]} />
-            {:else}
-                <DelLabel key="&nbsp" attrs={undefined} fallback="none"/>
-            {/if}
-            
+            <DelLabel {key} attrs={$delegateAttributes[key]} />
         {:else if labelType === "title"}
             <h2 class="h2 text-center">{labelText}</h2>
         {/if}

@@ -17,7 +17,7 @@
     const { stats } = getStatsContext();
     const appBarData = getContext<AppBarData>("app-bar");
     $effect(() => {
-        appBarData.topic = "Topic:\xa0" + motion.topic;
+        appBarData.topic = motion.topic;
     });
 
     // Timer
@@ -56,8 +56,6 @@
         <div class="flex flex-col gap-5 justify-center flex-grow">
             {#if typeof selectedSpeaker !== "undefined"}
                 <DelLabel key={selectedSpeaker.key} attrs={$delegateAttributes[selectedSpeaker.key]} />
-            {:else}
-                <DelLabel key="&nbsp" attrs={undefined} fallback="none"/>
             {/if}
             <Timer 
                 name="total"
