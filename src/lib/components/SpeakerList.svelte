@@ -310,6 +310,10 @@
                     </div>
                 </form>
             </div>
+            <!-- Error messages! -->
+            <div class="text-error-500 text-center transition-[height] overflow-hidden {error ? 'h-6' : 'h-0'}">
+                {dfltControlsError ?? "\xA0"}
+            </div>
         </div>
 
         <!-- Delegate popup. 
