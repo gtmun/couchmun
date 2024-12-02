@@ -202,7 +202,7 @@
     }
 </script>
 
-<div class="card p-4 overflow-y-hidden flex-grow flex flex-col items-stretch gap-4 min-w-[25rem]">
+<div class="card p-4 overflow-y-hidden flex flex-grow flex-col items-stretch gap-4">
     <h4 class="h4 flex justify-center" id="speaker-list-header">
         Speakers List
     </h4>
