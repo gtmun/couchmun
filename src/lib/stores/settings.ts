@@ -3,19 +3,15 @@ import type { AccessibleSettings, Settings } from "$lib/types";
 import { readonly } from "svelte/store";
 import { createStore } from ".";
 
-const { getDefaults, createContext, resetContext, getStoreContext } = createStore<Settings>("settings", 
-    {
-        sortOrder: DEFAULT_SORT_PRIORITY,
-        title: "General Assembly",
-        preferences: {
-            enableMotionRoundRobin: true,
-            enableMotionExt: true,
-            pauseMainTimer: true,
-        }
-    }, 
-    () => ({}), 
-    () => ({})
-);
+const { getDefaults, createContext, resetContext, getStoreContext } = createStore<Settings>("settings", {
+    sortOrder: DEFAULT_SORT_PRIORITY,
+    title: "General Assembly",
+    preferences: {
+        enableMotionRoundRobin: true,
+        enableMotionExt: true,
+        pauseMainTimer: true,
+    }
+});
 
 export {
     getDefaults,
