@@ -56,6 +56,9 @@
     -->
     <!-- Left/Top -->
     <div class="flex flex-col flex-grow flex-shrink-0 basis-full lg:basis-auto">
+        <div class="flex justify-center h-6 lg:hidden">
+            <!-- Placeholder which matches size of chevron-down -->
+        </div>
         <div class="flex flex-col gap-5 justify-center flex-grow">
             {#if typeof selectedSpeaker !== "undefined"}
                 <DelLabel key={selectedSpeaker.key} attrs={$delegateAttributes[selectedSpeaker.key]} />
