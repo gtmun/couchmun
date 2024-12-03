@@ -228,7 +228,7 @@
             {@const selected = speaker.id === selectedSpeakerId}
             {@const shadow = isDndShadow(speaker)}
             <li
-                class="!grid grid-cols-subgrid col-span-4 dnd-list-item"
+                class="!grid grid-cols-subgrid col-span-4 dnd-list-item flex flex-col items-center gap-3 animate-in fade-in zoom-in duration-75"
                 class:!visible={shadow}
                 class:!bg-surface-300-600-token={shadow}
                 use:bindToMap={[liElements, speaker.id]}
