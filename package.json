@@ -24,6 +24,7 @@
 		"svelte": "^5.15.0",
 		"svelte-check": "^4.1.1",
 		"tailwindcss": "^3.4.17",
+		"tailwindcss-animate": "^1.0.7",
 		"tslib": "^2.8.1",
 		"typescript": "~5.7.2",
 		"vite": "^6.0.4"
