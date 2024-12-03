@@ -81,7 +81,7 @@
         </div>
     </div>
     <!-- Right/Bottom -->
-    <div class="flex flex-col gap-4 h-full lg:overflow-hidden lg:w-1/3">
+    <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-[25rem] lg:max-w-[33%]">
         <!-- List -->
         <SpeakerList
             bind:order
