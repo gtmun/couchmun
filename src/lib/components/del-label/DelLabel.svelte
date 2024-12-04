@@ -27,7 +27,7 @@
     {label}
 </div>
 {:else}
-<div class="flex flex-col items-center gap-3">
+<div class="flex flex-col items-center gap-3 animate-in fade-in zoom-in duration-150">
     <h2 class="h2">{label}</h2>
     <DelFlag {key} {attrs} height={height ?? "h-48"} fallback={fallback ?? "un"} />
 </div>
