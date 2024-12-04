@@ -29,6 +29,7 @@
         { key: "enableMotionRoundRobin", label: "Enable round robin" },
         { key: "enableMotionExt", label: "Enable extensions" },
         { key: "pauseMainTimer", label: "Pause main timer when delegate timer elapses" },
+        { key: "yieldMainTimer", label: "Return time yielded by delegates to main timer" },
     ] as const;
     const modalStore = getModalStore();
     let files: FileList | undefined = $state();

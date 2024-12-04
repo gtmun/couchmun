@@ -131,9 +131,14 @@ export type Preferences = {
     enableMotionExt: boolean,
     /**
      * Whether the main timer in a moderated caucus (and related)
-     * should automatically pause when the delegate timer pauses.
+     * should automatically pause when the delegate's time elapses.
      */
-    pauseMainTimer: boolean
+    pauseMainTimer: boolean,
+    /**
+     * Whether the main timer in a moderated caucus (and related)
+     * should keep the time yielded by the delegate.
+     */
+    yieldMainTimer: boolean
 }
 
 /**
