@@ -1,7 +1,6 @@
 <script lang="ts">
     import DelFlag from "$lib/components/del-label/DelFlag.svelte";
     import type { DelegateAttrs } from "$lib/types";
-    import { scale } from "svelte/transition";
 
     interface Props {
         key: string;
@@ -28,7 +27,7 @@
     {label}
 </div>
 {:else}
-<div class="flex flex-col items-center gap-3" transition:scale|global={{ duration: 150 }}>
+<div class="flex flex-col items-center gap-3">
     <h2 class="h2">{label}</h2>
     <DelFlag {key} {attrs} height={height ?? "h-48"} fallback={fallback ?? "un"} />
 </div>
