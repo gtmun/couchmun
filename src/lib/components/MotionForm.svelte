@@ -37,6 +37,10 @@
     function submitMotion(e: SubmitEvent) {
         e.preventDefault();
 
+        if (inputMotion.kind === "rr") {
+            inputMotion.totalSpeakers = $presentDelegates.length.toString();
+        }
+
         // Filter out any keys that aren't the correct kind:
         for (let key of Object.keys(inputMotion)) {
             if (!hasField(inputMotion, [key])) {

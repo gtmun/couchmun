@@ -44,12 +44,14 @@ function getSortProperty(m: Motion, key: SortOrderProperty): unknown {
     if (key === "delegate") {
         if (hasSortProperty(m, key)) return m.delegate;
     } else if (key === "nSpeakers") {
+        if (m.kind === "rr") return m.totalSpeakers;
         if (hasSortProperty(m, key)) return m.totalTime / m.speakingTime;
     } else if (key === "speakingTime") {
         if (hasSortProperty(m, key)) return m.speakingTime;
     } else if (key === "topic") {
         if (hasSortProperty(m, key)) return m.topic;
     } else if (key === "totalTime") {
+        if (m.kind === "rr") return m.totalSpeakers * m.speakingTime;
         if (hasSortProperty(m, key)) return m.totalTime;
     } else {
         key satisfies never;

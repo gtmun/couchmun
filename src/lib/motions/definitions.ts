@@ -19,7 +19,7 @@ export const MOTION_LABELS: Record<MotionKind, string> = {
 export const MOTION_FIELDS = {
     mod:   ["id", "delegate", "kind", "totalTime", "speakingTime", "topic", "isExtension"],
     unmod: ["id", "delegate", "kind", "totalTime", "isExtension"],
-    rr:    ["id", "delegate", "kind", "speakingTime", "topic"],
+    rr:    ["id", "delegate", "kind", "totalSpeakers", "speakingTime", "topic"],
     other: ["id", "delegate", "kind", "totalTime", "topic"]
 } as const;
 
@@ -75,7 +75,8 @@ export function createMotionSchema(delegates: Record<string, DelegateAttrs>, pre
         }),
         base("rr").extend({
             speakingTime: timeSchema("Speaking time"),
-            topic: topicSchema()
+            topic: topicSchema(),
+            totalSpeakers: z.string().transform((s) => parseInt(s))
         }),
         base("other").extend({
             totalTime: timeSchema("Total time"),
