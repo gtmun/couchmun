@@ -17,7 +17,7 @@
     const { stats } = getStatsContext();
     const appBarData = getContext<AppBarData>("app-bar");
     $effect(() => {
-        appBarData.topic = motion.topic;
+        appBarData.topic = `Topic: ${motion.topic}`;
     });
 
     // Timer
