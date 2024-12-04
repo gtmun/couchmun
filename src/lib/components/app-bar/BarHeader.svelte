@@ -1,10 +1,12 @@
 <script lang="ts">
     interface Props {
         title: string,
-        size?: "sm" | "md" | "lg"
+        size?: "sm" | "md" | "lg",
+        styles?: string,
+        editable?: boolean
     }
 
-    let { title = $bindable(), size = "md" }: Props = $props();
+    let { title = $bindable(), size = "md", styles = "", editable = true }: Props = $props();
     let heading: HTMLHeadingElement | undefined = $state();
 
     function updateTitle() {
@@ -24,13 +26,13 @@
 
 
 <h1 
-    class="text-center break-all border-b-4 border-transparent hover:border-surface-500 focus:border-surface-500 transition-[border-color,font-size] rounded" 
+    class="{styles} text-center break-all rounded {editable ? "border-b-4 border-transparent hover:border-surface-500 focus:border-surface-500 transition-[border-color,font-size]" : ""}"
     class:h1={size == "lg"}
     class:h2={size == "md"}
     class:h3={size == "sm"}
-    contenteditable 
-    onfocusout={updateTitle} 
-    onkeydown={keyDown} 
+    contenteditable={editable}
+    onfocusout={updateTitle}
+    onkeydown={keyDown}
     bind:this={heading}
 >
     {title}

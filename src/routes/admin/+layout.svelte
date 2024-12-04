@@ -1,6 +1,6 @@
 <script lang="ts">
     import { base } from '$app/paths';
-    import BarTitle from '$lib/components/app-bar/BarTitle.svelte';
+    import BarHeader from '$lib/components/app-bar/BarHeader.svelte';
     import { getSessionDataContext } from '$lib/stores/session';
     
     import Icon from "@iconify/svelte";
@@ -36,7 +36,7 @@
                 </a>
             {/snippet}
             <div class="flex flex-col gap-1">
-                <BarTitle bind:title={$title} />
+                <BarHeader bind:title={$title} />
             </div>
             {#snippet trail()}
                 <!-- Alignment spacing -->

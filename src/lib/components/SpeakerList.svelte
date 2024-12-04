@@ -270,65 +270,65 @@
 
     <!-- Default controls, consisting of a delegate input, an add button, and a clear button. -->
     {#if typeof useDefaultControls !== "undefined"}
-    {@const popupID = useDefaultControls.popupID ?? "addDelegatePopup"}
-    {@const error = typeof dfltControlsError !== "undefined"}
+        {@const popupID = useDefaultControls.popupID ?? "addDelegatePopup"}
+        {@const error = typeof dfltControlsError !== "undefined"}
 
-    <div class="flex flex-col gap-1">
-        <div class="flex flex-row gap-1">
-            <!-- Add delegate -->
-            <form class="contents" onsubmit={submitSpeaker} oninput={() => dfltControlsError = undefined}>
-                <input 
-                    class="input" 
-                    class:input-error={error}
-                    bind:value={dfltControlsInput}
-                    use:popup={{ ...defaultPopupSettings(popupID), placement: "left-end", event: "focus-click" }}
-                    {...defaultPlaceholder(useDefaultControls.presentDelegates.length === 0)}
-                />
-                <div class="ml-2">
-                    <button
-                        type="submit"
-                        class="btn btn-icon variant-filled-primary"
-                        disabled={useDefaultControls.presentDelegates.length === 0}
-                        aria-label="Add to Speakers List"
-                        title="Add to Speakers List"
-                    >
-                        <Icon icon="mdi:plus" width="24" height="24" />
-                    </button>
-                </div>
-                <div>
-                    <!-- Clear order -->
-                    <button
-                        type="button"
-                        class="btn btn-icon variant-filled-primary"
-                        disabled={order.length === 0}
-                        onclick={clearSpeakers}
-                        aria-label="Clear Speakers List"
-                        title="Clear Speakers List"
-                    >
-                        <Icon icon="mdi:delete" width="24" height="24" />
-                    </button>
-                </div>
-            </form>
+        <div class="flex flex-col gap-1">
+            <div class="flex flex-row gap-1">
+                <!-- Add delegate -->
+                <form class="contents" onsubmit={submitSpeaker} oninput={() => dfltControlsError = undefined}>
+                    <input 
+                        class="input" 
+                        class:input-error={error}
+                        bind:value={dfltControlsInput}
+                        use:popup={{ ...defaultPopupSettings(popupID), placement: "left-end", event: "focus-click" }}
+                        {...defaultPlaceholder(useDefaultControls.presentDelegates.length === 0)}
+                    />
+                    <div class="ml-2">
+                        <button
+                            type="submit"
+                            class="btn btn-icon variant-filled-primary"
+                            disabled={useDefaultControls.presentDelegates.length === 0}
+                            aria-label="Add to Speakers List"
+                            title="Add to Speakers List"
+                        >
+                            <Icon icon="mdi:plus" width="24" height="24" />
+                        </button>
+                    </div>
+                    <div>
+                        <!-- Clear order -->
+                        <button
+                            type="button"
+                            class="btn btn-icon variant-filled-primary"
+                            disabled={order.length === 0}
+                            onclick={clearSpeakers}
+                            aria-label="Clear Speakers List"
+                            title="Clear Speakers List"
+                        >
+                            <Icon icon="mdi:delete" width="24" height="24" />
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <!-- Error messages! -->
+            <div class="text-error-500 text-center transition-[height] overflow-hidden {error ? 'h-6' : 'h-0'}">
+                {dfltControlsError ?? "\xA0"}
+            </div>
         </div>
-        <!-- Error messages! -->
-        <div class="text-error-500 text-center transition-[height] overflow-hidden {error ? 'h-6' : 'h-0'}">
-            {dfltControlsError ?? "\xA0"}
-        </div>
-    </div>
 
-    <!-- Delegate popup. 
-        Note: this is in the middle of the document, 
-        so it might overlap with another element and cause visual bugs.
+        <!-- Delegate popup. 
+            Note: this is in the middle of the document, 
+            so it might overlap with another element and cause visual bugs.
 
-        The solution used here is to not put another element over the popup :)
-    -->
-    <DelPopup 
-        {popupID}
-        bind:input={dfltControlsInput}
-        {delegates}
-        presentDelegates={useDefaultControls.presentDelegates}
-        on:selection={e => addSpeaker(e.detail.label, true)}
-    />
+            The solution used here is to not put another element over the popup :)
+        -->
+        <DelPopup 
+            {popupID}
+            bind:input={dfltControlsInput}
+            {delegates}
+            presentDelegates={useDefaultControls.presentDelegates}
+            on:selection={e => addSpeaker(e.detail.label, true)}
+        />
     {/if}
 </div>
 
