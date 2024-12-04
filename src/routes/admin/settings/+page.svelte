@@ -25,6 +25,7 @@
         enableMotionRoundRobin: { label: "Enable round robin" },
         enableMotionExt: { label: "Enable extensions" },
         pauseMainTimer: { label: "Pause main timer when delegate timer elapses" },
+        yieldMainTimer: { label: "Return time yielded by delegates to main timer" }
     } satisfies Record<keyof Preferences, unknown>;
     const _preferences: Writable<Record<string, boolean>> = preferences;
     const modalStore = getModalStore();
