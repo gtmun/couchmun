@@ -17,6 +17,7 @@ const { getDefaults, createContext, resetContext, getStoreContext } = createStor
             enableMotionRoundRobin: true,
             enableMotionExt: true,
             pauseMainTimer: true,
+            yieldMainTimer: true
         }
     }, 
     () => ({}), 
