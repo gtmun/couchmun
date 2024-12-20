@@ -253,16 +253,16 @@
                     <DelLabel key={speaker.key} attrs={delegates[speaker.key]} inline />
                 </button>
                 <div class="btn-icon">
-                    {#if !speaker.completed}
-                        <button 
-                            class="btn-icon variant-soft-surface hover:variant-filled-error" 
-                            onclick={() => deleteSpeaker(i)}
-                            title="Delete {speakerLabel}"
-                            aria-label="Delete {speakerLabel}"
-                        >
-                            <Icon icon="mdi:cancel" />
-                        </button>
-                    {/if}
+                    <button 
+                        class="btn-icon 
+                            {speaker.completed ? "variant-soft-surface" : "variant-soft-error hover:variant-filled-error"}"
+                        onclick={() => deleteSpeaker(i)}
+                        title="Delete {speakerLabel}"
+                        aria-label="Delete {speakerLabel}"
+                        disabled={speaker.completed}
+                    >
+                        <Icon icon="mdi:cancel" />
+                    </button>
                 </div>
             </li>
         {/each}
