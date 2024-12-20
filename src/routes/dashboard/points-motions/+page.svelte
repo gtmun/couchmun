@@ -95,10 +95,15 @@
     $motions = $motions.sort(motionComparator($sortOrder));
   }
   // Check every window of two motions is in the right order:
-  let motionsSorted = $derived(
-    Array.from({ length: $motions.length - 1 }, (_, i) => motionComparator($sortOrder)($motions[i], $motions[i + 1]) <= 0)
-      .every(b => b)
-  );
+  let motionsSorted = $derived.by(() => {
+    try {
+      return Array.from({ length: $motions.length - 1 }, (_, i) => motionComparator($sortOrder)($motions[i], $motions[i + 1]) <= 0)
+        .every(b => b);
+    } catch {
+      // If comparing crashes, don't allow the button to do anything
+      return true;
+    }
+  });
 </script>
 
 <div class="grid gap-5 min-h-full md:grid-cols-[1fr_2fr] md:h-full">
@@ -193,9 +198,9 @@
                 <DelLabel attrs={delAttrs} fallbackName={delName} inline />
               </td>
               <td>{apply(motion, ["topic"], m => m.topic, "-")}</td>
-              <td>{apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
+              <td>{'totalSpeakers' in motion ? stringifyTime(motion.totalSpeakers * motion.speakingTime) : apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
               <td>{apply(motion, ["speakingTime"], m => stringifyTime(m.speakingTime), "-")}</td>
-              <td>{apply(motion, ["totalTime", "speakingTime"], m => numSpeakersStr(m.totalTime, m.speakingTime), "-")}</td>
+              <td>{'totalSpeakers' in motion ? motion.totalSpeakers : apply(motion, ["totalTime", "speakingTime"], m => numSpeakersStr(m.totalTime, m.speakingTime), "-")}</td>
             </tr>
           {/each}
         </tbody>

@@ -18,7 +18,7 @@
     const { delegates } = getSessionDataContext();
     const appBarData = getContext<AppBarData>("app-bar");
     $effect(() => {
-        appBarData.topic = motion.topic;
+        appBarData.topic = `Topic: ${motion.topic}`;
     });
 
     // Timer
@@ -54,6 +54,9 @@
     -->
     <!-- Left/Top -->
     <div class="flex flex-col flex-grow flex-shrink-0 basis-full lg:basis-auto">
+        <div class="flex justify-center h-6 lg:hidden">
+            <!-- Placeholder which matches size of chevron-down -->
+        </div>
         <div class="flex flex-col gap-5 justify-center flex-grow">
             {#if typeof selectedSpeaker !== "undefined"}
                 <DelLabel attrs={findDelegate($delegates, selectedSpeaker.key)} />
@@ -82,7 +85,7 @@
         </div>
     </div>
     <!-- Right/Bottom -->
-    <div class="flex flex-col gap-4 h-full lg:overflow-hidden lg:max-w-[33%]">
+    <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-[25rem] lg:max-w-[33%]">
         <!-- List -->
         <SpeakerList
             bind:order

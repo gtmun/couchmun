@@ -183,6 +183,7 @@ export type Motion = {
     kind: "rr",
     speakingTime: number,
     topic: string
+    totalSpeakers: number
 } | {
     id: MotionID,
     delegate: DelegateID,

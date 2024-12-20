@@ -40,6 +40,18 @@
     function submitMotion(e: SubmitEvent) {
         e.preventDefault();
 
+        if (inputMotion.kind === "rr") {
+            inputMotion.totalSpeakers = $presentDelegates.length.toString();
+        }
+
+        // Filter out any keys that aren't the correct kind:
+        for (let key of Object.keys(inputMotion)) {
+            if (!hasField(inputMotion, [key])) {
+                delete inputMotion[key];
+            }
+        }
+
+        // Validate
         const result = motionSchema.safeParse(inputMotion);
         if (result.success) {
             inputMotion = defaultInputMotion();
@@ -131,7 +143,6 @@
             class:input-error={inputError?.path.includes("kind")}
             bind:this={afterDel}
             bind:value={inputMotion.kind}
-            onchange={() => inputMotion = { id: inputMotion.id, delegate: inputMotion.delegate, kind: inputMotion.kind }}
             >
             {#each Object.entries(MOTION_LABELS) as [value, label]}
             <option {value} {label}></option>
