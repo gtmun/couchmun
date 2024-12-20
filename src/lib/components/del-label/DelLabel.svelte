@@ -63,8 +63,8 @@
 
 {#if inline}
 <div class="flex items-center gap-1">
-    <DelFlag {key} {attrs} height={height ?? "h-4"} fallback={fallback ?? "none"} />
-    {label}
+    <DelFlag {key} {attrs} height={height ?? "h-4"} fallback={fallback ?? "none"} inline />
+    <span class="text-left">{label}</span>
 </div>
 {:else}
     {#key key}

@@ -240,7 +240,7 @@
                 </div>
                 <span class="enumerated-index">{i + 1}.</span>
                 <button 
-                    class="btn !text-wrap p-2 rounded-lg overflow-hidden"
+                    class="btn !text-wrap p-2 px-5 justify-start rounded-lg overflow-hidden"
                     class:variant-filled-primary={selected}
                     class:variant-soft-surface={!selected && speaker.completed}
                     class:variant-ringed-surface={!selected && !speaker.completed}
