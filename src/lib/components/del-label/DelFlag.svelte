@@ -8,13 +8,15 @@
         height?: string;
         attrs: DelegateAttrs | undefined;
         fallback?: "un" | "icon" | "none";
+        inline?: boolean
     }
 
     let {
         key,
         height = "",
         attrs,
-        fallback = "none"
+        fallback = "none",
+        inline = false
     }: Props = $props();
 
     // Only set flag on client-side, to prevent hydration mismatch issues.
@@ -34,8 +36,16 @@
 </script>
 
 {#if flag}
+    <!-- Temporary HACK to support fixed sizing -->
+    {@const src = attrs?.flagURL 
+        ? attrs.flagURL
+        : (inline 
+            ? `https://flagcdn.com/80x60/${key.toLowerCase()}.png`
+            : `https://flagcdn.com/${key.toLowerCase()}.svg`
+          )
+    }
     <img
-        src={flag.href}
+        {src}
         alt="Flag of {label}"
         class={height}
     >
