@@ -5,6 +5,7 @@
     import { presentDelegateSchema } from "$lib/motions/form_validation";
     import { getSessionDataContext } from "$lib/stores/session";
     import { getStatsContext, updateStats } from "$lib/stores/stats";
+    import { lazyslide } from "$lib/util";
     import { parseTime } from "$lib/util/time";
     import Icon from "@iconify/svelte";
     import { untrack } from "svelte";
@@ -60,10 +61,13 @@
             <!-- Placeholder which matches size of chevron-down -->
         </div>
         <div class="flex flex-col justify-center flex-grow">
-            {#if typeof selectedSpeaker !== "undefined"}
-                <DelLabel key={selectedSpeaker.key} attrs={$delegateAttributes[selectedSpeaker.key]} />
-            {/if}
-            
+            {#key selectedSpeaker?.key}
+                <div class="pb-5" transition:lazyslide>
+                    {#if typeof selectedSpeaker !== "undefined"}
+                        <DelLabel key={selectedSpeaker.key} attrs={$delegateAttributes[selectedSpeaker.key]} />
+                    {/if}
+                </div>
+            {/key}
             <div class="flex flex-col gap-5">
                 <Timer
                     name="total"

@@ -6,6 +6,7 @@
     import { getSessionDataContext } from "$lib/stores/session";
     import { getStatsContext, updateStats } from "$lib/stores/stats";
     import type { AppBarData, Motion, Speaker } from "$lib/types";
+    import { lazyslide } from "$lib/util";
     import Icon from "@iconify/svelte";
     import { getContext, untrack } from "svelte";
 
@@ -63,9 +64,13 @@
             <!-- Placeholder which matches size of chevron-down -->
         </div>
         <div class="flex flex-col justify-center flex-grow">
-            {#if typeof selectedSpeaker !== "undefined"}
-                <DelLabel key={selectedSpeaker.key} attrs={$delegateAttributes[selectedSpeaker.key]} />
-            {/if}
+            {#key selectedSpeaker?.key}
+                <div class="pb-5" transition:lazyslide>
+                    {#if typeof selectedSpeaker !== "undefined"}
+                        <DelLabel key={selectedSpeaker.key} attrs={$delegateAttributes[selectedSpeaker.key]} />
+                    {/if}
+                </div>
+            {/key}
             <div class="flex flex-col gap-5">
                 <Timer 
                     name="delegate"
