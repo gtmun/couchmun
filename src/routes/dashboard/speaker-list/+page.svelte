@@ -5,6 +5,7 @@
     import { presentDelegateSchema } from "$lib/motions/form_validation";
     import { getSessionDataContext } from "$lib/stores/session";
     import { getStatsContext, updateStats } from "$lib/stores/stats";
+    import { lazyslide } from "$lib/util";
     import { parseTime } from "$lib/util/time";
     import Icon from "@iconify/svelte";
     import { untrack } from "svelte";
@@ -59,28 +60,33 @@
         <div class="flex justify-center h-6 lg:hidden">
             <!-- Placeholder which matches size of chevron-down -->
         </div>
-        <div class="flex flex-col gap-5 justify-center flex-grow">
-            {#if typeof selectedSpeaker !== "undefined"}
-                <DelLabel key={selectedSpeaker.key} attrs={$delegateAttributes[selectedSpeaker.key]} />
-            {/if}
-            
-            <Timer
-                name="total"
-                bind:duration
-                bind:running
-                bind:this={timer}
-                disableKeyHandlers={typeof selectedSpeaker === "undefined"}
-                onPause={(t) => updateStats(stats, selectedSpeaker?.key, dat => dat.durationSpoken += t)}
-                editable
-            />
-            <div class="flex flex-row gap-3 justify-center">
-                {#if !running}
-                    <button class="btn variant-filled-primary" disabled={typeof selectedSpeaker === "undefined"} onclick={() => running = true}>Start</button>
-                {:else}
-                    <button class="btn variant-filled-primary" onclick={() => running = false}>Pause</button>
-                {/if}
-                <button class="btn variant-filled-primary" disabled={speakersList?.isAllDone() ?? true} onclick={next}>Next</button>
-                <button class="btn variant-filled-primary" disabled={!timer?.canReset()} onclick={reset}>Reset</button>
+        <div class="flex flex-col justify-center flex-grow">
+            {#key selectedSpeaker?.key}
+                <div class="pb-5" transition:lazyslide>
+                    {#if typeof selectedSpeaker !== "undefined"}
+                        <DelLabel key={selectedSpeaker.key} attrs={$delegateAttributes[selectedSpeaker.key]} />
+                    {/if}
+                </div>
+            {/key}
+            <div class="flex flex-col gap-5">
+                <Timer
+                    name="total"
+                    bind:duration
+                    bind:running
+                    bind:this={timer}
+                    disableKeyHandlers={typeof selectedSpeaker === "undefined"}
+                    onPause={(t) => updateStats(stats, selectedSpeaker?.key, dat => dat.durationSpoken += t)}
+                    editable
+                />
+                <div class="flex flex-row gap-3 justify-center">
+                    {#if !running}
+                        <button class="btn variant-filled-primary" disabled={typeof selectedSpeaker === "undefined"} onclick={() => running = true}>Start</button>
+                    {:else}
+                        <button class="btn variant-filled-primary" onclick={() => running = false}>Pause</button>
+                    {/if}
+                    <button class="btn variant-filled-primary" disabled={speakersList?.isAllDone() ?? true} onclick={next}>Next</button>
+                    <button class="btn variant-filled-primary" disabled={!timer?.canReset()} onclick={reset}>Reset</button>
+                </div>
             </div>
         </div>
         <!-- Mobile chevron -->

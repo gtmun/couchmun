@@ -6,6 +6,7 @@
     import { getSessionDataContext } from "$lib/stores/session";
     import { getStatsContext, updateStats } from "$lib/stores/stats";
     import type { AppBarData, Motion, Speaker } from "$lib/types";
+    import { lazyslide } from "$lib/util";
     import Icon from "@iconify/svelte";
     import { getContext, untrack } from "svelte";
 
@@ -62,34 +63,40 @@
         <div class="flex justify-center h-6 lg:hidden">
             <!-- Placeholder which matches size of chevron-down -->
         </div>
-        <div class="flex flex-col gap-5 justify-center flex-grow">
-            {#if typeof selectedSpeaker !== "undefined"}
-                <DelLabel key={selectedSpeaker.key} attrs={$delegateAttributes[selectedSpeaker.key]} />
-            {/if}
-            <Timer 
-                name="delegate"
-                duration={motion.speakingTime}
-                bind:this={delTimer}
-                bind:running
-                disableKeyHandlers={typeof selectedSpeaker === "undefined"}
-                onPause={(t) => updateStats(stats, selectedSpeaker?.key, dat => dat.durationSpoken += t)}
-            />
-            <Timer
-                name="total"
-                duration={motion.totalTime}
-                bind:this={totalTimer}
-                bind:running
-                disableKeyHandlers
-            />
-            <div class="flex flex-row gap-3 justify-center">
-                {#if !running}
-                    <button class="btn variant-filled-primary" disabled={typeof selectedSpeaker === "undefined"} onclick={() => running = true}>Start</button>
-                {:else}
-                    <button class="btn variant-filled-primary" onclick={() => running = false}>Pause</button>
-                {/if}
-                <button class="btn variant-filled-primary" disabled={speakersList?.isAllDone() ?? true} onclick={next}>Next</button>
-                <button class="btn variant-filled-primary" disabled={!delTimer?.canReset()} onclick={reset}>Reset</button>
-                <button class="btn variant-filled-primary" disabled={!totalTimer?.canReset()} onclick={resetAll}>Reset all</button>
+        <div class="flex flex-col justify-center flex-grow">
+            {#key selectedSpeaker?.key}
+                <div class="pb-5" transition:lazyslide>
+                    {#if typeof selectedSpeaker !== "undefined"}
+                        <DelLabel key={selectedSpeaker.key} attrs={$delegateAttributes[selectedSpeaker.key]} />
+                    {/if}
+                </div>
+            {/key}
+            <div class="flex flex-col gap-5">
+                <Timer 
+                    name="delegate"
+                    duration={motion.speakingTime}
+                    bind:this={delTimer}
+                    bind:running
+                    disableKeyHandlers={typeof selectedSpeaker === "undefined"}
+                    onPause={(t) => updateStats(stats, selectedSpeaker?.key, dat => dat.durationSpoken += t)}
+                />
+                <Timer
+                    name="total"
+                    duration={motion.totalTime}
+                    bind:this={totalTimer}
+                    bind:running
+                    disableKeyHandlers
+                />
+                <div class="flex flex-row gap-3 justify-center">
+                    {#if !running}
+                        <button class="btn variant-filled-primary" disabled={typeof selectedSpeaker === "undefined"} onclick={() => running = true}>Start</button>
+                    {:else}
+                        <button class="btn variant-filled-primary" onclick={() => running = false}>Pause</button>
+                    {/if}
+                    <button class="btn variant-filled-primary" disabled={speakersList?.isAllDone() ?? true} onclick={next}>Next</button>
+                    <button class="btn variant-filled-primary" disabled={!delTimer?.canReset()} onclick={reset}>Reset</button>
+                    <button class="btn variant-filled-primary" disabled={!totalTimer?.canReset()} onclick={resetAll}>Reset all</button>
+                </div>
             </div>
         </div>
         <!-- Mobile chevron -->
