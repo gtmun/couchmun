@@ -4,6 +4,7 @@
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { getSessionDataContext } from "$lib/stores/session";
+    import { lazyslide } from "$lib/util";
     import { parseTime } from "$lib/util/time";
 
     import Icon from "@iconify/svelte";
@@ -54,16 +55,20 @@
     >
         <Icon icon="mdi:wrench" width="24" height="24" />
     </button>
-    <div class="flex flex-col flex-grow gap-5 justify-center">
-        {#if labelType === "delegate"}
+    <div class="flex flex-col flex-grow justify-center">
+        <div class="pb-5">
+            {#if labelType === "delegate"}
             {@const key = getKey(labelText)}
-            <DelLabel {key} attrs={$delegateAttributes[key]} />
-        {:else if labelType === "title"}
-            <h2 class="h2 text-center">{labelText}</h2>
-        {/if}
+                <div transition:lazyslide>
+                    <DelLabel {key} attrs={$delegateAttributes[key]} />
+                </div>
+            {:else if labelType === "title"}
+                <h2 class="h2 text-center">{labelText}</h2>
+            {/if}
+        </div>
 
-    
         {#if timerEnabled}
+        <div class="flex flex-col gap-5">
             <Timer
                 name="total"
                 bind:duration
@@ -78,6 +83,7 @@
                 </button>
                 <button class="btn variant-filled-primary" disabled={!timer?.canReset()} onclick={timer?.reset}>Reset</button>
             </div>
+        </div>
         {/if}
     </div>
 </div>
