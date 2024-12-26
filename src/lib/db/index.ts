@@ -2,7 +2,7 @@ import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
 import { getFlagUrl } from "$lib/flags/flagcdn";
 import type { Delegate, DelegateAttrs } from "$lib/types";
 import { Dexie, liveQuery, type EntityTable, type InsertType, type Observable } from "dexie";
-import { derived, type Readable, type Updater, type Writable } from "svelte/store";
+import { derived, type Readable } from "svelte/store";
 
 interface SessionDatabase extends Dexie {
     delegates: EntityTable<Delegate, "id">
@@ -62,11 +62,4 @@ export function queryStore<T>(cb: () => T | Promise<T>): Readable<T | undefined>
 export function queryStore<T>(cb: () => T | Promise<T>, fallback: T): Readable<T>;
 export function queryStore<T>(cb: () => T | Promise<T>, fallback?: T) {
     return derived(wrapQuery(liveQuery(cb)), $q => $q ?? fallback);
-}
-export function writableTableStore<T, U extends keyof T>(table: EntityTable<T, U>, mapper: (data: EntityTable<T, U>) => (T[] | Promise<T[]>)): Writable<T[]> {
-    let query = queryStore(() => mapper(table), []);
-    let set = async (v: T[]) => table.bulkPut(v);
-    let update = async (cb: Updater<T[]>) => set(cb(await mapper(table)));
-    
-    return Object.assign(query, { set, update });
 }
