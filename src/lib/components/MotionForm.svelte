@@ -41,7 +41,7 @@
         e.preventDefault();
 
         if (inputMotion.kind === "rr") {
-            inputMotion.totalSpeakers = $presentDelegates.length.toString();
+            inputMotion.totalSpeakers = $delegates.filter(d => isPresent(d.presence)).length.toString();
         }
 
         // Filter out any keys that aren't the correct kind:
