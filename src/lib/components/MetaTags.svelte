@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { page } from "$app/stores";
+    import { page } from "$app/state";
 
     interface Props {
         title: string;
@@ -13,8 +13,7 @@
         thumbnail = undefined
     }: Props = $props();
 
-    let url = $page.url;
-    let thumbnailURL = $derived(typeof thumbnail === "string" ? new URL(thumbnail, url.origin) : undefined);
+    let thumbnailURL = $derived(typeof thumbnail === "string" ? new URL(thumbnail, page.url.origin) : undefined);
 </script>
 
 <svelte:head>
@@ -32,8 +31,8 @@
     {/if}
     
     <!-- Website URL tags -->
-    <meta property="og:url" content={url.toString()}>
-    <meta property="twitter:url" content={url.toString()}>
+    <meta property="og:url" content={page.url.toString()}>
+    <meta property="twitter:url" content={page.url.toString()}>
 
     <!-- Thumbnail URL tags -->
     {#if typeof thumbnailURL !== "undefined"}
