@@ -35,21 +35,6 @@ export type DelegateAttrs = {
     flagURL?: string
 }
 
-// TODO: doc
-export interface Delegate {
-    // Indexes:
-    id: DelegateID,
-    name: string,
-    aliases: string[]
-    order: number,
-
-    // Non-indexes:
-    enabled: boolean,
-    flagURL: string,
-    presence: DelegatePresence,
-    stats: StatsData
-}
-
 // These types are used to define motion sorting.
 
 /**

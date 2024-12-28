@@ -1,9 +1,9 @@
 <script lang="ts">
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/components/del-input/DelPopup.svelte";
-    import { findDelegate } from "$lib/db/delegates";
+    import { type Delegate, findDelegate } from "$lib/db/delegates";
     import { formatValidationError } from "$lib/motions/form_validation";
-    import type { Delegate, DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
+    import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
     import { getDndItemId, isDndShadow, processDrag } from "$lib/util/dnd";
     import { isPresent, triggerConfirmModal } from "$lib/util";
     

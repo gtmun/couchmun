@@ -1,10 +1,26 @@
 /**
- * Utilities for accessing delegate data from IndexedDB.
+ * Delegate table definition for the session database.
  */
 
-import type { Delegate, DelegateID } from "$lib/types";
-import type { IndexableType } from "dexie";
-import { type SessionDatabase } from ".";
+import type { DelegateID, DelegatePresence, StatsData } from "$lib/types";
+import { Entity, type IndexableType } from "dexie";
+import type { SessionDatabase } from ".";
+
+export class Delegate extends Entity<SessionDatabase> {
+    // Indexes:
+    id!: DelegateID;
+    name!: string;
+    aliases!: string[];
+    order!: number;
+
+    // Non-indexes:
+    enabled!: boolean;
+    flagURL!: string;
+    presence!: DelegatePresence;
+    stats!: StatsData;
+
+    static readonly indexes = "++id, name, *aliases, order";
+}
 
 /**
  * Find the delegate with the matching ID (note this is linear search).

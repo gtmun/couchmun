@@ -1,17 +1,23 @@
 import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
 import { getFlagUrl } from "$lib/flags/flagcdn";
-import type { Delegate, DelegateAttrs } from "$lib/types";
+import type { DelegateAttrs } from "$lib/types";
 import { Dexie, liveQuery, type EntityTable, type InsertType, type Observable } from "dexie";
 import { derived, type Readable } from "svelte/store";
+import { Delegate } from "./delegates";
 
-export interface SessionDatabase extends Dexie {
-    delegates: EntityTable<Delegate, "id">
+export class SessionDatabase extends Dexie {
+    delegates!: EntityTable<Delegate, "id">;
+
+    constructor() {
+        super("sessionDatabase", { cache: "immutable" });
+        this.version(1).stores({
+            delegates: Delegate.indexes
+        });
+        this.delegates.mapToClass(Delegate);
+    }
 }
 
-export const db = new Dexie("sessionDatabase", { cache: "immutable" }) as SessionDatabase;
-db.version(1).stores({
-    delegates: "++id, name, *aliases, order"
-});
+export const db = new SessionDatabase();
 
 db.on("ready", async (tx) => {
     let txdb = tx as typeof db;

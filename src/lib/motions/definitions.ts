@@ -1,9 +1,9 @@
-import type { Delegate, Motion, MotionKind, SortEntry } from "$lib/types";
+import type { Motion, MotionKind, SortEntry } from "$lib/types";
 import { nonEmptyString, presentDelegateSchema, refineSpeakingTime, timeSchema, topicSchema } from "$lib/motions/form_validation";
 import type { MotionInput } from "$lib/motions/types";
 import { z } from "zod";
 import { stringifyTime } from "$lib/util/time";
-import { findDelegate } from "$lib/db/delegates";
+import { type Delegate, findDelegate } from "$lib/db/delegates";
 
 /**
  * The label/name given to each motion kind.

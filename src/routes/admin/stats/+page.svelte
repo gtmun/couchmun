@@ -2,8 +2,9 @@
     import MetaTags from "$lib/components/MetaTags.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import { db, DEFAULT_SESSION_DATA } from "$lib/db";
+    import type { Delegate } from "$lib/db/delegates";
     import { getSessionDataContext } from "$lib/stores/session";
-    import type { Delegate, StatsData } from "$lib/types";
+    import type { StatsData } from "$lib/types";
     import { compare, downloadFile, isPresent, triggerConfirmModal } from "$lib/util";
     import { stringifyTime } from "$lib/util/time";
     

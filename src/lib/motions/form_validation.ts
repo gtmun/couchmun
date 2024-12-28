@@ -1,4 +1,4 @@
-import type { Delegate } from "$lib/types";
+import type { Delegate } from "$lib/db/delegates";
 import { isPresent, nameEq } from "$lib/util";
 import { parseTime } from "$lib/util/time";
 import { z } from "zod";
