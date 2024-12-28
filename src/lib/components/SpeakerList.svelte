@@ -5,7 +5,7 @@
     import { formatValidationError } from "$lib/motions/form_validation";
     import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
     import { getDndItemId, isDndShadow, processDrag } from "$lib/util/dnd";
-    import { isPresent, triggerConfirmModal } from "$lib/util";
+    import { triggerConfirmModal } from "$lib/util";
     
     import { z } from "zod";
     import Icon from "@iconify/svelte";
@@ -178,7 +178,7 @@
         map.set(key, el);
         return { destroy() { map.delete(key); } }
     };
-    let noDelegatesPresent = $derived(delegates.every(d => !isPresent(d.presence)));
+    let noDelegatesPresent = $derived(delegates.every(d => !d.isPresent()));
 
     // Properties which are only used with default controls:
     let validator = $derived.by(() => {

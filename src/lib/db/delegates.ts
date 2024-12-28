@@ -3,7 +3,7 @@
  */
 
 import type { DelegateID, DelegatePresence, StatsData } from "$lib/types";
-import { Entity, type IndexableType } from "dexie";
+import { Entity } from "dexie";
 import type { SessionDatabase } from ".";
 
 export class Delegate extends Entity<SessionDatabase> {
@@ -20,6 +20,25 @@ export class Delegate extends Entity<SessionDatabase> {
     stats!: StatsData;
 
     static readonly indexes = "++id, name, *aliases, order";
+
+    /**
+     * Checks a delegate presence status is present.
+     * @param p the presence status
+     * @returns whether it indicates presence
+     */
+    isPresent(): boolean {
+        return this.presence != "NP";
+    }
+    /**
+     * Checks if name is associated with a given delegate.
+     * @param name name we're looking at
+     * @returns whether this delegate could correctly be referred to by the given name
+     */
+    nameEquals(name: string): boolean {
+        // case-insensitive equals
+        const eq = (a: string, b: string) => a.localeCompare(b, undefined, { sensitivity: "base" }) == 0;
+        return eq(this.name, name) || this.aliases.some(n => eq(n, name));
+    }
 }
 
 /**
@@ -31,25 +50,4 @@ export class Delegate extends Entity<SessionDatabase> {
 export function findDelegate(d: Delegate[], searchId: DelegateID): Delegate | undefined {
     // linear but bleh it's synchronous so whatever
     return d.find(({id}) => id == searchId);
-}
-
-/**
- * Updates one entry from the delegate table.
- * 
- * This should only be used for single-time, short updates.
- * Large changes (such as changing multiple delegates at once) 
- * should go through Dexie's bulk update methods
- * and multiple operations should go through transactions.
- * 
- * @param table the delegate table
- * @param id the ID of the entry to update
- * @param param parameters to `Dexie.Table.update` 
- *     (either a callback that updates an item or an object indicating what parameters to update)
- * @returns a promise on completion
- */
-export async function updateDelegate(table: SessionDatabase["delegates"], id: DelegateID | undefined, param: Parameters<SessionDatabase["delegates"]["update"]>[1]): Promise<void>; 
-export async function updateDelegate(table: SessionDatabase["delegates"], id: DelegateID | undefined, param: ((obj: Delegate, ctx: { value: any; primKey: IndexableType; }) => void | boolean)): Promise<void>;
-export async function updateDelegate(table: SessionDatabase["delegates"], id: DelegateID | undefined, param: any): Promise<void> {
-    if (typeof id !== "number") return;
-    await table.update(id, param);
 }

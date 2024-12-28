@@ -11,7 +11,6 @@
     import type { z } from "zod";
     import { popup } from "@skeletonlabs/skeleton";
     import { type Snippet } from 'svelte';
-    import { isPresent } from "$lib/util";
 
     const { selectedMotion, delegates } = getSessionDataContext();
     const motionSchema = $derived(createMotionSchema($delegates));
@@ -35,13 +34,13 @@
     // The input after the delegate input.
     let afterDel: HTMLElement | undefined = $state();
 
-    let noDelegatesPresent = $derived($delegates.every(d => !isPresent(d.presence)));
+    let noDelegatesPresent = $derived($delegates.every(d => !d.isPresent()));
 
     function submitMotion(e: SubmitEvent) {
         e.preventDefault();
 
         if (inputMotion.kind === "rr") {
-            inputMotion.totalSpeakers = $delegates.filter(d => isPresent(d.presence)).length.toString();
+            inputMotion.totalSpeakers = $delegates.filter(d => d.isPresent()).length.toString();
         }
 
         // Filter out any keys that aren't the correct kind:

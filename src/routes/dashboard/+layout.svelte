@@ -6,9 +6,9 @@
     import Navigation from '$lib/components/nav/Navigation.svelte';
     import SettingsNavigation from '$lib/components/nav/SettingsNavigation.svelte';
     import { db, queryStore } from '$lib/db';
+    import { Delegate } from '$lib/db/delegates';
     import { getSessionDataContext } from '$lib/stores/session';
     import type { AppBarData } from '$lib/types';
-    import { isPresent } from '$lib/util';
     
     import Icon from "@iconify/svelte";
     import { AppBar, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
@@ -32,7 +32,7 @@
     }
 
     const { settings: { title } } = getSessionDataContext();
-    let delegateCount = queryStore(() => db.delegates.filter(d => d.enabled && isPresent(d.presence)).count(), 0);
+    let delegateCount = queryStore(() => db.delegates.filter(d => d.enabled && Delegate.prototype.isPresent.apply(d)).count(), 0);
 
     const links: Record<string, { label: string }> = {
         "/dashboard/roll-call":      { label: "Roll Call" },

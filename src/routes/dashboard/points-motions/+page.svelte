@@ -5,7 +5,7 @@
   import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
   import { db } from "$lib/db";
-  import { findDelegate, updateDelegate } from "$lib/db/delegates";
+  import { findDelegate } from "$lib/db/delegates";
   import { MOTION_LABELS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import { getSessionDataContext } from "$lib/stores/session";
@@ -28,7 +28,7 @@
       $m.push(motion);
       return $m;
     });
-    updateDelegate(db.delegates, motion.delegate, d => { d.stats.motionsProposed++; });
+    db.updateDelegate(motion.delegate, d => { d.stats.motionsProposed++; });
   }
 
   /**
@@ -71,7 +71,7 @@
   function acceptMotion(motion: Motion) {
     $selectedMotion = motion;
     $motions = [];
-    updateDelegate(db.delegates, motion.delegate, d => { d.stats.motionsAccepted++; });
+    db.updateDelegate(motion.delegate, d => { d.stats.motionsAccepted++; });
   }
   function editMotion(i: number, motion: Motion) {
     modalStore.trigger({
@@ -83,8 +83,8 @@
         response(motion?: Motion) {
           if (!motion) return;
           motions.update($m => {
-            updateDelegate(db.delegates, $m[i].delegate, d => { d.stats.motionsProposed--; });
-            updateDelegate(db.delegates, motion.delegate, d => { d.stats.motionsProposed++; });
+            db.updateDelegate($m[i].delegate, d => { d.stats.motionsProposed--; });
+            db.updateDelegate(motion.delegate, d => { d.stats.motionsProposed++; });
             $m[i] = motion;
             return $m;
           });

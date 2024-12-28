@@ -1,5 +1,4 @@
 import type { Delegate } from "$lib/db/delegates";
-import { isPresent, nameEq } from "$lib/util";
 import { parseTime } from "$lib/util/time";
 import { z } from "zod";
 
@@ -32,7 +31,7 @@ export function formatValidationError(error: z.ZodError) {
 export function presentDelegateSchema(delegates: Delegate[]) {
     return nonEmptyString({ description: "Delegate name", required_error: "Delegate name is a required field" })
         .transform((name, ctx) => {
-            const del = delegates.find(d => nameEq(name, d));
+            const del = delegates.find(d => d.nameEquals(name));
             if (!del) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
@@ -40,7 +39,7 @@ export function presentDelegateSchema(delegates: Delegate[]) {
                 })
 
                 return z.NEVER;
-            } else if (!isPresent(del.presence)) {
+            } else if (!del.isPresent()) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
                     message: `${del.name} is not a present delegate`

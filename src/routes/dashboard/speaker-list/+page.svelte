@@ -3,7 +3,7 @@
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { db } from "$lib/db";
-    import { findDelegate, updateDelegate } from "$lib/db/delegates";
+    import { findDelegate } from "$lib/db/delegates";
     import { presentDelegateSchema } from "$lib/motions/form_validation";
     import { getSessionDataContext } from "$lib/stores/session";
     import { parseTime } from "$lib/util/time";
@@ -70,7 +70,7 @@
                 bind:running
                 bind:this={timer}
                 disableKeyHandlers={typeof selectedSpeaker === "undefined"}
-                onPause={(t) => updateDelegate(db.delegates, selectedSpeaker?.key, d => { d.stats.durationSpoken += t; })}
+                onPause={(t) => db.updateDelegate(selectedSpeaker?.key, d => { d.stats.durationSpoken += t; })}
                 editable
             />
             <div class="flex flex-row gap-3 justify-center">
@@ -99,7 +99,7 @@
                 validator: presentDelegateSchema
             }}
             onBeforeSpeakerUpdate={reset}
-            onMarkComplete={(key, isRepeat) => { if (!isRepeat) updateDelegate(db.delegates, key, d => { d.stats.timesSpoken++; }) }}
+            onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
         />
         <!-- Timer config -->
         <div class="flex flex-row gap-5">

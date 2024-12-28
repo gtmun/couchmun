@@ -5,7 +5,7 @@
     import type { Delegate } from "$lib/db/delegates";
     import { getSessionDataContext } from "$lib/stores/session";
     import type { StatsData } from "$lib/types";
-    import { compare, downloadFile, isPresent, triggerConfirmModal } from "$lib/util";
+    import { compare, downloadFile, triggerConfirmModal } from "$lib/util";
     import { stringifyTime } from "$lib/util/time";
     
     import Icon from "@iconify/svelte";
@@ -115,36 +115,36 @@
                 </tr>
             </thead>
             <tbody>
-                {#each displayEntries as attrs (attrs.id)}
-                {@const absent = !isPresent(attrs.presence)}
+                {#each displayEntries as del (del.id)}
+                {@const absent = !del.isPresent()}
                 <tr class:!bg-surface-300-600-token={absent}>
                     <td class="!align-middle">
                         {#if absent}
                         <div class="flex gap-1">
                             <span class="line-through italic">
-                                <DelLabel {attrs} inline />
+                                <DelLabel attrs={del} inline />
                             </span>
                             <span class="text-error-500-400-token">
                                 (Absent)
                             </span>
                         </div>
                         {:else}
-                        <DelLabel {attrs} inline />
+                        <DelLabel attrs={del} inline />
                         {/if}
                     </td>
-                    <td class="!align-middle">{attrs.stats.motionsProposed}</td>
-                    <td class="!align-middle">{attrs.stats.motionsAccepted}</td>
-                    <td class="!align-middle">{attrs.stats.timesSpoken}</td>
+                    <td class="!align-middle">{del.stats.motionsProposed}</td>
+                    <td class="!align-middle">{del.stats.motionsAccepted}</td>
+                    <td class="!align-middle">{del.stats.timesSpoken}</td>
                     <td class="!align-middle">
                         <div class="flex items-center justify-end gap-3">
-                            {stringifyTime(attrs.stats.durationSpoken / 1000, "round")}
+                            {stringifyTime(del.stats.durationSpoken / 1000, "round")}
                             <div class="flex w-[33vw]">
                                 <ProgressBar
                                     height="h-8"
                                     transition="duration-500 transition-width"
                                     track="bg-surface-300-600-token"
                                     meter="bg-primary-500"
-                                    value={attrs.stats.durationSpoken * 100 / maxDurationSpoken}
+                                    value={del.stats.durationSpoken * 100 / maxDurationSpoken}
                                 />
                             </div>
                         </div>

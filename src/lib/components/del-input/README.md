@@ -30,7 +30,7 @@ The bindings should look similar to this:
     
     let inputValue: string;
     let delegates = enabledDelegatesStore(db.delegates);
-    let noDelegatesPresent = $derived(delegates.every(d => !isPresent(d.presence)));
+    let noDelegatesPresent = $derived(delegates.every(d => !d.isPresent()));
 </script>
 
 <!-- ... -->

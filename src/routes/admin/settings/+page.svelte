@@ -14,7 +14,6 @@
     import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
     import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
     import { db, populateDelegate, populateDelegatePreset, queryStore } from "$lib/db";
-    import { updateDelegate } from "$lib/db/delegates";
 
     const settings = getSettingsContext();
     const { sortOrder, preferences } = settings;
@@ -313,7 +312,7 @@
                     <tr>
                         <td class="w-full"><DelLabel {attrs} inline fallbackFlag="icon" /></td>
                         <td class="text-center">
-                            <input class="checkbox" type="checkbox" checked={attrs.enabled} onclick={() => updateDelegate(db.delegates, attrs.id, { enabled: !attrs.enabled })}>
+                            <input class="checkbox" type="checkbox" checked={attrs.enabled} onclick={() => db.updateDelegate(attrs.id, { enabled: !attrs.enabled })}>
                         </td>
                         <td class="text-right">
                             <button

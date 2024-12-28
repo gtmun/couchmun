@@ -1,11 +1,10 @@
 <script lang="ts">
-    import type { DelegateAttrs } from "$lib/types";
     import { SvelteSet } from "svelte/reactivity";
     import EditModal from "./EditModal.svelte";
-    import { nameEq } from "$lib/util";
+    import type { Delegate } from "$lib/db/delegates";
 
     interface Props {
-        attrs: (DelegateAttrs & {id: number})[];
+        attrs: Delegate[];
     }
 
     let { attrs }: Props = $props();
@@ -24,7 +23,7 @@
             inputText = "";
             for (let line of text.split("\n")) {
                 line = line.trim();
-                let item = attrs.find(d => nameEq(line, d));
+                let item = attrs.find(d => d.nameEquals(line));
                 if (item) {
                     enabled.add(item.id);
                 } else {

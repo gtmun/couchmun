@@ -4,22 +4,15 @@
     import IconLabel from "$lib/components/IconLabel.svelte";
     import { db } from "$lib/db";
     import { getSessionDataContext } from "$lib/stores/session";
-    import type { DelegateID, DelegatePresence } from "$lib/types";
     import { RadioGroup, RadioItem } from "@skeletonlabs/skeleton";
 
     const { delegates } = getSessionDataContext();
 
-    const radio: Record<DelegatePresence, { label: string, icon: string }> = {
-        NP: { label: "Absent", icon: "mdi:account-off" },
-        P:  { label: "Present", icon: "mdi:account" },
-        PV: { label: "Present and Voting", icon: "mdi:account-check" },
-    };
-
-    async function updatePresence(id: DelegateID, presence: string) {
-        if (presence == "NP" || presence == "P" || presence == "PV") {
-            await db.delegates.update(id, { presence });
-        }
-    }
+    const radio = [
+        { presence: "NP", label: "Absent", icon: "mdi:account-off" },
+        { presence: "P",  label: "Present", icon: "mdi:account" },
+        { presence: "PV", label: "Present and Voting", icon: "mdi:account-check" },
+    ] as const;
 </script>
 
 <!-- Render a table to display participants and their statuses -->
@@ -32,8 +25,8 @@
             </div>
             <div class="flex flex-col justify-center p-2">
                 <RadioGroup active="variant-filled-primary" hover="hover:variant-soft-primary" border="" background="bg-surface-300-600-token">
-                    {#each Object.entries(radio) as [value, { label, icon }]}
-                        <RadioItem group={$delegates[i].presence} name="presence-{attrs.id}" {value} onchange={() => updatePresence(attrs.id, value)}>
+                    {#each radio as { presence, label, icon }}
+                        <RadioItem group={$delegates[i].presence} name="presence-{attrs.id}" value={presence} onchange={() => db.updateDelegate(attrs.id, { presence })}>
                             <IconLabel {icon} {label} />
                         </RadioItem>
                     {/each}

@@ -3,10 +3,9 @@
     import SpeakerList, { createSpeaker } from "$lib/components/SpeakerList.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { db } from "$lib/db";
-    import { findDelegate, updateDelegate } from "$lib/db/delegates";
+    import { findDelegate } from "$lib/db/delegates";
     import { getSessionDataContext } from "$lib/stores/session";
     import type { AppBarData, Motion, Speaker } from "$lib/types";
-    import { isPresent } from "$lib/util";
     import Icon from "@iconify/svelte";
     import { getContext, untrack } from "svelte";
 
@@ -27,7 +26,7 @@
     
     // Speakers List
     let speakersList: SpeakerList | undefined = $state();
-    let order: Speaker[] = $state($delegates.filter(d => isPresent(d.presence)).map(d => createSpeaker(d.id)));
+    let order: Speaker[] = $state($delegates.filter(d => d.isPresent()).map(d => createSpeaker(d.id)));
     let selectedSpeaker = $derived(speakersList?.selectedSpeaker());
     $effect(() => {
         if (running) untrack(() => {
@@ -67,7 +66,7 @@
                 bind:this={timer}
                 bind:running 
                 disableKeyHandlers={typeof selectedSpeaker === "undefined"}
-                onPause={(t) => updateDelegate(db.delegates, selectedSpeaker?.key, d => { d.stats.durationSpoken += t; })}
+                onPause={(t) => db.updateDelegate(selectedSpeaker?.key, d => { d.stats.durationSpoken += t; })}
             />
             <div class="flex flex-row gap-3 justify-center">
                 {#if !running}
@@ -92,7 +91,7 @@
             delegates={$delegates}
             bind:this={speakersList}
             onBeforeSpeakerUpdate={reset}
-            onMarkComplete={(key, isRepeat) => { if (!isRepeat) updateDelegate(db.delegates, key, d => { d.stats.timesSpoken++; }) }}
+            onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
         />
     </div>
 </div>

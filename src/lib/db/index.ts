@@ -1,7 +1,7 @@
 import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
 import { getFlagUrl } from "$lib/flags/flagcdn";
-import type { DelegateAttrs } from "$lib/types";
-import { Dexie, liveQuery, type EntityTable, type InsertType, type Observable } from "dexie";
+import type { DelegateAttrs, DelegateID } from "$lib/types";
+import { Dexie, liveQuery, type EntityTable, type IndexableType, type InsertType, type Observable } from "dexie";
 import { derived, type Readable } from "svelte/store";
 import { Delegate } from "./delegates";
 
@@ -15,6 +15,27 @@ export class SessionDatabase extends Dexie {
         });
         this.delegates.mapToClass(Delegate);
     }
+
+    /**
+     * Updates one entry from the delegate table.
+     * 
+     * This should only be used for single-time, short updates.
+     * Large changes (such as changing multiple delegates at once) 
+     * should go through Dexie's bulk update methods
+     * and multiple operations should go through transactions.
+     * 
+     * @param id the ID of the entry to update
+     * @param param parameters to `Dexie.Table.update` 
+     *     (either a callback that updates an item or an object indicating what parameters to update)
+     * @returns a promise on completion
+     */
+    async updateDelegate(id: DelegateID | undefined, param: Parameters<SessionDatabase["delegates"]["update"]>[1]): Promise<void>; 
+    async updateDelegate(id: DelegateID | undefined, param: ((obj: Delegate, ctx: { value: any; primKey: IndexableType; }) => void | boolean)): Promise<void>;
+    async updateDelegate(id: DelegateID | undefined, param: any): Promise<void> {
+        if (typeof id !== "number") return;
+        await db.delegates.update(id, param);
+    }
+    
 }
 
 export const db = new SessionDatabase();

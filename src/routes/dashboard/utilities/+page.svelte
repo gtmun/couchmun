@@ -4,7 +4,6 @@
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { getSessionDataContext } from "$lib/stores/session";
-    import { nameEq } from "$lib/util";
     import { parseTime } from "$lib/util/time";
 
     import Icon from "@iconify/svelte";
@@ -54,7 +53,7 @@
     </button>
     <div class="flex flex-col flex-grow gap-5 justify-center">
         {#if labelType === "delegate"}
-            <DelLabel attrs={$delegates.find(d => nameEq(labelText, d))} fallbackName={labelText} />
+            <DelLabel attrs={$delegates.find(d => d.nameEquals(labelText))} fallbackName={labelText} />
         {:else if labelType === "title"}
             <h2 class="h2 text-center">{labelText}</h2>
         {/if}
@@ -116,7 +115,7 @@
                         <div class="card bg-surface-200-700-token">
                             <DelAutocomplete
                                 bind:input={labelText}
-                                delegates={$delegates}
+                                delegates={Object.values($delegates)}
                                 maxHeight="max-h-36"
                                 on:selection={e => labelText = e.detail.label}
                             />
