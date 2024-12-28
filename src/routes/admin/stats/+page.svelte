@@ -1,8 +1,7 @@
 <script lang="ts">
     import MetaTags from "$lib/components/MetaTags.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import { db } from "$lib/db";
-    import { defaultStats } from "$lib/db/del";
+    import { db, DEFAULT_SESSION_DATA } from "$lib/db";
     import { getSessionDataContext } from "$lib/stores/session";
     import type { Delegate, StatsData } from "$lib/types";
     import { compare, downloadFile, isPresent, triggerConfirmModal } from "$lib/util";
@@ -70,7 +69,7 @@
         triggerConfirmModal(modalStore,
             "Are you sure you want to clear delegate statistics?",
             () => db.transaction("rw", db.delegates, () => {
-                db.delegates.toCollection().modify({ stats: defaultStats() });
+                db.delegates.toCollection().modify({ stats: DEFAULT_SESSION_DATA.stats });
             })
         )
     }

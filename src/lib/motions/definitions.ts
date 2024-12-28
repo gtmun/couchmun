@@ -3,7 +3,7 @@ import { nonEmptyString, presentDelegateSchema, refineSpeakingTime, timeSchema, 
 import type { MotionInput } from "$lib/motions/types";
 import { z } from "zod";
 import { stringifyTime } from "$lib/util/time";
-import { findDelegate } from "$lib/db/del";
+import { findDelegate } from "$lib/db/delegates";
 
 /**
  * The label/name given to each motion kind.

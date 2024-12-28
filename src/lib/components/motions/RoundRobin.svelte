@@ -3,7 +3,7 @@
     import SpeakerList, { createSpeaker } from "$lib/components/SpeakerList.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { db } from "$lib/db";
-    import { findDelegate, updateDelegate } from "$lib/db/del";
+    import { findDelegate, updateDelegate } from "$lib/db/delegates";
     import { getSessionDataContext } from "$lib/stores/session";
     import type { AppBarData, Motion, Speaker } from "$lib/types";
     import { isPresent } from "$lib/util";

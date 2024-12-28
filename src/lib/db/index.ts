@@ -4,7 +4,7 @@ import type { Delegate, DelegateAttrs } from "$lib/types";
 import { Dexie, liveQuery, type EntityTable, type InsertType, type Observable } from "dexie";
 import { derived, type Readable } from "svelte/store";
 
-interface SessionDatabase extends Dexie {
+export interface SessionDatabase extends Dexie {
     delegates: EntityTable<Delegate, "id">
 }
 
@@ -22,6 +22,9 @@ db.on("ready", async (tx) => {
     }
 })
 
+/**
+ * Default session data per delegate.
+ */
 export const DEFAULT_SESSION_DATA = {
     presence: "NP",
     stats: {

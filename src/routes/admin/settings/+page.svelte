@@ -14,7 +14,7 @@
     import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
     import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
     import { db, populateDelegate, populateDelegatePreset, queryStore } from "$lib/db";
-    import { updateDelegate } from "$lib/db/del";
+    import { updateDelegate } from "$lib/db/delegates";
 
     const settings = getSettingsContext();
     const { sortOrder, preferences } = settings;
