@@ -102,9 +102,9 @@
             });
         }
     }
-    async function setAllEnableStatuses(status: boolean) {
+    async function setAllEnableStatuses(enabled: boolean) {
         db.transaction("rw", db.delegates, async () => {
-            await db.delegates.toCollection().modify({ enabled: status });
+            await db.delegates.toCollection().modify({ enabled });
         })
     }
     function clearDelegates() {
@@ -312,7 +312,11 @@
                     <tr>
                         <td class="w-full"><DelLabel {attrs} inline fallbackFlag="icon" /></td>
                         <td class="text-center">
-                            <input class="checkbox" type="checkbox" checked={attrs.enabled} onclick={() => db.updateDelegate(attrs.id, { enabled: !attrs.enabled })}>
+                            <input class="checkbox" type="checkbox" 
+                                bind:checked={
+                                    () => attrs.enabled,
+                                    enabled => db.updateDelegate(attrs.id, { enabled })
+                                }>
                         </td>
                         <td class="text-right">
                             <button
