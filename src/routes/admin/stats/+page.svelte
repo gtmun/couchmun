@@ -11,7 +11,8 @@
     import Icon from "@iconify/svelte";
     import { ProgressBar, type PopupSettings, getModalStore, popup } from "@skeletonlabs/skeleton";
 
-    const { settings: { title }, delegates } = getSessionDataContext();
+    const { delegates } = getSessionDataContext();
+    const title = db.settingStore("title", "");
     const modalStore = getModalStore();
 
     let sortOrder: { item: SortKey, descending: boolean } = $state({

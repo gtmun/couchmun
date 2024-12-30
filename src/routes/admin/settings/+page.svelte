@@ -5,18 +5,16 @@
     import EditDelegateCard from "$lib/components/modals/EditDelegateCard.svelte";
     import { DEFAULT_PRESET_KEY, getPreset, PRESETS } from "$lib/delegate_presets";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
-    import { getSettingsContext, resetSettingsContext } from "$lib/stores/settings";
-    import type { DelegateAttrs, Preferences } from "$lib/types";
+    import type { DelegateAttrs, Settings } from "$lib/types";
     import { downloadFile, triggerConfirmModal } from "$lib/util";
 
-    import { get, type Writable } from "svelte/store";
     import Icon from "@iconify/svelte";
     import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
     import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
-    import { db, populateDelegate, populateDelegatePreset, queryStore } from "$lib/db";
+    import { _legacyFixDelFlag, db, queryStore } from "$lib/db";
+    import { DEFAULT_SETTINGS, toKeyValueArray, toObject } from "$lib/db/settings";
 
-    const settings = getSettingsContext();
-    const { sortOrder, preferences } = settings;
+    const settings = queryStore(async () => toObject(await db.settings.toArray()) as Settings);
 
     let delegates = queryStore(() => db.delegates.orderBy("order").toArray(), []);
     let delsEnabledAll = $derived.by(() => {
@@ -24,12 +22,11 @@
         return rest.every(k => k === first) ? first : undefined;
     });
 
-    const PREFERENCES_LABELS = {
-        enableMotionRoundRobin: { label: "Enable round robin" },
-        enableMotionExt: { label: "Enable extensions" },
-        pauseMainTimer: { label: "Pause main timer when delegate timer elapses" },
-    } satisfies Record<keyof Preferences, unknown>;
-    const _preferences: Writable<Record<string, boolean>> = preferences;
+    const PREFERENCES_LABELS = [
+        { key: "enableMotionRoundRobin", label: "Enable round robin" },
+        { key: "enableMotionExt", label: "Enable extensions" },
+        { key: "pauseMainTimer", label: "Pause main timer when delegate timer elapses" },
+    ] as const;
     const modalStore = getModalStore();
     let files: FileList | undefined = $state();
 
@@ -39,27 +36,41 @@
         if (file) {
             const text = await file.text();
             const json = JSON.parse(text);
-            for (let [key, store] of Object.entries<Writable<unknown>>(settings)) {
-                if (key in json) store.set(json[key]);
-            }
+
+            // TODO: input validation
+            let { settings: newSettings, delegates: newDelegates } = json;
+            await db.transaction("rw", db.settings, async () => {
+                await db.settings.clear();
+                await db.settings.bulkPut(toKeyValueArray(DEFAULT_SETTINGS));
+                await db.settings.bulkUpdate(toKeyValueArray(newSettings).map(({ key, val }) => ({ key, changes: { val }})));
+            });
+            await db.transaction("rw", db.delegates, async () => {
+                await db.delegates.clear();
+                await db.addDelegates(newDelegates);
+            });
         }
     }
     function exportFile() {
-        const exportSettings = Object.fromEntries(Object.entries(settings).map(
-            ([k, v]) => [k, "subscribe" in v ? get<unknown>(v) : v]
-        ));
+        if (!$settings || !$delegates) return;
+        let exportSettings = {
+            settings: $settings,
+            delegates: $delegates.map(d => d.getAttributes())
+        };
 
         downloadFile("couchmun-config.json", JSON.stringify(exportSettings), "application/json");
     }
     function resetAllSettings() {
         triggerConfirmModal(modalStore,
             "Are you sure you want to reset all settings?", 
-            () => {
+            async () => {
                 // Reset preset state cause it's not bound to settings
                 currentPreset = DEFAULT_PRESET_KEY;
                 // Reset settings
-                resetSettingsContext(settings);
-                setPreset();
+                await db.transaction("rw", db.settings, async () => {
+                    await db.settings.clear();
+                    await db.settings.bulkPut(toKeyValueArray(DEFAULT_SETTINGS));
+                });
+                await setPreset();
             }
         )
     }
@@ -67,7 +78,7 @@
     // SORT ORDER
     function mergeUnmergeOrder(entryIndex: number, kindIndex: number) {
         if (entryIndex == 0 && kindIndex == 0) return;
-        sortOrder.update($o => {
+        db.settings.update("sortOrder", ({ val: $o }) => {
             if (kindIndex == 0) {
                 // Merge
                 let [entry] = $o.splice(entryIndex, 1);
@@ -86,8 +97,6 @@
                     });
                 }
             }
-
-            return $o;
         });
     }
     // DELEGATES
@@ -95,10 +104,10 @@
     async function setPreset() {
         const preset = await getPreset(currentPreset);
         if (typeof preset !== "undefined") {
-            let presetEntries = await populateDelegatePreset(preset);
+            let entries = await _legacyFixDelFlag(preset);
             await db.transaction("rw", db.delegates, async () => {
                 await db.delegates.clear();
-                await db.delegates.bulkAdd(presetEntries);
+                await db.addDelegates(entries);
             });
         }
     }
@@ -112,9 +121,7 @@
             "Are you sure you want to remove all delegates?", 
             async () => {
                 currentPreset = "custom";
-                await db.transaction("rw", db.delegates, async () => {
-                    await db.delegates.clear();
-                });
+                await db.delegates.clear();
             }
         );
     }
@@ -139,9 +146,7 @@
                     if (typeof id === "number") {
                         await db.delegates.update(id, newAttrs);
                     } else {
-                        let order = await db.delegates.count();
-                        let del = await populateDelegate(newAttrs, "un", order);
-                        await db.delegates.add(del);
+                        await db.addDelegate(newAttrs);
                     }
                 });
             }
@@ -183,6 +188,7 @@
 </script>
 
 <MetaTags title="Settings &middot; CouchMUN (Admin)" />
+{#if $settings && Object.keys($settings).length}
 <div class="flex flex-col p-4 gap-4">
     <div class="panel">
         <h3 class="h3 text-center">Control Panel</h3>
@@ -214,9 +220,16 @@
     <div class="panel">
         <h3 class="h3 text-center">Preferences (WIP)</h3>
         <div class="flex flex-col gap-3">
-            {#each Object.entries(PREFERENCES_LABELS) as [key, properties]}
-                <LabeledSlideToggle name="prefs-{key}" bind:checked={$_preferences[key]} disabled={true}>
-                    <div>{properties.label}</div>
+            {#each PREFERENCES_LABELS as { key, label }}
+                <LabeledSlideToggle 
+                    name="prefs-{key}"
+                    disabled
+                    bind:checked={
+                        () => $settings.preferences[key],
+                        pref => db.settings.update("preferences", (prefs) => { prefs.val[key] = pref; })
+                    }
+                >
+                    <div>{label}</div>
                 </LabeledSlideToggle>
             {/each}
         </div>
@@ -235,7 +248,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {#each $sortOrder as entry, ei}
+                        {#each $settings.sortOrder as entry, ei}
                         <tr>
                             <td>
                                 {#each entry.kind as k, ki}
@@ -255,10 +268,12 @@
                             </td>
                             <td>
                                 <div class="flex gap-3 items-center">
-                                    {#each entry.order as key}
+                                    {#each entry.order as key, oi}
                                     <div class="card p-1 flex items-center bg-surface-300-600-token">
                                         <span>{SORT_PROPERTY_NAMES[key.property]}</span>
-                                        <button onclick={() => {key.ascending = !key.ascending; $sortOrder = $sortOrder}}>
+                                        <button onclick={() => {
+                                            db.settings.update("sortOrder", ({ val: order }) => { order[ei].order[oi].ascending = !order[ei].order[oi].ascending })
+                                        }}>
                                             <!-- TODO: add aria-label, title -->
                                             <Icon
                                                 icon="mdi:arrow-down"
@@ -342,6 +357,7 @@
     </div>
     <hr />
 </div>
+{/if}
 
 <style>
     .panel {

@@ -1,13 +1,13 @@
 <script lang="ts">
     import { base } from '$app/paths';
     import BarHeader from '$lib/components/app-bar/BarHeader.svelte';
-    import { getSessionDataContext } from '$lib/stores/session';
+    import { db } from '$lib/db';
     
     import Icon from "@iconify/svelte";
     import { AppBar, LightSwitch } from '@skeletonlabs/skeleton';
 
     let { children } = $props();
-    const { settings: { title } } = getSessionDataContext();
+    const title = db.settingStore("title", "");
 </script>
 
 <div class="hidden">

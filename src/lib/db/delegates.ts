@@ -2,7 +2,7 @@
  * Delegate table definition for the session database.
  */
 
-import type { DelegateID, DelegatePresence, StatsData } from "$lib/types";
+import type { DelegateAttrs, DelegateID, DelegatePresence, StatsData } from "$lib/types";
 import { Entity } from "dexie";
 import type { SessionDatabase } from ".";
 
@@ -38,6 +38,17 @@ export class Delegate extends Entity<SessionDatabase> {
         // case-insensitive equals
         const eq = (a: string, b: string) => a.localeCompare(b, undefined, { sensitivity: "base" }) == 0;
         return eq(this.name, name) || this.aliases.some(n => eq(n, name));
+    }
+
+    /**
+     * @returns the attributes of this delegate
+     */
+    getAttributes(): DelegateAttrs {
+        return {
+            name: this.name,
+            aliases: structuredClone(this.aliases),
+            flagURL: this.flagURL
+        };
     }
 }
 

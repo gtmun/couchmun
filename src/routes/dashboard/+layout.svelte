@@ -7,7 +7,6 @@
     import SettingsNavigation from '$lib/components/nav/SettingsNavigation.svelte';
     import { db, queryStore } from '$lib/db';
     import { Delegate } from '$lib/db/delegates';
-    import { getSessionDataContext } from '$lib/stores/session';
     import type { AppBarData } from '$lib/types';
     
     import Icon from "@iconify/svelte";
@@ -31,7 +30,7 @@
         })
     }
 
-    const { settings: { title } } = getSessionDataContext();
+    const title = db.settingStore("title", "");
     let delegateCount = queryStore(() => db.delegates.filter(d => d.enabled && Delegate.prototype.isPresent.apply(d)).count(), 0);
 
     const links: Record<string, { label: string }> = {

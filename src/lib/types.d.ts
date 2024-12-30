@@ -113,7 +113,7 @@ export type Preferences = {
 }
 
 /**
- * All configurable settings (in store format).
+ * All configurable settings.
  */
 export type Settings = {
     /**
@@ -122,27 +122,18 @@ export type Settings = {
      * 
      * Any kinds not specified in this list are thrown at the end.
      */
-    sortOrder: Writable<SortEntry[]>,
+    sortOrder: SortEntry[],
     
     /**
      * The title of the assembly.
      */
-    title: Writable<string>,
+    title: string,
 
     /**
      * Toggleable preferences.
      */
-    preferences: Writable<Preferences>
+    preferences: Preferences,
 };
-
-/**
- * A wrapper type around settings to designate all accessible settings
- * in `SessionData`.
- */
-export type AccessibleSettings = {
-    sortOrder: Readable<SortEntry[]>,
-    title: Writable<string>
-}
 
 // Attendance
 export type DelegatePresence = "NP" | "P" | "PV";
@@ -195,7 +186,6 @@ export type Speaker = {
 
 // Session Data
 export type SessionData = {
-    settings: AccessibleSettings,
     delegates: Readable<Delegate[]>,
     
     /**

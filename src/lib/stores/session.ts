@@ -1,4 +1,3 @@
-import { createAccessibleSettings } from "$lib/stores/settings";
 import type { SessionData } from "$lib/types";
 import { hasContext } from "svelte";
 import { createStore } from ".";
@@ -13,7 +12,6 @@ const { createContext, resetContext, getStoreContext } = createStore<SessionData
 export function createSessionDataContext() {
     if (hasContext("sessionData")) return getStoreContext();
     return Object.assign(createContext(), {
-        settings: createAccessibleSettings(),
         delegates: queryStore(() => db.delegates.orderBy("order").filter(e => e.enabled).toArray(), [])
     });
 }

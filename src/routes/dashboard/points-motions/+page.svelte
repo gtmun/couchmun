@@ -4,7 +4,7 @@
   import IconLabel from "$lib/components/IconLabel.svelte";
   import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
-  import { db } from "$lib/db";
+  import { db, queryStore } from "$lib/db";
   import { findDelegate } from "$lib/db/delegates";
   import { MOTION_LABELS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
@@ -18,7 +18,8 @@
   import { flip } from "svelte/animate";
   import { dndzone } from "svelte-dnd-action";
 
-  const { settings: { sortOrder }, motions, selectedMotion, delegates } = getSessionDataContext();
+  const { motions, selectedMotion, delegates } = getSessionDataContext();
+  const sortOrder = queryStore(() => db.getSetting("sortOrder"), []);
   const modalStore = getModalStore();
 
   let motionTable: HTMLTableElement | undefined = $state();
