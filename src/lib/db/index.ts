@@ -4,8 +4,8 @@ import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
 import { getFlagUrl } from "$lib/flags/flagcdn";
 import { DEFAULT_SORT_PRIORITY } from "$lib/motions/definitions";
 import type { DelegateAttrs, DelegateID, Settings } from "$lib/types";
-import { Dexie, liveQuery, type EntityTable, type IndexableType, type InsertType, type Observable } from "dexie";
-import { derived, type Readable, type Updater, type Writable } from "svelte/store";
+import { Dexie, liveQuery, type EntityTable, type IndexableType, type InsertType } from "dexie";
+import { readable, type Readable, type Updater, type Writable } from "svelte/store";
 
 export class SessionDatabase extends Dexie {
     delegates!: EntityTable<Delegate, "id">;
@@ -177,19 +177,17 @@ export async function _legacyFixDelFlag(flagKeyOrDelegates: string | Record<stri
 }
 
 /**
- * This cast converts an `Observable` to `Readable`, without having to fight TypeScript errors.
+ * A store on a database query that updates when the database updates.
  * 
- * This cast is always acceptable, because `Readable` *does* accept the `Observable` interface,
- * it is just not documented in the TypeScript typing (as of Svelte 5.2.10).
+ * This is similar to Dexie's `liveQuery`, except with some adjustments to better support Svelte.
+ * Notably, this adds the option to give a default value and doesn't reload on page switch
+ * if put in a context.
  * 
- * @param t the observable to wrap
- * @returns the readable that results (note that `t == wrapQuery(t)`)
+ * @param cb the querier function
  */
-function wrapQuery<T>(t: Observable<T>): Readable<T> {
-    return t as any;
-}
 export function queryStore<T>(cb: () => T | Promise<T>): Readable<T | undefined>;
 export function queryStore<T>(cb: () => T | Promise<T>, fallback: T): Readable<T>;
 export function queryStore<T>(cb: () => T | Promise<T>, fallback?: T) {
-    return derived(wrapQuery(liveQuery(cb)), $q => $q ?? fallback);
+    const query = liveQuery(cb);
+    return readable(fallback, (set) => query.subscribe(set).unsubscribe);
 }
