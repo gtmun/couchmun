@@ -1,11 +1,9 @@
 /**
- * Settings table definition for the session database.
+ * Table definition of key-val stores for the session database.
  */
 
 import { Entity } from "dexie";
 import type { SessionDatabase } from ".";
-import { DEFAULT_SORT_PRIORITY } from "$lib/motions/definitions";
-import type { Settings } from "$lib/types";
 
 export class KeyValuePair extends Entity<SessionDatabase> {
     key!: string;
@@ -17,17 +15,6 @@ export class KeyValuePair extends Entity<SessionDatabase> {
         await (this.db[this.table()] as any).update(this.key, { val });
     }
 }
-
-export const DEFAULT_SETTINGS = {
-    sortOrder: DEFAULT_SORT_PRIORITY,
-    title: "General Assembly",
-    preferences: {
-        enableMotionRoundRobin: true,
-        enableMotionExt: true,
-        pauseMainTimer: true,
-    }
-} satisfies Settings;
-
 
 interface IKeyValue {
     key: string;

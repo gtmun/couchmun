@@ -12,7 +12,7 @@
     import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
     import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
     import { _legacyFixDelFlag, db, queryStore } from "$lib/db";
-    import { DEFAULT_SETTINGS, toKeyValueArray, toObject } from "$lib/db/settings";
+    import { toKeyValueArray, toObject } from "$lib/db/keyval";
 
     const settings = queryStore(async () => toObject(await db.settings.toArray()) as Settings);
 
@@ -40,8 +40,7 @@
             // TODO: input validation
             let { settings: newSettings, delegates: newDelegates } = json;
             await db.transaction("rw", db.settings, async () => {
-                await db.settings.clear();
-                await db.settings.bulkPut(toKeyValueArray(DEFAULT_SETTINGS));
+                await db.resetSettings();
                 await db.settings.bulkUpdate(toKeyValueArray(newSettings).map(({ key, val }) => ({ key, changes: { val }})));
             });
             await db.transaction("rw", db.delegates, async () => {
@@ -66,10 +65,7 @@
                 // Reset preset state cause it's not bound to settings
                 currentPreset = DEFAULT_PRESET_KEY;
                 // Reset settings
-                await db.transaction("rw", db.settings, async () => {
-                    await db.settings.clear();
-                    await db.settings.bulkPut(toKeyValueArray(DEFAULT_SETTINGS));
-                });
+                await db.resetSettings();
                 await setPreset();
             }
         )

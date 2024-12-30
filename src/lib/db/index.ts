@@ -1,10 +1,11 @@
+import { Delegate } from "./delegates";
+import { KeyValuePair, toKeyValueArray } from "./keyval";
 import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
 import { getFlagUrl } from "$lib/flags/flagcdn";
+import { DEFAULT_SORT_PRIORITY } from "$lib/motions/definitions";
 import type { DelegateAttrs, DelegateID, Settings } from "$lib/types";
 import { Dexie, liveQuery, type EntityTable, type IndexableType, type InsertType, type Observable } from "dexie";
 import { derived, type Readable, type Updater, type Writable } from "svelte/store";
-import { Delegate } from "./delegates";
-import { DEFAULT_SETTINGS, KeyValuePair, toKeyValueArray } from "./settings";
 
 export class SessionDatabase extends Dexie {
     delegates!: EntityTable<Delegate, "id">;
@@ -81,11 +82,17 @@ export class SessionDatabase extends Dexie {
     settingStore<K extends keyof Settings>(key: K, default_?: Settings[K]): Writable<Settings[K] | undefined> {
         type Value = Settings[K];
         const store = queryStore<Value | undefined>(() => this.getSetting(key), default_);
-        const set = (val: Value) => db.settings.update(key, { val });
-        const update = (updater: Updater<Value>) => db.settings.update(key, o => {
+        const set = (val: Value) => this.settings.update(key, { val });
+        const update = (updater: Updater<Value>) => this.settings.update(key, o => {
             o.val = updater(o.val);
         });
         return Object.assign(store, { set, update });
+    }
+    async resetSettings() {
+        await this.transaction("rw", this.settings, async () => {
+            await this.settings.clear();
+            await this.settings.bulkAdd(toKeyValueArray(DEFAULT_SETTINGS));
+        });
     }
 }
 
@@ -99,7 +106,7 @@ db.on("ready", async (tx) => {
         await txdb.addDelegates(dels);
     }
     if (await txdb.settings.count() == 0) {
-        await txdb.settings.bulkAdd(toKeyValueArray(DEFAULT_SETTINGS));
+        await txdb.resetSettings();
     }
 })
 
@@ -115,6 +122,19 @@ export const DEFAULT_SESSION_DATA = {
         durationSpoken: 0
     }
 } as const;
+
+/**
+ * Default settings.
+ */
+export const DEFAULT_SETTINGS = {
+    sortOrder: DEFAULT_SORT_PRIORITY,
+    title: "General Assembly",
+    preferences: {
+        enableMotionRoundRobin: true,
+        enableMotionExt: true,
+        pauseMainTimer: true,
+    }
+} satisfies Settings;
 
 /**
  * Adds attributes to a given delegate, allowing it to be inserted into the database.
