@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { navigating, page } from '$app/stores';
+    import { navigating, page } from '$app/state';
     import MetaTags from '$lib/components/MetaTags.svelte';
     import BarHeader from '$lib/components/app-bar/BarHeader.svelte';
     import BarStats from '$lib/components/app-bar/BarStats.svelte';
@@ -40,7 +40,7 @@
         "/dashboard/current-motion": { label: "Current Motion" },
         "/dashboard/utilities":      { label: "Utilities" },
     };
-    let thisLink = $derived(typeof $page.route.id == "string" ? links[$page.route.id] : undefined);
+    let thisLink = $derived(typeof page.route.id == "string" ? links[page.route.id] : undefined);
 
     // This can be set to change the topic displayed on the app bar.
     // This must be cleared when navigating to different pages.
@@ -49,7 +49,7 @@
     });
     setContext("app-bar", appBarData);
     $effect(() => {
-        if ($navigating) appBarData.topic = undefined;
+        if (navigating) appBarData.topic = undefined;
     })
 </script>
 

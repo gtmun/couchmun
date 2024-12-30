@@ -1,6 +1,6 @@
 <script lang="ts">
     import { base } from "$app/paths";
-    import { page } from "$app/stores";
+    import { page } from "$app/state";
 
     interface Props {
         links: Record<string, { label: string }>;
@@ -17,7 +17,7 @@
         {#each Object.entries(links) as [id, { label }], i}
             <!-- base does not end with /, whereas id starts with / -->
             {@const href = `${base}${id}`}
-            {@const selected = $page.url.pathname === href}
+            {@const selected = page.url.pathname === href}
             <li>
                 <a 
                     onclick={close} 
