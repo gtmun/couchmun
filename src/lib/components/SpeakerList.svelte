@@ -52,6 +52,10 @@
         onMarkComplete = undefined
     }: Props = $props();
 
+    // A clone of order used solely for use:dragHandleZone
+    let dndItems = $state($state.snapshot(order));
+    $effect(() => { dndItems = order; });
+
     // Special IDs to track:
     let selectedSpeakerId: string | undefined = $state(undefined);
     // A mapping from IDs to Speakers:
@@ -207,7 +211,7 @@
     </h4>
 
     <ol class="p-2 list overflow-y-auto grid grid-cols-[auto_auto_1fr_auto] auto-rows-min flex-grow" use:dragHandleZone={{
-        items: order,
+        items: dndItems,
         flipDurationMs: 150,
         dropTargetStyle: {},
         transformDraggedElement: (el, data, index) => {
@@ -218,11 +222,11 @@
             }
         }
     }}
-        onconsider={(e) => order = processDrag(e)}
-        onfinalize={(e) => order = processDrag(e)}
+        onconsider={(e) => dndItems = processDrag(e)}
+        onfinalize={(e) => order = dndItems = processDrag(e)}
         aria-labelledby="speaker-list-header"
     >
-        {#each order as speaker, i (speaker.id)}
+        {#each dndItems as speaker, i (speaker.id)}
             {@const selected = speaker.id === selectedSpeakerId}
             {@const shadow = isDndShadow(speaker)}
             {@const delAttrs = findDelegate(delegates, speaker.key)}

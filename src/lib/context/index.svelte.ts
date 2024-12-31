@@ -1,42 +1,15 @@
-import { db } from "$lib/db/index.svelte";
+import { db, DEFAULT_SESSION_DATA } from "$lib/db/index.svelte";
 import type { SessionContext } from "$lib/types";
-import { getDndItemId } from "$lib/util/dnd";
 import { getContext, hasContext, setContext } from "svelte";
-import { persisted } from "svelte-persisted-store";
-import { SHADOW_ITEM_MARKER_PROPERTY_NAME as isDndShadowItem } from "svelte-dnd-action";
 
 const CONTEXT_KEY = "session";
-
-/**
- * Data that is persisted onto localStorage.
- * 
- * This also has the added benefit of not storing svelte-dnd-action artifacts into localStorage.
- */
-function localStore<T>(k: string, v: T) {
-    return persisted(k, v, {
-        beforeRead(o) {
-            // Process changes made due to svelte-dnd-action
-            if (o instanceof Array) {
-                for (let item of o) {
-                    if ("id" in item) {
-                        item.id = getDndItemId(item);
-                    }
-                    delete item[isDndShadowItem];
-                    delete item.originalId;
-                }
-            }
-
-            return o;
-        }
-    });
-}
 
 // A wrapper class so Svelte is willing to make barTopic $state real.
 class SessionImpl implements SessionContext {
     delegates = db.enabledDelegatesStore();
-    motions = localStore("sessionData.motions", []); // TODO: replace with DB
-    selectedMotion = localStore("sessionData.selectedMotion", null); // TODO: replace with DB
-    speakersList = localStore("sessionData.speakersList", []); // TODO: replace with DB
+    motions = db.sessionDataStore("motions", DEFAULT_SESSION_DATA.motions);
+    selectedMotion = db.sessionDataStore("selectedMotion", DEFAULT_SESSION_DATA.selectedMotion);
+    speakersList = db.sessionDataStore("speakersList", DEFAULT_SESSION_DATA.speakersList);
     barTitle = db.settingStore("title", "");
     barTopic = $state<string>();
 }
@@ -71,8 +44,5 @@ export async function resetSessionContext(ctx: SessionContext) {
     await db.resetSessionData();
 
     // Additional attributes to clear:
-    ctx.motions.set([]);
-    ctx.selectedMotion.set(null);
-    ctx.speakersList.set([]);
     ctx.barTopic = undefined;
 }

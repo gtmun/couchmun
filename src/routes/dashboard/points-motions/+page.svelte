@@ -22,6 +22,10 @@
   const sortOrder = queryStore(() => db.getSetting("sortOrder"), []);
   const modalStore = getModalStore();
 
+  // A clone of $motions used solely for use:dragHandleZone
+  let dndItems = $state($state.snapshot($motions));
+  $effect(() => { dndItems = $motions; });
+
   let motionTable: HTMLTableElement | undefined = $state();
 
   function submitMotion(motion: Motion) {
@@ -83,12 +87,9 @@
         },
         response(motion?: Motion) {
           if (!motion) return;
-          motions.update($m => {
-            db.updateDelegate($m[i].delegate, d => { d.stats.motionsProposed--; });
-            db.updateDelegate(motion.delegate, d => { d.stats.motionsProposed++; });
-            $m[i] = motion;
-            return $m;
-          });
+          db.updateDelegate($motions[i].delegate, d => { d.stats.motionsProposed--; });
+          db.updateDelegate(motion.delegate, d => { d.stats.motionsProposed++; });
+          $motions[i] = motion;
         }
     });
   }
@@ -143,16 +144,16 @@
         </thead>
         <tbody
           use:dndzone={{
-            items: $motions,
+            items: dndItems,
             flipDurationMs: 150,
             dropTargetStyle: {},
             transformDraggedElement: (el) => createDragTr(el, motionTable)
           }}
-          onconsider={(e) => motions.set(processDrag(e))}
-          onfinalize={(e) => motions.set(processDrag(e))}
+          onconsider={(e) => dndItems = processDrag(e)}
+          onfinalize={(e) => $motions = dndItems = processDrag(e)}
           aria-labelledby="motion-table-header"
         >
-          {#each $motions as motion, i (motion.id)}
+          {#each dndItems as motion, i (motion.id)}
             {@const delAttrs = findDelegate($delegates, motion.delegate)}
             {@const delName = delAttrs?.name ?? "unknown"}
             {@const shadow = isDndShadow(motion)}
