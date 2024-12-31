@@ -3,7 +3,7 @@ import { KeyValuePair, toKeyValueArray } from "./keyval";
 import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
 import { getFlagUrl } from "$lib/flags/flagcdn";
 import { DEFAULT_SORT_PRIORITY } from "$lib/motions/definitions";
-import type { DelegateAttrs, DelegateID, Settings } from "$lib/types";
+import type { DelegateAttrs, DelegateID, SessionData, Settings } from "$lib/types";
 import { Dexie, liveQuery, type EntityTable, type IndexableType, type InsertType } from "dexie";
 import { readable, type Readable, type Updater, type Writable } from "svelte/store";
 
@@ -113,6 +113,17 @@ export class SessionDatabase extends Dexie {
         });
     }
 
+    /**
+     * Creates a writable store for a given session data key.
+     * @param key the key to make a store for
+     * @returns the store
+     */
+    sessionDataStore<K extends keyof SessionData>(key: K): Writable<SessionData[K] | undefined>;
+    sessionDataStore<K extends keyof SessionData>(key: K, fallback: SessionData[K]): Writable<SessionData[K]>;
+    sessionDataStore<K extends keyof SessionData>(key: K, fallback?: SessionData[K]): Writable<SessionData[K] | undefined> {
+        return getKVStore(this.sessionData, key, fallback);
+    }
+
     async resetSessionData() {
         await this.transaction("rw", [this.sessionData, this.delegates], async () => {
             await this.delegates.toCollection().modify(DEFAULT_DEL_SESSION_DATA);
@@ -156,7 +167,7 @@ export const DEFAULT_SESSION_DATA = {
     motions: [],
     selectedMotion: null,
     speakersList: []
-} as const;
+} as const satisfies SessionData;
 
 /**
  * Default settings.

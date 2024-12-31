@@ -185,7 +185,30 @@ export type Speaker = {
 };
 
 // Session Data
+/**
+ * All data stored as "session data" in the database.
+ * 
+ * This excludes delegate session data which is stored separately.
+ */
 export type SessionData = {
+    /**
+     * All specified motions (from the points & motions page).
+     */
+    motions: Motion[],
+    /**
+     * The motion that was selected (and is currently on display in the current motion page).
+     */
+    selectedMotion: Motion | null,
+    /**
+     * The speakers list and speaker attributes (such as whether the given speaker has spoken already)
+     */
+    speakersList: Speaker[],
+};
+
+/**
+ * All data stored in the session context.
+ */
+export type SessionContext = {
     /**
      * Array of enabled delegates.
      */
@@ -194,20 +217,20 @@ export type SessionData = {
     /**
      * All specified motions (from the points & motions page).
      */
-    motions: Writable<Motion[]>,
+    motions: Writable<SessionData["motions"]>,
     /**
      * The motion that was selected (and is currently on display in the current motion page).
      */
-    selectedMotion: Writable<Motion | null>,
+    selectedMotion: Writable<SessionData["selectedMotion"]>,
     /**
      * The speakers list and speaker attributes (such as whether the given speaker has spoken already)
      */
-    speakersList: Writable<Speaker[]>,
+    speakersList: Writable<SessionData["speakersList"]>,
 
     /**
      * Committee title, visible on the app bar.
      */
-    barTitle: Writable<string>,
+    barTitle: Writable<Settings["title"]>,
     /**
      * Current topic of discussion, visible on the app bar.
      */

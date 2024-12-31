@@ -1,5 +1,5 @@
 import { db } from "$lib/db/index.svelte";
-import type { SessionData } from "$lib/types";
+import type { SessionContext } from "$lib/types";
 import { getDndItemId } from "$lib/util/dnd";
 import { getContext, hasContext, setContext } from "svelte";
 import { persisted } from "svelte-persisted-store";
@@ -32,7 +32,7 @@ function localStore<T>(k: string, v: T) {
 }
 
 // A wrapper class so Svelte is willing to make barTopic $state real.
-class SessionImpl implements SessionData {
+class SessionImpl implements SessionContext {
     delegates = db.enabledDelegatesStore();
     motions = localStore("sessionData.motions", []); // TODO: replace with DB
     selectedMotion = localStore("sessionData.selectedMotion", null); // TODO: replace with DB
@@ -52,7 +52,7 @@ class SessionImpl implements SessionData {
  * @returns the context object
  */
 export function getSessionContext() {
-    return getContext<SessionData>(CONTEXT_KEY);
+    return getContext<SessionContext>(CONTEXT_KEY);
 }
 
 /**
@@ -62,7 +62,7 @@ export function getSessionContext() {
  */
 export function createSessionContext() {
     if (hasContext(CONTEXT_KEY)) return getSessionContext();
-    return setContext<SessionData>(CONTEXT_KEY, new SessionImpl());
+    return setContext<SessionContext>(CONTEXT_KEY, new SessionImpl());
 }
 /**
  * Resets properties of the session.
