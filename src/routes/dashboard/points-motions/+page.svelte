@@ -5,7 +5,7 @@
   import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
   import { getSessionContext } from "$lib/context/index.svelte";
-  import { db, queryStore } from "$lib/db";
+  import { db, queryStore } from "$lib/db/index.svelte";
   import { findDelegate } from "$lib/db/delegates";
   import { MOTION_LABELS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";

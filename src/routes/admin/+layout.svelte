@@ -1,7 +1,7 @@
 <script lang="ts">
     import { base } from '$app/paths';
     import BarHeader from '$lib/components/app-bar/BarHeader.svelte';
-    import { db } from '$lib/db';
+    import { db } from '$lib/db/index.svelte';
     
     import Icon from "@iconify/svelte";
     import { AppBar, LightSwitch } from '@skeletonlabs/skeleton';

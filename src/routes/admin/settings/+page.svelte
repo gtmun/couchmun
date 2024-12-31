@@ -11,7 +11,7 @@
     import Icon from "@iconify/svelte";
     import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
     import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
-    import { _legacyFixDelFlag, db, queryStore } from "$lib/db";
+    import { _legacyFixDelFlag, db, queryStore } from "$lib/db/index.svelte";
     import { toKeyValueArray, toObject } from "$lib/db/keyval";
 
     const settings = queryStore(async () => toObject(await db.settings.toArray()) as Settings);

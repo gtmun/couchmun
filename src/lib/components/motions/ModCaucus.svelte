@@ -3,7 +3,7 @@
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
-    import { db } from "$lib/db";
+    import { db } from "$lib/db/index.svelte";
     import { findDelegate } from "$lib/db/delegates";
     import { presentDelegateSchema } from "$lib/motions/form_validation";
     import type { Motion, Speaker } from "$lib/types";

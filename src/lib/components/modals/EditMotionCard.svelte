@@ -2,7 +2,7 @@
     import type { Motion } from "$lib/types";
     import MotionForm from "$lib/components/MotionForm.svelte";
     import EditModal from "$lib/components/modals/EditModal.svelte";
-    import { db } from "$lib/db";
+    import { db } from "$lib/db/index.svelte";
     import { inputifyMotion } from "$lib/motions/definitions";
     
     interface Props {

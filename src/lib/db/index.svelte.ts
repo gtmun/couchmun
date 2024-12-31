@@ -102,15 +102,9 @@ export class SessionDatabase extends Dexie {
      * @returns the store
      */
     settingStore<K extends keyof Settings>(key: K): Writable<Settings[K] | undefined>;
-    settingStore<K extends keyof Settings>(key: K, default_: Settings[K]): Writable<Settings[K]>;
-    settingStore<K extends keyof Settings>(key: K, default_?: Settings[K]): Writable<Settings[K] | undefined> {
-        type Value = Settings[K];
-        const store = queryStore<Value | undefined>(() => this.getSetting(key), default_);
-        const set = (val: Value) => this.settings.update(key, { val });
-        const update = (updater: Updater<Value>) => this.settings.update(key, o => {
-            o.val = updater(o.val);
-        });
-        return Object.assign(store, { set, update });
+    settingStore<K extends keyof Settings>(key: K, fallback: Settings[K]): Writable<Settings[K]>;
+    settingStore<K extends keyof Settings>(key: K, fallback?: Settings[K]): Writable<Settings[K] | undefined> {
+        return getKVStore(this.settings, key, fallback);
     }
     async resetSettings() {
         await this.transaction("rw", this.settings, async () => {
@@ -231,4 +225,20 @@ export function queryStore<T>(cb: () => T | Promise<T>, fallback: T): Readable<T
 export function queryStore<T>(cb: () => T | Promise<T>, fallback?: T) {
     const query = liveQuery(cb);
     return readable(fallback, (set) => query.subscribe(set).unsubscribe);
+}
+/**
+ * Creates a writable store out of a single key-value pair in a database table.
+ * 
+ * This store assumes the key exists in the table. It will not write if it does not exist.
+ * 
+ * @param table the table
+ * @param key the key
+ * @param fallback a fallback/default value to use before the value is first read successfully
+ */
+function getKVStore(table: EntityTable<KeyValuePair, "key">, key: string, fallback?: any): Writable<any> {
+    const store = queryStore(() => table.get(key).then(entry => entry?.val), fallback);
+    const set = (val: any) => table.update(key, { val: $state.snapshot(val) });
+    const update = (updater: Updater<any>) => table.update(key, entry => entry.val = updater(entry.val));
+    
+    return Object.assign(store, { set, update });
 }

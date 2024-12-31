@@ -3,7 +3,7 @@
  */
 
 import { Entity } from "dexie";
-import type { SessionDatabase } from ".";
+import type { SessionDatabase } from "./index.svelte";
 
 export class KeyValuePair extends Entity<SessionDatabase> {
     key!: string;

@@ -4,7 +4,7 @@ import type { MotionInput } from "$lib/motions/types";
 import { z } from "zod";
 import { stringifyTime } from "$lib/util/time";
 import { type Delegate, findDelegate } from "$lib/db/delegates";
-import type { SessionDatabase } from "$lib/db";
+import type { SessionDatabase } from "$lib/db/index.svelte";
 
 /**
  * The label/name given to each motion kind.

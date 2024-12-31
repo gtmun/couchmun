@@ -4,7 +4,7 @@
 
 import type { DelegateAttrs, DelegateID, DelegatePresence, StatsData } from "$lib/types";
 import { Entity } from "dexie";
-import type { SessionDatabase } from ".";
+import type { SessionDatabase } from "./index.svelte";
 
 export class Delegate extends Entity<SessionDatabase> {
     // Indexes:

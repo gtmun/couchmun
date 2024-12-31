@@ -3,7 +3,7 @@
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import IconLabel from "$lib/components/IconLabel.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
-    import { db } from "$lib/db";
+    import { db } from "$lib/db/index.svelte";
     import { RadioGroup, RadioItem } from "@skeletonlabs/skeleton";
 
     const { delegates } = getSessionContext();

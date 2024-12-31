@@ -1,4 +1,4 @@
-import { db } from "$lib/db";
+import { db } from "$lib/db/index.svelte";
 import type { SessionData } from "$lib/types";
 import { getDndItemId } from "$lib/util/dnd";
 import { getContext, hasContext, setContext } from "svelte";
