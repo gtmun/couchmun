@@ -191,6 +191,7 @@ export type Speaker = {
  * This excludes delegate session data which is stored separately.
  */
 export type SessionData = {
+    sessionKey?: number,
     /**
      * All specified motions (from the points & motions page).
      */
@@ -203,6 +204,17 @@ export type SessionData = {
      * The speakers list and speaker attributes (such as whether the given speaker has spoken already)
      */
     speakersList: Speaker[],
+};
+export type DelSessionData = {
+    presence: DelegatePresence,
+    stats: StatsData
+};
+export type PrevSessionData = {
+    common: SessionData,
+    delegates: {
+        id: DelegateID,
+        session: DelSessionData
+    }[]
 };
 
 /**

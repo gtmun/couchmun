@@ -2,7 +2,7 @@
  * Delegate table definition for the session database.
  */
 
-import type { DelegateAttrs, DelegateID, DelegatePresence, StatsData } from "$lib/types";
+import type { DelegateAttrs, DelegateID, DelegatePresence, DelSessionData, StatsData } from "$lib/types";
 import { Entity } from "dexie";
 import type { SessionDatabase } from "./index.svelte";
 
@@ -47,8 +47,14 @@ export class Delegate extends Entity<SessionDatabase> {
         return {
             name: this.name,
             aliases: structuredClone(this.aliases),
-            flagURL: this.flagURL
+            flagURL: this.flagURL,
         };
+    }
+    getSessionData(): DelSessionData {
+        return {
+            presence: this.presence,
+            stats: structuredClone(this.stats),
+        }
     }
 }
 

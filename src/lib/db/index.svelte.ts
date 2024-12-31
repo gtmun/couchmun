@@ -1,9 +1,9 @@
 import { Delegate } from "./delegates";
-import { KeyValuePair, toKeyValueArray } from "./keyval";
+import { KeyValuePair, toKeyValueArray, toObject } from "./keyval";
 import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
 import { getFlagUrl } from "$lib/flags/flagcdn";
 import { DEFAULT_SORT_PRIORITY } from "$lib/motions/definitions";
-import type { DelegateAttrs, DelegateID, SessionData, Settings } from "$lib/types";
+import type { DelegateAttrs, DelegateID, DelSessionData, PrevSessionData, SessionData, Settings } from "$lib/types";
 import { Dexie, liveQuery, type EntityTable, type IndexableType, type InsertType } from "dexie";
 import { readable, type Readable, type Updater, type Writable } from "svelte/store";
 
@@ -11,6 +11,7 @@ export class SessionDatabase extends Dexie {
     delegates!: EntityTable<Delegate, "id">;
     settings!: EntityTable<KeyValuePair, "key">;
     sessionData!: EntityTable<KeyValuePair, "key">;
+    prevSessions!: EntityTable<KeyValuePair<number, PrevSessionData>, "key">;
 
     constructor() {
         super("sessionDatabase", { cache: "immutable" });
@@ -18,10 +19,12 @@ export class SessionDatabase extends Dexie {
             delegates: Delegate.indexes,
             settings: KeyValuePair.indexes,
             sessionData: KeyValuePair.indexes,
+            prevSessions: KeyValuePair.indexes,
         });
         this.delegates.mapToClass(Delegate);
         this.settings.mapToClass(KeyValuePair);
         this.sessionData.mapToClass(KeyValuePair);
+        this.prevSessions.mapToClass(KeyValuePair);
     }
 
     /**
@@ -94,7 +97,7 @@ export class SessionDatabase extends Dexie {
      * @returns the value of the setting
      */
     async getSetting<K extends keyof Settings>(key: K): Promise<Settings[K]> {
-        return (await this.settings.get(key))!.val;
+        return this.settings.get(key).then(e => e!.val);
     }
     /**
      * Creates a writable store for a given setting.
@@ -124,6 +127,9 @@ export class SessionDatabase extends Dexie {
         return getKVStore(this.sessionData, key, fallback);
     }
 
+    async getSessionValue<K extends keyof SessionData>(key: K): Promise<SessionData[K]> {
+        return this.sessionData.get(key).then(e => e?.val);
+    }
     async resetSessionData() {
         await this.transaction("rw", [this.sessionData, this.delegates], async () => {
             await this.delegates.toCollection().modify(DEFAULT_DEL_SESSION_DATA);
@@ -131,6 +137,35 @@ export class SessionDatabase extends Dexie {
             await this.sessionData.clear();
             await this.sessionData.bulkAdd(toKeyValueArray(DEFAULT_SESSION_DATA));
         })
+    }
+    async saveSessionData() {
+        return this.transaction("rw", [this.delegates, this.sessionData, this.prevSessions], async () => {
+            let sessionKey = await this.getSessionValue("sessionKey") ?? await this.prevSessions.count();
+
+            let sessionData = await this.sessionData.toArray();
+            let delegates = await this.delegates.toArray();
+
+            await this.prevSessions.put({ key: sessionKey, val: {
+                common: Object.assign(toObject(sessionData) as SessionData, { sessionKey }),
+                delegates: delegates.map(d => ({ id: d.id, session: d.getSessionData() }))
+            } });
+        });
+    }
+    async loadSessionData(key: number) {
+        return this.transaction("rw", [this.delegates, this.sessionData, this.prevSessions], async () => {
+            let entry = await this.prevSessions.get(key);
+            if (entry) {
+                let { common, delegates } = entry.val;
+                await this.saveSessionData();
+                
+                await this.delegates.bulkUpdate(
+                    delegates.map(({ id, session }) => ({ key: id, changes: session }))
+                );
+
+                await this.sessionData.clear();
+                await this.sessionData.bulkAdd(toKeyValueArray(common));
+            }
+        });
     }
 }
 
@@ -161,7 +196,7 @@ export const DEFAULT_DEL_SESSION_DATA = {
         timesSpoken: 0,
         durationSpoken: 0
     }
-} as const;
+} as const satisfies DelSessionData;
 
 export const DEFAULT_SESSION_DATA = {
     motions: [],
