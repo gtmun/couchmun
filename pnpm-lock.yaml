@@ -20,9 +20,6 @@ importers:
       svelte-dnd-action:
         specifier: ^0.9.53
         version: 0.9.53(svelte@5.15.0)
-      svelte-persisted-store:
-        specifier: ^0.12.0
-        version: 0.12.0(svelte@5.15.0)
       zod:
         specifier: ^3.24.1
         version: 3.24.1
@@ -946,12 +943,6 @@ packages:
     peerDependencies:
       svelte: '>=3.23.0 || ^5.0.0-next.0'
 
-  svelte-persisted-store@0.12.0:
-    resolution: {integrity: sha512-BdBQr2SGSJ+rDWH8/aEV5GthBJDapVP0GP3fuUCA7TjYG5ctcB+O9Mj9ZC0+Jo1oJMfZUd1y9H68NFRR5MyIJA==}
-    engines: {node: '>=0.14'}
-    peerDependencies:
-      svelte: ^3.48.0 || ^4 || ^5
-
   svelte@5.15.0:
     resolution: {integrity: sha512-YWl8rAd4hSjERLtLvP6h2pflGtmrJwv+L12BgrOtHYJCpvLS9WKp/YNAdyolw3FymXtcYZqhSWvWlu5O1X7tgQ==}
     engines: {node: '>=18'}
@@ -1810,10 +1801,6 @@ snapshots:
       - picomatch
 
   svelte-dnd-action@0.9.53(svelte@5.15.0):
-    dependencies:
-      svelte: 5.15.0
-
-  svelte-persisted-store@0.12.0(svelte@5.15.0):
     dependencies:
       svelte: 5.15.0
 
