@@ -1,9 +1,9 @@
 <script lang="ts">
     import MetaTags from "$lib/components/MetaTags.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
+    import { getSessionContext } from "$lib/context/index.svelte";
     import { db, DEFAULT_DEL_SESSION_DATA } from "$lib/db";
     import type { Delegate } from "$lib/db/delegates";
-    import { getSessionDataContext } from "$lib/stores/session";
     import type { StatsData } from "$lib/types";
     import { compare, downloadFile, triggerConfirmModal } from "$lib/util";
     import { stringifyTime } from "$lib/util/time";
@@ -11,8 +11,7 @@
     import Icon from "@iconify/svelte";
     import { ProgressBar, type PopupSettings, getModalStore, popup } from "@skeletonlabs/skeleton";
 
-    const { delegates } = getSessionDataContext();
-    const title = db.settingStore("title", "");
+    const { delegates, barTitle } = getSessionContext();
     const modalStore = getModalStore();
 
     let sortOrder: { item: SortKey, descending: boolean } = $state({
@@ -62,7 +61,7 @@
     }
     function exportStats() {
         let data = {
-            committee: $title,
+            committee: $barTitle,
             delegates: $delegates
         };
         downloadFile("couchmun-del-stats.json", JSON.stringify(data), "application/json");

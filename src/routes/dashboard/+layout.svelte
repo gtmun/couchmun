@@ -5,13 +5,10 @@
     import BarStats from '$lib/components/app-bar/BarStats.svelte';
     import Navigation from '$lib/components/nav/Navigation.svelte';
     import SettingsNavigation from '$lib/components/nav/SettingsNavigation.svelte';
-    import { db, queryStore } from '$lib/db';
-    import { Delegate } from '$lib/db/delegates';
-    import type { AppBarData } from '$lib/types';
+    import { getSessionContext } from '$lib/context/index.svelte';
     
     import Icon from "@iconify/svelte";
     import { AppBar, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
-    import { setContext } from 'svelte';
 
     let { children } = $props();
     const drawerStore = getDrawerStore();
@@ -30,8 +27,9 @@
         })
     }
 
-    const title = db.settingStore("title", "");
-    let delegateCount = queryStore(() => db.delegates.filter(d => d.enabled && Delegate.prototype.isPresent.apply(d)).count(), 0);
+    const sessionData = getSessionContext();
+    const { delegates, barTitle } = sessionData;
+    let delegateCount = $derived($delegates.reduce((acc, d) => acc + d.isPresent(), 0));
 
     const links: Record<string, { label: string }> = {
         "/dashboard/roll-call":      { label: "Roll Call" },
@@ -42,14 +40,9 @@
     };
     let thisLink = $derived(typeof page.route.id == "string" ? links[page.route.id] : undefined);
 
-    // This can be set to change the topic displayed on the app bar.
-    // This must be cleared when navigating to different pages.
-    const appBarData: AppBarData = $state({
-        topic: undefined
-    });
-    setContext("app-bar", appBarData);
+    // When navigating to a different page, reset topic:
     $effect(() => {
-        if (navigating) appBarData.topic = undefined;
+        if (navigating.type != null) sessionData.barTopic = undefined;
     })
 </script>
 
@@ -93,20 +86,20 @@
                 if committeeMain == true: the committee title are front and center
                 if commiteeMain == false: the committee title are relegated for something else
             -->
-            {@const committeeMain = !appBarData.topic}
+            {@const committeeMain = !sessionData.barTopic}
             <div class="flex flex-col items-center gap-2">
                 <div
                     class="flex max-sm:flex-col gap-1 items-stretch"
                     class:flex-col={committeeMain}
                 >
-                    <BarHeader bind:title={$title} size={committeeMain ? "md" : "sm"} />
+                    <BarHeader bind:title={$barTitle} size={committeeMain ? "md" : "sm"} />
                     <div class="border-2 border-surface-800-100-token {committeeMain ? "m-1 mt-0" : "mx-4"}" role="separator"></div>
                     <div class="flex items-center justify-center">
-                        <BarStats total={$delegateCount} />
+                        <BarStats total={delegateCount} />
                     </div>
                 </div>
-                {#if appBarData.topic}
-                    <BarHeader bind:title={appBarData.topic} styles="italic capitalize" />
+                {#if sessionData.barTopic}
+                    <BarHeader bind:title={sessionData.barTopic} styles="italic capitalize" />
                 {/if}
             </div>
             {#snippet trail()}

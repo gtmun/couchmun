@@ -3,13 +3,13 @@
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
     import Timer from "$lib/components/Timer.svelte";
-    import { getSessionDataContext } from "$lib/stores/session";
+    import { getSessionContext } from "$lib/context/index.svelte";
     import { parseTime } from "$lib/util/time";
 
     import Icon from "@iconify/svelte";
     import { popup, type PopupSettings } from "@skeletonlabs/skeleton";
 
-    const { delegates } = getSessionDataContext();
+    const { delegates } = getSessionContext();
 
     // Timer
     let timerEnabled: boolean = $state(true);

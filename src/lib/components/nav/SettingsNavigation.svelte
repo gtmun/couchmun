@@ -1,8 +1,7 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { base } from "$app/paths";
-    import { db } from "$lib/db";
-    import { getSessionDataContext, resetSessionDataContext } from "$lib/stores/session";
+    import { getSessionContext, resetSessionContext } from "$lib/context/index.svelte";
     import { triggerConfirmModal } from "$lib/util";
 
     import Icon from "@iconify/svelte";
@@ -13,7 +12,7 @@
     }
     let { close }: Props = $props();
 
-    const sessionData = getSessionDataContext();
+    const sessionData = getSessionContext();
     const modalStore = getModalStore();
     
     function clearSession() {
@@ -21,8 +20,7 @@
         triggerConfirmModal(modalStore,
             "Are you sure you want to reset the session?", 
             async () => {
-                await db.resetSessionData();
-                await resetSessionDataContext(sessionData);
+                await resetSessionContext(sessionData);
                 goto(`${base}/dashboard/roll-call`);
             }
         )

@@ -2,22 +2,22 @@
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import SpeakerList, { createSpeaker } from "$lib/components/SpeakerList.svelte";
     import Timer from "$lib/components/Timer.svelte";
+    import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db";
     import { findDelegate } from "$lib/db/delegates";
-    import { getSessionDataContext } from "$lib/stores/session";
-    import type { AppBarData, Motion, Speaker } from "$lib/types";
+    import type { Motion, Speaker } from "$lib/types";
     import Icon from "@iconify/svelte";
-    import { getContext, untrack } from "svelte";
+    import { untrack } from "svelte";
 
     interface Props {
         motion: Motion & { kind: "rr" };
     }
     let { motion }: Props = $props();
 
-    const { delegates } = getSessionDataContext();
-    const appBarData = getContext<AppBarData>("app-bar");
+    const sessionData = getSessionContext();
+    const { delegates } = sessionData;
     $effect(() => {
-        appBarData.topic = `Topic: ${motion.topic}`;
+        sessionData.barTopic = `Topic: ${motion.topic}`;
     });
 
     // Timer

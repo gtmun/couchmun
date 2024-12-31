@@ -1,10 +1,10 @@
 <script lang="ts">
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
     import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/components/del-input/DelPopup.svelte";
+    import { getSessionContext } from "$lib/context/index.svelte";
     import { createMotionSchema, inputifyMotion, MOTION_FIELDS, MOTION_LABELS } from "$lib/motions/definitions";
     import { formatValidationError } from "$lib/motions/form_validation";
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
-    import { getSessionDataContext } from "$lib/stores/session";
     import { addColons, parseTime } from "$lib/util/time";
     import type { Motion } from "$lib/types";
     
@@ -12,7 +12,7 @@
     import { popup } from "@skeletonlabs/skeleton";
     import { type Snippet } from 'svelte';
 
-    const { selectedMotion, delegates } = getSessionDataContext();
+    const { selectedMotion, delegates } = getSessionContext();
     const motionSchema = $derived(createMotionSchema($delegates));
     const defaultInputMotion = () => ({ id: crypto.randomUUID(), kind: "mod" } satisfies MotionInput);
     const resetInputErrors = () => { inputError = undefined };

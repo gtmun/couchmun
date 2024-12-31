@@ -4,11 +4,11 @@
   import IconLabel from "$lib/components/IconLabel.svelte";
   import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
+  import { getSessionContext } from "$lib/context/index.svelte";
   import { db, queryStore } from "$lib/db";
   import { findDelegate } from "$lib/db/delegates";
   import { MOTION_LABELS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
-  import { getSessionDataContext } from "$lib/stores/session";
   import type { Motion } from "$lib/types";
   import { createDragTr, isDndShadow, processDrag } from "$lib/util/dnd";
   import { stringifyTime } from "$lib/util/time";
@@ -18,7 +18,7 @@
   import { flip } from "svelte/animate";
   import { dndzone } from "svelte-dnd-action";
 
-  const { motions, selectedMotion, delegates } = getSessionDataContext();
+  const { motions, selectedMotion, delegates } = getSessionContext();
   const sortOrder = queryStore(() => db.getSetting("sortOrder"), []);
   const modalStore = getModalStore();
 

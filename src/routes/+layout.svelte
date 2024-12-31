@@ -2,14 +2,14 @@
     import "../app.css";
     import { computePosition, autoUpdate, offset, shift, flip, arrow, size } from '@floating-ui/dom';
     import { initializeStores, Modal, storePopup } from "@skeletonlabs/skeleton";
-    import { createSessionDataContext } from "$lib/stores/session";
+    import { createSessionContext } from "$lib/context/index.svelte";
 
     let { children } = $props();
 
     initializeStores();
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow, size });
 
-    createSessionDataContext();
+    createSessionContext();
     
     function keydown(e: KeyboardEvent) {
         // Allows ESC to be used to unfocus an element.

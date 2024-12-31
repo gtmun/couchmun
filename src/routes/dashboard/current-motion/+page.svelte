@@ -3,9 +3,9 @@
     import ModCaucus from "$lib/components/motions/ModCaucus.svelte";
     import RoundRobin from "$lib/components/motions/RoundRobin.svelte";
     import UnmodCaucus from "$lib/components/motions/UnmodCaucus.svelte";
-    import { getSessionDataContext } from "$lib/stores/session";
+    import { getSessionContext } from "$lib/context/index.svelte";
 
-    const { selectedMotion } = getSessionDataContext();
+    const { selectedMotion } = getSessionContext();
 
     const isExhaustive = (s: never) => s;
 </script>

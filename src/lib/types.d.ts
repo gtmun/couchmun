@@ -186,6 +186,9 @@ export type Speaker = {
 
 // Session Data
 export type SessionData = {
+    /**
+     * Array of enabled delegates.
+     */
     delegates: Readable<Delegate[]>,
     
     /**
@@ -199,16 +202,17 @@ export type SessionData = {
     /**
      * The speakers list and speaker attributes (such as whether the given speaker has spoken already)
      */
-    speakersList: Writable<Speaker[]>
-};
+    speakersList: Writable<Speaker[]>,
 
-// App bar data
-export type AppBarData = {
     /**
-     * Topic to display on the app bar
+     * Committee title, visible on the app bar.
      */
-    topic: string | undefined
-}
+    barTitle: Writable<string>,
+    /**
+     * Current topic of discussion, visible on the app bar.
+     */
+    barTopic: string | undefined,
+};
 
 export type ClockMessage = 
     | { kind: "startTick", ts: number } 

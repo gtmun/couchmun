@@ -2,11 +2,11 @@
     import { base } from "$app/paths";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import IconLabel from "$lib/components/IconLabel.svelte";
+    import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db";
-    import { getSessionDataContext } from "$lib/stores/session";
     import { RadioGroup, RadioItem } from "@skeletonlabs/skeleton";
 
-    const { delegates } = getSessionDataContext();
+    const { delegates } = getSessionContext();
 
     const radio = [
         { presence: "NP", label: "Absent", icon: "mdi:account-off" },

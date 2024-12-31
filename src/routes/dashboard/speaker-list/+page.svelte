@@ -2,15 +2,15 @@
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import Timer from "$lib/components/Timer.svelte";
+    import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db";
     import { findDelegate } from "$lib/db/delegates";
     import { presentDelegateSchema } from "$lib/motions/form_validation";
-    import { getSessionDataContext } from "$lib/stores/session";
     import { parseTime } from "$lib/util/time";
     import Icon from "@iconify/svelte";
     import { untrack } from "svelte";
 
-    const { speakersList: order, delegates } = getSessionDataContext();
+    const { speakersList: order, delegates } = getSessionContext();
 
     // Timer
     let running: boolean = $state(false);
