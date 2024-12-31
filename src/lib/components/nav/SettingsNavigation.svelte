@@ -1,6 +1,7 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { base } from "$app/paths";
+    import { db } from "$lib/db";
     import { getSessionDataContext, resetSessionDataContext } from "$lib/stores/session";
     import { triggerConfirmModal } from "$lib/util";
 
@@ -20,6 +21,7 @@
         triggerConfirmModal(modalStore,
             "Are you sure you want to reset the session?", 
             async () => {
+                await db.resetSessionData();
                 await resetSessionDataContext(sessionData);
                 goto(`${base}/dashboard/roll-call`);
             }

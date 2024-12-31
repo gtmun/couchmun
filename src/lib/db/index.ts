@@ -10,15 +10,18 @@ import { readable, type Readable, type Updater, type Writable } from "svelte/sto
 export class SessionDatabase extends Dexie {
     delegates!: EntityTable<Delegate, "id">;
     settings!: EntityTable<KeyValuePair, "key">;
+    sessionData!: EntityTable<KeyValuePair, "key">;
 
     constructor() {
         super("sessionDatabase", { cache: "immutable" });
         this.version(1).stores({
             delegates: Delegate.indexes,
-            settings: KeyValuePair.indexes
+            settings: KeyValuePair.indexes,
+            sessionData: KeyValuePair.indexes,
         });
         this.delegates.mapToClass(Delegate);
         this.settings.mapToClass(KeyValuePair);
+        this.sessionData.mapToClass(KeyValuePair);
     }
 
     /**
@@ -65,6 +68,27 @@ export class SessionDatabase extends Dexie {
     }
 
     /**
+     * Gets a readable store of all enabled delegates.
+     * This can be used during a session to get a list of delegates.
+     * 
+     * Note that this does not give a list of *only* present delegates.
+     * To do that, you need to additionally filter the result of this store:
+     * 
+     * ```ts
+     * const delegates = db.enabledDelegatesStore();
+     * const presentDelegates = $delegates.filter(d => d.isPresent());
+     * ```
+     * 
+     * @returns the store
+     */
+    enabledDelegatesStore(): Readable<Delegate[]> {
+        return queryStore(() => {
+            return db.delegates.orderBy("order")
+                .filter(e => e.enabled)
+                .toArray();
+        }, []);
+    }
+    /**
      * Gets the setting from the settings database.
      * @param key the key to get the setting for
      * @returns the value of the setting
@@ -94,6 +118,15 @@ export class SessionDatabase extends Dexie {
             await this.settings.bulkAdd(toKeyValueArray(DEFAULT_SETTINGS));
         });
     }
+
+    async resetSessionData() {
+        await this.transaction("rw", [this.sessionData, this.delegates], async () => {
+            await this.delegates.toCollection().modify(DEFAULT_DEL_SESSION_DATA);
+            
+            await this.sessionData.clear();
+            await this.sessionData.bulkAdd(toKeyValueArray(DEFAULT_SESSION_DATA));
+        })
+    }
 }
 
 export const db = new SessionDatabase();
@@ -101,19 +134,21 @@ export const db = new SessionDatabase();
 db.on("ready", async (tx) => {
     let txdb = tx as typeof db;
     if (await txdb.delegates.count() == 0) {
-        // Populate:
         const dels = await _legacyFixDelFlag(DEFAULT_DELEGATES);
         await txdb.addDelegates(dels);
     }
     if (await txdb.settings.count() == 0) {
         await txdb.resetSettings();
     }
+    if (await txdb.sessionData.count() == 0) {
+        await txdb.sessionData.bulkAdd(toKeyValueArray(DEFAULT_SESSION_DATA));
+    }
 })
 
 /**
  * Default session data per delegate.
  */
-export const DEFAULT_SESSION_DATA = {
+export const DEFAULT_DEL_SESSION_DATA = {
     presence: "NP",
     stats: {
         motionsProposed: 0,
@@ -121,6 +156,12 @@ export const DEFAULT_SESSION_DATA = {
         timesSpoken: 0,
         durationSpoken: 0
     }
+} as const;
+
+export const DEFAULT_SESSION_DATA = {
+    motions: [],
+    selectedMotion: null,
+    speakersList: []
 } as const;
 
 /**
@@ -146,7 +187,7 @@ function populateDelegate(attrs: DelegateAttrs, order: number): InsertType<Deleg
     let { name, aliases, flagURL: mFlagURL } = attrs;
     return Object.assign({
         name, aliases, order, enabled: true, flagURL: mFlagURL ?? ""
-    }, DEFAULT_SESSION_DATA);
+    }, DEFAULT_DEL_SESSION_DATA);
 }
 /**
  * Method to handle legacy `Record<string, DelegateAttrs>` format.
