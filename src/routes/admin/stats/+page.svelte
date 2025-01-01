@@ -2,18 +2,58 @@
     import MetaTags from "$lib/components/MetaTags.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
-    import { db, DEFAULT_DEL_SESSION_DATA } from "$lib/db/index.svelte";
-    import type { Delegate } from "$lib/db/delegates";
+    import { db, DEFAULT_DEL_SESSION_DATA, queryStore } from "$lib/db/index.svelte";
+    import { Delegate } from "$lib/db/delegates";
     import type { StatsData } from "$lib/types";
     import { compare, downloadFile, triggerConfirmModal } from "$lib/util";
     import { stringifyTime } from "$lib/util/time";
     
     import Icon from "@iconify/svelte";
-    import { ProgressBar, type PopupSettings, getModalStore, popup } from "@skeletonlabs/skeleton";
+    import { ProgressBar, type PopupSettings, getModalStore, popup, type PaginationSettings, Paginator } from "@skeletonlabs/skeleton";
 
     const { delegates, barTitle } = getSessionContext();
     const modalStore = getModalStore();
 
+    // Pagination
+    const prevSessions = queryStore(async () => {
+        const arr = await db.prevSessions.toArray();
+        return arr.map(e => e.val.delegates);
+    }, []);
+    const currentSessionKey = queryStore(() => db.getSessionValue("sessionKey"));
+
+    const nSessions = queryStore(async () => {
+        const nPrevSessions = await db.prevSessions.count();
+        const currentSessionKey = await db.getSessionValue("sessionKey");
+        return nPrevSessions + +(typeof currentSessionKey === "undefined");
+    }, 0);
+
+    let pageSettings: PaginationSettings = $state({
+        page: -1,
+        limit: 1,
+        size: 0,
+        amounts: []
+    });
+    $effect(() => {
+        pageSettings.size = $nSessions;
+        if (pageSettings.page === -1) pageSettings.page = $currentSessionKey ?? ($nSessions - 1);
+    });
+
+    const delAttrMap = $derived(new Map<number, Delegate>($delegates.map(d => [d.id, d])));
+    let sessionDelegates = $derived.by(() => {
+        let session = $prevSessions[pageSettings.page];
+
+        if (pageSettings.page === $currentSessionKey || !session) {
+            // Current session:
+            return $delegates;
+        } else {
+            // Previous session:
+            return session.map<Delegate>(
+                d => Object.assign(Object.create(Delegate.prototype), delAttrMap.get(d.id), d.session)
+            );
+        }
+    });
+
+    // Sorting
     let sortOrder: { item: SortKey, descending: boolean } = $state({
         item: "durationSpoken",
         descending: true
@@ -44,9 +84,10 @@
         }
     }
 
-    let maxDurationSpoken = $derived(Math.max(0, ...$delegates.map(({ stats }) => stats.durationSpoken)));
+    // Display stats:
+    let maxDurationSpoken = $derived(Math.max(0, ...sessionDelegates.map(d => d.stats.durationSpoken)));
     let displayEntries = $derived(
-        Array.from($delegates)
+        Array.from(sessionDelegates)
             .sort((e1, e2) => {
                 let { item, descending } = sortOrder;
                 return compare(readEntryValue(e1, item), readEntryValue(e2, item), descending);
@@ -79,7 +120,8 @@
 <MetaTags title="Stats Screen &middot; CouchMUN (Admin)" />
 
 <div class="flex flex-col gap-1">
-    <div class="flex justify-end">
+    <div class="flex items-center justify-end gap-2">
+        <Paginator showNumerals bind:settings={pageSettings} />
         <button 
             class="btn-icon variant-filled-warning"
             aria-label="Edit Stats"
