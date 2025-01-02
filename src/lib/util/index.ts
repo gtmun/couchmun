@@ -1,3 +1,4 @@
+import type { DelegateAttrs, DelegatePresence } from "$lib/types";
 import type { ModalSettings, ModalStore } from "@skeletonlabs/skeleton";
 
 /**
@@ -29,23 +30,6 @@ export type Comparator<K> = (a: K, b: K) => number;
  * Compares two numbers by their `<`, `>` ordering.
  */
 export const compare = ((a: any, b: any, reverse: boolean = false) => (reverse ? -1 : 1) * (a < b ? -1 : a > b ? 1 : 0)) satisfies Comparator<any>;
-
-/**
- * Creates a new object where Maps each entry in the object to a new entry.
- * @param o the object
- * @param cb the callback
- * @returns the new object
- */
-export function mapObj<
-    K extends keyof unknown, V, 
-    K1 extends keyof unknown, V1
->(o: Record<K, V>, cb: (key: K, val: V, i: number) => [K1, V1]): Record<K1, V1> {
-    return Object.fromEntries(
-        Object.entries<V>(o)
-            .map(([k, v], i) => cb(k as K, v, i)
-        )
-    );
-}
 
 /**
  * Allows user to download a file.

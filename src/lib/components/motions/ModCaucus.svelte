@@ -2,24 +2,24 @@
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import Timer from "$lib/components/Timer.svelte";
+    import { getSessionContext } from "$lib/context/index.svelte";
+    import { db } from "$lib/db/index.svelte";
+    import { findDelegate } from "$lib/db/delegates";
     import { presentDelegateSchema } from "$lib/motions/form_validation";
-    import { getSessionDataContext } from "$lib/stores/session";
-    import { getStatsContext, updateStats } from "$lib/stores/stats";
-    import type { AppBarData, Motion, Speaker } from "$lib/types";
+    import type { Motion, Speaker } from "$lib/types";
     import Icon from "@iconify/svelte";
-    import { getContext, untrack } from "svelte";
+    import { untrack } from "svelte";
 
     interface Props {
         motion: Motion & { kind: "mod" };
     }
     let { motion }: Props = $props();
 
-    const { settings: { delegateAttributes }, presentDelegates } = getSessionDataContext();
-    const { stats } = getStatsContext();
-    const appBarData = getContext<AppBarData>("app-bar");
+    const sessionData = getSessionContext();
+    const { delegates } = sessionData;
     $effect(() => {
-        appBarData.topic = `Topic: ${motion.topic}`;
-    })
+        sessionData.barTopic = `Topic: ${motion.topic}`;
+    });
 
     // Timer
     let running: boolean = $state(false);
@@ -64,7 +64,7 @@
         </div>
         <div class="flex flex-col gap-5 justify-center flex-grow">
             {#if typeof selectedSpeaker !== "undefined"}
-                <DelLabel key={selectedSpeaker.key} attrs={$delegateAttributes[selectedSpeaker.key]} />
+                <DelLabel attrs={findDelegate($delegates, selectedSpeaker.key)} />
             {/if}
             <Timer 
                 name="delegate"
@@ -72,7 +72,7 @@
                 bind:this={delTimer}
                 bind:running
                 disableKeyHandlers={typeof selectedSpeaker === "undefined"}
-                onPause={(t) => updateStats(stats, selectedSpeaker?.key, dat => dat.durationSpoken += t)}
+                onPause={(t) => db.updateDelegate(selectedSpeaker?.key, d => { d.stats.durationSpoken += t; })}
             />
             <Timer
                 name="total"
@@ -102,14 +102,13 @@
         <!-- List -->
         <SpeakerList
             bind:order
-            delegates={$delegateAttributes}
+            delegates={$delegates}
             bind:this={speakersList}
             useDefaultControls={{
-                presentDelegates: $presentDelegates,
                 validator: presentDelegateSchema
             }}
             onBeforeSpeakerUpdate={reset}
-            onMarkComplete={(key, isRepeat) => { if (!isRepeat) updateStats(stats, key, dat => dat.timesSpoken++) }}
+            onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
         />
     </div>
 </div>

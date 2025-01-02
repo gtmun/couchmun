@@ -1,29 +1,25 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { base } from "$app/paths";
-    import { getSessionDataContext, resetSessionDataContext } from "$lib/stores/session";
-    import { triggerConfirmModal } from "$lib/util";
-
+    import { getSessionContext, resetSessionContext } from "$lib/context/index.svelte";
+    import { db, queryStore } from "$lib/db/index.svelte";
+    
     import Icon from "@iconify/svelte";
-    import { getModalStore, LightSwitch } from "@skeletonlabs/skeleton";
+    import { LightSwitch } from "@skeletonlabs/skeleton";
 
     interface Props {
         close: () => void;
     }
     let { close }: Props = $props();
 
-    const sessionData = getSessionDataContext();
-    const modalStore = getModalStore();
+    const prevSessions = queryStore(() => db.prevSessions.toCollection().keys(), []);
+    const selectedSession = queryStore(() => db.getSessionValue("sessionKey"));
+    const sessionData = getSessionContext();
     
-    function clearSession() {
-        close();
-        triggerConfirmModal(modalStore,
-            "Are you sure you want to reset the session?", 
-            () => {
-                resetSessionDataContext(sessionData);
-                goto(`${base}/dashboard/roll-call`);
-            }
-        )
+    async function clearSession() {
+        await db.saveSessionData();
+        await resetSessionContext(sessionData);
+        goto(`${base}/dashboard/roll-call`);
     }
 </script>
 
@@ -58,11 +54,32 @@
 
 <hr />
 
+{#snippet sessionRow(key?: number)}
+    {@const selected = $selectedSession === key}
+    <button
+        class="btn {selected ? "variant-filled-primary" : "variant-soft-surface"}"
+        onclick={() => { if (typeof key === "number" && !selected) db.loadSessionData(key); }}
+    >
+        Session {+(key ?? $prevSessions.length) + 1}
+    </button>
+    <div>
+        <!-- Buttons -->
+    </div>
+{/snippet}
 <div class="p-4 flex flex-col gap-3">
+    <div class="grid grid-cols-1 gap-1">
+        {#each $prevSessions as sessionKey}
+            {@render sessionRow(+sessionKey)}
+        {/each}
+        {#if typeof $selectedSession === "undefined"}
+            {@render sessionRow(undefined)}
+        {/if}
+    </div>
     <button 
-        class="btn variant-ghost-error" 
+        class="btn variant-ghost-surface" 
         onclick={clearSession}
     >
-        Clear Session
+        <Icon icon="mdi:plus" width="24" height="24" />
+        Add Session
     </button>
 </div>
