@@ -60,13 +60,17 @@
     }
     function resetAllSettings() {
         triggerConfirmModal(modalStore,
-            "Are you sure you want to reset all settings?", 
+            "Are you sure you want to reset all settings? This will also wipe all sessions.", 
             async () => {
                 // Reset preset state cause it's not bound to settings
                 currentPreset = DEFAULT_PRESET_KEY;
                 // Reset settings
                 await db.resetSettings();
                 await setPreset();
+
+                // Remove session data + previous sessions.
+                await db.resetSessionData();
+                await db.prevSessions.clear();
             }
         )
     }

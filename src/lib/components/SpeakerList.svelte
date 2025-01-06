@@ -57,7 +57,7 @@
     $effect(() => { dndItems = order; });
 
     // Special IDs to track:
-    let selectedSpeakerId: string | undefined = $state(undefined);
+    let selectedSpeakerId = $state<SpeakerEntryID>();
     // A mapping from IDs to Speakers:
     let orderMap = $derived(Object.fromEntries(
         order.filter(s => typeof s.id === "string" && s.id)
@@ -65,7 +65,7 @@
     ));
 
     // List item elements per order item
-    let liElements = new Map<string, HTMLLIElement>();
+    let liElements = new Map<SpeakerEntryID, HTMLLIElement>();
 
     // Readonly values
     export function isAllDone() {
