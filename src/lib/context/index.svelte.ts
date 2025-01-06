@@ -9,6 +9,7 @@ class SessionImpl implements SessionContext {
     delegates = db.enabledDelegatesStore();
     motions = db.sessionDataStore("motions", DEFAULT_SESSION_DATA.motions);
     selectedMotion = db.sessionDataStore("selectedMotion", DEFAULT_SESSION_DATA.selectedMotion);
+    selectedMotionState = db.sessionDataStore("selectedMotionState", DEFAULT_SESSION_DATA.selectedMotionState);
     speakersList = db.sessionDataStore("speakersList", DEFAULT_SESSION_DATA.speakersList);
     barTitle = db.settingStore("title", "");
     barTopic = $state<string>();

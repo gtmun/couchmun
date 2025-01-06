@@ -12,8 +12,9 @@
 
     interface Props {
         motion: Motion & { kind: "mod" };
+        order: Speaker[];
     }
-    let { motion }: Props = $props();
+    let { motion, order = $bindable() }: Props = $props();
 
     const sessionData = getSessionContext();
     const { delegates } = sessionData;
@@ -28,7 +29,6 @@
     
     // Speakers List
     let speakersList: SpeakerList | undefined = $state();
-    let order: Speaker[] = $state([]);
     let selectedSpeaker = $derived(speakersList?.selectedSpeaker());
     $effect(() => {
         if (running) untrack(() => {

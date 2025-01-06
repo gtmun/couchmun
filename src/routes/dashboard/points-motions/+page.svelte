@@ -5,7 +5,7 @@
   import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
   import { getSessionContext } from "$lib/context/index.svelte";
-  import { db, queryStore } from "$lib/db/index.svelte";
+  import { db, DEFAULT_SESSION_DATA, queryStore } from "$lib/db/index.svelte";
   import { findDelegate } from "$lib/db/delegates";
   import { MOTION_LABELS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
@@ -18,7 +18,7 @@
   import { flip } from "svelte/animate";
   import { dndzone } from "svelte-dnd-action";
 
-  const { motions, selectedMotion, delegates } = getSessionContext();
+  const { motions, selectedMotion, selectedMotionState, delegates } = getSessionContext();
   const sortOrder = queryStore(() => db.getSetting("sortOrder"), []);
   const modalStore = getModalStore();
 
@@ -75,6 +75,7 @@
   }
   function acceptMotion(motion: Motion) {
     $selectedMotion = motion;
+    $selectedMotionState = structuredClone(DEFAULT_SESSION_DATA.selectedMotionState);
     $motions = [];
     db.updateDelegate(motion.delegate, d => { d.stats.motionsAccepted++; });
   }

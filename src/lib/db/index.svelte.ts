@@ -201,6 +201,9 @@ export const DEFAULT_DEL_SESSION_DATA = {
 export const DEFAULT_SESSION_DATA = {
     motions: [],
     selectedMotion: null,
+    selectedMotionState: {
+        speakersList: []
+    },
     speakersList: []
 } as const satisfies SessionData;
 

@@ -11,8 +11,9 @@
 
     interface Props {
         motion: Motion & { kind: "rr" };
+        order: Speaker[]
     }
-    let { motion }: Props = $props();
+    let { motion, order = $bindable() }: Props = $props();
 
     const sessionData = getSessionContext();
     const { delegates } = sessionData;
@@ -26,7 +27,11 @@
     
     // Speakers List
     let speakersList: SpeakerList | undefined = $state();
-    let order: Speaker[] = $state($delegates.filter(d => d.isPresent()).map(d => createSpeaker(d.id)));
+    $effect(() => {
+        if (untrack(() => order.length == 0)) {
+            order = $delegates.filter(d => d.isPresent()).map(d => createSpeaker(d.id));
+        }
+    });
     let selectedSpeaker = $derived(speakersList?.selectedSpeaker());
     $effect(() => {
         if (running) untrack(() => {

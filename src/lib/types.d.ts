@@ -139,6 +139,9 @@ export type Settings = {
 export type DelegatePresence = "NP" | "P" | "PV";
 
 // Motions
+/**
+ * Data relating to a motion's properties.
+ */
 export type Motion = {
     id: MotionID,
     delegate: DelegateID,
@@ -168,6 +171,16 @@ export type Motion = {
     topic: string
 };
 export type MotionKind = Motion["kind"];
+
+/**
+ * Data relating to the current motion's operation.
+ */
+export type CurrentMotionState = {
+    /**
+     * Motion's speaker list (if it exists)
+     */
+    speakersList: Speaker[]
+};
 
 export type Speaker = {
     /**
@@ -200,6 +213,10 @@ export type SessionData = {
      * The motion that was selected (and is currently on display in the current motion page).
      */
     selectedMotion: Motion | null,
+    /**
+     * The state properties of the motion.
+     */
+    selectedMotionState: CurrentMotionState,
     /**
      * The speakers list and speaker attributes (such as whether the given speaker has spoken already)
      */
@@ -234,6 +251,10 @@ export type SessionContext = {
      * The motion that was selected (and is currently on display in the current motion page).
      */
     selectedMotion: Writable<SessionData["selectedMotion"]>,
+    /**
+     * The state properties of the motion.
+     */
+    selectedMotionState: Writable<SessionData["selectedMotionState"]>,
     /**
      * The speakers list and speaker attributes (such as whether the given speaker has spoken already)
      */
