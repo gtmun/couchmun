@@ -26,8 +26,8 @@
      * Hack to implement fixed flags for FlagCDN flags.
      */
     function _legacyFixedFlagSrc(url: URL) {
-        const match = url.href.match(/^https:\/\/flagcdn.com\/(\w+).svg$/);
-        if (inline && match) {
+        let match;
+        if (inline && (match = url.href.match(/^https:\/\/flagcdn.com\/(\w+).svg$/))) {
             return `https://flagcdn.com/80x60/${match[1]}.png`;
         } else {
             return url.href;

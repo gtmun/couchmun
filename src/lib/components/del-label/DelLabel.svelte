@@ -23,7 +23,7 @@
 
 {#if inline}
 <div class="flex items-center gap-1">
-    <DelFlag {label} url={attrs?.flagURL} height={height ?? "h-4"} fallback={fallbackFlag ?? "none"} />
+    <DelFlag {label} url={attrs?.flagURL} height={height ?? "h-4"} fallback={fallbackFlag ?? "none"} inline />
     <span class="text-left">{label}</span>
 </div>
 {:else}
