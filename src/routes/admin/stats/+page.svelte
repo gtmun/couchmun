@@ -96,7 +96,7 @@
 
     // Configuration
     const CONFIGURE_MODAL_SETTINGS: PopupSettings = {
-        event: "click",
+        event: "focus-click",
         target: "stats-button",
         closeQuery: ''
     }

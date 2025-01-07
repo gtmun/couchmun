@@ -7,23 +7,39 @@
         url: string | undefined,
         height?: string;
         fallback?: "un" | "icon" | "none";
+        inline?: boolean
     }
 
     let {
         label,
         url,
         height = "",
-        fallback = "none"
+        fallback = "none",
+        inline = false
     }: Props = $props();
 
     // Only set flag on client-side, to prevent hydration mismatch issues.
     // https://svelte.dev/docs/svelte/v5-migration-guide#Other-breaking-changes-img-src-and-html-hydration-mismatches-are-not-repaired
     let flag: URL | undefined = $derived(url ? new URL(url) : undefined);
+
+    /**
+     * Hack to implement fixed flags for FlagCDN flags.
+     */
+    function _legacyFixedFlagSrc(url: URL) {
+        const match = url.href.match(/^https:\/\/flagcdn.com\/(\w+).svg$/);
+        if (inline && match) {
+            return `https://flagcdn.com/80x60/${match[1]}.png`;
+        } else {
+            return url.href;
+        }
+    }
 </script>
 
 {#if flag}
+    <!-- Temporary HACK to support fixed-size flags from FlagCDN -->
+    {@const src = _legacyFixedFlagSrc(flag)}
     <img
-        src={flag.href}
+        {src}
         alt="Flag of {label}"
         class={height}
     >

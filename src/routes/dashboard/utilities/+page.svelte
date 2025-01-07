@@ -4,6 +4,7 @@
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
+    import { lazyslide } from "$lib/util";
     import { parseTime } from "$lib/util/time";
 
     import Icon from "@iconify/svelte";
@@ -25,7 +26,7 @@
 
     // Configuration
     const CONFIGURE_MODAL_SETTINGS: PopupSettings = {
-        event: "click",
+        event: "focus-click",
         target: "configure",
         closeQuery: ''
     }
@@ -52,14 +53,18 @@
         <Icon icon="mdi:wrench" width="24" height="24" />
     </button>
     <div class="flex flex-col flex-grow gap-5 justify-center">
-        {#if labelType === "delegate"}
-            <DelLabel attrs={$delegates.find(d => d.nameEquals(labelText))} fallbackName={labelText} />
-        {:else if labelType === "title"}
-            <h2 class="h2 text-center">{labelText}</h2>
-        {/if}
+        <div class="pb-5">
+            {#if labelType === "delegate"}
+                <div transition:lazyslide>
+                    <DelLabel attrs={$delegates.find(d => d.nameEquals(labelText))} fallbackName={labelText} />
+                </div>
+            {:else if labelType === "title"}
+                <h2 class="h2 text-center">{labelText}</h2>
+            {/if}
+        </div>
 
-    
         {#if timerEnabled}
+        <div class="flex flex-col gap-5">
             <Timer
                 name="total"
                 bind:duration
@@ -74,6 +79,7 @@
                 </button>
                 <button class="btn variant-filled-primary" disabled={!timer?.canReset()} onclick={timer?.reset}>Reset</button>
             </div>
+        </div>
         {/if}
     </div>
 </div>

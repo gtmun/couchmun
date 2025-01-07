@@ -245,7 +245,7 @@
                 </div>
                 <span class="enumerated-index">{i + 1}.</span>
                 <button 
-                    class="btn !text-wrap p-2 rounded-lg overflow-hidden"
+                    class="btn !text-wrap p-2 px-5 justify-start rounded-lg overflow-hidden"
                     class:variant-filled-primary={selected}
                     class:variant-soft-surface={!selected && speaker.completed}
                     class:variant-ringed-surface={!selected && !speaker.completed}
@@ -258,16 +258,16 @@
                     <DelLabel attrs={delAttrs} fallbackName={speakerLabel} inline />
                 </button>
                 <div class="btn-icon">
-                    {#if !speaker.completed}
-                        <button 
-                            class="btn-icon variant-soft-surface hover:variant-filled-error" 
-                            onclick={() => deleteSpeaker(i)}
-                            title="Delete {speakerLabel}"
-                            aria-label="Delete {speakerLabel}"
-                        >
-                            <Icon icon="mdi:cancel" />
-                        </button>
-                    {/if}
+                    <button 
+                        class="btn-icon 
+                            {speaker.completed ? "variant-soft-surface" : "variant-soft-error hover:variant-filled-error"}"
+                        onclick={() => deleteSpeaker(i)}
+                        title="Delete {speakerLabel}"
+                        aria-label="Delete {speakerLabel}"
+                        disabled={speaker.completed}
+                    >
+                        <Icon icon="mdi:cancel" />
+                    </button>
                 </div>
             </li>
         {/each}
