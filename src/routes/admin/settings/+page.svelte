@@ -131,15 +131,17 @@
      * @param id Key of delegate to edit (or undefined if adding a new delegate)
      */
     async function editDelegate(id: number | undefined) {
-        let props = $state(typeof id === "number" ? { attrs: await db.delegates.get(id) } : {});
+        let attrs = typeof id === "number" 
+            ? (await db.delegates.get(id))?.getAttributes()
+            : undefined;
 
         modalStore.trigger({
             type: "component",
-            component: { ref: EditDelegateCard, props },
+            component: { ref: EditDelegateCard, props: { attrs } },
             response(data?: { attrs: DelegateAttrs }) {
                 if (!data) return;
 
-                let newAttrs = $state.snapshot(data.attrs);
+                let newAttrs = data.attrs;
                 db.transaction("rw", db.delegates, async () => {
                     // TODO: reject update if name conflict
                     currentPreset = "custom";
