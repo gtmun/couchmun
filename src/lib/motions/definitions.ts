@@ -1,8 +1,10 @@
-import type { DelegateAttrs, Motion, MotionKind, SortEntry } from "$lib/types";
+import type { Motion, MotionKind, SortEntry } from "$lib/types";
 import { nonEmptyString, presentDelegateSchema, refineSpeakingTime, timeSchema, topicSchema } from "$lib/motions/form_validation";
 import type { MotionInput } from "$lib/motions/types";
 import { z } from "zod";
 import { stringifyTime } from "$lib/util/time";
+import { type Delegate, findDelegate } from "$lib/db/delegates";
+import type { SessionDatabase } from "$lib/db/index.svelte";
 
 /**
  * The label/name given to each motion kind.
@@ -55,10 +57,10 @@ export const DEFAULT_SORT_PRIORITY: SortEntry[] = [
  * Schema verification for a given form.
  * This takes the form inputs and verifies & creates the motion object associated with the form.
  */
-export function createMotionSchema(delegates: Record<string, DelegateAttrs>, presentDelegates: string[]) {
+export function createMotionSchema(delegates: Delegate[]) {
     const base = <K extends MotionKind>(k: K) => z.object({
         id: nonEmptyString({ description: "ID" }),
-        delegate: presentDelegateSchema(delegates, presentDelegates),
+        delegate: presentDelegateSchema(delegates),
         kind: z.literal(k)
     });
 
@@ -85,17 +87,11 @@ export function createMotionSchema(delegates: Record<string, DelegateAttrs>, pre
     ]) satisfies z.ZodType<Motion, any, any>;
 }
 
-/**
- * Defines how to convert a motion back into an input motion.
- * @param m 
- * @param delAttrs 
- * @returns 
- */
-export function inputifyMotion(m: Motion, delAttrs: Record<string, DelegateAttrs>): MotionInput {
+function partialInputifyMotion(m: Motion): MotionInput {
     if (m.kind === "mod") {
         return {
             id: m.id,
-            delegate: delAttrs[m.delegate].name,
+            delegate: "",
             kind: m.kind,
             totalTime: stringifyTime(m.totalTime),
             speakingTime: stringifyTime(m.speakingTime),
@@ -105,7 +101,7 @@ export function inputifyMotion(m: Motion, delAttrs: Record<string, DelegateAttrs
     } else if (m.kind === "unmod") {
         return {
             id: m.id,
-            delegate: delAttrs[m.delegate].name,
+            delegate: "",
             kind: m.kind,
             totalTime: stringifyTime(m.totalTime),
             isExtension: m.isExtension
@@ -113,7 +109,7 @@ export function inputifyMotion(m: Motion, delAttrs: Record<string, DelegateAttrs
     } else if (m.kind === "rr") {
         return {
             id: m.id,
-            delegate: delAttrs[m.delegate].name,
+            delegate: "",
             kind: m.kind,
             speakingTime: stringifyTime(m.speakingTime),
             topic: m.topic,
@@ -121,7 +117,7 @@ export function inputifyMotion(m: Motion, delAttrs: Record<string, DelegateAttrs
     } else if (m.kind === "other") {
         return {
             id: m.id,
-            delegate: delAttrs[m.delegate].name,
+            delegate: "",
             kind: m.kind,
             totalTime: stringifyTime(m.totalTime),
             topic: m.topic,
@@ -129,4 +125,57 @@ export function inputifyMotion(m: Motion, delAttrs: Record<string, DelegateAttrs
     } else {
         return m satisfies never;
     }
+}
+
+/**
+ * Defines how to convert a motion back into a motion input
+ * (e.g., the text to submit in a motion form to get back this motion).
+ * 
+ * When no delegate parameter is provided, the `delegates` field of this input is empty.
+ * 
+ * @param m the motion
+ * @returns the motion as input
+ */
+export function inputifyMotion(m: Motion): MotionInput;
+/**
+ * Defines how to convert a motion back into a motion input
+ * (e.g., the text to submit in a motion form to get back this motion).
+ * 
+ * When a delegate array is provided, the `delegates` field of this input is set to the name
+ * of an element of the array with the same ID (if it exists).
+ * 
+ * @param m the motion
+ * @param delegates an array of delegates
+ * @returns the motion as input
+ */
+export function inputifyMotion(m: Motion, delegates: Delegate[]): MotionInput;
+/**
+ * Defines how to convert a motion back into a motion input
+ * (e.g., the text to submit in a motion form to get back this motion).
+ * 
+ * When a database table is provided, the `delegates` field of this input is set to the name
+ * of an entry in the database with the same ID.
+ * 
+ * @param m the motion
+ * @param delegates a database table holding delegate information
+ * @returns the motion as input
+ */
+export function inputifyMotion(m: Motion, delegates: SessionDatabase["delegates"]): Promise<MotionInput>;
+export function inputifyMotion(m: Motion, delegates?: any): any {
+    const im = partialInputifyMotion(m);
+
+    // If session database:
+    if (typeof delegates === "object") {
+        return (delegates as SessionDatabase["delegates"]).get(m.delegate).then(d => {
+            if (d) im.delegate = d.name;
+            return im;
+        });
+    }
+
+    // If array:
+    if (delegates instanceof Array) {
+        im.delegate = findDelegate(delegates, m.delegate)?.name ?? "";
+    }
+    // If undefined:
+    return im;
 }

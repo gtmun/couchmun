@@ -3,14 +3,14 @@
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
     import Timer from "$lib/components/Timer.svelte";
-    import { getSessionDataContext } from "$lib/stores/session";
+    import { getSessionContext } from "$lib/context/index.svelte";
     import { lazyslide } from "$lib/util";
     import { parseTime } from "$lib/util/time";
 
     import Icon from "@iconify/svelte";
     import { popup, type PopupSettings } from "@skeletonlabs/skeleton";
 
-    const { settings: { delegateAttributes }, presentDelegates } = getSessionDataContext();
+    const { delegates } = getSessionContext();
 
     // Timer
     let timerEnabled: boolean = $state(true);
@@ -24,9 +24,6 @@
     let labelType: "delegate" | "title" | "none" = $state("title");
     let labelText: string = $state("");
 
-    function getKey(label: string) {
-        return Object.keys($delegateAttributes).find(k => $delegateAttributes[k].name === label) ?? label;
-    }
     // Configuration
     const CONFIGURE_MODAL_SETTINGS: PopupSettings = {
         event: "focus-click",
@@ -55,12 +52,11 @@
     >
         <Icon icon="mdi:wrench" width="24" height="24" />
     </button>
-    <div class="flex flex-col flex-grow justify-center">
+    <div class="flex flex-col flex-grow gap-5 justify-center">
         <div class="pb-5">
             {#if labelType === "delegate"}
-            {@const key = getKey(labelText)}
                 <div transition:lazyslide>
-                    <DelLabel {key} attrs={$delegateAttributes[key]} />
+                    <DelLabel attrs={$delegates.find(d => d.nameEquals(labelText))} fallbackName={labelText} />
                 </div>
             {:else if labelType === "title"}
                 <h2 class="h2 text-center">{labelText}</h2>
@@ -125,8 +121,7 @@
                         <div class="card bg-surface-200-700-token">
                             <DelAutocomplete
                                 bind:input={labelText}
-                                delegates={$delegateAttributes}
-                                presentDelegates={$presentDelegates}
+                                delegates={Object.values($delegates)}
                                 maxHeight="max-h-36"
                                 on:selection={e => labelText = e.detail.label}
                             />

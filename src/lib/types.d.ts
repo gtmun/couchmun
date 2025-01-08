@@ -1,6 +1,19 @@
 import type { Readable, Writable } from "svelte/store";
 
 /**
+ * ID of a delegate
+ */
+export type DelegateID = number;
+/**
+ * ID of a given motion in the motion table.
+ */
+export type MotionID = string;
+/**
+ * ID of a given speaker slot in the speaker list.
+ */
+export type SpeakerEntryID = string;
+
+/**
  * Attributes each delegate in a given preset should have.
  * 
  * A given preset in `delegate_presets` 
@@ -100,91 +113,84 @@ export type Preferences = {
 }
 
 /**
- * All configurable settings (in store format).
+ * All configurable settings.
  */
 export type Settings = {
-    /**
-     * Delegate keys to characteristic data about the delegate (e.g., name and aliases)
-     */
-    delegateAttributes: Writable<Record<string, DelegateAttrs>>,
-
     /**
      * The established sort order.
      * Values first in the list are prioritized, with the order parameter handling ties.
      * 
      * Any kinds not specified in this list are thrown at the end.
      */
-    sortOrder: Writable<SortEntry[]>,
+    sortOrder: SortEntry[],
     
-    /**
-     * Keys of delegates enabled for this assembly.
-     */
-    delegatesEnabled: Writable<Record<string, boolean>>,
-
     /**
      * The title of the assembly.
      */
-    title: Writable<string>,
+    title: string,
 
     /**
      * Toggleable preferences.
      */
-    preferences: Writable<Preferences>
+    preferences: Preferences,
 };
-
-/**
- * A wrapper type around settings to designate all accessible settings
- * in `SessionData`.
- */
-export type AccessibleSettings = {
-    delegateAttributes: Readable<Record<string, DelegateAttrs>>,
-    sortOrder: Readable<SortEntry[]>,
-    title: Writable<string>
-}
 
 // Attendance
 export type DelegatePresence = "NP" | "P" | "PV";
 
 // Motions
+/**
+ * Data relating to a motion's properties.
+ */
 export type Motion = {
-    id: string,
-    delegate: string,
+    id: MotionID,
+    delegate: DelegateID,
     kind: "mod", 
     totalTime: number,
     speakingTime: number,
     topic: string,
     isExtension: boolean
 } | {
-    id: string,
-    delegate: string,
+    id: MotionID,
+    delegate: DelegateID,
     kind: "unmod",
     totalTime: number,
     isExtension: boolean
 } | {
-    id: string,
-    delegate: string,
+    id: MotionID,
+    delegate: DelegateID,
     kind: "rr",
     speakingTime: number,
     topic: string
     totalSpeakers: number
 } | {
-    id: string,
-    delegate: string,
+    id: MotionID,
+    delegate: DelegateID,
     kind: "other",
     totalTime: number,
     topic: string
 };
 export type MotionKind = Motion["kind"];
 
+/**
+ * Data relating to the current motion's operation.
+ */
+export type CurrentMotionState = {
+    /**
+     * Motion's speaker list (if it exists)
+     */
+    speakersList: Speaker[]
+};
+
 export type Speaker = {
     /**
      * Identifier for this speaker entry.
      */
-    id: string,
+    id: SpeakerEntryID,
     /**
-     * The key of the delegate.
+     * The key/delegate ID of the delegate.
      */
-    key: string,
+    key: DelegateID,
     /**
      * Whether they have completed speaking.
      */
@@ -192,38 +198,77 @@ export type Speaker = {
 };
 
 // Session Data
+/**
+ * All data stored as "session data" in the database.
+ * 
+ * This excludes delegate session data which is stored separately.
+ */
 export type SessionData = {
-    settings: AccessibleSettings,
-    /**
-     * Attendance status of each delegate in the current session.
-     */
-    delegateAttendance: Writable<Record<string, DelegatePresence>>,
-    /**
-     * Derived attribute (based on delegateAttendance) that produces the list of present delegates.
-     */
-    presentDelegates: Readable<string[]>,
-
+    sessionKey?: number,
     /**
      * All specified motions (from the points & motions page).
      */
-    motions: Writable<Motion[]>,
+    motions: Motion[],
     /**
      * The motion that was selected (and is currently on display in the current motion page).
      */
-    selectedMotion: Writable<Motion | null>,
+    selectedMotion: Motion | null,
+    /**
+     * The state properties of the motion.
+     */
+    selectedMotionState: CurrentMotionState,
     /**
      * The speakers list and speaker attributes (such as whether the given speaker has spoken already)
      */
-    speakersList: Writable<Speaker[]>
+    speakersList: Speaker[],
+};
+export type DelSessionData = {
+    presence: DelegatePresence,
+    stats: StatsData
+};
+export type PrevSessionData = {
+    common: SessionData,
+    delegates: {
+        id: DelegateID,
+        session: DelSessionData
+    }[]
 };
 
-// App bar data
-export type AppBarData = {
+/**
+ * All data stored in the session context.
+ */
+export type SessionContext = {
     /**
-     * Topic to display on the app bar
+     * Array of enabled delegates.
      */
-    topic: string | undefined
-}
+    delegates: Readable<Delegate[]>,
+    
+    /**
+     * All specified motions (from the points & motions page).
+     */
+    motions: Writable<SessionData["motions"]>,
+    /**
+     * The motion that was selected (and is currently on display in the current motion page).
+     */
+    selectedMotion: Writable<SessionData["selectedMotion"]>,
+    /**
+     * The state properties of the motion.
+     */
+    selectedMotionState: Writable<SessionData["selectedMotionState"]>,
+    /**
+     * The speakers list and speaker attributes (such as whether the given speaker has spoken already)
+     */
+    speakersList: Writable<SessionData["speakersList"]>,
+
+    /**
+     * Committee title, visible on the app bar.
+     */
+    barTitle: Writable<Settings["title"]>,
+    /**
+     * Current topic of discussion, visible on the app bar.
+     */
+    barTopic: string | undefined,
+};
 
 export type ClockMessage = 
     | { kind: "startTick", ts: number } 
@@ -247,7 +292,4 @@ export type StatsData = {
      * Total duration this delegate has gone up to speak (in speakers list and moderated caucuses), in milliseconds.
      */
     durationSpoken: number
-}
-export type StatsDataStore = {
-    stats: Writable<Record<string, StatsData>>
 }

@@ -2,17 +2,16 @@
     import type { Motion } from "$lib/types";
     import MotionForm from "$lib/components/MotionForm.svelte";
     import EditModal from "$lib/components/modals/EditModal.svelte";
+    import { db } from "$lib/db/index.svelte";
     import { inputifyMotion } from "$lib/motions/definitions";
-    import { getSessionDataContext } from "$lib/stores/session";
-
-    const { settings: { delegateAttributes } } = getSessionDataContext();
     
     interface Props {
         motion: Motion;
     }
-
     let { motion }: Props = $props();
-    let inputMotion = $state(inputifyMotion(motion, $delegateAttributes));
+
+    let inputMotion = $state(inputifyMotion(motion));
+    inputifyMotion(motion, db.delegates).then(im => inputMotion = im);
 </script>
 
 <EditModal title="Editing Motion">

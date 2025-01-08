@@ -1,4 +1,15 @@
 import type { DelegateAttrs } from "$lib/types";
+import DEFAULT_DELEGATES_JSON from "$lib/delegate_presets/preset-un.json";
+
+type DelProperties = Record<string, DelegateAttrs>;
+/**
+ * The object of default delegates.
+ */
+export const DEFAULT_DELEGATES: DelProperties = DEFAULT_DELEGATES_JSON;
+/**
+ * The key of the default preset.
+ */
+export const DEFAULT_PRESET_KEY = "un";
 
 /**
  * All defined presets.
@@ -17,21 +28,14 @@ export const PRESETS = {
 const NO_PRESET: readonly (keyof typeof PRESETS)[] = ["custom"];
 
 /**
- * @returns the default preset key (the first one defined on the object).
- */
-export function defaultPresetKey(): keyof typeof PRESETS {
-    return (Object.keys(PRESETS) as (keyof typeof PRESETS)[])[0];
-}
-
-/**
  * Gets the preset data at a given file key.
  * @param file the preset key (must be a key in `PRESETS`)
  * @returns the preset data (if it exists)
  * @throws if key is not in `PRESETS` or JSON is invalid or doesn't exist
  */
-export async function getPreset(key: keyof typeof PRESETS) {
+export async function getPreset(key: keyof typeof PRESETS): Promise<DelProperties | undefined> {
     if (!NO_PRESET.includes(key)) {
         const { default: json } = await import(`$lib/delegate_presets/preset-${key}.json`);
-        return structuredClone<Record<string, DelegateAttrs>>(json);
+        return structuredClone(json);
     }
 }

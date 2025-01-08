@@ -1,10 +1,10 @@
 <script lang="ts">
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
     import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/components/del-input/DelPopup.svelte";
+    import { getSessionContext } from "$lib/context/index.svelte";
     import { createMotionSchema, inputifyMotion, MOTION_FIELDS, MOTION_LABELS } from "$lib/motions/definitions";
     import { formatValidationError } from "$lib/motions/form_validation";
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
-    import { getSessionDataContext } from "$lib/stores/session";
     import { addColons, parseTime } from "$lib/util/time";
     import type { Motion } from "$lib/types";
     
@@ -12,8 +12,8 @@
     import { popup } from "@skeletonlabs/skeleton";
     import { type Snippet } from 'svelte';
 
-    const { settings: { delegateAttributes }, presentDelegates, selectedMotion } = getSessionDataContext();
-    const motionSchema = createMotionSchema($delegateAttributes, $presentDelegates);
+    const { selectedMotion, delegates } = getSessionContext();
+    const motionSchema = $derived(createMotionSchema($delegates));
     const defaultInputMotion = () => ({ id: crypto.randomUUID(), kind: "mod" } satisfies MotionInput);
     const resetInputErrors = () => { inputError = undefined };
 
@@ -34,11 +34,13 @@
     // The input after the delegate input.
     let afterDel: HTMLElement | undefined = $state();
 
+    let noDelegatesPresent = $derived($delegates.every(d => !d.isPresent()));
+
     function submitMotion(e: SubmitEvent) {
         e.preventDefault();
 
         if (inputMotion.kind === "rr") {
-            inputMotion.totalSpeakers = $presentDelegates.length.toString();
+            inputMotion.totalSpeakers = $delegates.filter(d => d.isPresent()).length.toString();
         }
 
         // Filter out any keys that aren't the correct kind:
@@ -87,7 +89,7 @@
     // If extension, disable "topic" and "speakingTime":
     $effect(() => {
         if (isExtending(inputMotion)) {
-            let inputified = inputifyMotion($selectedMotion!, $delegateAttributes);
+            let inputified = inputifyMotion($selectedMotion!);
             
             if ("topic" in inputified) (inputMotion as any).topic = inputified.topic;
             if ("speakingTime" in inputified) (inputMotion as any).speakingTime = inputified.speakingTime;
@@ -130,7 +132,7 @@
             bind:value={inputMotion.delegate}
             required
             use:popup={{...defaultPopupSettings("delegateInputPopup"), event: "focus-click"}}
-            {...defaultPlaceholder($presentDelegates.length === 0)}
+            {...defaultPlaceholder(noDelegatesPresent)}
         >
     </label>
     <label class="label">
@@ -213,8 +215,7 @@
     <DelPopup
         popupID="delegateInputPopup"
         bind:input={inputMotion.delegate}
-        delegates={$delegateAttributes}
-        presentDelegates={$presentDelegates}
+        delegates={$delegates}
         on:selection={e => {inputMotion.delegate = e.detail.label; resetInputErrors(); afterDel?.focus()}}
     />
 </form>

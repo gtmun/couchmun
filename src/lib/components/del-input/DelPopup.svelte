@@ -1,20 +1,18 @@
 <script lang="ts">
-    import type { DelegateAttrs } from "$lib/types";
     import DelAutocomplete from "$lib/components/del-input/DelAutocomplete.svelte";
+    import type { Delegate } from "$lib/db/delegates";
     import { type PopupSettings } from "@skeletonlabs/skeleton";
 
     interface Props {
         popupID: string;
         input: string | undefined;
-        delegates: Record<string, DelegateAttrs>;
-        presentDelegates: string[];
+        delegates: Delegate[];
         maxHeight?: string;
     }
     let {
         popupID,
         input = $bindable(),
         delegates,
-        presentDelegates,
         maxHeight = "max-h-96"
     }: Props = $props();
 </script>
@@ -49,7 +47,6 @@
     <DelAutocomplete
         bind:input
         {delegates}
-        {presentDelegates}
         {maxHeight}
         on:selection
     />

@@ -4,10 +4,11 @@
   import IconLabel from "$lib/components/IconLabel.svelte";
   import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
+  import { getSessionContext } from "$lib/context/index.svelte";
+  import { db, DEFAULT_SESSION_DATA, queryStore } from "$lib/db/index.svelte";
+  import { findDelegate } from "$lib/db/delegates";
   import { MOTION_LABELS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
-  import { getSessionDataContext } from "$lib/stores/session";
-  import { getStatsContext, updateStats } from "$lib/stores/stats";
   import type { Motion } from "$lib/types";
   import { createDragTr, isDndShadow, processDrag } from "$lib/util/dnd";
   import { stringifyTime } from "$lib/util/time";
@@ -15,12 +16,15 @@
   import Icon from "@iconify/svelte";
   import { getModalStore } from "@skeletonlabs/skeleton";
   import { flip } from "svelte/animate";
-  import { derived } from "svelte/store";
   import { dndzone } from "svelte-dnd-action";
 
-  const { settings: { delegateAttributes, sortOrder }, motions, selectedMotion } = getSessionDataContext();
-  const { stats } = getStatsContext();
+  const { motions, selectedMotion, selectedMotionState, delegates } = getSessionContext();
+  const sortOrder = queryStore(() => db.getSetting("sortOrder"), []);
   const modalStore = getModalStore();
+
+  // A clone of $motions used solely for use:dragHandleZone
+  let dndItems = $state($state.snapshot($motions));
+  $effect(() => { dndItems = $motions; });
 
   let motionTable: HTMLTableElement | undefined = $state();
 
@@ -29,7 +33,7 @@
       $m.push(motion);
       return $m;
     });
-    updateStats(stats, motion.delegate, dat => dat.motionsProposed++);
+    db.updateDelegate(motion.delegate, d => { d.stats.motionsProposed++; });
   }
 
   /**
@@ -71,8 +75,9 @@
   }
   function acceptMotion(motion: Motion) {
     $selectedMotion = motion;
+    $selectedMotionState = structuredClone(DEFAULT_SESSION_DATA.selectedMotionState);
     $motions = [];
-    updateStats(stats, motion.delegate, dat => dat.motionsAccepted++);
+    db.updateDelegate(motion.delegate, d => { d.stats.motionsAccepted++; });
   }
   function editMotion(i: number, motion: Motion) {
     modalStore.trigger({
@@ -83,12 +88,9 @@
         },
         response(motion?: Motion) {
           if (!motion) return;
-          motions.update($m => {
-            updateStats(stats, $m[i].delegate, dat => dat.motionsProposed--);
-            updateStats(stats, motion.delegate, dat => dat.motionsProposed++);
-            $m[i] = motion;
-            return $m;
-          });
+          db.updateDelegate($motions[i].delegate, d => { d.stats.motionsProposed--; });
+          db.updateDelegate(motion.delegate, d => { d.stats.motionsProposed++; });
+          $motions[i] = motion;
         }
     });
   }
@@ -96,9 +98,10 @@
     $motions = $motions.sort(motionComparator($sortOrder));
   }
   // Check every window of two motions is in the right order:
-  const motionsSorted = derived(motions, $m => {
+  let motionsSorted = $derived.by(() => {
     try {
-      return $m.slice(0, -1).every((motion, i) => motionComparator($sortOrder)(motion, $m[i + 1]) <= 0);
+      return Array.from({ length: $motions.length - 1 }, (_, i) => motionComparator($sortOrder)($motions[i], $motions[i + 1]) <= 0)
+        .every(b => b);
     } catch {
       // If comparing crashes, don't allow the button to do anything
       return true;
@@ -120,8 +123,8 @@
         aria-label="Sort Motions"
         title="Sort Motions"
 
-        class:!variant-filled-surface={$motionsSorted}
-        disabled={$motionsSorted}
+        class:!variant-filled-surface={motionsSorted}
+        disabled={motionsSorted}
       >
         <Icon icon="mdi:sort" width="24" height="24" />
       </button>
@@ -142,17 +145,18 @@
         </thead>
         <tbody
           use:dndzone={{
-            items: $motions,
+            items: dndItems,
             flipDurationMs: 150,
             dropTargetStyle: {},
             transformDraggedElement: (el) => createDragTr(el, motionTable)
           }}
-          onconsider={(e) => motions.set(processDrag(e))}
-          onfinalize={(e) => motions.set(processDrag(e))}
+          onconsider={(e) => dndItems = processDrag(e)}
+          onfinalize={(e) => $motions = dndItems = processDrag(e)}
           aria-labelledby="motion-table-header"
         >
-          {#each $motions as motion, i (motion.id)}
-            {@const delName = $delegateAttributes[motion.delegate]?.name ?? motion.delegate}
+          {#each dndItems as motion, i (motion.id)}
+            {@const delAttrs = findDelegate($delegates, motion.delegate)}
+            {@const delName = delAttrs?.name ?? "unknown"}
             {@const shadow = isDndShadow(motion)}
             <tr 
               class="dnd-list-item hover:!bg-primary-500/25"
@@ -193,7 +197,9 @@
                 </div>
               </td>
               <td>{motionName(motion)}</td>
-              <td><DelLabel key={motion.delegate} attrs={$delegateAttributes[motion.delegate]} inline /></td>
+              <td>
+                <DelLabel attrs={delAttrs} fallbackName={delName} inline />
+              </td>
               <td>{apply(motion, ["topic"], m => m.topic, "-")}</td>
               <td>{'totalSpeakers' in motion ? stringifyTime(motion.totalSpeakers * motion.speakingTime) : apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
               <td>{apply(motion, ["speakingTime"], m => stringifyTime(m.speakingTime), "-")}</td>

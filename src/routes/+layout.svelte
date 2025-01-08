@@ -2,39 +2,19 @@
     import "../app.css";
     import { computePosition, autoUpdate, offset, shift, flip, arrow, size } from '@floating-ui/dom';
     import { initializeStores, Modal, storePopup } from "@skeletonlabs/skeleton";
-    import { createSettingsContext } from "$lib/stores/settings";
-    import { createSessionDataContext } from "$lib/stores/session";
-    import { createStatsContext } from "$lib/stores/stats";
+    import { createSessionContext } from "$lib/context/index.svelte";
 
     let { children } = $props();
 
     initializeStores();
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow, size });
 
-    createSettingsContext();
-    createSessionDataContext();
-    const { stats } = createStatsContext();
+    createSessionContext();
     
     function keydown(e: KeyboardEvent) {
         // Allows ESC to be used to unfocus an element.
         if (e.code === "Escape") {
             (document.activeElement as HTMLElement)?.blur?.();
-        }
-    }
-
-    function storage(e: StorageEvent) {
-        // HACK: Synchronize stats across different screens
-        if (e.storageArea === localStorage && e.key === "statistics.stats") {
-            if (e.newValue != null && e.oldValue !== e.newValue) {
-                let json = undefined;
-                try {
-                    json = JSON.parse(e.newValue);
-                } catch (e) {
-
-                }
-                
-                if (json) stats.set(json);
-            }
         }
     }
 </script>
@@ -43,7 +23,7 @@
 
 {@render children()}
 
-<svelte:window onkeydown={keydown} onstorage={storage} />
+<svelte:window onkeydown={keydown} />
 <div class="hidden">
     <!-- Force these styling classes to always exist -->
     <!-- see IconLabel.svelte -->

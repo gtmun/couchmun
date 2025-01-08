@@ -2,35 +2,31 @@
     import { base } from "$app/paths";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import IconLabel from "$lib/components/IconLabel.svelte";
-    import { getSessionDataContext } from "$lib/stores/session";
-    import type { DelegatePresence } from "$lib/types";
-    import { mapObj } from "$lib/util";
+    import { getSessionContext } from "$lib/context/index.svelte";
+    import { db } from "$lib/db/index.svelte";
     import { RadioGroup, RadioItem } from "@skeletonlabs/skeleton";
 
-    const { settings: { delegateAttributes }, delegateAttendance } = getSessionDataContext();
-    delegateAttributes.subscribe($da => {
-        $delegateAttendance = mapObj($da, k => [k, $delegateAttendance[k] ?? "NP"]);
-    });
+    const { delegates } = getSessionContext();
 
-    const radio: Record<DelegatePresence, { label: string, icon: string }> = {
-        NP: { label: "Absent", icon: "mdi:account-off" },
-        P:  { label: "Present", icon: "mdi:account" },
-        PV: { label: "Present and Voting", icon: "mdi:account-check" },
-    };
+    const radio = [
+        { presence: "NP", label: "Absent", icon: "mdi:account-off" },
+        { presence: "P",  label: "Present", icon: "mdi:account" },
+        { presence: "PV", label: "Present and Voting", icon: "mdi:account-check" },
+    ] as const;
 </script>
 
 <!-- Render a table to display participants and their statuses -->
-{#if Object.keys($delegateAttributes).length}
+{#if $delegates.length}
 <div class="card grid">
-    {#each Object.entries($delegateAttributes) as [key, attrs] (key)}
+    {#each $delegates as attrs, i (attrs.id)}
         <div class="grid grid-cols-subgrid col-span-2 even:bg-surface-100-800-token odd:bg-surface-200-700-token">
             <div class="flex items-center p-4">
-                <DelLabel {key} {attrs} inline />
+                <DelLabel {attrs} inline />
             </div>
             <div class="flex flex-col justify-center p-2">
                 <RadioGroup active="variant-filled-primary" hover="hover:variant-soft-primary" border="" background="bg-surface-300-600-token">
-                    {#each Object.entries(radio) as [value, { label, icon }]}
-                        <RadioItem bind:group={$delegateAttendance[key]} name="presence-{key}" {value}>
+                    {#each radio as { presence, label, icon }}
+                        <RadioItem group={$delegates[i].presence} name="presence-{attrs.id}" value={presence} onchange={() => db.updateDelegate(attrs.id, { presence })}>
                             <IconLabel {icon} {label} />
                         </RadioItem>
                     {/each}

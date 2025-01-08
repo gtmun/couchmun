@@ -3,9 +3,9 @@
     import ModCaucus from "$lib/components/motions/ModCaucus.svelte";
     import RoundRobin from "$lib/components/motions/RoundRobin.svelte";
     import UnmodCaucus from "$lib/components/motions/UnmodCaucus.svelte";
-    import { getSessionDataContext } from "$lib/stores/session";
+    import { getSessionContext } from "$lib/context/index.svelte";
 
-    const { selectedMotion } = getSessionDataContext();
+    const { selectedMotion, selectedMotionState } = getSessionContext();
 
     const isExhaustive = (s: never) => s;
 </script>
@@ -13,11 +13,11 @@
 <div class="h-full w-full flex flex-col items-stretch justify-center">
     {#if $selectedMotion}
         {#if $selectedMotion.kind === "mod"}
-            <ModCaucus motion={$selectedMotion} />
+            <ModCaucus motion={$selectedMotion} bind:order={$selectedMotionState.speakersList} />
         {:else if $selectedMotion.kind === "unmod"}
             <UnmodCaucus motion={$selectedMotion} />
         {:else if $selectedMotion.kind === "rr"}
-            <RoundRobin motion={$selectedMotion} />
+            <RoundRobin motion={$selectedMotion} bind:order={$selectedMotionState.speakersList} />
         {:else if $selectedMotion.kind === "other"}
             <!-- TODO -->
         {:else if isExhaustive($selectedMotion)}

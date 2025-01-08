@@ -1,26 +1,20 @@
 <script lang="ts">
-    import type { DelegateAttrs } from "$lib/types";
+    import { SvelteSet } from "svelte/reactivity";
     import EditModal from "./EditModal.svelte";
+    import type { Delegate } from "$lib/db/delegates";
 
     interface Props {
-        attrs: Record<string, DelegateAttrs>;
+        attrs: Delegate[];
     }
 
     let { attrs }: Props = $props();
-    // TODO: Handle attribute update?
-    let enabled = $state(Object.fromEntries(Object.keys(attrs).map(k => [k, false])));
-
+    let enabled = new SvelteSet<number>();
     let inputText: string = $state("");
 
     function exit(submit: (value: any) => void) {
         submit(enabled);
     }
 
-    function matchesKey(name: string, attr: DelegateAttrs) {
-        const eq = (a: string, b: string) => a.localeCompare(b, undefined, { sensitivity: "base" }) == 0;
-        return [attr.name, ...attr.aliases].some(n => eq(n, name));
-        
-    }
     function keydown(k: KeyboardEvent) {
         if (k.code === "Enter") {
             k.preventDefault();
@@ -29,23 +23,21 @@
             inputText = "";
             for (let line of text.split("\n")) {
                 line = line.trim();
-                let item = Object.entries(attrs)
-                    .find(([_, v]) => matchesKey(line, v));
+                let item = attrs.find(d => d.nameEquals(line));
                 if (item) {
-                    enabled[item[0]] = true;
+                    enabled.add(item.id);
                 } else {
-                    inputText += line
-                    inputText += '\n'
+                    inputText += line;
+                    inputText += '\n';
                 }
             }
         }
     }
 
     let enabledText = $derived(
-        Object.entries(enabled)
-        .filter(([_, e]) => e)
-        .map(([k, _]) => attrs[k].name ?? k)
-        .join("\n")
+        attrs.filter(({id}) => enabled.has(id))
+            .map(({name}) => name)
+            .join("\n")
     );
 </script>
 <EditModal title="Enable/Disable Delegates">

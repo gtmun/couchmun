@@ -2,23 +2,24 @@
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import SpeakerList, { createSpeaker } from "$lib/components/SpeakerList.svelte";
     import Timer from "$lib/components/Timer.svelte";
-    import { getSessionDataContext } from "$lib/stores/session";
-    import { getStatsContext, updateStats } from "$lib/stores/stats";
-    import type { AppBarData, Motion, Speaker } from "$lib/types";
+    import { getSessionContext } from "$lib/context/index.svelte";
+    import { db } from "$lib/db/index.svelte";
+    import { findDelegate } from "$lib/db/delegates";
+    import type { Motion, Speaker } from "$lib/types";
     import { lazyslide } from "$lib/util";
     import Icon from "@iconify/svelte";
-    import { getContext, untrack } from "svelte";
+    import { untrack } from "svelte";
 
     interface Props {
         motion: Motion & { kind: "rr" };
+        order: Speaker[]
     }
-    let { motion }: Props = $props();
+    let { motion, order = $bindable() }: Props = $props();
 
-    const { settings: { delegateAttributes }, presentDelegates } = getSessionDataContext();
-    const { stats } = getStatsContext();
-    const appBarData = getContext<AppBarData>("app-bar");
+    const sessionData = getSessionContext();
+    const { delegates } = sessionData;
     $effect(() => {
-        appBarData.topic = `Topic: ${motion.topic}`;
+        sessionData.barTopic = `Topic: ${motion.topic}`;
     });
 
     // Timer
@@ -27,7 +28,11 @@
     
     // Speakers List
     let speakersList: SpeakerList | undefined = $state();
-    let order: Speaker[] = $state($presentDelegates.map(key => createSpeaker(key)));
+    $effect(() => {
+        if (untrack(() => order.length == 0)) {
+            order = $delegates.filter(d => d.isPresent()).map(d => createSpeaker(d.id));
+        }
+    });
     let selectedSpeaker = $derived(speakersList?.selectedSpeaker());
     $effect(() => {
         if (running) untrack(() => {
@@ -61,7 +66,7 @@
             {#key selectedSpeaker?.key}
                 <div class="pb-5" transition:lazyslide>
                     {#if typeof selectedSpeaker !== "undefined"}
-                        <DelLabel key={selectedSpeaker.key} attrs={$delegateAttributes[selectedSpeaker.key]} />
+                        <DelLabel attrs={findDelegate($delegates, selectedSpeaker.key)} />
                     {/if}
                 </div>
             {/key}
@@ -72,7 +77,7 @@
                     bind:this={timer}
                     bind:running 
                     disableKeyHandlers={typeof selectedSpeaker === "undefined"}
-                    onPause={(t) => updateStats(stats, selectedSpeaker?.key, dat => dat.durationSpoken += t)}
+                    onPause={(t) => db.updateDelegate(selectedSpeaker?.key, d => { d.stats.durationSpoken += t; })}
                 />
                 <div class="flex flex-row gap-3 justify-center">
                     {#if !running}
@@ -95,10 +100,10 @@
         <!-- List -->
         <SpeakerList
             bind:order
-            delegates={$delegateAttributes}
+            delegates={$delegates}
             bind:this={speakersList}
             onBeforeSpeakerUpdate={reset}
-            onMarkComplete={(key, isRepeat) => { if (!isRepeat) updateStats(stats, key, dat => dat.timesSpoken++) }}
+            onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
         />
     </div>
 </div>

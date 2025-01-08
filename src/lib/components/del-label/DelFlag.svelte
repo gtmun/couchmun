@@ -1,49 +1,43 @@
 <script lang="ts">
     import { getFlagUrl } from "$lib/flags/flagcdn";
-    import type { DelegateAttrs } from "$lib/types";
     import Icon from "@iconify/svelte";
 
     interface Props {
-        key: string;
+        label: string,
+        url: string | undefined,
         height?: string;
-        attrs: DelegateAttrs | undefined;
         fallback?: "un" | "icon" | "none";
         inline?: boolean
     }
 
     let {
-        key,
+        label,
+        url,
         height = "",
-        attrs,
         fallback = "none",
         inline = false
     }: Props = $props();
 
     // Only set flag on client-side, to prevent hydration mismatch issues.
     // https://svelte.dev/docs/svelte/v5-migration-guide#Other-breaking-changes-img-src-and-html-hydration-mismatches-are-not-repaired
-    let flag: URL | undefined = $state();
-    $effect(() => {
-        if (attrs?.flagURL) {
-            flag = new URL(attrs.flagURL);
-        } else {
-            getFlagUrl(key).then(flagURL => {
-                flag = flagURL;
-            })
-        }
-    });
+    let flag: URL | undefined = $derived(url ? new URL(url) : undefined);
 
-    let label = $derived(attrs?.name ?? key ?? "");
+    /**
+     * Hack to implement fixed flags for FlagCDN flags.
+     */
+    function _legacyFixedFlagSrc(url: URL) {
+        let match;
+        if (inline && (match = url.href.match(/^https:\/\/flagcdn.com\/(\w+).svg$/))) {
+            return `https://flagcdn.com/80x60/${match[1]}.png`;
+        } else {
+            return url.href;
+        }
+    }
 </script>
 
 {#if flag}
-    <!-- Temporary HACK to support fixed sizing -->
-    {@const src = attrs?.flagURL 
-        ? attrs.flagURL
-        : (inline 
-            ? `https://flagcdn.com/80x60/${key.toLowerCase()}.png`
-            : `https://flagcdn.com/${key.toLowerCase()}.svg`
-          )
-    }
+    <!-- Temporary HACK to support fixed-size flags from FlagCDN -->
+    {@const src = _legacyFixedFlagSrc(flag)}
     <img
         {src}
         alt="Flag of {label}"
