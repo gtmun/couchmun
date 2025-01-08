@@ -147,7 +147,7 @@ export class SessionDatabase extends Dexie {
 
             await this.prevSessions.put({ key: sessionKey, val: {
                 common: Object.assign(toObject(sessionData) as SessionData, { sessionKey }),
-                delegates: delegates.map(d => ({ id: d.id, session: d.getSessionData() }))
+                delegates: SessionDatabase.delegatesAsSessionData(delegates)
             } });
         });
     }
@@ -166,6 +166,15 @@ export class SessionDatabase extends Dexie {
                 await this.sessionData.bulkAdd(toKeyValueArray(common));
             }
         });
+    }
+
+    /**
+     * Comverts an array of delegates into the delegate session data array
+     * @param delegates delegate
+     * @returns the new array
+     */
+    static delegatesAsSessionData(delegates: Delegate[]): PrevSessionData["delegates"] {
+        return delegates.map(d => ({ id: d.id, session: d.getSessionData() }));
     }
 }
 

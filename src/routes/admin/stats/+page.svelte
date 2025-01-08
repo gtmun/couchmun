@@ -2,17 +2,16 @@
     import MetaTags from "$lib/components/MetaTags.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
-    import { db, DEFAULT_DEL_SESSION_DATA, queryStore } from "$lib/db/index.svelte";
+    import { db, queryStore, SessionDatabase } from "$lib/db/index.svelte";
     import { Delegate } from "$lib/db/delegates";
     import type { StatsData } from "$lib/types";
-    import { compare, downloadFile, triggerConfirmModal } from "$lib/util";
+    import { compare, downloadFile } from "$lib/util";
     import { stringifyTime } from "$lib/util/time";
     
     import Icon from "@iconify/svelte";
-    import { ProgressBar, type PopupSettings, getModalStore, popup, type PaginationSettings, Paginator } from "@skeletonlabs/skeleton";
+    import { ProgressBar, type PopupSettings, popup, type PaginationSettings, Paginator } from "@skeletonlabs/skeleton";
 
     const { delegates, barTitle } = getSessionContext();
-    const modalStore = getModalStore();
 
     // Pagination
     const prevSessions = queryStore(async () => {
@@ -103,17 +102,21 @@
     function exportStats() {
         let data = {
             committee: $barTitle,
-            delegates: $delegates
+            delegates: $delegates.map(d => d.getAttributes()),
+            session: SessionDatabase.delegatesAsSessionData($delegates)
         };
         downloadFile("couchmun-del-stats.json", JSON.stringify(data), "application/json");
     }
-    function clearStats() {
-        triggerConfirmModal(modalStore,
-            "Are you sure you want to clear delegate statistics?",
-            () => db.transaction("rw", db.delegates, () => {
-                db.delegates.toCollection().modify({ stats: DEFAULT_DEL_SESSION_DATA.stats });
-            })
-        )
+    function exportAllStats() {
+        let data = {
+            committee: $barTitle,
+            delegates: $delegates.map(d => d.getAttributes()),
+            sessions: [
+                ...$prevSessions,
+                SessionDatabase.delegatesAsSessionData($delegates)
+            ]
+        };
+        downloadFile("couchmun-del-stats-all.json", JSON.stringify(data), "application/json");
     }
 </script>
 
@@ -128,7 +131,7 @@
             title="Edit Stats"
             use:popup={CONFIGURE_MODAL_SETTINGS}
         >
-            <Icon icon="mdi:auto-fix" width="24" height="24" />
+            <Icon icon="mdi:database-export-outline" width="24" height="24" />
         </button>
     </div>
     <div class="table-container">
@@ -202,9 +205,9 @@
 <div data-popup="stats-button">
     <div class="card p-4 bg-surface-300-600-token">
         <div class="flex flex-col gap-2 overflow-hidden">
-            <h4 class="h4">Configure Statistics</h4>
-            <button class="btn variant-filled-primary" onclick={exportStats}>Export Stats</button>
-            <button class="btn variant-filled-error" onclick={clearStats}>Clear Stats</button>
+            <h4 class="h4">Export Statistics</h4>
+            <button class="btn variant-filled-primary" onclick={exportAllStats}>Export All Sessions</button>
+            <button class="btn variant-filled-primary" onclick={exportStats}>Export Session {pageSettings.page + 1}</button>
         </div>
     </div>
 </div>
