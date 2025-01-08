@@ -125,13 +125,6 @@
         }
     }
 
-    function clamp(value: number, min: number, max: number) {
-        if (Number.isNaN(value)) return max;
-        if (value < min) return min;
-        if (value > max) return max;
-        return value;
-    }
-
     function keydown(e: KeyboardEvent) {
         if (disableKeyHandlers) return;
         if (e.target !== document.body) return;
@@ -165,6 +158,7 @@
 
 <script module lang="ts">
     import type { ClockMessage } from "$lib/types";
+    import { clamp } from "$lib/util";
     import ClockSourceWorker from "$lib/util/clock?worker";
 
     // This is a synchronized timer for all Timer components.

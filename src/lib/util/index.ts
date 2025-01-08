@@ -94,3 +94,20 @@ export function lazyslide(node: HTMLElement, { delay = 0, duration = 400, easing
         }
     } satisfies TransitionConfig;
 }
+
+/**
+ * Clamps a value between a minimum and maximum. 
+ * If the value is less than the minimum, this returns the minimum,
+ * and if it is greater than the maximum, this erturns the maximum.
+ * 
+ * @param value the value
+ * @param min the minimum
+ * @param max the maximum
+ * @returns the clamped value
+ */
+export function clamp(value: number, min: number, max: number) {
+    if (Number.isNaN(value)) return max;
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
