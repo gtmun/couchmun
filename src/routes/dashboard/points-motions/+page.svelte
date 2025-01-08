@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { base } from "$app/paths";
   import DelLabel from "$lib/components/del-label/DelLabel.svelte";
   import IconLabel from "$lib/components/IconLabel.svelte";
@@ -175,17 +176,14 @@
                   >
                     <Icon icon="mdi:cancel" width="24" height="24" class="text-error-500" />
                   </button>
-                  <a
+                  <button
                     class="btn btn-sm btn-icon w-8"
-                    onclick={() => acceptMotion(motion)}
-                    href="{base}/dashboard/current-motion"
-                    role="button"
+                    onclick={() => { acceptMotion(motion); goto(`${base}/dashboard/current-motion`); }}
                     data-label="Accept {delName}'s Motion"
                     title="Accept {delName}'s Motion"
-                    tabindex={0}
                   >
                     <Icon icon="mdi:check" width="24" height="24" class="text-success-700" />
-                  </a>
+                  </button>
                   <button
                     class="btn btn-sm btn-icon w-8"
                     onclick={() => editMotion(i, motion)}
