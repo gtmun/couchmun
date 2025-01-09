@@ -1,10 +1,10 @@
 <!-- 
-    @component A small timer component.
-    This component consists of a linear progress bar and text displaying the timer's elapsed duration.
-    
-    To programatically control the timer, bind to the `running` prop of this component. 
-    Setting it to `false` pauses the timer, and setting it to `true` starts the timer.
-    The timer will automatically pause (setting `running` to false) when the full duration elapses.
+  @component A small timer component.
+  This component consists of a linear progress bar and text displaying the timer's elapsed duration.
+  
+  To programatically control the timer, bind to the `running` prop of this component. 
+  Setting it to `false` pauses the timer, and setting it to `true` starts the timer.
+  The timer will automatically pause (setting `running` to false) when the full duration elapses.
 -->
 <script lang="ts">
     import { parseTime, stringifyTime } from "$lib/util/time";

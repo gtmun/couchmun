@@ -1,30 +1,28 @@
 <script lang="ts">
     import SpeakerList from "$lib/components/SpeakerList.svelte";
-    import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
+    import TimerPanel, { resetButton } from "$lib/components/motions/TimerPanel.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import { presentDelegateSchema } from "$lib/motions/form_validation";
-    import { parseTime } from "$lib/util/time";
+    import type { Motion, Speaker } from "$lib/types";
 
-    const { speakersList: order, delegates } = getSessionContext();
+    interface Props {
+        motion: Motion & { kind: "mod" };
+        order: Speaker[];
+    }
+    let { motion, order = $bindable() }: Props = $props();
 
-    let duration: number = $state(60);
+    const sessionData = getSessionContext();
+    const { delegates } = sessionData;
+    $effect(() => {
+        sessionData.barTopic = `Topic: ${motion.topic}`;
+    });
+
     let timerPanel = $state<TimerPanel>();
     let speakersList = $state<SpeakerList>();
-    let durInput: string = $state("");
 
-    function reset() {
-        timerPanel?.reset();
-    }
-    function setDuration(e: SubmitEvent) {
-        e.preventDefault();
-
-        let secs = parseTime(durInput);
-        if (typeof secs !== "undefined") {
-            duration = secs;
-            reset();
-        }
-        durInput = "";
+    function resetOne() {
+        timerPanel?.reset(0);
     }
 </script>
 
@@ -41,32 +39,27 @@
         <TimerPanel
             delegates={$delegates}
             {speakersList}
-            bind:duration
+            duration={[motion.speakingTime, motion.totalTime]}
             bind:this={timerPanel}
-            editable
-        />
+        >
+        {#snippet resetButtons(reset, canReset)}
+            {@render resetButton(reset, canReset, "Reset", [0])}
+            {@render resetButton(reset, canReset, "Reset All")}
+        {/snippet}
+        </TimerPanel>
     </div>
     <!-- Right/Bottom -->
     <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-[25rem] lg:max-w-[33%]">
         <!-- List -->
         <SpeakerList
+            bind:order
             delegates={$delegates}
-            bind:order={$order}
             bind:this={speakersList}
             useDefaultControls={{
                 validator: presentDelegateSchema
             }}
-            onBeforeSpeakerUpdate={reset}
+            onBeforeSpeakerUpdate={resetOne}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
         />
-        <!-- Timer config -->
-        <div class="flex flex-row gap-5">
-            <form class="contents" onsubmit={setDuration}>
-                <label class="flex flex-grow items-center">
-                    <span>Speaker Time</span>
-                    <input class="input flex-grow" bind:value={durInput} placeholder="mm:ss" />
-                </label>
-            </form>
-        </div>
     </div>
 </div>
