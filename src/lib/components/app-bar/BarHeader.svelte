@@ -1,8 +1,15 @@
+<!--
+  @component The title text in the header.
+-->
 <script lang="ts">
     interface Props {
+        /** Title text */
         title: string,
+        /** Size of text (using Tailwind media sizes) */
         size?: "sm" | "md" | "lg",
+        /** Additional properties to apply to the title */
         styles?: string,
+        /** Whether the title is editable (by default, this is true) */
         editable?: boolean
     }
 
@@ -15,10 +22,10 @@
             heading.textContent = title = heading.textContent?.trim() || title;
         }
     }
-    function keyDown(k: KeyboardEvent) {
+    function keyDown(e: KeyboardEvent) {
         // If Enter is pressed, unfocus the title
-        if (k.code === "Enter") {
-            k.preventDefault();
+        if (e.code === "Enter") {
+            e.preventDefault();
             heading?.blur();
         }
     }
