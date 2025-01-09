@@ -1,17 +1,32 @@
 <!--
-    @component
-    
-    A piece of text that can be replaced with an icon on smaller screens.
+    @component A piece of text that can be replaced with an icon on smaller screens.
 -->
 
 <script lang="ts">
     import Icon from "@iconify/svelte";
 
     interface Props {
+        /**
+         * The icon to use.
+         */
         icon: string,
+        /**
+         * The label if the screen is wide enough.
+         */
         label: string,
+        /**
+         * The screen width needed for the text to take effect.
+         * This is any of Tailwind's default media sizes (e.g., 'sm', 'md', 'lg', etc.)
+         */
         size?: string,
+
+        /**
+         * The width of the icon (default 24).
+         */
         iconWidth?: number,
+        /**
+         * The height of the icon (default 24).
+         */
         iconHeight?: number
     }
 
