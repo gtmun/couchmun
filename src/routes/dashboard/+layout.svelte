@@ -56,7 +56,7 @@
 <Drawer>
     {#if $drawerStore.id === "navigation"}
         <Navigation close={drawerStore.close} {links} />
-        {:else if $drawerStore.id === "settings"}
+    {:else if $drawerStore.id === "settings"}
         <SettingsNavigation close={drawerStore.close} />
     {/if}
 </Drawer>

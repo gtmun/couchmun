@@ -1,5 +1,5 @@
 <!--
-    @component A piece of text that can be replaced with an icon on smaller screens.
+    @component A text label that is replaced with an icon on smaller screens.
 -->
 
 <script lang="ts">

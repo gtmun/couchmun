@@ -1,4 +1,3 @@
-<!-- @migration-task Error while migrating Svelte code: $$props is used together with named props in a way that cannot be automatically migrated. -->
 <script lang="ts">
     import { SlideToggle } from "@skeletonlabs/skeleton";
     import { type Snippet } from "svelte";
@@ -21,7 +20,6 @@
     }: Props = $props();
 </script>
 
-<!-- svelte-ignore a11y_label_has_associated_control : SlideToggle is a control -->
 <label class={labelClass}>
     {@render children()}
     <SlideToggle 
