@@ -1,10 +1,11 @@
 <script lang="ts">
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
-    import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/components/del-input/DelPopup.svelte";
+    import DelAutocomplete, { autocompletePlaceholders } from "$lib/components/DelAutocomplete.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { createMotionSchema, inputifyMotion, MOTION_FIELDS, MOTION_LABELS } from "$lib/motions/definitions";
     import { formatValidationError } from "$lib/motions/form_validation";
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
+    import { autocompletePopup, POPUP_CARD_CLASSES } from "$lib/util/popup";
     import { addColons, parseTime } from "$lib/util/time";
     import type { Motion } from "$lib/types";
     
@@ -35,7 +36,8 @@
     let afterDel: HTMLElement | undefined = $state();
 
     let noDelegatesPresent = $derived($delegates.every(d => !d.isPresent()));
-
+    const POPUP_TARGET = "delegate-input-popup";
+    
     function submitMotion(e: SubmitEvent) {
         e.preventDefault();
 
@@ -131,8 +133,8 @@
             class:input-error={inputError?.path.includes("delegate")}
             bind:value={inputMotion.delegate}
             required
-            use:popup={{...defaultPopupSettings("delegateInputPopup"), event: "focus-click"}}
-            {...defaultPlaceholder(noDelegatesPresent)}
+            use:popup={autocompletePopup(POPUP_TARGET)}
+            {...autocompletePlaceholders(noDelegatesPresent)}
         >
     </label>
     <label class="label">
@@ -212,10 +214,15 @@
     {/if}
 
     <!-- Delegate autocomplete popup -->
-    <DelPopup
-        popupID="delegateInputPopup"
-        bind:input={inputMotion.delegate}
-        delegates={$delegates}
-        on:selection={e => {inputMotion.delegate = e.detail.label; resetInputErrors(); afterDel?.focus()}}
-    />
+    <div class="{POPUP_CARD_CLASSES}" data-popup={POPUP_TARGET}>
+        <DelAutocomplete
+            bind:input={inputMotion.delegate}
+            delegates={$delegates}
+            on:selection={e => {
+                inputMotion.delegate = e.detail.label;
+                resetInputErrors();
+                afterDel?.focus();
+            }}
+        />
+    </div>
 </form>

@@ -6,6 +6,7 @@
     import { Delegate } from "$lib/db/delegates";
     import type { StatsData } from "$lib/types";
     import { compare, downloadFile } from "$lib/util";
+    import { interactivePopup, POPUP_CARD_CLASSES } from "$lib/util/popup";
     import { stringifyTime } from "$lib/util/time";
     
     import Icon from "@iconify/svelte";
@@ -94,11 +95,7 @@
     );
 
     // Configuration
-    const CONFIGURE_MODAL_SETTINGS: PopupSettings = {
-        event: "focus-click",
-        target: "stats-button",
-        closeQuery: ''
-    }
+    const POPUP_TARGET = "export-stats-popup";
     function exportStats() {
         let data = {
             committee: $barTitle,
@@ -129,7 +126,7 @@
             class="btn-icon variant-filled-warning"
             aria-label="Edit Stats"
             title="Edit Stats"
-            use:popup={CONFIGURE_MODAL_SETTINGS}
+            use:popup={interactivePopup(POPUP_TARGET)}
         >
             <Icon icon="mdi:database-export-outline" width="24" height="24" />
         </button>
@@ -202,12 +199,10 @@
       
 </div>
 
-<div data-popup="stats-button">
-    <div class="card p-4 bg-surface-300-600-token">
-        <div class="flex flex-col gap-2 overflow-hidden">
-            <h4 class="h4">Export Statistics</h4>
-            <button class="btn variant-filled-primary" onclick={exportAllStats}>Export All Sessions</button>
-            <button class="btn variant-filled-primary" onclick={exportStats}>Export Session {pageSettings.page + 1}</button>
-        </div>
+<div class="{POPUP_CARD_CLASSES}" data-popup={POPUP_TARGET}>
+    <div class="flex flex-col gap-2 overflow-hidden">
+        <h4 class="h4">Export Statistics</h4>
+        <button class="btn variant-filled-primary" onclick={exportAllStats}>Export All Sessions</button>
+        <button class="btn variant-filled-primary" onclick={exportStats}>Export Session {pageSettings.page + 1}</button>
     </div>
 </div>

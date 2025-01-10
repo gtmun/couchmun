@@ -1,6 +1,6 @@
 <script lang="ts">
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import DelPopup, { defaultPlaceholder, defaultPopupSettings } from "$lib/components/del-input/DelPopup.svelte";
+    import DelAutocomplete, { autocompletePlaceholders } from "$lib/components/DelAutocomplete.svelte";
     import { type Delegate, findDelegate } from "$lib/db/delegates";
     import { formatValidationError } from "$lib/motions/form_validation";
     import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
@@ -13,6 +13,7 @@
     import { tick, untrack } from "svelte";
     import { flip } from "svelte/animate";
     import { dragHandle, dragHandleZone } from "svelte-dnd-action";
+    import { autocompletePopup, POPUP_CARD_CLASSES } from "$lib/util/popup";
 
     let dfltControlsInput: string = $state("");
     let dfltControlsError: string | undefined = $state(undefined);
@@ -286,8 +287,8 @@
                         class="input" 
                         class:input-error={error}
                         bind:value={dfltControlsInput}
-                        use:popup={{ ...defaultPopupSettings(popupID), placement: "left-end", event: "focus-click" }}
-                        {...defaultPlaceholder(noDelegatesPresent)}
+                        use:popup={{ ...autocompletePopup(popupID), placement: "left-end" }}
+                        {...autocompletePlaceholders(noDelegatesPresent)}
                     />
                     <div class="ml-2">
                         <button
@@ -327,12 +328,13 @@
 
             The solution used here is to not put another element over the popup :)
         -->
-        <DelPopup 
-            {popupID}
-            bind:input={dfltControlsInput}
-            {delegates}
-            on:selection={e => addSpeaker(e.detail.label, true)}
-        />
+        <div class="{POPUP_CARD_CLASSES}" data-popup={popupID}>
+            <DelAutocomplete
+                bind:input={dfltControlsInput}
+                {delegates}
+                on:selection={e => addSpeaker(e.detail.label, true)}
+            />
+        </div>
     {/if}
 </div>
 
