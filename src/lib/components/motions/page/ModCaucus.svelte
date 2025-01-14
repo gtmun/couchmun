@@ -3,7 +3,6 @@
     import TimerPanel, { resetButton } from "$lib/components/motions/TimerPanel.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
-    import { presentDelegateSchema } from "$lib/motions/form_validation";
     import type { Motion, Speaker } from "$lib/types";
 
     interface Props {
@@ -55,9 +54,6 @@
             bind:order
             delegates={$delegates}
             bind:this={speakersList}
-            useDefaultControls={{
-                validator: presentDelegateSchema
-            }}
             onBeforeSpeakerUpdate={resetOne}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
         />

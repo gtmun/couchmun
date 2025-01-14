@@ -3,7 +3,6 @@
     import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
-    import { presentDelegateSchema } from "$lib/motions/form_validation";
     import { parseTime } from "$lib/util/time";
 
     const { speakersList: order, delegates } = getSessionContext();
@@ -53,9 +52,6 @@
             delegates={$delegates}
             bind:order={$order}
             bind:this={speakersList}
-            useDefaultControls={{
-                validator: presentDelegateSchema
-            }}
             onBeforeSpeakerUpdate={reset}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
         />

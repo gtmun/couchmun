@@ -57,6 +57,8 @@
             bind:this={speakersList}
             onBeforeSpeakerUpdate={reset}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
-        />
+        >
+            {#snippet controls()}{/snippet}
+        </SpeakerList>
     </div>
 </div>
