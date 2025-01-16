@@ -178,13 +178,13 @@
     {/if}
     {#if hasField(inputMotion, ["topic"])}
     <label class="label">
-    <span>Topic</span>
-    <input 
-        class="input" 
-        class:input-error={inputError?.path.includes("topic")}
-        bind:value={inputMotion.topic}
-        disabled={isExtending(inputMotion)}
-    >
+        <span>Topic</span>
+        <input 
+            class="input" 
+            class:input-error={inputError?.path.includes("topic")}
+            bind:value={inputMotion.topic}
+            disabled={isExtending(inputMotion)}
+        >
     </label>
     {/if}
     {#if hasField(inputMotion, ["isExtension"]) && $selectedMotion?.kind === inputMotion.kind}
