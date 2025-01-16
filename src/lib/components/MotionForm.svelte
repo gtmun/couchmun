@@ -1,3 +1,7 @@
+<!--
+  @component A component that wraps around the form used 
+    to create or edit a motion.
+-->
 <script lang="ts">
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
     import DelAutocomplete, { autocompletePlaceholders } from "$lib/components/DelAutocomplete.svelte";
@@ -19,28 +23,40 @@
     const resetInputErrors = () => { inputError = undefined };
 
     interface Props {
+        /**
+         * The input data.
+         */
         inputMotion?: MotionInput;
+        /**
+         * A callback where the motion is submitted 
+         * if it is successfully validated and produced.
+         */
         submit: (m: Motion) => void;
+        /**
+         * Buttons on the bottom of the snippet.
+         * If not specified, this will just be an "Add Motion" button.
+         */
         buttons?: Snippet;
     }
-
-    // Input handlers:
     let {
         inputMotion = $bindable(defaultInputMotion()),
         submit,
         buttons
     }: Props = $props();
-    let inputError: z.ZodIssue | undefined = $state(undefined);
-
-    // The input after the delegate input.
-    let afterDel: HTMLElement | undefined = $state();
+    
+    // Any input validation errors.
+    let inputError = $state<z.ZodIssue>();
+    // The form element.
+    let formEl = $state<HTMLFormElement>();
 
     let noDelegatesPresent = $derived($delegates.every(d => !d.isPresent()));
     const POPUP_TARGET = "delegate-input-popup";
     
+    // Motion validation and submission.
     function submitMotion(e: SubmitEvent) {
         e.preventDefault();
 
+        // Round-Robin: Apply total speakers
         if (inputMotion.kind === "rr") {
             inputMotion.totalSpeakers = $delegates.filter(d => d.isPresent()).length.toString();
         }
@@ -52,7 +68,7 @@
             }
         }
 
-        // Validate
+        // Validate input
         const result = motionSchema.safeParse(inputMotion);
         if (result.success) {
             inputMotion = defaultInputMotion();
@@ -64,7 +80,9 @@
         }
     }
 
-    // INPUT BLUR HANDLER
+    /**
+     * When user unfocuses on a time input, update the input to include colons.
+     */
     function handleBlurTime<A extends string>(attr: A) {
         if (attr in inputMotion) {
             (inputMotion as any)[attr] = addColons((inputMotion as any)[attr] ?? "");
@@ -124,8 +142,8 @@
     }
 </script>
 
-<form onsubmit={submitMotion} oninput={resetInputErrors} class="flex flex-col gap-3 p-3">
-    <!-- Motion input form -->
+<form onsubmit={submitMotion} oninput={resetInputErrors} class="flex flex-col gap-3 p-3" bind:this={formEl}>
+    <!-- Delegate input -->
     <label class="label">
         <span>Delegate</span>
         <input 
@@ -137,12 +155,13 @@
             {...autocompletePlaceholders(noDelegatesPresent)}
         >
     </label>
+
+    <!-- Motion dropdown -->
     <label class="label">
         <span>Motion</span>
         <select 
             class="select" 
             class:input-error={inputError?.path.includes("kind")}
-            bind:this={afterDel}
             bind:value={inputMotion.kind}
             >
             {#each Object.entries(MOTION_LABELS) as [value, label]}
@@ -150,6 +169,8 @@
             {/each}
         </select>
     </label>
+
+    <!-- Total time input -->
     {#if hasField(inputMotion, ["totalTime"])}
     <label class="label">
         <span>Total Time</span>
@@ -163,6 +184,8 @@
         >
     </label>
     {/if}
+
+    <!-- Speaking time input -->
     {#if hasField(inputMotion, ["speakingTime"])}
     <label class="label">
         <span>Speaking Time</span>
@@ -176,6 +199,8 @@
         >
     </label>
     {/if}
+
+    <!-- Topic input -->
     {#if hasField(inputMotion, ["topic"])}
     <label class="label">
         <span>Topic</span>
@@ -187,17 +212,22 @@
         >
     </label>
     {/if}
+
+    <!-- Extension toggle -->
     {#if hasField(inputMotion, ["isExtension"]) && $selectedMotion?.kind === inputMotion.kind}
     <LabeledSlideToggle name="extension-toggle" bind:checked={inputMotion.isExtension}>
     <span>Extend previous motion?</span>
     </LabeledSlideToggle>
     {/if}
+
+    <!-- Number of speakers display -->
     {#if hasField(inputMotion, ["totalTime", "speakingTime"])}
     <div class="text-center">
         <strong>Number of speakers</strong>: {numSpeakersStr(inputMotion.totalTime, inputMotion.speakingTime) ?? '-'}
     </div>
     {/if}
 
+    <!-- End buttons -->
     {#if buttons}
         {@render buttons()}
     {:else}
@@ -221,7 +251,7 @@
             on:selection={e => {
                 inputMotion.delegate = e.detail.label;
                 resetInputErrors();
-                afterDel?.focus();
+                (formEl?.children[1] as HTMLElement)?.focus?.();
             }}
         />
     </div>
