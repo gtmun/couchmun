@@ -1,3 +1,9 @@
+<!--
+    @component The motion page for moderated caucuses, consisting of:
+    - A header topic
+    - A timer panel with two timers (delegate and total time)
+    - An editable speaker's list
+-->
 <script lang="ts">
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import TimerPanel, { resetButton } from "$lib/components/motions/TimerPanel.svelte";

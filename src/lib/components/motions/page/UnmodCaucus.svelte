@@ -1,3 +1,7 @@
+<!--
+    @component The motion page for unmoderated caucuses, consisting of:
+    - A timer
+-->
 <script lang="ts">
     import Timer from "$lib/components/Timer.svelte";
     import type { Motion } from "$lib/types";

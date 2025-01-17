@@ -9,5 +9,9 @@ To be used in that route, a component in this folder should be added to the `if/
 This `motion` prop should be declared as so:
 
 ```ts
-export let motion: Motion & { kind: "accepted kind" | "other accepted kind" | ... };
+interface Props {
+    motion: Motion & { kind: "accepted motion type" | "another accepted motion type" | ... },
+    anyOtherProperties: ...
+}
+let { motion, ... } = $props();
 ```

@@ -1,3 +1,8 @@
+<!--
+  @component The page for the current motion (after it was selected in the Points & Motions page).
+
+  This page delegates to one of the motion components located in `$lib/components/motions/page`.
+-->
 <script lang="ts">
     import { base } from "$app/paths";
     import ModCaucus from "$lib/components/motions/page/ModCaucus.svelte";
@@ -6,8 +11,6 @@
     import { getSessionContext } from "$lib/context/index.svelte";
 
     const { selectedMotion, selectedMotionState } = getSessionContext();
-
-    const isExhaustive = (s: never) => s;
 </script>
 
 <div class="h-full w-full flex flex-col items-stretch justify-center">
@@ -20,7 +23,7 @@
             <RoundRobin motion={$selectedMotion} bind:order={$selectedMotionState.speakersList} />
         {:else if $selectedMotion.kind === "other"}
             <!-- TODO -->
-        {:else if isExhaustive($selectedMotion)}
+        {:else if $selectedMotion satisfies never}
             <!-- unreachable -->
         {/if}
     {:else}
