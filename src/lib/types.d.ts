@@ -77,8 +77,6 @@ export type SortOrderKey = {
  * 1. first be sorted by total time in descending order, 
  * 2. then by number of spekers in descending order,
  * 3. then (implicitly) by order received.
- * 
- * A array of `SortEntry`s (`SortEntry[]`) defines the complete sort order.
  */
 export type SortEntry = {
     /**
@@ -90,6 +88,28 @@ export type SortEntry = {
      */
     order: SortOrderKey[]
 };
+
+/**
+ * A complete sort order.
+ * 
+ * A sort order consists of a list of sort entries.
+ * The order of the entries indicates which motion kinds get priority
+ * (with the first entry getting the highest priority and the last entry getting the least).
+ * 
+ * For example, take this `SortOrder`:
+ * ```ts
+ * [
+ *     { kind: ["ext"], order: [ ... ] },
+ *     { kind: ["unmod"], order: [ ... ] },
+ *     { kind: ["mod", "rr"], order: [ ... ] }
+ * ]
+ * ```
+ * 
+ * This indicates that extensions have higher priority than unmoderated caucuses, 
+ *     which have higher priority than moderated caucuses and round robins.
+ * It also indicates that moderated caucuses and round robins have equal priority.
+ */
+export type SortOrder = SortEntry[];
 
 // These types are used to define settings.
 
@@ -122,7 +142,7 @@ export type Settings = {
      * 
      * Any kinds not specified in this list are thrown at the end.
      */
-    sortOrder: SortEntry[],
+    sortOrder: SortOrder,
     
     /**
      * The title of the assembly.

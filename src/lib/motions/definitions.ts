@@ -1,4 +1,11 @@
-import type { Motion, MotionKind, SortEntry } from "$lib/types";
+/**
+ * Some definitions for motion properties.
+ * 
+ * This consolidates important properties under one file
+ * (other files in `$lib/motions` should only define infrastructure for using motions).
+ */
+
+import type { Motion, MotionKind, SortOrder } from "$lib/types";
 import { nonEmptyString, presentDelegateSchema, refineSpeakingTime, timeSchema, topicSchema } from "$lib/motions/form_validation";
 import type { MotionInput } from "$lib/motions/types";
 import { z } from "zod";
@@ -47,7 +54,7 @@ const _assert: Is<TypeFields, ConstFields> = {};
  * 
  * Any kinds not specified in this list are thrown at the end.
  */
-export const DEFAULT_SORT_PRIORITY: SortEntry[] = [
+export const DEFAULT_SORT_PRIORITY: SortOrder = [
     { kind: ["ext"], order: [] },
     { kind: ["unmod"], order: [{ property: "totalTime", ascending: false }] },
     { kind: ["mod", "rr"], order: [{ property: "nSpeakers", ascending: false }, { property: "totalTime", ascending: false }] }
