@@ -1,3 +1,10 @@
+/**
+ * This module provides helpers for managing presets of delegate rosters.
+ * 
+ * For example, the United Nations roster (consisting of all United Nations member states)
+ * is a frequently used roster, so it is provided for convenience!
+ */
+
 import type { DelegateAttrs } from "$lib/types";
 import DEFAULT_DELEGATES_JSON from "$lib/delegate_presets/preset-un.json";
 
