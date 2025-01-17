@@ -2,7 +2,7 @@
     @component The motion page for round robins, consisting of:
     - A header topic
     - A timer panel with a timer (delegate speaking time)
-    - A speaker's list that is automatically populated with all delegates
+    - A speakers list that is automatically populated with all delegates
 -->
 <script lang="ts">
     import SpeakerList, { createSpeaker } from "$lib/components/SpeakerList.svelte";

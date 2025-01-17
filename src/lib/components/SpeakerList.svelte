@@ -3,7 +3,7 @@
   as well as providing a default method ot adding new speakers.
 
   This component handles the ability to select, delete, 
-  and rearrange speakers in the speakers' list.
+  and rearrange speakers in the speakers list.
  -->
 <script lang="ts">
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
@@ -25,7 +25,7 @@
 
     interface Props {
         /**
-         * The order of speakers for the speaker's list.
+         * The order of speakers for the speakers list.
          */
         order?: Speaker[];
         /**
@@ -91,7 +91,7 @@
     }
 
     /**
-     * Whether the speaker's list is complete (there are no other speakers left in the list).
+     * Whether the speakers list is complete (there are no other speakers left in the list).
      */
     export function isAllDone() {
         return typeof selectedSpeakerId === "undefined" && order.every(({ completed }) => completed);
@@ -133,13 +133,13 @@
     }
 
     /**
-     * Starts the speaker's list.
+     * Starts the speakers list.
      */
     export function start() {
         markComplete(selectedSpeakerId);
     }
     /**
-     * Moves to the next speaker in the speaker's list.
+     * Moves to the next speaker in the speakers list.
      */
     export function next() {
         markComplete(selectedSpeakerId);
@@ -149,7 +149,7 @@
     }
 
     /**
-     * Adds a speaker to the speaker's list.
+     * Adds a speaker to the speakers list.
      * @param name The full name of the speaker (not a key; this is parsed by the default validator)
      * @param clearControlInput Whether this function call should clear the input (by default false)
      */
@@ -185,7 +185,7 @@
         addSpeaker(addDelInput, true);
     }
     /**
-     * Deletes the speaker at index i in the speaker's list.
+     * Deletes the speaker at index i in the speakers list.
      * @param i The index.
      */
     function deleteSpeaker(i: number) {
@@ -197,7 +197,7 @@
         }
     }
     /**
-     * Remove all speakers from the speaker's list.
+     * Remove all speakers from the speakers list.
      */
     function clearSpeakers() {
         triggerConfirmModal(

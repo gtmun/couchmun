@@ -93,7 +93,7 @@
     }
     
     /**
-     * Currently selected speaker from speaker's list.
+     * Currently selected speaker from speakers list.
      */
     let selectedSpeaker = $derived(speakersList?.selectedSpeaker());
     /**

@@ -1,7 +1,7 @@
 <!--
     @component The page for standard speakers list, consisting of:
     - A timer panel with a timer (delegate speaking time)
-    - An editable speaker's list
+    - An editable speakers list
 -->
 <script lang="ts">
     import SpeakerList from "$lib/components/SpeakerList.svelte";
