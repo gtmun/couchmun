@@ -290,9 +290,17 @@ export type SessionContext = {
     speakersList: Writable<SessionData["speakersList"]>,
 
     /**
+     * Sort order.
+     */
+    sortOrder: Readable<Settings["sortOrder"]>,
+    /**
      * Committee title, visible on the app bar.
      */
     barTitle: Writable<Settings["title"]>,
+    /**
+     * Preferences (simple setting toggles).
+     */
+    preferences: Readable<Settings["preferences"]>,
     /**
      * Current topic of discussion, visible on the app bar.
      */

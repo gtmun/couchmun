@@ -17,7 +17,7 @@
  *     This typically does not need to be done since it's done once in `./routes/+layout.svelte`.
  */
 
-import { db, DEFAULT_SESSION_DATA } from "$lib/db/index.svelte";
+import { db, DEFAULT_SESSION_DATA, DEFAULT_SETTINGS } from "$lib/db/index.svelte";
 import type { SessionContext } from "$lib/types";
 import { getContext, hasContext, setContext } from "svelte";
 
@@ -26,11 +26,16 @@ const CONTEXT_KEY = "session";
 // A wrapper class so Svelte is willing to make barTopic $state real.
 class SessionImpl implements SessionContext {
     delegates = db.enabledDelegatesStore();
+    // Global Session Data
     motions = db.sessionDataStore("motions", DEFAULT_SESSION_DATA.motions);
     selectedMotion = db.sessionDataStore("selectedMotion", DEFAULT_SESSION_DATA.selectedMotion);
     selectedMotionState = db.sessionDataStore("selectedMotionState", DEFAULT_SESSION_DATA.selectedMotionState);
     speakersList = db.sessionDataStore("speakersList", DEFAULT_SESSION_DATA.speakersList);
+    // Settings
+    sortOrder = db.settingStore("sortOrder", DEFAULT_SETTINGS.sortOrder);
     barTitle = db.settingStore("title", "");
+    preferences = db.settingStore("preferences", DEFAULT_SETTINGS.preferences);
+
     barTopic = $state<string>();
 }
 
