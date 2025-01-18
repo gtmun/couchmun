@@ -17,7 +17,7 @@
     import { popup } from "@skeletonlabs/skeleton";
     import { type Snippet } from 'svelte';
 
-    const { selectedMotion, delegates } = getSessionContext();
+    const { selectedMotion, delegates, preferences } = getSessionContext();
     const motionSchema = $derived(createMotionSchema($delegates));
     const defaultInputMotion = () => ({ id: crypto.randomUUID(), kind: "mod" } satisfies MotionInput);
     const resetInputErrors = () => { inputError = undefined };
@@ -48,6 +48,18 @@
     let inputError = $state<z.ZodIssue>();
     // The form element.
     let formEl = $state<HTMLFormElement>();
+    // Motions that you can input into dropdown (taking into account provided preferences)
+    let allowedMotions = $derived.by(() => {
+        // A map indicating whether a given motion type should appear.
+        // If mapped to false, it will not appear.
+        // If mapped to true (or not mapped at all), it will also appear.
+        const filters: Record<string, boolean> = {
+            "rr": $preferences.enableMotionRoundRobin
+        };
+
+        return Object.entries(MOTION_LABELS)
+            .filter(([kind]) => filters[kind] ?? true);
+    });
 
     let noDelegatesPresent = $derived($delegates.every(d => !d.isPresent()));
     const POPUP_TARGET = "delegate-input-popup";
@@ -164,8 +176,8 @@
             class:input-error={inputError?.path.includes("kind")}
             bind:value={inputMotion.kind}
             >
-            {#each Object.entries(MOTION_LABELS) as [value, label]}
-            <option {value} {label}></option>
+            {#each allowedMotions as [value, label]}
+                <option {value} {label}></option>
             {/each}
         </select>
     </label>
@@ -214,10 +226,10 @@
     {/if}
 
     <!-- Extension toggle -->
-    {#if hasField(inputMotion, ["isExtension"]) && $selectedMotion?.kind === inputMotion.kind}
-    <LabeledSlideToggle name="extension-toggle" bind:checked={inputMotion.isExtension}>
-    <span>Extend previous motion?</span>
-    </LabeledSlideToggle>
+    {#if $preferences.enableMotionExt && hasField(inputMotion, ["isExtension"]) && $selectedMotion?.kind === inputMotion.kind}
+        <LabeledSlideToggle name="extension-toggle" bind:checked={inputMotion.isExtension}>
+            <span>Extend previous motion?</span>
+        </LabeledSlideToggle>
     {/if}
 
     <!-- Number of speakers display -->
@@ -240,7 +252,7 @@
     {/if}
 
     {#if typeof inputError !== "undefined"}
-    <div class="text-error-500 text-center">{inputError.message}</div>
+        <div class="text-error-500 text-center">{inputError.message}</div>
     {/if}
 
     <!-- Delegate autocomplete popup -->
