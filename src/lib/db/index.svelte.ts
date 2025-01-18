@@ -1,3 +1,10 @@
+/**
+ * This module holds infrastructure that handles the database 
+ * that stores much of CouchMUN's persistent data.
+ * 
+ * This module uses Dexie to interact with the IndexedDB API.
+ */
+
 import { Delegate } from "./delegates";
 import { KeyValuePair, toKeyValueArray, toObject } from "./keyval";
 import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
@@ -7,10 +14,28 @@ import type { DelegateAttrs, DelegateID, DelSessionData, PrevSessionData, Sessio
 import { Dexie, liveQuery, type EntityTable, type IndexableType, type InsertType } from "dexie";
 import { readable, type Readable, type Updater, type Writable } from "svelte/store";
 
+/**
+ * The class representing the session database.
+ * This can be accessed as a singleton through the `db` const.
+ */
 export class SessionDatabase extends Dexie {
+    /**
+     * The table of delegates, which includes their attributes, enabled status, and session state.
+     */
     delegates!: EntityTable<Delegate, "id">;
+    /**
+     * The key-value store of settings.
+     */
     settings!: EntityTable<KeyValuePair, "key">;
+    /**
+     * The key-value store of global session data, 
+     * including the current speakers list and the current motion.
+     */
     sessionData!: EntityTable<KeyValuePair, "key">;
+    /**
+     * The key-value store of previous session data.
+     * This is used to access previous session data (when needed).
+     */
     prevSessions!: EntityTable<KeyValuePair<number, PrevSessionData>, "key">;
 
     constructor() {
@@ -93,6 +118,10 @@ export class SessionDatabase extends Dexie {
     }
     /**
      * Gets the setting from the settings database.
+     * 
+     * This is preferred over `db.settings.get(...)` 
+     * as this method will properly typecheck the keys you enter.
+     * 
      * @param key the key to get the setting for
      * @returns the value of the setting
      */
@@ -109,6 +138,9 @@ export class SessionDatabase extends Dexie {
     settingStore<K extends keyof Settings>(key: K, fallback?: Settings[K]): Writable<Settings[K] | undefined> {
         return getKVStore(this.settings, key, fallback);
     }
+    /**
+     * Resets all settings from the database to the default.
+     */
     async resetSettings() {
         await this.transaction("rw", this.settings, async () => {
             await this.settings.clear();
@@ -127,9 +159,21 @@ export class SessionDatabase extends Dexie {
         return getKVStore(this.sessionData, key, fallback);
     }
 
+    /**
+     * Gets a value from the session data table.
+     * 
+     * This is preferred over `db.sessionData.get(...)`
+     * as this method will properly typecheck the keys you enter.
+     * 
+     * @param key the key to get the value of
+     * @returns the value
+     */
     async getSessionValue<K extends keyof SessionData>(key: K): Promise<SessionData[K]> {
         return this.sessionData.get(key).then(e => e?.val);
     }
+    /**
+     * Resets the session data (both global and delegate session data) to default values.
+     */
     async resetSessionData() {
         await this.transaction("rw", [this.sessionData, this.delegates], async () => {
             await this.delegates.toCollection().modify(DEFAULT_DEL_SESSION_DATA);
@@ -138,6 +182,9 @@ export class SessionDatabase extends Dexie {
             await this.sessionData.bulkAdd(toKeyValueArray(DEFAULT_SESSION_DATA));
         })
     }
+    /**
+     * Saves the current session data, creating a new entry in the prevSessions table.
+     */
     async saveSessionData() {
         return this.transaction("rw", [this.delegates, this.sessionData, this.prevSessions], async () => {
             let sessionKey = await this.getSessionValue("sessionKey") ?? await this.prevSessions.count();
@@ -151,6 +198,10 @@ export class SessionDatabase extends Dexie {
             } });
         });
     }
+    /**
+     * Loads session data, pulling from an entry in the prevSessions table.
+     * @param key The associated key in the prevSessions table
+     */
     async loadSessionData(key: number) {
         return this.transaction("rw", [this.delegates, this.sessionData, this.prevSessions], async () => {
             let entry = await this.prevSessions.get(key);
@@ -178,6 +229,15 @@ export class SessionDatabase extends Dexie {
     }
 }
 
+/**
+ * A reference to the database.
+ * 
+ * This provides field access to all of the database tables
+ * (e.g., `delegates`, `settings`, `sessionData`, `prevSessions`),
+ * 
+ * as well as access to some useful methods
+ * (e.g., various stores, `addDelegate`, `getSetting`, etc.).
+ */
 export const db = new SessionDatabase();
 
 db.on("ready", async (tx) => {
