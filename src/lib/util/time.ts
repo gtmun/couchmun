@@ -1,3 +1,10 @@
+/**
+ * This module holds helpers that are useful for managing time strings.
+ * 
+ * In particular, this module has helpers used for converting time stored in seconds
+ * to and from time strings (e.g., mm:ss).
+ */
+
 const UNITS = [60, 60, 24, 365, Infinity];
 const PADDING = [2, 2, 2, 3, undefined];
 const MIN_SEGMENTS = 2;
@@ -52,6 +59,8 @@ export function parseTime(timeStr: string): number | undefined {
 /**
  * Converts the current number of seconds to a formatted string of the form mm:ss.
  * @param secs the number of seconds
+ * @param roundingMode if a fractional number of seconds is provided, it must be rounded to the nearest integer.
+ *     This parameter decides whether it is floored, rounded, or ceil'd.
  * @returns the time string, or undefined if negative or non-finite or non-integral
  */
 export function stringifyTime(secs: number, roundingMode: "floor" | "round" | "ceil" = "ceil"): string | undefined {

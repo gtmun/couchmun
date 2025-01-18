@@ -1,4 +1,53 @@
-import { SHADOW_ITEM_MARKER_PROPERTY_NAME, SHADOW_PLACEHOLDER_ITEM_ID, type DndEvent } from "svelte-dnd-action";
+/**
+ * Utilities for managing svelte-dnd-action.
+ * 
+ * To implement drag-and-drop with svelte-dnd-action, the following steps should be performed:
+ * 1. Make a stateful copy of the array you want to observe.
+ * 2. Apply the `use:dndzone` or `use:dragHandleZone` onto the element that should be DnDable.
+ *     a. Set the given events: 
+ *         - `onconsider = (e) => copy = e.detail.items`, 
+ *         - `onfinalize = (e) => original = copy = e.detail.items`
+ * 3. Apply any styling to the shadow element and dragged element.
+ * 
+ * In full, that would look like the following:
+ * ```svelte
+ * <script lang="ts">
+ *   // (1)
+ *   let dndItems = $state($state.snapshot(originalItems));
+ *   $effect(() => { dndItems = originalItems });
+ * 
+ *   // ...
+ * </script>
+ * 
+ * <!-- (2) -->
+ * <div 
+ *   use:dndzone={{
+ *     items: dndItems,
+ *     flipDurationMs: 150,
+ *     dropTargetStyle: {}
+ *   }}
+ *   onconsider={(e) => dndItems = e.detail.items}
+ *   onfinalize={(e) => originalItems = dndItems = e.detail.items}
+ * >
+ *   {#each dndItems as item (item.id)}
+ *     {@const shadow = isDndShadow(item)}
+ *     <!-- (3): Apply attributes, with `shadow` indicating shadow element -->
+ *   {/each}
+ * </div>
+ * 
+ * <!-- (3): Apply styling to dragged element (which should copy element's styling) -->
+ * <style lang="postcss">
+ *   :global(#dnd-action-dragged-el).dnd-list-item {
+ *     @apply ...;
+ *   }
+ *   :global(.dark #dnd-action-dragged-el).dnd-list-item {
+ *     @apply ...;
+ *   }
+ * </style>
+ * ```
+ */
+
+import { SHADOW_ITEM_MARKER_PROPERTY_NAME } from "svelte-dnd-action";
 
 export type DndItem = {
     id: string,
@@ -7,49 +56,14 @@ export type DndItem = {
 };
 
 /**
- * Processes a DndEvent, creating a new array which the data array can be set to.
- * 
- * Typically, `order = e.detail.items` would be done to update state.
- * However, this can cause problems as ID is corrupted and original ID data can be lost.
- * 
- * Thus, this function does processing to preserve that data.
- * 
- * @param e The event
- * @returns The updated array
- */
-export function processDrag<E extends DndItem>(e: CustomEvent<DndEvent<E>>): E[] {
-    let placeholder = e.detail.items.find(s => s.id === SHADOW_PLACEHOLDER_ITEM_ID);
-    if (placeholder) {
-        placeholder.originalId = e.detail.info.id;
-    }
-
-    return e.detail.items;
-}
-
-/**
  * Tests whether item is a shadow element
- * (i.e., is being dragged and needs a placeholder in DOM).
+ * (i.e., the data representing this element is being dragged
+ *    and currently has a placeholder in its original position)
  * @param item the item
  * @returns whether it is a shadow element
  */
 export function isDndShadow(item: DndItem): boolean {
-    let it: {
-        [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: boolean
-    } = item;
-    return !!it[SHADOW_ITEM_MARKER_PROPERTY_NAME];
-}
-
-/**
- * Gets the true ID of a drag-and-drop item.
- * @param item The item
- * @returns The ID
- */
-export function getDndItemId(item: DndItem): string {
-    let id = item.id;
-    if (id == SHADOW_PLACEHOLDER_ITEM_ID) {
-        id = item.originalId || id;
-    }
-    return id;
+    return !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME];
 }
 
 /**

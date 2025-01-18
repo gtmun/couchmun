@@ -1,3 +1,6 @@
+<!--
+  @component The admin settings page (used for configuring settings).
+-->
 <script lang="ts">
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
     import MetaTags from "$lib/components/MetaTags.svelte";

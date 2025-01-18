@@ -1,3 +1,8 @@
+<!--
+  @component This component is the base layout for the admin pages on the site.
+  
+  This basically initializes the admin app bar (the yellow bar on the top).
+-->
 <script lang="ts">
     import { base } from '$app/paths';
     import BarHeader from '$lib/components/app-bar/BarHeader.svelte';

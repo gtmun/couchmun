@@ -1,3 +1,10 @@
+<!-- 
+  @component This component is the base layout for all pages on the website 
+  (including /dashboard/ and /admin/).
+
+  It simply initializes some useful stores and listeners for the page.
+-->
+
 <script lang="ts">
     import "../app.css";
     import { computePosition, autoUpdate, offset, shift, flip, arrow, size } from '@floating-ui/dom';

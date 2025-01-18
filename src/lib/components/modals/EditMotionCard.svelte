@@ -1,3 +1,11 @@
+<!--
+  @component Modal card for editing a motion.
+
+  This modal wraps around `MotionForm`.
+  Note that this will not update the provided motion object,
+  but rather "submit" the changed motion back to the trigger.
+-->
+
 <script lang="ts">
     import type { Motion } from "$lib/types";
     import MotionForm from "$lib/components/MotionForm.svelte";
@@ -6,6 +14,9 @@
     import { inputifyMotion } from "$lib/motions/definitions";
     
     interface Props {
+        /**
+         * The motion data to edit.
+         */
         motion: Motion;
     }
     let { motion }: Props = $props();

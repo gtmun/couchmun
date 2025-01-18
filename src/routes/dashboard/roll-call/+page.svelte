@@ -1,3 +1,7 @@
+<!-- 
+  @component The page for roll call, 
+    which consists of a long list of delegates and an option to select NP/P/PV.
+-->
 <script lang="ts">
     import { base } from "$app/paths";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";

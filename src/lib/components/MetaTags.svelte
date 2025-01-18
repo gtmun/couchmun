@@ -1,3 +1,9 @@
+<!-- 
+  @component Component that adds special SEO tags to the webpage.
+
+  This can be located anywhere in the `+page.svelte`,
+  but it preferably should be on the top level.
+-->
 <script lang="ts">
     import { page } from "$app/state";
 

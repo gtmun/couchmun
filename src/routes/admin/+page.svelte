@@ -1,1 +1,1 @@
-<!-- Redirects to settings. See +page.server.ts -->
+<!-- Redirects to /admin/settings. See +page.server.ts -->

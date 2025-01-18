@@ -1,3 +1,7 @@
+/**
+ * Implements form validation for motions.
+ */
+
 import type { Delegate } from "$lib/db/delegates";
 import { parseTime } from "$lib/util/time";
 import { z } from "zod";

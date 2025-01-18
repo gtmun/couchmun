@@ -1,9 +1,24 @@
+<!-- 
+  @component Bar stats, consisting of 3 bubbles and the 3 attendance numbers.
+-->
+
 <script lang="ts">
     import { ConicGradient, type ConicStop } from '@skeletonlabs/skeleton';
 
     interface Props {
+        /**
+         * Total attendance.
+         */
         total: number;
+        /**
+         * An override for the majority value
+         * (if the default calculation is not sufficient).
+         */
         majOverride?: number | undefined;
+        /**
+         * An override for the supermajority value
+         * (if the default calculation is not sufficient).
+         */
         supermajOverride?: number | undefined;
     }
     let {
@@ -12,12 +27,11 @@
         supermajOverride = undefined
     }: Props = $props();
 
-    // given n,
-    // maj is smallest integer > n/2
-    // supermaj is smallest integer > 2n/3
-    // TODO: make this cleaner
-    let maj = $derived(majOverride ?? total >= 1 ? Math.ceil(total / 2 + 0.01) : 0);
-    let supermaj = $derived(supermajOverride ?? total >= 1 ? Math.ceil(total * 2 / 3 + 0.01) : 0);
+    // Given the total attendance (n),
+    // the majority is the smallest integer > n/2
+    // the supermajority is the smallest integer > 2/3 n
+    let maj: number = $derived(majOverride ?? smallestIntegerGt(total / 2));
+    let supermaj: number = $derived(supermajOverride ?? smallestIntegerGt(total * 2 / 3));
 
     const majConic: ConicStop[] = [
         { color: 'rgb(var(--color-primary-800))', start: 0, end: 50 },
@@ -30,6 +44,13 @@
     const totalConic: ConicStop[] = [
         { color: 'rgb(var(--color-tertiary-500))', start: 0, end: 100 },
     ];
+    /**
+     * Smallest integer greater than `n`, capped to at least 0.
+     * @param n total
+     */
+    function smallestIntegerGt(n: number) {
+        return Math.max(0, Math.ceil(n + 0.01));
+    }
 </script>
 
 <div class="flex flex-row gap-3 justify-center">

@@ -1,4 +1,14 @@
-import type { Motion, SortEntry, SortKind, SortOrderProperty } from "$lib/types";
+/**
+ * This module implements the infrastructure required to sort motions.
+ * 
+ * The most important API of this module is `compareMotions`, which is a comparator 
+ * (which can be inserted into `Array.sort`) that compares motions.
+ * 
+ * Using it requires defining a "sort order", which is the priority in which motions are ordered.
+ * See the docs for `SortOrder` in `$lib/types` for more details about how sort order is set up.
+ */
+
+import type { Motion, SortKind, SortOrder, SortOrderProperty } from "$lib/types";
 import { compare, type Comparator } from "$lib/util";
 
 export const SORT_KIND_NAMES: Record<SortKind, string> = {
@@ -29,7 +39,7 @@ function getSortKind(m: Motion): SortKind | undefined {
     if ("isExtension" in m && m.isExtension) return "ext";
     return m.kind;
 }
-function getSortIndex(m: Motion, priority: SortEntry[]): number {
+function getSortIndex(m: Motion, priority: SortOrder): number {
     let kind = getSortKind(m);
 
     // Find the index of this motion under the priority, putting it at the end if not in the list.
@@ -60,7 +70,23 @@ function getSortProperty(m: Motion, key: SortOrderProperty): unknown {
     throw Error(`Motion cannot be sorted by ${key}`);
 }
 
-export function compareMotions(priority: SortEntry[]): Comparator<Motion> {
+/**
+ * Creates a "comparator" for motions, using the provided sort order.
+ * 
+ * A comparator is a function that "compares" two motions. This can be directly input to 
+ * `Array.sort` to sort an array of motions. For example,
+ * 
+ * ```ts
+ * const motions: Motion[] = [ ... ];
+ * const comparator = compareMotions(...);
+ * 
+ * motions.sort(comparator);
+ * ```
+ * 
+ * @param priority the sort order to use.
+ * @returns the comparator
+ */
+export function compareMotions(priority: SortOrder): Comparator<Motion> {
     return (a, b) => {
         let k: number;
 

@@ -1,4 +1,11 @@
+<!--
+  @component The points & motions page (used for creating and viewing the current points & motions).
+
+  This includes a MotionForm (which is used to add motions)
+  and a sortable motion table (which is used to view and rearrange and edit motions).
+-->
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { base } from "$app/paths";
   import DelLabel from "$lib/components/del-label/DelLabel.svelte";
   import IconLabel from "$lib/components/IconLabel.svelte";
@@ -10,7 +17,7 @@
   import { MOTION_LABELS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import type { Motion } from "$lib/types";
-  import { createDragTr, isDndShadow, processDrag } from "$lib/util/dnd";
+  import { createDragTr, isDndShadow } from "$lib/util/dnd";
   import { stringifyTime } from "$lib/util/time";
 
   import Icon from "@iconify/svelte";
@@ -22,7 +29,7 @@
   const sortOrder = queryStore(() => db.getSetting("sortOrder"), []);
   const modalStore = getModalStore();
 
-  // A clone of $motions used solely for use:dragHandleZone
+  // A clone of $motions used solely for use:dndzone
   let dndItems = $state($state.snapshot($motions));
   $effect(() => { dndItems = $motions; });
 
@@ -150,8 +157,8 @@
             dropTargetStyle: {},
             transformDraggedElement: (el) => createDragTr(el, motionTable)
           }}
-          onconsider={(e) => dndItems = processDrag(e)}
-          onfinalize={(e) => $motions = dndItems = processDrag(e)}
+          onconsider={(e) => dndItems = e.detail.items}
+          onfinalize={(e) => $motions = dndItems = e.detail.items}
           aria-labelledby="motion-table-header"
         >
           {#each dndItems as motion, i (motion.id)}
@@ -175,17 +182,14 @@
                   >
                     <Icon icon="mdi:cancel" width="24" height="24" class="text-error-500" />
                   </button>
-                  <a
+                  <button
                     class="btn btn-sm btn-icon w-8"
-                    onclick={() => acceptMotion(motion)}
-                    href="{base}/dashboard/current-motion"
-                    role="button"
+                    onclick={() => { acceptMotion(motion); goto(`${base}/dashboard/current-motion`); }}
                     data-label="Accept {delName}'s Motion"
                     title="Accept {delName}'s Motion"
-                    tabindex={0}
                   >
                     <Icon icon="mdi:check" width="24" height="24" class="text-success-700" />
-                  </a>
+                  </button>
                   <button
                     class="btn btn-sm btn-icon w-8"
                     onclick={() => editMotion(i, motion)}

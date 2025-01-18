@@ -1,34 +1,39 @@
 <!--
-    @component The page for standard speakers list, consisting of:
+    @component The motion page for round robins, consisting of:
+    - A header topic
     - A timer panel with a timer (delegate speaking time)
-    - An editable speakers list
+    - A speakers list that is automatically populated with all delegates
 -->
 <script lang="ts">
-    import SpeakerList from "$lib/components/SpeakerList.svelte";
+    import SpeakerList, { createSpeaker } from "$lib/components/SpeakerList.svelte";
     import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
-    import { parseTime } from "$lib/util/time";
+    import type { Motion, Speaker } from "$lib/types";
+    import { untrack } from "svelte";
 
-    const { speakersList: order, delegates } = getSessionContext();
+    interface Props {
+        motion: Motion & { kind: "rr" };
+        order: Speaker[]
+    }
+    let { motion, order = $bindable() }: Props = $props();
 
-    let duration: number = $state(60);
+    const sessionData = getSessionContext();
+    const { delegates } = sessionData;
+    $effect(() => {
+        sessionData.barTopic = `Topic: ${motion.topic}`;
+    });
+    $effect(() => {
+        if (untrack(() => order.length == 0)) {
+            order = $delegates.filter(d => d.isPresent()).map(d => createSpeaker(d.id));
+        }
+    });
+
     let timerPanel = $state<TimerPanel>();
     let speakersList = $state<SpeakerList>();
-    let durInput: string = $state("");
-
+    
     function reset() {
         timerPanel?.reset();
-    }
-    function setDuration(e: SubmitEvent) {
-        e.preventDefault();
-
-        let secs = parseTime(durInput);
-        if (typeof secs !== "undefined") {
-            duration = secs;
-            reset();
-        }
-        durInput = "";
     }
 </script>
 
@@ -45,29 +50,21 @@
         <TimerPanel
             delegates={$delegates}
             {speakersList}
-            bind:duration
+            duration={motion.speakingTime}
             bind:this={timerPanel}
-            editable
         />
     </div>
     <!-- Right/Bottom -->
     <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-[25rem] lg:max-w-[33%]">
         <!-- List -->
         <SpeakerList
+            bind:order
             delegates={$delegates}
-            bind:order={$order}
             bind:this={speakersList}
             onBeforeSpeakerUpdate={reset}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
-        />
-        <!-- Timer config -->
-        <div class="flex flex-row gap-5">
-            <form class="contents" onsubmit={setDuration}>
-                <label class="flex flex-grow items-center">
-                    <span>Speaker Time</span>
-                    <input class="input flex-grow" bind:value={durInput} placeholder="mm:ss" />
-                </label>
-            </form>
-        </div>
+        >
+            {#snippet controls()}{/snippet}
+        </SpeakerList>
     </div>
 </div>

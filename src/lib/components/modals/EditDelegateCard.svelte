@@ -1,8 +1,19 @@
+<!--
+  @component Modal card for editing (or creating) a delegate.
+
+  This modal consists of a simple form to specify the delegate's attributes.
+-->
 <script lang="ts">
     import type { DelegateAttrs } from "$lib/types";
     import EditModal from "$lib/components/modals/EditModal.svelte";
 
     interface Props {
+        /**
+         * Original properties of the delegate.
+         * 
+         * If `undefined`, this form will be used to "create" a delegate
+         * (rather than "edit" a delegate).
+         */
         attrs?: DelegateAttrs
     }
 

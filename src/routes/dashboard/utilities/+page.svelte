@@ -1,14 +1,20 @@
+<!-- 
+  @component A utilities page, which is meant to be a page for miscellaneous situations in committee.
+
+  Notably, this page includes a timer and title, which can be used quite generically.
+-->
 <script lang="ts">
-    import DelAutocomplete from "$lib/components/del-input/DelAutocomplete.svelte";
+    import DelAutocomplete from "$lib/components/DelAutocomplete.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { lazyslide } from "$lib/util";
+    import { interactivePopup, POPUP_CARD_CLASSES } from "$lib/util/popup";
     import { parseTime } from "$lib/util/time";
 
     import Icon from "@iconify/svelte";
-    import { popup, type PopupSettings } from "@skeletonlabs/skeleton";
+    import { popup } from "@skeletonlabs/skeleton";
 
     const { delegates } = getSessionContext();
 
@@ -25,11 +31,7 @@
     let labelText: string = $state("");
 
     // Configuration
-    const CONFIGURE_MODAL_SETTINGS: PopupSettings = {
-        event: "focus-click",
-        target: "configure",
-        closeQuery: ''
-    }
+    const POPUP_TARGET = "configure-popup";
     function setDuration() {
         let secs = parseTime(durInput);
         if (typeof secs !== "undefined") {
@@ -46,7 +48,7 @@
 <div class="flex flex-col h-full items-stretch">
     <button
         class="btn-icon variant-filled-surface self-end"
-        use:popup={CONFIGURE_MODAL_SETTINGS}
+        use:popup={interactivePopup(POPUP_TARGET)}
         aria-label="Configure Utilities"
         title="Configure Utilities"
     >
@@ -84,51 +86,49 @@
     </div>
 </div>
 
-<div data-popup="configure">
-    <div class="card p-4">
-        <div class="flex flex-col gap-4 overflow-hidden">
-            <!-- Timer config -->
-             <LabeledSlideToggle name="enable-timer" bind:checked={timerEnabled}>
-                <span><strong>Timer</strong></span>
-             </LabeledSlideToggle>
-            {#if timerEnabled}
-                <div class="flex flex-row gap-5">
-                    <form class="contents" onsubmit={submitDuration}>
-                        <label class="flex flex-grow items-center justify-between gap-3">
-                            <span>Time</span>
-                            <input class="input" bind:value={durInput} oninput={setDuration} placeholder="mm:ss" />
-                        </label>
-                    </form>
-                </div>
-            {/if}
-            <hr />
-            <!-- Label config -->
-            <form class="contents">
-                <label class="flex flex-grow items-center justify-between gap-3">
-                    <span><strong>Label</strong></span>
-                    <select class="select" bind:value={labelType}>
-                        <option value="delegate" label="Delegate"></option>
-                        <option value="title" label="Title"></option>
-                        <option value="none" label="None"></option>
-                    </select>
-                </label>
-                {#if labelType !== "none"}
+<div class="{POPUP_CARD_CLASSES}" data-popup={POPUP_TARGET}>
+    <div class="flex flex-col gap-4 overflow-hidden">
+        <!-- Timer config -->
+            <LabeledSlideToggle name="enable-timer" bind:checked={timerEnabled}>
+            <span><strong>Timer</strong></span>
+            </LabeledSlideToggle>
+        {#if timerEnabled}
+            <div class="flex flex-row gap-5">
+                <form class="contents" onsubmit={submitDuration}>
                     <label class="flex flex-grow items-center justify-between gap-3">
-                        <span>Text</span>
-                        <input class="input" bind:value={labelText} />
+                        <span>Time</span>
+                        <input class="input" bind:value={durInput} oninput={setDuration} placeholder="mm:ss" />
                     </label>
-                    {#if labelType === "delegate"}
-                        <div class="card bg-surface-200-700-token">
-                            <DelAutocomplete
-                                bind:input={labelText}
-                                delegates={Object.values($delegates)}
-                                maxHeight="max-h-36"
-                                on:selection={e => labelText = e.detail.label}
-                            />
-                        </div>
-                    {/if}
+                </form>
+            </div>
+        {/if}
+        <hr />
+        <!-- Label config -->
+        <form class="contents">
+            <label class="flex flex-grow items-center justify-between gap-3">
+                <span><strong>Label</strong></span>
+                <select class="select" bind:value={labelType}>
+                    <option value="delegate" label="Delegate"></option>
+                    <option value="title" label="Title"></option>
+                    <option value="none" label="None"></option>
+                </select>
+            </label>
+            {#if labelType !== "none"}
+                <label class="flex flex-grow items-center justify-between gap-3">
+                    <span>Text</span>
+                    <input class="input" bind:value={labelText} />
+                </label>
+                {#if labelType === "delegate"}
+                    <div class="card bg-surface-200-700-token">
+                        <DelAutocomplete
+                            bind:input={labelText}
+                            delegates={Object.values($delegates)}
+                            maxHeight="max-h-36"
+                            on:selection={e => labelText = e.detail.label}
+                        />
+                    </div>
                 {/if}
-            </form>
-        </div>
+            {/if}
+        </form>
     </div>
 </div>

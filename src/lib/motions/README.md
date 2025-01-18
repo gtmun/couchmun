@@ -1,3 +1,6 @@
 # Motions
 
-This folder contains scripts for defining motion properties (`definitions.ts`) as well as boilerplate code to handle those properties (`form_validation.ts` for form validation, `sort.ts` for motion sorting).
+This folder, in essence, contains modules for defining motions. These allow easier manipulation of motion properties and specifically enable the following:
+
+- Input validation for motions in forms
+- Sorting motions
