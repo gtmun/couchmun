@@ -1,3 +1,22 @@
+/**
+ * A module encapsulating the session context.
+ * 
+ * A context holds data that should be preserved across pages.
+ * This includes data accessed from the database, 
+ * the header title, and the header topic.
+ * 
+ * The benefit of including database values in the context is that 
+ * the context will cache the data when traveling across pages,
+ * meaning an additional database access is not necessary 
+ * when entering a new page.
+ * 
+ * The important API here are:
+ * - `getSessionContext()`: Gets the session context.
+ * - `resetSessionContext(ctx)`: Clears related database data + session context data.
+ * - `createSessionContext()`: Creates a new session context (if one does not exist).
+ *     This typically does not need to be done since it's done once in `./routes/+layout.svelte`.
+ */
+
 import { db, DEFAULT_SESSION_DATA } from "$lib/db/index.svelte";
 import type { SessionContext } from "$lib/types";
 import { getContext, hasContext, setContext } from "svelte";

@@ -27,44 +27,6 @@ Note that it is not usually necessary to run these commands locally, as the Gith
 
 This script is mainly only useful when you find a bug in the deployed website that you can't reproduce with the `npm run dev` build. If you find a bug you can't reproduce, try doing `npm run build && npm run preview`.
 
-## File Structure
-
-Here's a brief summary of the file structure.
-
-```text
-doc/
-└── ...                     # Documentation pages (like this one!)
-src/
-├── lib/
-│   ├── components/
-│   │   └── ...             # various Svelte components
-│   ├── delegate-presets/
-│   │   ├── index.ts        # handles delegate presets
-│   │   ├── preset-xx.json  # a delegate preset
-│   │   └── ...
-│   ├── motions/
-│   │   └── ...             # motion management
-│   ├── stores/
-│   │   └── ...             # store management
-│   └── util/
-│       └── ...             # various utilities
-└── routes/                 # all accessible routes on the website
-    ├── admin/
-    │   ├── settings/
-    │   └── stats/
-    └── dashboard/
-        ├── current-motion/
-        ├── points-motions/
-        ├── roll-call/
-        ├── speakers-list/
-        ├── utilities/
-        └── ...
-static/
-└── ...                    # files to upload directly onto the website
-```
-
-Many of the directories will have a `README.md` that gives clarifications and more documentation for what the directory is used for.
-
 ## Making Changes
 
 This GitHub repository is the source of all changes and updates:

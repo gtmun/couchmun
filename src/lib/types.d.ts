@@ -1,3 +1,7 @@
+/**
+ * This declaration file declares types that are useful all throughout the project.
+ */
+
 import type { Readable, Writable } from "svelte/store";
 
 /**
