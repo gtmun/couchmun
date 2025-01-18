@@ -11,7 +11,7 @@
     import { type Delegate, findDelegate } from "$lib/db/delegates";
     import { formatValidationError, presentDelegateSchema } from "$lib/motions/form_validation";
     import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
-    import { getDndItemId, isDndShadow, processDrag } from "$lib/util/dnd";
+    import { isDndShadow } from "$lib/util/dnd";
     import { triggerConfirmModal } from "$lib/util";
     
     import Icon from "@iconify/svelte";
@@ -81,7 +81,7 @@
     // A mapping from IDs to Speakers:
     let orderMap = $derived(Object.fromEntries(
         order.filter(s => typeof s.id === "string" && s.id)
-            .map((speaker, i) => [getDndItemId(speaker), { speaker, i }])
+            .map((speaker, i) => [speaker.id, { speaker, i }])
     ));
 
     // List item elements per order item
@@ -273,8 +273,8 @@
             }
         }
     }}
-        onconsider={(e) => dndItems = processDrag(e)}
-        onfinalize={(e) => order = dndItems = processDrag(e)}
+        onconsider={(e) => dndItems = e.detail.items}
+        onfinalize={(e) => order = dndItems = e.detail.items}
         aria-labelledby="speaker-list-header"
     >
         {#each dndItems as speaker, i (speaker.id)}

@@ -11,7 +11,7 @@
   import { MOTION_LABELS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import type { Motion } from "$lib/types";
-  import { createDragTr, isDndShadow, processDrag } from "$lib/util/dnd";
+  import { createDragTr, isDndShadow } from "$lib/util/dnd";
   import { stringifyTime } from "$lib/util/time";
 
   import Icon from "@iconify/svelte";
@@ -23,7 +23,7 @@
   const sortOrder = queryStore(() => db.getSetting("sortOrder"), []);
   const modalStore = getModalStore();
 
-  // A clone of $motions used solely for use:dragHandleZone
+  // A clone of $motions used solely for use:dndzone
   let dndItems = $state($state.snapshot($motions));
   $effect(() => { dndItems = $motions; });
 
@@ -151,8 +151,8 @@
             dropTargetStyle: {},
             transformDraggedElement: (el) => createDragTr(el, motionTable)
           }}
-          onconsider={(e) => dndItems = processDrag(e)}
-          onfinalize={(e) => $motions = dndItems = processDrag(e)}
+          onconsider={(e) => dndItems = e.detail.items}
+          onfinalize={(e) => $motions = dndItems = e.detail.items}
           aria-labelledby="motion-table-header"
         >
           {#each dndItems as motion, i (motion.id)}
