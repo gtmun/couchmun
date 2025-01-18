@@ -1,3 +1,6 @@
+<!--
+  @component The admin stats page (used for viewing delegate statistics).
+-->
 <script lang="ts">
     import MetaTags from "$lib/components/MetaTags.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
@@ -10,7 +13,7 @@
     import { stringifyTime } from "$lib/util/time";
     
     import Icon from "@iconify/svelte";
-    import { ProgressBar, type PopupSettings, popup, type PaginationSettings, Paginator } from "@skeletonlabs/skeleton";
+    import { ProgressBar, popup, type PaginationSettings, Paginator } from "@skeletonlabs/skeleton";
 
     const { delegates, barTitle } = getSessionContext();
 

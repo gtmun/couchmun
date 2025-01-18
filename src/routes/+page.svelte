@@ -1,3 +1,4 @@
+<!-- @component The front page. -->
 <script lang="ts">
     import { base } from "$app/paths";
     import MetaTags from "$lib/components/MetaTags.svelte";

@@ -1,3 +1,9 @@
+<!-- 
+  @component This component is the base layout for all dashboard pages.
+
+  It creates the header bar on the top menu and sets up the Navigation drawers.
+-->
+
 <script lang="ts">
     import { navigating, page } from '$app/state';
     import MetaTags from '$lib/components/MetaTags.svelte';

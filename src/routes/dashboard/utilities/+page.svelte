@@ -1,3 +1,8 @@
+<!-- 
+  @component A utilities page, which is meant to be a page for miscellaneous situations in committee.
+
+  Notably, this page includes a timer and title, which can be used quite generically.
+-->
 <script lang="ts">
     import DelAutocomplete from "$lib/components/DelAutocomplete.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
@@ -9,7 +14,7 @@
     import { parseTime } from "$lib/util/time";
 
     import Icon from "@iconify/svelte";
-    import { popup, type PopupSettings } from "@skeletonlabs/skeleton";
+    import { popup } from "@skeletonlabs/skeleton";
 
     const { delegates } = getSessionContext();
 

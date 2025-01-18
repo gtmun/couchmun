@@ -1,3 +1,9 @@
+<!--
+  @component The points & motions page (used for creating and viewing the current points & motions).
+
+  This includes a MotionForm (which is used to add motions)
+  and a sortable motion table (which is used to view and rearrange and edit motions).
+-->
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { base } from "$app/paths";
