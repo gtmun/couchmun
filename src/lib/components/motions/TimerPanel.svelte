@@ -54,11 +54,23 @@
         editable?: boolean,
 
         /**
+         * Indicates whether separate timers are synchronized to the same start/stop actions.
+         * - If false, there is one button which start/stops all timers.
+         * - If true, timers run independently and each timer has their own start/stop button.
+         */
+        splitRunning?: boolean,
+
+        /**
          * An optionally definable snippet. 
          * If defined, this replaces the default "Reset" button (which resets all timers)
          * with HTML content of your choice.
          */
-        resetButtons?: Snippet<[typeof reset, typeof canReset]>
+        resetButtons?: Snippet<[typeof reset, typeof canReset]>,
+
+        /**
+         * Listener to reset events. Called when reset is called.
+         */
+        onReset?: () => void
     }
     let {
         delegates,
@@ -66,7 +78,9 @@
         running = $bindable(false),
         duration = $bindable(),
         editable = false,
-        resetButtons = undefined
+        splitRunning = false,
+        resetButtons = undefined,
+        onReset = undefined
     }: Props = $props();
 
     // Creates a `timers` state with the specific number of timers.
@@ -75,9 +89,15 @@
     let timers = $state<(Timer | undefined)[]>(Array.from({ length: numTimers() }));
     $effect(() => {
         let nTimers = numTimers();
-        if (nTimers != timers.length) {
-            timers = Array.from({ length: nTimers });
-        }
+        untrack(() => {
+            // When number of timers change, update the list of timers:
+            if (nTimers != timers.length) {
+                timers = Array.from({ length: nTimers });
+            }
+            // When number of timers change, update splitRunning.
+            // If number of timers < 2, then force splitRunning to false.
+            splitRunning &&= nTimers >= 2;
+        });
     });
 
     // Getter/setter for duration, because there are two different formats for it.
@@ -97,10 +117,22 @@
      */
     let selectedSpeaker = $derived(speakersList?.selectedSpeaker());
     /**
-     * Whether timer can be started.
-     * A timer can be started if there is a speaker the timer is bound to.
+     * Whether timer at index `i` can be played.
+     * @param i The index. If omitted, this function instead asserts that all timers are playable.
+     * @return true if timer(s) can be played
      */
-    let timerNotStartable = $derived(typeof selectedSpeaker === "undefined");
+    function isTimerPlayable(i?: number): boolean {
+        // If speaker is undefined, timer should not be startable.
+        if (typeof selectedSpeaker === "undefined") return false;
+
+        // If index provided, check the given timer for playability.
+        // It should be playable if time has not elapsed.
+        const timerPlayable = (t?: Timer) => typeof t !== "undefined" && !t.isElapsed();
+        if (typeof i === "number") return timerPlayable(timers[i]);
+
+        // If no index provided, all timers need to be playable.
+        return timers.every(t => timerPlayable(t));
+    }
 
     // If we switch to running, mark the current speaker as complete.
     $effect(() => {
@@ -137,6 +169,7 @@
         } else {
             indices.forEach(i => timers[i]?.reset());
         }
+        onReset?.();
     }
     function next() {
         speakersList?.next();
@@ -171,7 +204,9 @@
                 bind:duration={() => getDuration(i), d => setDuration(i, d)}
                 bind:running
                 bind:this={timers[i]}
-                disableKeyHandlers={!last || timerNotStartable}
+                hidePlay={!splitRunning}
+                disablePlay={!isTimerPlayable(i)}
+                useKeyHandlers={last}
                 onPause={
                     last ? t => db.updateDelegate(selectedSpeaker?.key, d => { d.stats.durationSpoken += t; })
                          : undefined
@@ -181,18 +216,24 @@
         {/each}
         <!-- Button bar -->
         <div class="flex flex-row gap-3 justify-center">
-            <!-- Start/Pause -->
-            <button 
-                class="btn variant-filled-primary"
-                disabled={!running && timerNotStartable}
-                onclick={() => running = !running}
-            >
-                {running ? 'Pause' : 'Start'}
-            </button>
+            <!-- Global start/pause button: Only exists if timers are synchronized -->
+            {#if !splitRunning}
+                <button 
+                    class="btn variant-filled-primary"
+                    disabled={!running && !isTimerPlayable()}
+                    onclick={() => running = !running}
+                >
+                    {running ? 'Pause' : 'Start'}
+                </button>
+            {/if}
             <!-- Next -->
             <button class="btn variant-filled-primary" disabled={speakersList?.isAllDone() ?? true} onclick={next}>Next</button>
             <!-- Reset (or the custom defined buttons) -->
-            {@render (resetButtons ?? resetButton)(reset, canReset)}
+            {#if resetButtons}
+                {@render resetButtons(reset, canReset)}
+            {:else}
+                {@render resetButton(reset, canReset)}
+            {/if}
         </div>
     </div>
 </div>

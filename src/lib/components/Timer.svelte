@@ -8,6 +8,7 @@
 -->
 <script lang="ts">
     import { parseTime, stringifyTime } from "$lib/util/time";
+    import Icon from "@iconify/svelte";
     import { ProgressBar } from "@skeletonlabs/skeleton";
     import { onDestroy, onMount, untrack } from "svelte";
     
@@ -48,6 +49,12 @@
          */
         hideText?: boolean;
 
+        /**
+         * If enabled, this hides the play button next to the progress bar.
+         * By default, this is true.
+         */
+        hidePlay?: boolean;
+
         // Other properties:
         /**
          * If enabled, the total duration part of the text can be modified to change the duration.
@@ -56,11 +63,21 @@
         editable?: boolean;
 
         /**
-         * If enabled, keyboard shortcuts to manage the timer are disabled. 
+         * If enabled, any action to play/pause the timer is disabled.
+         * This includes the play/pause button 
+         * (if `hidePlay` is false) or keyboard input.
+         * 
          * By default, this is false.
          */
-        disableKeyHandlers?: boolean;
+        disablePlay?: boolean;
 
+        /**
+         * If enabled, keybinds can be used to play/pause.
+         * 
+         * By default, this is true.
+         * If `disablePlay` is true, this prop is overrided and does nothing.
+         */
+        useKeyHandlers?: boolean;
         /**
          * This property can be bound to add an event handler for every time the timer is paused.
          * 
@@ -76,8 +93,10 @@
         running = $bindable(false),
         height = "h-10",
         hideText = false,
+        hidePlay = true,
         editable = false,
-        disableKeyHandlers = false,
+        disablePlay = false,
+        useKeyHandlers = true,
         onPause = undefined,
     }: Props = $props();
 
@@ -163,6 +182,27 @@
     }
 
     /**
+     * Adds the given amount of time (in seconds) to the current timer.
+     * For example, if there is 0:30 left, and you call `timer.offsetDuration(1:00)`,
+     * there would be `1:30` left.
+     * 
+     * @param ts Time to add in seconds
+     * @param clampToMax If true, the new time will be capped to the maximum duration.
+     */
+    export function offsetDuration(ts: number, clampToMax = false) {
+        msRemaining = Math.max(0, msRemaining + 1000 * ts);
+        if (clampToMax) {
+            msRemaining = Math.min(DURATION_MS, msRemaining);
+        }
+    }
+
+    /**
+     * @returns whether the timer has completed its full time.
+     */
+    export function isElapsed() {
+        return msRemaining <= 0;
+    }
+    /**
      * Elapsed time since last pause.
      */
     function getElapsedTime() {
@@ -189,7 +229,7 @@
 
     // Keyboard events
     function keydown(e: KeyboardEvent) {
-        if (disableKeyHandlers) return;
+        if (disablePlay && !useKeyHandlers) return;
         if (e.target !== document.body) return;
 
         if (!e.repeat) {
@@ -198,7 +238,7 @@
         }
     }
     function keyup(e: KeyboardEvent) {
-        if (disableKeyHandlers) return;
+        if (disablePlay && !useKeyHandlers) return;
         if (e.target !== document.body) return;
 
         if (e.code === "Space") running = false;
@@ -255,7 +295,22 @@
             {stringifyTime(msRemaining / 1000)}/{stringifyTime(duration)}
         {/if}
     </h2>
-    <ProgressBar {...barProps} />
+    <div class="grid grid-cols-[1fr_auto] gap-1">
+        <!-- The progress bar -->
+        <ProgressBar {...barProps} />
+        <!-- A start/pause button -->
+        {#if !hidePlay}
+            <button 
+                class="btn btn-icon variant-filled-primary" 
+                onclick={() => running = !running}
+                disabled={disablePlay || isElapsed()}
+                aria-label={running ? "Pause Timer" : "Start Timer"}
+                title={running ? "Pause Timer" : "Start Timer"}
+            >
+                <Icon icon={running ? "mdi:pause" : "mdi:play"} width="24" height="24" />
+            </button>
+        {/if}
+    </div>
 </div>
 
 <svelte:window onkeydown={keydown} onkeyup={keyup} />
