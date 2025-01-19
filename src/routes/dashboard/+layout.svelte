@@ -13,26 +13,13 @@
     import SettingsNavigation from '$lib/components/nav/SettingsNavigation.svelte';
     import { getSessionContext } from '$lib/context/index.svelte';
     
-    import { AppBar } from '@skeletonlabs/skeleton-svelte';
+    import { AppBar, Modal } from '@skeletonlabs/skeleton-svelte';
     import MdiMenu from "~icons/mdi/menu";
     import MdiGear from "~icons/mdi/gear";
 
     let { children } = $props();
-    const drawerStore = getDrawerStore();
-    function openNav() {
-        drawerStore.open({
-            id: "navigation",
-            width: 'w-[280px] md:w-[480px]',
-            position: "left"
-        });
-    }
-    function openSettings() {
-        drawerStore.open({
-            id: "settings",
-            width: 'w-[280px] md:w-[480px]',
-            position: "right"
-        })
-    }
+    type DrawerState = "nav" | "settings" | null;
+    let openDrawer: DrawerState = $state(null);
 
     const sessionData = getSessionContext();
     const { delegates, barTitle } = sessionData;
@@ -59,34 +46,36 @@
     <MetaTags title="CouchMUN" />
 {/if}
 
-<!-- Navigation drawer -->
-<Drawer>
-    {#if $drawerStore.id === "navigation"}
-        <Navigation close={drawerStore.close} {links} />
-    {:else if $drawerStore.id === "settings"}
-        <SettingsNavigation close={drawerStore.close} />
-    {/if}
-</Drawer>
-
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">
     <!-- Header -->
     <header>
         <AppBar 
             background="bg-surface-300-700" 
             toolbarGridCols="grid-cols-[auto_1fr_auto]" 
-            centerClasses="place-self-center"
+            headlineClasses="place-self-center"
             trailClasses="place-content-end"
         >
             {#snippet lead()}
                 <!-- Hamburger menu button -->
-                <button
-                    class="btn-icon"
-                    onclick={openNav}
-                    data-label="Pages"
-                    title="Pages"
+                <Modal
+                    open={openDrawer === "nav"}
+                    onOpenChange={e => openDrawer = e.open ? "nav" : null}
+                    triggerBase="btn btn-icon"
+                    contentBase="bg-surface-100-900 p-4 space-y-4 shadow-xl w-[280px] md:w-[480px] h-screen"
+                    positionerJustify="justify-start"
+                    positionerAlign=""
+                    positionerPadding=""
+                    transitionsPositionerIn={{ x: -480, duration: 200 }}
+                    transitionsPositionerOut={{ x: -480, duration: 200 }}
+                    aria-label="Pages"
                 >
-                    <MdiMenu />
-                </button>
+                    {#snippet trigger()}
+                        <MdiMenu />
+                    {/snippet}
+                    {#snippet content()}
+                        <Navigation close={() => openDrawer = null} {links} />
+                    {/snippet}
+                </Modal>
             {/snippet}
             <!--
                 Committee & topic title
@@ -111,14 +100,25 @@
             </div>
             {#snippet trail()}
                 <!-- Settings -->
-                <button
-                    class="btn-icon"
-                    onclick={openSettings}
-                    data-label="Settings"
-                    title="Settings"
+                <Modal
+                    open={openDrawer === "settings"}
+                    onOpenChange={e => openDrawer = e.open ? "settings" : null}
+                    triggerBase="btn btn-icon"
+                    contentBase="bg-surface-100-900 p-4 space-y-4 shadow-xl w-[280px] md:w-[480px] h-screen"
+                    positionerJustify="justify-end"
+                    positionerAlign=""
+                    positionerPadding=""
+                    transitionsPositionerIn={{ x: 480, duration: 200 }}
+                    transitionsPositionerOut={{ x: 480, duration: 200 }}
+                    aria-label="Settings"
                 >
-                    <MdiGear />
-                </button>
+                    {#snippet trigger()}
+                        <MdiGear />
+                    {/snippet}
+                    {#snippet content()}
+                        <SettingsNavigation close={() => openDrawer = null} />
+                    {/snippet}
+                </Modal>
             {/snippet}
         </AppBar>
     </header>
