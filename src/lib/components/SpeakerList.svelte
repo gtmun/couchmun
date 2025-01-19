@@ -87,7 +87,17 @@
     // List item elements per order item
     let liElements = new Map<SpeakerEntryID, HTMLLIElement>();
     function jumpToSpeaker(speakerId: string) {
-        liElements.get(speakerId)?.scrollIntoView({ block: "nearest" });
+        let li = liElements.get(speakerId);
+        if (!li) return;
+
+        let parent = li.parentElement;
+        if (!parent) return;
+
+        parent.scrollTo({
+            top: li.offsetTop - parent.offsetTop,
+            left: 0,
+            behavior: "smooth"
+        });
     }
 
     /**
