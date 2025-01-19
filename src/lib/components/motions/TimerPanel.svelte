@@ -32,12 +32,6 @@
         speakersList: SpeakerList | undefined,
 
         /**
-         * The running property for all timers.
-         * This is a **bindable** prop.
-         */
-        running?: boolean,
-
-        /**
          * The duration (in seconds) for the timers.
          * This prop also determines how many timers exist in this timer panel:
          * - If `duration` is a number, this creates 1 timer with the given value as the duration
@@ -54,11 +48,16 @@
         editable?: boolean,
 
         /**
-         * Indicates whether separate timers are synchronized to the same start/stop actions.
-         * - If false, there is one button which start/stops all timers.
-         * - If true, timers run independently and each timer has their own start/stop button.
+         * Indicates how timers interact with each other.
+         * - If `"sync"`, timers have joined `running` properties. 
+         *     If a timer starts or stops, then all timers stop.
+         * - If `"cascade"`, timers have separate `running` properties, 
+         *     but starting a timer will also start all timers after it,
+         *     and pausing a timer will also pause all timers before it.
+         * - If `"none"`, timers have separate `running` properties, 
+         *     with no interactions between each other.
          */
-        splitRunning?: boolean,
+        timerInteraction?: "sync" | "cascade" | "none",
 
         /**
          * An optionally definable snippet. 
@@ -75,10 +74,9 @@
     let {
         delegates,
         speakersList,
-        running = $bindable(false),
         duration = $bindable(),
         editable = false,
-        splitRunning = false,
+        timerInteraction: _ti = "sync",
         resetButtons = undefined,
         onReset = undefined
     }: Props = $props();
@@ -86,22 +84,38 @@
     // Creates a `timers` state with the specific number of timers.
     // This section is a bit jank because it has to handle the two formats for `duration`.
     const numTimers = () => duration instanceof Array ? duration.length : 1;
-    let timers = $state<(Timer | undefined)[]>(Array.from({ length: numTimers() }));
+    let timers: (Timer | undefined)[] = $state(Array.from({ length: numTimers() }));
+
+    // If only 1 timer, just treat this as sync regardless of setting.
+    let timerInteraction = $derived(numTimers() < 2 ? "sync" : _ti);
+
+    const numRunStates = () => timerInteraction == "sync" ? 1 : numTimers();
+    let runStates = $state(Array.from({ length: numRunStates() }, () => false));
+
     $effect(() => {
         let nTimers = numTimers();
         untrack(() => {
-            // When number of timers change, update the list of timers:
-            if (nTimers != timers.length) {
-                timers = Array.from({ length: nTimers });
-            }
-            // When number of timers change, update splitRunning.
-            // If number of timers < 2, then force splitRunning to false.
-            splitRunning &&= nTimers >= 2;
+            // When number of timers change, update the list of timers,
+            // truncating any timer past the number of timers.
+            timers.length = nTimers;
         });
+    });
+    $effect(() => {
+        let nRunStates = numRunStates();
+        untrack(() => {
+            // When number of runnings change, update the list of runnings,
+            // truncating any run states past the number of run states
+            // and adding new `false`s for newly created run states.
+            let oldLength = runStates.length;
+            runStates.length = nRunStates;
+            if (nRunStates > oldLength) {
+                runStates.fill(false, oldLength);
+            }
+        })
     });
 
     // Getter/setter for duration, because there are two different formats for it.
-    function getDuration(i: number) {
+    function getDuration(i: number): number {
         return typeof duration === "number" ? duration : duration[i];
     }
     function setDuration(i: number, d: number) {
@@ -112,6 +126,33 @@
         } 
     }
     
+    // Getter/setter for run state, since it depends on timer interaction
+    function getRunState(i: number): boolean {
+        if (timerInteraction === "sync") {
+            return runStates[0];
+        } else if (timerInteraction === "cascade") {
+            return runStates.slice(0, i + 1).some(s => s);
+        } else if (timerInteraction === "none") {
+            return runStates[i];
+        } else {
+            return timerInteraction satisfies never;
+        }
+    }
+    function setRunState(i: number, s: boolean) {
+        if (timerInteraction === "sync") {
+            runStates[0] = s;
+        } else if (timerInteraction === "cascade") {
+            if (s) {
+                runStates.fill(s, i);
+            } else {
+                runStates.fill(s, 0, i + 1);
+            }
+        } else if (timerInteraction === "none") {
+            runStates[i] = s;
+        } else {
+            timerInteraction satisfies never;
+        }
+    }
     /**
      * Currently selected speaker from speakers list.
      */
@@ -134,9 +175,9 @@
         return timers.every(t => timerPlayable(t));
     }
 
-    // If we switch to running, mark the current speaker as complete.
+    // If any timer starts, mark the current speaker as complete.
     $effect(() => {
-        if (running) untrack(() => {
+        if (runStates.some(s => s)) untrack(() => {
             speakersList?.start();
         })
     });
@@ -202,9 +243,9 @@
             <Timer
                 name="timer-{i}"
                 bind:duration={() => getDuration(i), d => setDuration(i, d)}
-                bind:running
+                bind:running={() => getRunState(i), s => setRunState(i, s)}
                 bind:this={timers[i]}
-                hidePlay={!splitRunning}
+                hidePlay={timerInteraction === "sync"}
                 disablePlay={!isTimerPlayable(i)}
                 useKeyHandlers={last}
                 onPause={
@@ -217,11 +258,13 @@
         <!-- Button bar -->
         <div class="flex flex-row gap-3 justify-center">
             <!-- Global start/pause button: Only exists if timers are synchronized -->
-            {#if !splitRunning}
+            {#if timerInteraction === "sync"}
+                <!-- If sync, it is assured that this is the only run state. -->
+                {@const running = runStates[0]}
                 <button 
                     class="btn variant-filled-primary"
                     disabled={!running && !isTimerPlayable()}
-                    onclick={() => running = !running}
+                    onclick={() => runStates[0] = !running}
                 >
                     {running ? 'Pause' : 'Start'}
                 </button>
