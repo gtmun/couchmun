@@ -18,7 +18,7 @@
     let { motion, order = $bindable() }: Props = $props();
 
     const sessionData = getSessionContext();
-    const { delegates } = sessionData;
+    const { delegates, preferences } = sessionData;
     $effect(() => {
         sessionData.barTopic = `Topic: ${motion.topic}`;
     });
@@ -45,6 +45,7 @@
             delegates={$delegates}
             {speakersList}
             duration={[motion.speakingTime, motion.totalTime]}
+            timerInteraction={$preferences.pauseMainTimer ? "sync" : "cascade"}
             bind:this={timerPanel}
         >
         {#snippet resetButtons(reset, canReset)}
