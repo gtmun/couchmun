@@ -197,6 +197,12 @@
     }
 
     /**
+     * @returns the number of seconds remaining in the timer.
+     */
+    export function secsRemaining() {
+        return msRemaining / 1000;
+    }
+    /**
      * @returns whether the timer has completed its full time.
      */
     export function isElapsed() {
@@ -281,7 +287,7 @@
         id={barProps.labelledby}
     >
         {#if editable && !running}
-            {stringifyTime(msRemaining / 1000)}/<span
+            {stringifyTime(secsRemaining())}/<span
                 class="border-b-4 border-transparent hover:border-surface-500 focus:border-surface-500 transition rounded"
                 contenteditable
                 onfocusout={setDuration}
@@ -292,7 +298,7 @@
                 {stringifyTime(duration)}
             </span>
         {:else}
-            {stringifyTime(msRemaining / 1000)}/{stringifyTime(duration)}
+            {stringifyTime(secsRemaining())}/{stringifyTime(duration)}
         {/if}
     </h2>
     <div class="grid grid-cols-[1fr_auto] gap-1">

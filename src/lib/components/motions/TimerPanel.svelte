@@ -69,7 +69,7 @@
         /**
          * Listener to reset events. Called when reset is called.
          */
-        onReset?: () => void
+        onBeforeReset?: (timers: (Timer | undefined)[]) => void
     }
     let {
         delegates,
@@ -78,7 +78,7 @@
         editable = false,
         timerInteraction: _ti = "sync",
         resetButtons = undefined,
-        onReset = undefined
+        onBeforeReset = undefined
     }: Props = $props();
 
     // Creates a `timers` state with the specific number of timers.
@@ -205,12 +205,12 @@
      * **If no indices are provided, this instead resets all timers.**
      */
     export function reset(...indices: number[]) {
+        onBeforeReset?.(timers);
         if (indices.length === 0) {
             timers.forEach(t => t?.reset());
         } else {
             indices.forEach(i => timers[i]?.reset());
         }
-        onReset?.();
     }
     function next() {
         speakersList?.next();
