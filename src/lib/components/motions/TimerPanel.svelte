@@ -131,7 +131,7 @@
         if (timerInteraction === "sync") {
             return runStates[0];
         } else if (timerInteraction === "cascade") {
-            return runStates.slice(0, i + 1).some(s => s);
+            return runStates[i];
         } else if (timerInteraction === "none") {
             return runStates[i];
         } else {
