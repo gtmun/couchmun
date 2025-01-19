@@ -13,6 +13,7 @@
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
   import { createSpeaker } from "$lib/components/SpeakerList.svelte";
   import { getSessionContext } from "$lib/context/index.svelte";
+  import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
   import { db } from "$lib/db/index.svelte";
   import { findDelegate } from "$lib/db/delegates";
   import { MOTION_LABELS } from "$lib/motions/definitions";
@@ -20,6 +21,7 @@
   import type { Motion } from "$lib/types";
   import { createDragTr, isDndShadow } from "$lib/util/dnd";
   import { stringifyTime } from "$lib/util/time";
+  import { Modal } from "@skeletonlabs/skeleton-svelte";
   import { flip } from "svelte/animate";
   import { dndzone } from "svelte-dnd-action";
   import MdiAccountClock from "~icons/mdi/account-clock";
@@ -31,9 +33,11 @@
   import MdiSort from "~icons/mdi/sort";
 
   const { motions, selectedMotion, selectedMotionState, delegates, sortOrder } = getSessionContext();
-  const modalStore = getModalStore();
   const pid = $props.id();
 
+  let openModals = $state({
+    editMotion: false
+  });
   // A clone of $motions used solely for use:dndzone
   let dndItems = $derived($motions);
 
@@ -101,20 +105,11 @@
     await acceptMotion(motion);
     goto(`${base}/dashboard/current-motion`);
   }
-  function editMotion(i: number, motion: Motion) {
-    modalStore.trigger({
-        type: "component",
-        component: {
-            ref: EditMotionCard,
-            props: { motion }
-        },
-        response(motion?: Motion) {
-          if (!motion) return;
-          db.updateDelegate($motions[i].delegate, d => { d.stats.motionsProposed--; });
-          db.updateDelegate(motion.delegate, d => { d.stats.motionsProposed++; });
-          $motions[i] = motion;
-        }
-    });
+  function editMotion(i: number, motion?: Motion) {
+    if (!motion) return;
+    db.updateDelegate($motions[i].delegate, d => { d.stats.motionsProposed--; });
+    db.updateDelegate(motion.delegate, d => { d.stats.motionsProposed++; });
+    $motions[i] = motion;
   }
   function sortMotions() {
     $motions = $motions.sort(motionComparator($sortOrder));
@@ -211,14 +206,19 @@
                   >
                     <MdiCheck class="text-success-700" />
                   </button>
-                  <button
-                    class="btn btn-sm btn-icon w-8"
-                    onclick={() => editMotion(i, motion)}
-                    data-label="Edit {delName}'s Motion"
-                    title="Edit {delName}'s Motion"
+                  <Modal
+                    open={openModals.editMotion}
+                    onOpenChange={e => openModals.editMotion = e.open}
+                    triggerBase="btn btn-sm btn-icon w-8"
+                    {...defaultModalClasses}
                   >
-                    <MdiPencil />
-                  </button>
+                    {#snippet trigger()}
+                      <MdiPencil />
+                    {/snippet}
+                    {#snippet content()}
+                      <EditMotionCard {motion} bind:open={openModals.editMotion} onSubmit={m => editMotion(i, m)} />
+                    {/snippet}
+                  </Modal>
                 </div>
               </td>
               <td>{motionName(motion)}</td>

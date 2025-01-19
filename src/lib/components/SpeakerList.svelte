@@ -8,11 +8,11 @@
 <script lang="ts">
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import DelAutocomplete, { autocompletePlaceholders } from "$lib/components/DelAutocomplete.svelte";
+    import ConfirmModalCard from "$lib/components/modals/ConfirmModalCard.svelte";
     import { type Delegate, findDelegate } from "$lib/db/delegates";
     import { formatValidationError, presentDelegateSchema } from "$lib/motions/form_validation";
     import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
     import { isDndShadow } from "$lib/util/dnd";
-    import { triggerConfirmModal } from "$lib/util";
     import { tick, untrack, type Snippet } from "svelte";
     import { flip } from "svelte/animate";
     import { dragHandle, dragHandleZone } from "svelte-dnd-action";
@@ -21,9 +21,8 @@
     import MdiDelete from "~icons/mdi/delete";
     import MdiDragVertical from "~icons/mdi/drag-vertical";
     import MdiPlus from "~icons/mdi/plus";
-
-    const modalStore = getModalStore();
-
+    import { Modal } from "@skeletonlabs/skeleton-svelte";
+    
     interface Props {
         /**
          * The order of speakers for the speakers list.
@@ -107,6 +106,10 @@
             behavior: "smooth"
         });
     }
+
+    let openModals = $state({
+        clearSpeakers: false
+    });
 
     /**
      * Whether the speakers list is complete (there are no other speakers left in the list).
@@ -227,16 +230,6 @@
             setSelectedSpeaker(undefined);
         }
     }
-    /**
-     * Remove all speakers from the speakers list.
-     */
-    function clearSpeakers() {
-        triggerConfirmModal(
-            modalStore, "Are you sure you want to clear the Speakers List?",
-            () => order = []
-        );
-    }
-    /// Sets the selected speaker.
 
     /**
      * Sets the selected speaker and activates the "onBeforeSpeakerUpdate" listener.
@@ -383,16 +376,22 @@
                     </div>
                     <div>
                         <!-- Clear order -->
-                        <button
-                            type="button"
-                            class="btn btn-icon preset-filled-primary-500"
-                            disabled={order.length === 0}
-                            onclick={clearSpeakers}
+                        <!-- TODO: disabled={order.length === 0 } -->
+                        <Modal
+                            open={openModals.clearSpeakers}
+                            onOpenChange={e => openModals.clearSpeakers = e.open}
+                            triggerBase="btn btn-icon preset-filled-primary-500"
                             aria-label="Clear Speakers List"
-                            title="Clear Speakers List"
                         >
-                            <MdiDelete />
-                        </button>
+                            {#snippet trigger()}
+                                <MdiDelete />
+                            {/snippet}
+                            {#snippet content()}
+                                <ConfirmModalCard bind:open={openModals.clearSpeakers} success={() => order = []}>
+                                    Are you sure you want to clear the Speakers List?
+                                </ConfirmModalCard>
+                            {/snippet}
+                        </Modal>
                     </div>
                 </form>
             </div>

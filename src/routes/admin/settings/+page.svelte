@@ -5,16 +5,18 @@
     import LabeledSwitch from "$lib/components/LabeledSwitch.svelte";
     import MetaTags from "$lib/components/MetaTags.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
+    import ConfirmModalCard from "$lib/components/modals/ConfirmModalCard.svelte";
     import EditDelegateCard from "$lib/components/modals/EditDelegateCard.svelte";
+    import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
     import { DEFAULT_PRESET_KEY, getPreset, PRESETS } from "$lib/delegate_presets";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
     import type { DelegateAttrs, Settings } from "$lib/types";
-    import { downloadFile, triggerConfirmModal } from "$lib/util";
+    import { downloadFile } from "$lib/util";
 
-    import { FileUpload } from "@skeletonlabs/skeleton-svelte";
-    import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
+    import { FileUpload, Modal } from "@skeletonlabs/skeleton-svelte";
     import { _legacyFixDelFlag, db, queryStore } from "$lib/db/index.svelte";
     import { toKeyValueArray, toObject } from "$lib/db/keyval";
+    import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
     import MdiArrowDown from "~icons/mdi/arrow-down";
     import MdiCancel from "~icons/mdi/cancel";
     import MdiCircleSmall from "~icons/mdi/circle-small";
@@ -35,7 +37,14 @@
         { key: "pauseMainTimer", label: "Pause main timer when delegate timer elapses" },
         { key: "yieldMainTimer", label: "Return time yielded by delegates to main timer" },
     ] as const;
-    const modalStore = getModalStore();
+    
+    let openModals = $state({
+        resetAllSettings: false,
+        clearDelegates: false,
+        addDelegate: false,
+        configureEnableDelegates: false,
+        editDelegate: false
+    });
 
     // IMPORT & EXPORT
     async function importFile(files: File[]) {
@@ -65,21 +74,16 @@
 
         downloadFile("couchmun-config.json", JSON.stringify(exportSettings), "application/json");
     }
-    function resetAllSettings() {
-        triggerConfirmModal(modalStore,
-            "Are you sure you want to reset all settings? This will also wipe all sessions.", 
-            async () => {
-                // Reset preset state cause it's not bound to settings
-                currentPreset = DEFAULT_PRESET_KEY;
-                // Reset settings
-                await db.resetSettings();
-                await setPreset();
+    async function resetAllSettings() {
+        // Reset preset state cause it's not bound to settings
+        currentPreset = DEFAULT_PRESET_KEY;
+        // Reset settings
+        await db.resetSettings();
+        await setPreset();
 
-                // Remove session data + previous sessions.
-                await db.resetSessionData();
-                await db.prevSessions.clear();
-            }
-        )
+        // Remove session data + previous sessions.
+        await db.resetSessionData();
+        await db.prevSessions.clear();
     }
 
     // SORT ORDER
@@ -123,61 +127,38 @@
             await db.delegates.toCollection().modify({ enabled });
         })
     }
-    function clearDelegates() {
-        triggerConfirmModal(modalStore,
-            "Are you sure you want to remove all delegates?", 
-            async () => {
-                currentPreset = "custom";
-                await db.delegates.clear();
-            }
-        );
+
+    async function clearDelegates() {
+        currentPreset = "custom";
+        await db.delegates.clear();
     }
-
     /**
-     * Opens the delegate editing modal. This can also be used to add a new delegate.
+     * Updates delegate with delegate modal data.
      * @param id Key of delegate to edit (or undefined if adding a new delegate)
+     * @param data New data to add
      */
-    async function editDelegate(id: number | undefined) {
-        let attrs = typeof id === "number" 
-            ? (await db.delegates.get(id))?.getAttributes()
-            : undefined;
+    async function editDelegate(id: number | undefined, data?: { attrs: DelegateAttrs }) {
+        if (!data) return;
 
-        modalStore.trigger({
-            type: "component",
-            component: { ref: EditDelegateCard, props: { attrs } },
-            response(data?: { attrs: DelegateAttrs }) {
-                if (!data) return;
-
-                let newAttrs = data.attrs;
-                db.transaction("rw", db.delegates, async () => {
-                    // TODO: reject update if name conflict
-                    currentPreset = "custom";
-                    if (typeof id === "number") {
-                        await db.delegates.update(id, newAttrs);
-                    } else {
-                        await db.addDelegate(newAttrs);
-                    }
-                });
+        let newAttrs = data.attrs;
+        db.transaction("rw", db.delegates, async () => {
+            // TODO: reject update if name conflict
+            currentPreset = "custom";
+            if (typeof id === "number") {
+                await db.delegates.update(id, newAttrs);
+            } else {
+                await db.addDelegate(newAttrs);
             }
         });
     }
-    function configureEnableDelegates() {
-        modalStore.trigger({
-            type: "component",
-            component: {
-                ref: EnableDelegatesCard,
-                props: { attrs: $delegates }
-            },
-            response(data?: Set<number>) {
-                if (!data) return;
+    function configureEnableDelegates(data?: Set<number>) {
+        if (!data) return;
 
-                db.transaction("rw", db.delegates, async () => {
-                    await db.delegates.toCollection().modify((del) => {
-                        del.enabled = data.has(del.id);
-                    })
-                });
-            }
-        })
+        db.transaction("rw", db.delegates, async () => {
+            await db.delegates.toCollection().modify((del) => {
+                del.enabled = data.has(del.id);
+            })
+        });
     }
 
     async function deleteDelegate(id: number) {
@@ -217,12 +198,21 @@
             >
                 Export to file...
             </button>
-            <button
-                class="btn preset-filled-error-500"
-                onclick={resetAllSettings}
+            <Modal
+                open={openModals.resetAllSettings}
+                onOpenChange={e => openModals.resetAllSettings = e.open}
+                triggerBase="btn preset-filled-error-500"
+                {...defaultModalClasses}
             >
-                Reset all settings
-            </button>
+                {#snippet trigger()}
+                    Reset all settings
+                {/snippet}
+                {#snippet content()}
+                    <ConfirmModalCard bind:open={openModals.resetAllSettings} success={resetAllSettings}>
+                        Are you sure you want to reset all settings? This will also wipe all sessions.
+                    </ConfirmModalCard>
+                {/snippet}
+            </Modal>
         </div>
     </div>
     <hr />
@@ -318,9 +308,47 @@
                 </select>
             </label>
             <div class="flex gap-3 justify-center">
-                <button class="btn preset-filled-primary-500" onclick={() => editDelegate(undefined)}>Add Delegate</button>
-                <button class="btn preset-filled-primary-500" onclick={() => configureEnableDelegates()}>Enable/Disable Delegates</button>
-                <button class="btn preset-filled-error-500" onclick={clearDelegates}>Clear Delegates</button>
+                <Modal
+                    open={openModals.addDelegate}
+                    onOpenChange={e => openModals.addDelegate = e.open}
+                    triggerBase="btn preset-filled-primary-500"
+                    {...defaultModalClasses}
+                >
+                    {#snippet trigger()}
+                        Add Delegate
+                    {/snippet}
+                    {#snippet content()}
+                        <EditDelegateCard bind:open={openModals.addDelegate} onSubmit={d => editDelegate(undefined, d)} />
+                    {/snippet}
+                </Modal>
+                <Modal
+                    open={openModals.configureEnableDelegates}
+                    onOpenChange={e => openModals.configureEnableDelegates = e.open}
+                    triggerBase="btn preset-filled-primary-500"
+                    {...defaultModalClasses}
+                >
+                    {#snippet trigger()}
+                        Enable/Disable Delegates
+                    {/snippet}
+                    {#snippet content()}
+                        <EnableDelegatesCard attrs={$delegates} bind:open={openModals.configureEnableDelegates} onSubmit={configureEnableDelegates} />
+                    {/snippet}
+                </Modal>
+                <Modal 
+                    open={openModals.clearDelegates}
+                    onOpenChange={e => openModals.clearDelegates = e.open}
+                    triggerBase="btn preset-filled-error-500"
+                    {...defaultModalClasses}
+                >
+                    {#snippet trigger()}
+                        Clear Delegates
+                    {/snippet}
+                    {#snippet content()}
+                        <ConfirmModalCard bind:open={openModals.clearDelegates} success={clearDelegates}>
+                            Are you sure you want to remove all delegates?
+                        </ConfirmModalCard>
+                    {/snippet}
+                </Modal>
             </div>
         </div>
         <!-- Delegate Table -->
@@ -345,13 +373,22 @@
                                 }>
                         </td>
                         <td class="text-right">
-                            <button
-                                onclick={() => editDelegate(attrs.id)}
+                            <Modal
+                                open={openModals.editDelegate}
+                                onOpenChange={e => openModals.editDelegate = e.open}
+                                triggerBase=""
                                 aria-label="Edit {attrs.name}"
-                                title="Edit {attrs.name}"
+                                {...defaultModalClasses}
                             >
-                                <MdiPencil />
-                            </button>
+                                {#snippet trigger()}
+                                    <MdiPencil />
+                                {/snippet}
+                                {#snippet content()}
+                                    {#await db.delegates.get(attrs.id) then del}
+                                        <EditDelegateCard attrs={del?.getAttributes()} bind:open={openModals.addDelegate} onSubmit={d => editDelegate(attrs.id, d)} />
+                                    {/await}
+                                {/snippet}
+                            </Modal>
                             <button
                                 onclick={() => deleteDelegate(attrs.id)}
                                 aria-label="Delete {attrs.name}"
