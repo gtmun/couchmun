@@ -235,7 +235,8 @@
 
     // Keyboard events
     function keydown(e: KeyboardEvent) {
-        if (disablePlay && !useKeyHandlers) return;
+        if (disablePlay) return;
+        if (!useKeyHandlers) return;
         if (e.target !== document.body) return;
 
         if (!e.repeat) {
@@ -244,7 +245,8 @@
         }
     }
     function keyup(e: KeyboardEvent) {
-        if (disablePlay && !useKeyHandlers) return;
+        if (disablePlay) return;
+        if (!useKeyHandlers) return;
         if (e.target !== document.body) return;
 
         if (e.code === "Space") running = false;
