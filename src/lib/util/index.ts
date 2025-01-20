@@ -179,3 +179,19 @@ export const makeEditable = ((el: HTMLElement, options?: EditableParameter) => {
         },
     };
 }) satisfies Action<HTMLElement, EditableParameter>;
+
+/**
+ * Checks if two strings are equal, case insensitive.
+ */
+export function eqInsensitive(s: string, t: string) {
+    return s.localeCompare(t, undefined, { sensitivity: "base" }) == 0;
+}
+
+/**
+ * Checks if the "full" string contains the "sub" string, case insensitive.
+ * @param full the larger string
+ * @param sub the substring
+ */
+export function includesInsensitive(full: string, sub: string) {
+    return full.toLowerCase().includes(sub.toLowerCase());
+}

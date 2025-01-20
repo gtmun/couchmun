@@ -5,6 +5,7 @@
 import type { DelegateAttrs, DelegateID, DelegatePresence, DelSessionData, StatsData } from "$lib/types";
 import { Entity } from "dexie";
 import type { SessionDatabase } from "./index.svelte";
+import { eqInsensitive, includesInsensitive } from "$lib/util";
 
 export class Delegate extends Entity<SessionDatabase> {
     // Indexes:
@@ -29,15 +30,37 @@ export class Delegate extends Entity<SessionDatabase> {
     isPresent(): boolean {
         return this.presence != "NP";
     }
+
+    /**
+     * @returns a generator of all names for the given delegate.
+     */
+    *names(): Generator<string> {
+        yield this.name;
+        for (let alias of this.aliases) yield alias;
+    }
+
     /**
      * Checks if name is associated with a given delegate.
      * @param name name we're looking at
      * @returns whether this delegate could correctly be referred to by the given name
      */
     nameEquals(name: string): boolean {
-        // case-insensitive equals
-        const eq = (a: string, b: string) => a.localeCompare(b, undefined, { sensitivity: "base" }) == 0;
-        return eq(this.name, name) || this.aliases.some(n => eq(n, name));
+        for (let dName of this.names()) {
+            if (eqInsensitive(dName, name)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if given string is a substring of a delegate's name
+     * @param sub name we're looking at
+     * @returns whether the given string is a substring
+     */
+    nameIncludes(sub: string): boolean {
+        for (let name of this.names()) {
+            if (includesInsensitive(name, sub)) return true;
+        }
+        return false;
     }
 
     /**
