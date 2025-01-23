@@ -25,8 +25,7 @@
   import { flip } from "svelte/animate";
   import { dndzone } from "svelte-dnd-action";
 
-  const { motions, selectedMotion, selectedMotionState, delegates } = getSessionContext();
-  const sortOrder = queryStore(() => db.getSetting("sortOrder"), []);
+  const { motions, selectedMotion, selectedMotionState, delegates, sortOrder } = getSessionContext();
   const modalStore = getModalStore();
 
   // A clone of $motions used solely for use:dndzone

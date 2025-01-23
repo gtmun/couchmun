@@ -29,6 +29,7 @@
         { key: "enableMotionRoundRobin", label: "Enable round robin" },
         { key: "enableMotionExt", label: "Enable extensions" },
         { key: "pauseMainTimer", label: "Pause main timer when delegate timer elapses" },
+        { key: "yieldMainTimer", label: "Return time yielded by delegates to main timer" },
     ] as const;
     const modalStore = getModalStore();
     let files: FileList | undefined = $state();
@@ -223,12 +224,11 @@
     </div>
     <hr />
     <div class="panel">
-        <h3 class="h3 text-center">Preferences (WIP)</h3>
+        <h3 class="h3 text-center">Preferences</h3>
         <div class="flex flex-col gap-3">
             {#each PREFERENCES_LABELS as { key, label }}
                 <LabeledSlideToggle 
                     name="prefs-{key}"
-                    disabled
                     bind:checked={
                         () => $settings.preferences[key],
                         pref => db.settings.update("preferences", (prefs) => { prefs.val[key] = pref; })

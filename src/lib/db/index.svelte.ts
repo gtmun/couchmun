@@ -286,6 +286,7 @@ export const DEFAULT_SETTINGS = {
         enableMotionRoundRobin: true,
         enableMotionExt: true,
         pauseMainTimer: true,
+        yieldMainTimer: true
     }
 } satisfies Settings;
 
