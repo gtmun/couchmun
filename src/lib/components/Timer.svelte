@@ -8,10 +8,11 @@
 -->
 <script lang="ts">
     import { parseTime, stringifyTime } from "$lib/util/time";
-    import Icon from "@iconify/svelte";
     import { ProgressBar } from "@skeletonlabs/skeleton";
     import { onDestroy, onMount, untrack } from "svelte";
-    
+    import MdiPause from "~icons/mdi/pause";
+    import MdiPlay from "~icons/mdi/play";
+
     interface Props {
         /**
          * How long the total duration of this timer should run for (in seconds).
@@ -315,7 +316,11 @@
                 aria-label={running ? "Pause Timer" : "Start Timer"}
                 title={running ? "Pause Timer" : "Start Timer"}
             >
-                <Icon icon={running ? "mdi:pause" : "mdi:play"} width="24" height="24" />
+                {#if running}
+                    <MdiPause />
+                {:else}
+                    <MdiPlay />
+                {/if}
             </button>
         {/if}
     </div>
