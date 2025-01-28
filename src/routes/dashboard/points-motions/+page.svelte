@@ -20,10 +20,16 @@
   import { createDragTr, isDndShadow } from "$lib/util/dnd";
   import { stringifyTime } from "$lib/util/time";
 
-  import Icon from "@iconify/svelte";
   import { getModalStore } from "@skeletonlabs/skeleton";
   import { flip } from "svelte/animate";
   import { dndzone } from "svelte-dnd-action";
+  import MdiAccountClock from "~icons/mdi/account-clock";
+  import MdiAccountMultiple from "~icons/mdi/account-multiple";
+  import MdiCancel from "~icons/mdi/cancel";
+  import MdiCheck from "~icons/mdi/check";
+  import MdiClock from "~icons/mdi/clock";
+  import MdiPencil from "~icons/mdi/pencil";
+  import MdiSort from "~icons/mdi/sort";
 
   const { motions, selectedMotion, selectedMotionState, delegates } = getSessionContext();
   const sortOrder = queryStore(() => db.getSetting("sortOrder"), []);
@@ -133,7 +139,7 @@
         class:!variant-filled-surface={motionsSorted}
         disabled={motionsSorted}
       >
-        <Icon icon="mdi:sort" width="24" height="24" />
+        <MdiSort />
       </button>
     </div>
     
@@ -145,9 +151,15 @@
             <td class="px-3 w-24">Motion</td>
             <td class="px-3 w-32">By</td>
             <td class="px-3">Topic</td>
-            <td class="px-3 w-16"><IconLabel icon="mdi:clock" label="Total Time" /></td>
-            <td class="px-3 w-16"><IconLabel icon="mdi:account-clock" label="Speaking Time" /></td>
-            <td class="px-3 w-16"><IconLabel icon="mdi:account-multiple" label="No. of Speakers" /></td>
+            <td class="px-3 w-16">
+              <IconLabel icon={MdiClock} label="Total Time" />
+            </td>
+            <td class="px-3 w-16">
+              <IconLabel icon={MdiAccountClock} label="Speaking Time" />
+            </td>
+            <td class="px-3 w-16">
+              <IconLabel icon={MdiAccountMultiple} label="No. of Speakers" />
+            </td>
           </tr>
         </thead>
         <tbody
@@ -180,7 +192,7 @@
                     data-label="Reject {delName}'s Motion"
                     title="Reject {delName}'s Motion"
                   >
-                    <Icon icon="mdi:cancel" width="24" height="24" class="text-error-500" />
+                    <MdiCancel class="text-error-500" />
                   </button>
                   <button
                     class="btn btn-sm btn-icon w-8"
@@ -188,7 +200,7 @@
                     data-label="Accept {delName}'s Motion"
                     title="Accept {delName}'s Motion"
                   >
-                    <Icon icon="mdi:check" width="24" height="24" class="text-success-700" />
+                    <MdiCheck class="text-success-700" />
                   </button>
                   <button
                     class="btn btn-sm btn-icon w-8"
@@ -196,7 +208,7 @@
                     data-label="Edit {delName}'s Motion"
                     title="Edit {delName}'s Motion"
                   >
-                    <Icon icon="mdi:pencil" width="24" height="24" />
+                    <MdiPencil />
                   </button>
                 </div>
               </td>

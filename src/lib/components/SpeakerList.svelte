@@ -14,12 +14,15 @@
     import { isDndShadow } from "$lib/util/dnd";
     import { triggerConfirmModal } from "$lib/util";
     
-    import Icon from "@iconify/svelte";
     import { getModalStore, popup } from "@skeletonlabs/skeleton";
     import { tick, untrack, type Snippet } from "svelte";
     import { flip } from "svelte/animate";
     import { dragHandle, dragHandleZone } from "svelte-dnd-action";
     import { autocompletePopup, POPUP_CARD_CLASSES } from "$lib/util/popup";
+    import MdiCancel from "~icons/mdi/cancel";
+    import MdiDelete from "~icons/mdi/delete";
+    import MdiDragVertical from "~icons/mdi/drag-vertical";
+    import MdiPlus from "~icons/mdi/plus";
 
     const modalStore = getModalStore();
 
@@ -292,7 +295,7 @@
                 aria-label={speakerLabel}
             >
                 <div class="btn-icon w-6" use:dragHandle>
-                    <Icon icon="mdi:drag-vertical" width="24" height="24" />
+                    <MdiDragVertical />
                 </div>
                 <span class="enumerated-index">{i + 1}.</span>
                 <button 
@@ -317,7 +320,7 @@
                         aria-label="Delete {speakerLabel}"
                         disabled={speaker.completed}
                     >
-                        <Icon icon="mdi:cancel" />
+                        <MdiCancel />
                     </button>
                 </div>
             </li>
@@ -350,7 +353,7 @@
                             aria-label="Add to Speakers List"
                             title="Add to Speakers List"
                         >
-                            <Icon icon="mdi:plus" width="24" height="24" />
+                            <MdiPlus />
                         </button>
                     </div>
                     <div>
@@ -363,7 +366,7 @@
                             aria-label="Clear Speakers List"
                             title="Clear Speakers List"
                         >
-                            <Icon icon="mdi:delete" width="24" height="24" />
+                            <MdiDelete />
                         </button>
                     </div>
                 </form>

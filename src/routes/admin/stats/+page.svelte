@@ -12,8 +12,9 @@
     import { interactivePopup, POPUP_CARD_CLASSES } from "$lib/util/popup";
     import { stringifyTime } from "$lib/util/time";
     
-    import Icon from "@iconify/svelte";
     import { ProgressBar, popup, type PaginationSettings, Paginator } from "@skeletonlabs/skeleton";
+    import MdiArrowUp from "~icons/mdi/arrow-up";
+    import MdiDatabaseExportOutline from "~icons/mdi/database-export-outline";
 
     const { delegates, barTitle } = getSessionContext();
 
@@ -131,7 +132,7 @@
             title="Edit Stats"
             use:popup={interactivePopup(POPUP_TARGET)}
         >
-            <Icon icon="mdi:database-export-outline" width="24" height="24" />
+            <MdiDatabaseExportOutline />
         </button>
     </div>
     <div class="table-container">
@@ -144,12 +145,7 @@
                             {#if sortOrder.item === key}
                             <div class="flex items-center gap-1" aria-sort={sortOrder.descending ? "descending" : "ascending"}>
                                 {col.label}
-                                <Icon
-                                    icon="mdi:arrow-up"
-                                    class="{sortOrder.descending ? 'rotate-180' : ''} transition-[transform]"
-                                    width="24"
-                                    height="24"
-                                />
+                                <MdiArrowUp class="{sortOrder.descending ? 'rotate-180' : ''} transition-[transform]" />
                             </div>
                             {:else}
                             {col.label}

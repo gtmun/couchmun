@@ -13,8 +13,9 @@
     import SettingsNavigation from '$lib/components/nav/SettingsNavigation.svelte';
     import { getSessionContext } from '$lib/context/index.svelte';
     
-    import Icon from "@iconify/svelte";
     import { AppBar, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
+    import MdiMenu from "~icons/mdi/menu";
+    import MdiGear from "~icons/mdi/gear";
 
     let { children } = $props();
     const drawerStore = getDrawerStore();
@@ -84,7 +85,7 @@
                     data-label="Pages"
                     title="Pages"
                 >
-                    <Icon icon="mdi:menu" width="24" height="24" />
+                    <MdiMenu />
                 </button>
             {/snippet}
             <!--
@@ -116,7 +117,7 @@
                     data-label="Settings"
                     title="Settings"
                 >
-                    <Icon icon="mdi:gear" width="24" height="24" />
+                    <MdiGear />
                 </button>
             {/snippet}
         </AppBar>

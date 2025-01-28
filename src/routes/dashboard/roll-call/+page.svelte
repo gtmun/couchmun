@@ -9,13 +9,16 @@
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import { RadioGroup, RadioItem } from "@skeletonlabs/skeleton";
+    import MdiAccountOff from "~icons/mdi/account-off";
+    import MdiAccount from "~icons/mdi/account";
+    import MdiAccountCheck from "~icons/mdi/account-check";
 
     const { delegates } = getSessionContext();
 
     const radio = [
-        { presence: "NP", label: "Absent", icon: "mdi:account-off" },
-        { presence: "P",  label: "Present", icon: "mdi:account" },
-        { presence: "PV", label: "Present and Voting", icon: "mdi:account-check" },
+        { presence: "NP", label: "Absent", icon: MdiAccountOff },
+        { presence: "P",  label: "Present", icon: MdiAccount },
+        { presence: "PV", label: "Present and Voting", icon: MdiAccountCheck },
     ] as const;
 </script>
 

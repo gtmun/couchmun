@@ -16,9 +16,9 @@
     import { findDelegate, type Delegate } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";
     import { lazyslide } from "$lib/util";
-    import Icon from "@iconify/svelte";
     import Timer from "../Timer.svelte";
     import { untrack, type Snippet } from "svelte";
+    import MdiChevronDown from "~icons/mdi/chevron-down";
 
     interface Props {
         /**
@@ -198,7 +198,7 @@
 </div>
 <!-- Mobile chevron -->
 <div class="flex justify-center lg:hidden">
-    <Icon icon="mdi:chevron-down" width="24" height="24" />
+    <MdiChevronDown />
 </div>
 
 <!-- 

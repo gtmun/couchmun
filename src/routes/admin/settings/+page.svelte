@@ -11,11 +11,15 @@
     import type { DelegateAttrs, Settings } from "$lib/types";
     import { downloadFile, triggerConfirmModal } from "$lib/util";
 
-    import Icon from "@iconify/svelte";
     import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
     import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
     import { _legacyFixDelFlag, db, queryStore } from "$lib/db/index.svelte";
     import { toKeyValueArray, toObject } from "$lib/db/keyval";
+    import MdiArrowDown from "~icons/mdi/arrow-down";
+    import MdiCancel from "~icons/mdi/cancel";
+    import MdiCircleSmall from "~icons/mdi/circle-small";
+    import MdiMerge from "~icons/mdi/merge";
+    import MdiPencil from "~icons/mdi/pencil";
 
     const settings = queryStore(async () => toObject(await db.settings.toArray()) as Settings);
 
@@ -265,7 +269,11 @@
                                             aria-label="Merge With Above Cell"
                                             title="Merge With Above Cell"
                                         >
-                                            <Icon icon={ki == 0 ? "mdi:merge" : "mdi:circle-small"} width="24" height="24" />
+                                            {#if ki == 0}
+                                                <MdiMerge />
+                                            {:else}
+                                                <MdiCircleSmall />
+                                            {/if}
                                         </button>
                                         {SORT_KIND_NAMES[k]}
                                     </div>
@@ -280,8 +288,7 @@
                                             db.settings.update("sortOrder", ({ val: order }) => { order[ei].order[oi].ascending = !order[ei].order[oi].ascending })
                                         }}>
                                             <!-- TODO: add aria-label, title -->
-                                            <Icon
-                                                icon="mdi:arrow-down"
+                                            <MdiArrowDown
                                                 class="{key.ascending ? 'rotate-180' : ''} transition-[transform]"
                                                 width="1.2em"
                                                 height="1.2em"
@@ -344,14 +351,14 @@
                                 aria-label="Edit {attrs.name}"
                                 title="Edit {attrs.name}"
                             >
-                                <Icon icon="mdi:pencil" width="24" height="24" />
+                                <MdiPencil />
                             </button>
                             <button
                                 onclick={() => deleteDelegate(attrs.id)}
                                 aria-label="Delete {attrs.name}"
                                 title="Delete {attrs.name}"
                             >
-                                <Icon icon="mdi:cancel" width="24" height="24" class="text-error-500" />
+                                <MdiCancel class="text-error-500" />
                             </button>
                         </td>
                     </tr>

@@ -8,8 +8,8 @@
     import BarHeader from '$lib/components/app-bar/BarHeader.svelte';
     import { db } from '$lib/db/index.svelte';
     
-    import Icon from "@iconify/svelte";
     import { AppBar, LightSwitch } from '@skeletonlabs/skeleton';
+    import MdiChevronLeft from "~icons/mdi/chevron-left";
 
     let { children } = $props();
     const title = db.settingStore("title", "");
@@ -37,7 +37,7 @@
                     title="Return to Dashboard"
                     tabindex={0}
                 >
-                    <Icon icon="mdi:chevron-left" width="36" height="36" />
+                    <MdiChevronLeft width="36" height="36" />
                 </a>
             {/snippet}
             <div class="flex flex-col gap-1">
