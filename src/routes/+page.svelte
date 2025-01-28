@@ -2,7 +2,7 @@
 <script lang="ts">
     import { base } from "$app/paths";
     import MetaTags from "$lib/components/MetaTags.svelte";
-    import Icon from "@iconify/svelte";
+    import MdiGear from "~icons/mdi/gear";
 </script>
 
 <MetaTags
@@ -26,7 +26,7 @@
                 aria-label="Settings"
                 title="Settings"
             >
-                <Icon icon="mdi:gear" width="24" height="24" />
+                <MdiGear />
             </a>
         </div>
     </div>

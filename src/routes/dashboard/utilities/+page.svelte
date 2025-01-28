@@ -13,8 +13,8 @@
     import { interactivePopup, POPUP_CARD_CLASSES } from "$lib/util/popup";
     import { parseTime } from "$lib/util/time";
 
-    import Icon from "@iconify/svelte";
     import { popup } from "@skeletonlabs/skeleton";
+    import MdiWrench from "~icons/mdi/wrench";
 
     const { delegates } = getSessionContext();
 
@@ -52,7 +52,7 @@
         aria-label="Configure Utilities"
         title="Configure Utilities"
     >
-        <Icon icon="mdi:wrench" width="24" height="24" />
+        <MdiWrench />
     </button>
     <div class="flex flex-col flex-grow gap-5 justify-center">
         <div class="pb-5">

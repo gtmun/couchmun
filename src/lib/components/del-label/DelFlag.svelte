@@ -6,7 +6,7 @@
 -->
 <script lang="ts">
     import { getFlagUrl } from "$lib/flags/flagcdn";
-    import Icon from "@iconify/svelte";
+    import MdiFlagOff from "~icons/mdi/flag-off";
 
     interface Props {
         /**
@@ -78,11 +78,9 @@
     {/await}
 {:else if fallback === "icon"}
     <!-- HACK: Just don't use this if not inline. -->
-    <Icon 
-        icon="mdi:flag-off" 
+    <MdiFlagOff 
         role="img" 
         aria-label="Flag of {label} (missing)"
-        height={24} 
     />
 {:else}
     <!-- do nothing -->
