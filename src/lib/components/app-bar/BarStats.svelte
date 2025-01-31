@@ -49,7 +49,7 @@
      * @param n total
      */
     function smallestIntegerGt(n: number) {
-        return Math.max(0, Math.ceil(n + 0.01));
+        return n > 0 ? Math.ceil(n + 0.01) : 0;
     }
 </script>
 
