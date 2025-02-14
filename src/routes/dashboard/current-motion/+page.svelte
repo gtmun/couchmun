@@ -14,7 +14,7 @@
 </script>
 
 <div class="h-full w-full flex flex-col items-stretch justify-center">
-    {#if $selectedMotion}
+    {#if $selectedMotion && "kind" in $selectedMotion}
         {#if $selectedMotion.kind === "mod"}
             <ModCaucus motion={$selectedMotion} bind:order={$selectedMotionState.speakersList} />
         {:else if $selectedMotion.kind === "unmod"}
