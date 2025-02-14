@@ -70,6 +70,7 @@
     // just add a new prop for it.
     //
     // The `addDelInput` and `addDelError` properties only apply if `controls` is not defined.
+    let addDelInputEl = $state<HTMLInputElement>();
     let addDelInput: string = $state("");
     let addDelError: string = $state("");
     let addDelValidator = $derived(presentDelegateSchema(delegates));
@@ -352,7 +353,8 @@
                         class="input" 
                         class:input-error={error}
                         bind:value={addDelInput}
-                        use:popup={{ ...autocompletePopup(POPUP_TARGET), placement: "left-end" }}
+                        bind:this={addDelInputEl}
+                        use:popup={{ ...autocompletePopup(POPUP_TARGET), placement: "left-end", event: "focus-blur" }}
                         {...autocompletePlaceholders(noDelegatesPresent)}
                     />
                     <div class="ml-2">
@@ -397,7 +399,10 @@
             <DelAutocomplete
                 bind:input={addDelInput}
                 {delegates}
-                on:selection={e => addSpeaker(e.detail.label, true)}
+                on:selection={e => {
+                    addSpeaker(e.detail.label, true);
+                    addDelInputEl?.focus();
+                }}
             />
         </div>
     {/if}

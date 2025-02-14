@@ -20,9 +20,6 @@
 
     const sessionData = getSessionContext();
     const { delegates, preferences } = sessionData;
-    $effect(() => {
-        sessionData.barTopic = `Topic: ${motion.topic}`;
-    });
 
     let timerPanel = $state<TimerPanel>();
     let speakersList = $state<SpeakerList>();

@@ -10,7 +10,7 @@
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import type { Motion, Speaker } from "$lib/types";
-    import { untrack } from "svelte";
+    import { onMount } from "svelte";
 
     interface Props {
         motion: Motion & { kind: "rr" };
@@ -20,13 +20,12 @@
 
     const sessionData = getSessionContext();
     const { delegates } = sessionData;
-    $effect(() => {
-        sessionData.barTopic = `Topic: ${motion.topic}`;
-    });
-    $effect(() => {
-        if (untrack(() => order.length == 0)) {
-            order = $delegates.filter(d => d.isPresent()).map(d => createSpeaker(d.id));
+    onMount(() => {
+        if (order.length == 0) {
+            order = $delegates.filter(d => d.isPresent())
+                .map(d => createSpeaker(d.id));
         }
+
     });
 
     let timerPanel = $state<TimerPanel>();
