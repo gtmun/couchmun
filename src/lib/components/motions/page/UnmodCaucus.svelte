@@ -4,7 +4,6 @@
 -->
 <script lang="ts">
     import Timer from "$lib/components/Timer.svelte";
-    import { getSessionContext } from "$lib/context/index.svelte";
     import type { Motion } from "$lib/types";
     
     interface Props {
@@ -14,10 +13,6 @@
 
     let timer: Timer | undefined = $state();
     let running: boolean = $state(false);
-    const sessionData = getSessionContext();
-    $effect(() => {
-        sessionData.barTopic = undefined;
-    })
 </script>
 
 <div class="flex flex-col gap-5">
