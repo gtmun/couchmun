@@ -30,6 +30,7 @@
   import MdiClock from "~icons/mdi/clock";
   import MdiPencil from "~icons/mdi/pencil";
   import MdiSort from "~icons/mdi/sort";
+  import { tick } from "svelte";
 
   const { motions, selectedMotion, selectedMotionState, delegates, sortOrder } = getSessionContext();
   const modalStore = getModalStore();
@@ -195,7 +196,7 @@
                   </button>
                   <button
                     class="btn btn-sm btn-icon w-8"
-                    onclick={() => { acceptMotion(motion); goto(`${base}/dashboard/current-motion`); }}
+                    onclick={async () => { acceptMotion(motion); await tick(); goto(`${base}/dashboard/current-motion`); }}
                     data-label="Accept {delName}'s Motion"
                     title="Accept {delName}'s Motion"
                   >
