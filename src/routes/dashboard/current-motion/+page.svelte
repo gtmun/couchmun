@@ -10,7 +10,16 @@
     import UnmodCaucus from "$lib/components/motions/page/UnmodCaucus.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
 
-    const { selectedMotion, selectedMotionState } = getSessionContext();
+    const sessionData = getSessionContext();
+    const { selectedMotion, selectedMotionState } = sessionData;
+
+    // FIXME: On reset, selectedMotion inits with the data it had previously
+    // This can cause issues with inconsistent data
+    selectedMotion.subscribe(m => {
+        if ("topic" in m) {
+            sessionData.barTopic = `Topic: ${m.topic}`;
+        }
+    });
 </script>
 
 <div class="h-full w-full flex flex-col items-stretch justify-center">

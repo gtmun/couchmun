@@ -10,7 +10,7 @@
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import type { Motion, Speaker } from "$lib/types";
-    import { onMount, untrack } from "svelte";
+    import { onMount } from "svelte";
 
     interface Props {
         motion: Motion & { kind: "rr" };
@@ -21,7 +21,6 @@
     const sessionData = getSessionContext();
     const { delegates } = sessionData;
     onMount(() => {
-        sessionData.barTopic = `Topic: ${motion.topic}`;
         if (order.length == 0) {
             order = $delegates.filter(d => d.isPresent())
                 .map(d => createSpeaker(d.id));

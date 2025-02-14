@@ -343,7 +343,7 @@ export function queryStore<T>(cb: () => T | Promise<T>): Readable<T | undefined>
 export function queryStore<T>(cb: () => T | Promise<T>, fallback: T): Readable<T>;
 export function queryStore<T>(cb: () => T | Promise<T>, fallback?: T) {
     const query = liveQuery(cb);
-    return readable(fallback, (set) => query.subscribe(set).unsubscribe);
+    return readable(structuredClone(fallback), (set) => query.subscribe(set).unsubscribe);
 }
 /**
  * Creates a writable store out of a single key-value pair in a database table.
