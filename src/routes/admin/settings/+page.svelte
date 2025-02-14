@@ -47,14 +47,14 @@
 
             // TODO: input validation
             let { settings: newSettings, delegates: newDelegates } = json;
-            await db.transaction("rw", db.settings, async () => {
+            await db.transaction("rw", [db.sessionData, db.settings, db.delegates], async () => {
                 await db.resetSettings();
                 await db.settings.bulkUpdate(toKeyValueArray(newSettings).map(({ key, val }) => ({ key, changes: { val }})));
-            });
-            await db.transaction("rw", db.delegates, async () => {
+
+                await db.resetSessionData();
                 await db.delegates.clear();
                 await db.addDelegates(newDelegates);
-            });
+            })
         }
     }
     function exportFile() {

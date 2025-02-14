@@ -86,11 +86,16 @@
       return $m;
     })
   }
-  function acceptMotion(motion: Motion) {
-    $selectedMotion = motion;
-    $selectedMotionState = structuredClone(DEFAULT_SESSION_DATA.selectedMotionState);
-    $motions = [];
-    db.updateDelegate(motion.delegate, d => { d.stats.motionsAccepted++; });
+  async function acceptMotion(motion: Motion) {
+    // TODO: Properly type this to note asynchronous of .set
+    await selectedMotion.set(motion);
+    await selectedMotionState.set(structuredClone(DEFAULT_SESSION_DATA.selectedMotionState));
+    await motions.set([]);
+    await db.updateDelegate(motion.delegate, d => { d.stats.motionsAccepted++; });
+  }
+  async function acceptMotionAndGoto(motion: Motion) {
+    await acceptMotion(motion);
+    goto(`${base}/dashboard/current-motion`);
   }
   function editMotion(i: number, motion: Motion) {
     modalStore.trigger({
@@ -196,7 +201,7 @@
                   </button>
                   <button
                     class="btn btn-sm btn-icon w-8"
-                    onclick={async () => { acceptMotion(motion); await tick(); goto(`${base}/dashboard/current-motion`); }}
+                    onclick={() => acceptMotionAndGoto(motion)}
                     data-label="Accept {delName}'s Motion"
                     title="Accept {delName}'s Motion"
                   >
