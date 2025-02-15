@@ -89,16 +89,22 @@
     ));
 
     // List item elements per order item
-    let liElements = new Map<SpeakerEntryID, HTMLLIElement>();
-    function jumpToSpeaker(speakerId: string) {
-        let li = liElements.get(speakerId);
-        if (!li) return;
+    let listEl = $state<HTMLOListElement>();
+    function jumpToSpeaker(speakerId?: string) {
+        if (!listEl) return;
 
-        let parent = li.parentElement;
-        if (!parent) return;
+        let delta;
+        if (typeof speakerId === "string") {
+            let index = order.findLastIndex(s => s.id == speakerId);
+            let li = listEl.children[index] as HTMLElement | undefined;
+            if (!li) return;
+            delta = li.offsetTop - listEl.offsetTop;
+        } else {
+            delta = listEl.scrollHeight;
+        }
 
-        parent.scrollTo({
-            top: li.offsetTop - parent.offsetTop,
+        listEl.scrollTo({
+            top: delta,
             left: 0,
             behavior: "smooth"
         });
@@ -177,7 +183,14 @@
             order = order;
 
             // Jump to this speaker when DOM updates.
-            tick().then(() => jumpToSpeaker(speaker.id));
+            // HACK: this is waiting for 2 frames, which is usually enough for the dom to update
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        jumpToSpeaker();
+                    })
+                });
+            });
 
             // Only applies to default controls
             if (typeof controls === "undefined") {
@@ -197,6 +210,12 @@
     function submitSpeaker(e: SubmitEvent) {
         e.preventDefault();
         addSpeaker(addDelInput, true);
+
+        // HACK: Make autocomplete appear immediately
+        setTimeout(() => {
+            addDelInputEl?.blur();
+            addDelInputEl?.focus();
+        }, 200);
     }
     /**
      * Deletes the speaker at index i in the speakers list.
@@ -252,11 +271,6 @@
             }
         }
     })
-
-    const bindToMap = <K, V extends HTMLElement>(el: V, [map, key]: [Map<K, V>, K]) => {
-        map.set(key, el);
-        return { destroy() { map.delete(key); } }
-    };
 </script>
 <script module lang="ts">
     /**
@@ -275,18 +289,20 @@
         Speakers List
     </h4>
 
-    <ol class="p-2 list overflow-y-auto grid grid-cols-[auto_auto_1fr_auto] auto-rows-min flex-grow" use:dragHandleZone={{
-        items: dndItems,
-        flipDurationMs: 150,
-        dropTargetStyle: {},
-        transformDraggedElement: (el, data, index) => {
-            // Update number on dragged element:
-            let idxEl = el?.querySelector(".enumerated-index");
-            if (idxEl && typeof index === "number") {
-                idxEl.textContent = `${index + 1}.`;
+    <ol class="p-2 list overflow-y-auto grid grid-cols-[auto_auto_1fr_auto] auto-rows-min flex-grow"
+        bind:this={listEl}
+        use:dragHandleZone={{
+            items: dndItems,
+            flipDurationMs: 150,
+            dropTargetStyle: {},
+            transformDraggedElement: (el, data, index) => {
+                // Update number on dragged element:
+                let idxEl = el?.querySelector(".enumerated-index");
+                if (idxEl && typeof index === "number") {
+                    idxEl.textContent = `${index + 1}.`;
+                }
             }
-        }
-    }}
+        }}
         onconsider={(e) => dndItems = e.detail.items}
         onfinalize={(e) => order = dndItems = e.detail.items}
         aria-labelledby="speaker-list-header"
@@ -301,7 +317,6 @@
                 class="!grid grid-cols-subgrid col-span-4 dnd-list-item"
                 class:!visible={shadow}
                 class:!bg-surface-300-600-token={shadow}
-                use:bindToMap={[liElements, speaker.id]}
                 animate:flip={{ duration: 150 }}
                 aria-label={speakerLabel}
             >
@@ -354,7 +369,7 @@
                         class:input-error={error}
                         bind:value={addDelInput}
                         bind:this={addDelInputEl}
-                        use:popup={{ ...autocompletePopup(POPUP_TARGET), placement: "left-end", event: "focus-blur" }}
+                        use:popup={{ ...autocompletePopup(POPUP_TARGET), placement: "left-end", closeQuery: "" }}
                         {...autocompletePlaceholders(noDelegatesPresent)}
                     />
                     <div class="ml-2">
@@ -399,9 +414,8 @@
             <DelAutocomplete
                 bind:input={addDelInput}
                 {delegates}
-                on:selection={e => {
+                on:selection={(e) => {
                     addSpeaker(e.detail.label, true);
-                    addDelInputEl?.focus();
                 }}
             />
         </div>

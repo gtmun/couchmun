@@ -29,9 +29,9 @@
 
     // Given the total attendance (n),
     // the majority is the smallest integer > n/2
-    // the supermajority is the smallest integer > 2/3 n
-    let maj: number = $derived(majOverride ?? smallestIntegerGt(total / 2));
-    let supermaj: number = $derived(supermajOverride ?? smallestIntegerGt(total * 2 / 3));
+    // the supermajority is the smallest integer >= 2/3 n
+    let maj: number = $derived(majOverride ?? smallestIntGt(total / 2));
+    let supermaj: number = $derived(supermajOverride ?? smallestIntGe(total * 2 / 3));
 
     const majConic: ConicStop[] = [
         { color: 'rgb(var(--color-primary-800))', start: 0, end: 50 },
@@ -48,8 +48,15 @@
      * Smallest integer greater than `n`, capped to at least 0.
      * @param n total
      */
-    function smallestIntegerGt(n: number) {
+    function smallestIntGt(n: number) {
         return n > 0 ? Math.ceil(n + 0.01) : 0;
+    }
+    /**
+     * Smallest integer greater than or equal to `n`, capped to at least 0.
+     * @param n total
+     */
+    function smallestIntGe(n: number) {
+        return n > 0 ? Math.ceil(n) : 0;
     }
 </script>
 

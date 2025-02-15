@@ -10,7 +10,6 @@
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import type { Motion, Speaker } from "$lib/types";
-    import { onMount } from "svelte";
 
     interface Props {
         motion: Motion & { kind: "rr" };
@@ -20,12 +19,18 @@
 
     const sessionData = getSessionContext();
     const { delegates } = sessionData;
-    onMount(() => {
-        if (order.length == 0) {
+    
+    // HACK: Initialize order by running this once when the list is empty.
+    // It's a hack because:
+    // 1. This shouldn't be necessary if we can preinit `order` into RR
+    // 2. It's caused by timing problems with `selectedMotionState` in current-motions.
+    let runOnce = false;
+    $effect(() => {
+        if (!runOnce && order.length == 0) {
+            runOnce = true;
             order = $delegates.filter(d => d.isPresent())
                 .map(d => createSpeaker(d.id));
         }
-
     });
 
     let timerPanel = $state<TimerPanel>();
