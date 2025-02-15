@@ -197,6 +197,12 @@
     function submitSpeaker(e: SubmitEvent) {
         e.preventDefault();
         addSpeaker(addDelInput, true);
+
+        // HACK: Make autocomplete appear immediately
+        setTimeout(() => {
+            addDelInputEl?.blur();
+            addDelInputEl?.focus();
+        }, 200);
     }
     /**
      * Deletes the speaker at index i in the speakers list.
@@ -275,18 +281,19 @@
         Speakers List
     </h4>
 
-    <ol class="p-2 list overflow-y-auto grid grid-cols-[auto_auto_1fr_auto] auto-rows-min flex-grow" use:dragHandleZone={{
-        items: dndItems,
-        flipDurationMs: 150,
-        dropTargetStyle: {},
-        transformDraggedElement: (el, data, index) => {
-            // Update number on dragged element:
-            let idxEl = el?.querySelector(".enumerated-index");
-            if (idxEl && typeof index === "number") {
-                idxEl.textContent = `${index + 1}.`;
+    <ol class="p-2 list overflow-y-auto grid grid-cols-[auto_auto_1fr_auto] auto-rows-min flex-grow"
+        use:dragHandleZone={{
+            items: dndItems,
+            flipDurationMs: 150,
+            dropTargetStyle: {},
+            transformDraggedElement: (el, data, index) => {
+                // Update number on dragged element:
+                let idxEl = el?.querySelector(".enumerated-index");
+                if (idxEl && typeof index === "number") {
+                    idxEl.textContent = `${index + 1}.`;
+                }
             }
-        }
-    }}
+        }}
         onconsider={(e) => dndItems = e.detail.items}
         onfinalize={(e) => order = dndItems = e.detail.items}
         aria-labelledby="speaker-list-header"
@@ -354,7 +361,7 @@
                         class:input-error={error}
                         bind:value={addDelInput}
                         bind:this={addDelInputEl}
-                        use:popup={{ ...autocompletePopup(POPUP_TARGET), placement: "left-end", event: "focus-blur" }}
+                        use:popup={{ ...autocompletePopup(POPUP_TARGET), placement: "left-end", closeQuery: "" }}
                         {...autocompletePlaceholders(noDelegatesPresent)}
                     />
                     <div class="ml-2">
@@ -399,9 +406,8 @@
             <DelAutocomplete
                 bind:input={addDelInput}
                 {delegates}
-                on:selection={e => {
+                on:selection={(e) => {
                     addSpeaker(e.detail.label, true);
-                    addDelInputEl?.focus();
                 }}
             />
         </div>
