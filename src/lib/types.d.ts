@@ -241,7 +241,7 @@ export type SessionData = {
     /**
      * The motion that was selected (and is currently on display in the current motion page).
      */
-    selectedMotion: Motion | { /* HACK: would use `null`, but not friendly for invalid state in currentMotion */ },
+    selectedMotion: Motion | null,
     /**
      * The state properties of the motion.
      */

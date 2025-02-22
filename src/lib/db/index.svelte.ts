@@ -12,7 +12,7 @@ import { getFlagUrl } from "$lib/flags/flagcdn";
 import { DEFAULT_SORT_PRIORITY } from "$lib/motions/definitions";
 import type { DelegateAttrs, DelegateID, DelSessionData, PrevSessionData, SessionData, Settings } from "$lib/types";
 import { Dexie, liveQuery, type EntityTable, type IndexableType, type InsertType } from "dexie";
-import { readable, type Readable, type Updater, type Writable } from "svelte/store";
+import { readonly, writable, type Readable, type Updater, type Writable } from "svelte/store";
 
 /**
  * The class representing the session database.
@@ -269,7 +269,7 @@ export const DEFAULT_DEL_SESSION_DATA = {
 
 export const DEFAULT_SESSION_DATA = {
     motions: [],
-    selectedMotion: {},
+    selectedMotion: null,
     selectedMotionState: {
         speakersList: []
     },
@@ -330,6 +330,10 @@ export async function _legacyFixDelFlag(flagKeyOrDelegates: string | Record<stri
     }
 }
 
+function writableQueryStore<T>(cb: () => T | Promise<T>, fallback?: T) {
+    const query = liveQuery(cb);
+    return writable(structuredClone(fallback), set => query.subscribe(set).unsubscribe);
+}
 /**
  * A store on a database query that updates when the database updates.
  * 
@@ -342,8 +346,7 @@ export async function _legacyFixDelFlag(flagKeyOrDelegates: string | Record<stri
 export function queryStore<T>(cb: () => T | Promise<T>): Readable<T | undefined>;
 export function queryStore<T>(cb: () => T | Promise<T>, fallback: T): Readable<T>;
 export function queryStore<T>(cb: () => T | Promise<T>, fallback?: T) {
-    const query = liveQuery(cb);
-    return readable(structuredClone(fallback), (set) => query.subscribe(set).unsubscribe);
+    return readonly(writableQueryStore(cb, fallback));
 }
 /**
  * Creates a writable store out of a single key-value pair in a database table.
@@ -355,9 +358,20 @@ export function queryStore<T>(cb: () => T | Promise<T>, fallback?: T) {
  * @param fallback a fallback/default value to use before the value is first read successfully
  */
 function getKVStore(table: EntityTable<KeyValuePair, "key">, key: string, fallback?: any): Writable<any> {
-    const store = queryStore(() => table.get(key).then(entry => entry?.val), fallback);
-    const set = (val: any) => table.update(key, { val: $state.snapshot(val) });
-    const update = (updater: Updater<any>) => table.update(key, entry => entry.val = updater(entry.val));
+    const store = writableQueryStore(() => table.get(key).then(entry => entry?.val), fallback);
+    const set = async (val: any) => {
+        // Do a synchronous update before asynchronously updating the database.
+        // Note: This does cause a double update, but since the result is the same it *should* be fine.
+        store.set(val);
+        return table.update(key, { val: $state.snapshot(val) });
+    };
+    const update = async (updater: Updater<any>) => {
+        // Do a synchronous update before asynchronously updating the database.
+        // Note: This does cause a double update, but since the result is the same it *should* be fine.
+        let val;
+        store.update(e => val = updater(e));
+        return table.update(key, { val });
+    };
     
-    return Object.assign(store, { set, update });
+    return Object.assign(readonly(store), { set, update });
 }

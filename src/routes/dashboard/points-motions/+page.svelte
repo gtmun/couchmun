@@ -86,11 +86,11 @@
       return $m;
     })
   }
+
   async function acceptMotion(motion: Motion) {
-    // TODO: Properly type this to note asynchronous of .set
-    await selectedMotion.set(motion);
-    await selectedMotionState.set(structuredClone(DEFAULT_SESSION_DATA.selectedMotionState));
-    await motions.set([]);
+    $selectedMotion = motion;
+    $selectedMotionState = structuredClone(DEFAULT_SESSION_DATA.selectedMotionState);
+    $motions = [];
     await db.updateDelegate(motion.delegate, d => { d.stats.motionsAccepted++; });
   }
   async function acceptMotionAndGoto(motion: Motion) {
