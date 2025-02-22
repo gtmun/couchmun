@@ -11,8 +11,9 @@
   import IconLabel from "$lib/components/IconLabel.svelte";
   import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
+  import { createSpeaker } from "$lib/components/SpeakerList.svelte";
   import { getSessionContext } from "$lib/context/index.svelte";
-  import { db, DEFAULT_SESSION_DATA, queryStore } from "$lib/db/index.svelte";
+  import { db } from "$lib/db/index.svelte";
   import { findDelegate } from "$lib/db/delegates";
   import { MOTION_LABELS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
@@ -88,8 +89,14 @@
   }
 
   async function acceptMotion(motion: Motion) {
+    // Update selected motion and initialize selected motion state:
     $selectedMotion = motion;
-    $selectedMotionState = structuredClone(DEFAULT_SESSION_DATA.selectedMotionState);
+    if (motion.kind === "rr") {
+      $selectedMotionState = { speakersList: $delegates.filter(d => d.isPresent()).map(s => createSpeaker(s.id)) };
+    } else {
+      $selectedMotionState = { speakersList: [] };
+    }
+
     $motions = [];
     await db.updateDelegate(motion.delegate, d => { d.stats.motionsAccepted++; });
   }

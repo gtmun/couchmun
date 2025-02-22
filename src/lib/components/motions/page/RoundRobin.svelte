@@ -5,7 +5,7 @@
     - A speakers list that is automatically populated with all delegates
 -->
 <script lang="ts">
-    import SpeakerList, { createSpeaker } from "$lib/components/SpeakerList.svelte";
+    import SpeakerList from "$lib/components/SpeakerList.svelte";
     import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
@@ -20,19 +20,6 @@
     const sessionData = getSessionContext();
     const { delegates } = sessionData;
     
-    // HACK: Initialize order by running this once when the list is empty.
-    // It's a hack because:
-    // 1. This shouldn't be necessary if we can preinit `order` into RR
-    // 2. It's caused by timing problems with `selectedMotionState` in current-motions.
-    let runOnce = false;
-    $effect(() => {
-        if (!runOnce && order.length == 0) {
-            runOnce = true;
-            order = $delegates.filter(d => d.isPresent())
-                .map(d => createSpeaker(d.id));
-        }
-    });
-
     let timerPanel = $state<TimerPanel>();
     let speakersList = $state<SpeakerList>();
     
