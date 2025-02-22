@@ -23,12 +23,6 @@
         duration: number;
 
         /**
-         * The name of the timer. This should have some unique name per page.
-         * It does not have to be descriptive; it could literally just be `1`.
-         */
-        name: string;
-
-        /**
          * Whether or not this timer is running.
          * 
          * This is a **bindable** prop. It will update to reflect the timer's
@@ -90,7 +84,6 @@
 
     let {
         duration = $bindable(),
-        name,
         running = $bindable(false),
         height = "h-10",
         hideText = false,
@@ -100,7 +93,7 @@
         useKeyHandlers = true,
         onPause = undefined,
     }: Props = $props();
-
+    const tid = $props.id();
     
     const COLOR_THRESHOLDS = [
         // color = the color class to apply
@@ -128,7 +121,7 @@
         transition: `duration-1000 ${running ? 'transition-[background-color]' : 'transition-[background-color,width]'}`,
         meter: color,
         track: "bg-surface-300-600-token",
-        labelledby: `timer-text-${name}`
+        labelledby: `timer-text-${tid}`
     });
 
     // Timer related handlers

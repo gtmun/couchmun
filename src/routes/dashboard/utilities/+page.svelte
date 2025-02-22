@@ -68,7 +68,6 @@
         {#if timerEnabled}
         <div class="flex flex-col gap-5">
             <Timer
-                name="total"
                 bind:duration
                 bind:running
                 bind:this={timer}

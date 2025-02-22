@@ -17,7 +17,6 @@
 
 <div class="flex flex-col gap-5">
     <Timer
-        name="total"
         duration={motion.totalTime}
         bind:this={timer}
         bind:running

@@ -60,6 +60,7 @@
         onBeforeSpeakerUpdate = undefined,
         onMarkComplete = undefined
     }: Props = $props();
+    const sid = $props.id();
 
     // A clone of order used solely for use:dragHandleZone
     let dndItems = $state($state.snapshot(order));
@@ -285,7 +286,7 @@
 </script>
 
 <div class="card p-4 overflow-y-hidden flex-grow flex flex-col items-stretch gap-4">
-    <h4 class="h4 flex justify-center" id="speaker-list-header">
+    <h4 class="h4 flex justify-center" id="sl-header-{sid}">
         Speakers List
     </h4>
 
@@ -305,7 +306,7 @@
         }}
         onconsider={(e) => dndItems = e.detail.items}
         onfinalize={(e) => order = dndItems = e.detail.items}
-        aria-labelledby="speaker-list-header"
+        aria-labelledby="sl-header-{sid}"
     >
         {#each dndItems as speaker, i (speaker.id)}
             {@const selected = speaker.id === selectedSpeakerId}

@@ -30,10 +30,10 @@
   import MdiClock from "~icons/mdi/clock";
   import MdiPencil from "~icons/mdi/pencil";
   import MdiSort from "~icons/mdi/sort";
-  import { tick } from "svelte";
 
   const { motions, selectedMotion, selectedMotionState, delegates, sortOrder } = getSessionContext();
   const modalStore = getModalStore();
+  const pid = $props.id();
 
   // A clone of $motions used solely for use:dndzone
   let dndItems = $state($state.snapshot($motions));
@@ -134,7 +134,7 @@
   
   <div class="flex flex-col gap-2 overflow-x-auto">
     <div class="grid grid-cols-[1fr_auto] items-center">
-      <h3 class="h3 text-center" id="motion-table-header">List of Motions</h3>
+      <h3 class="h3 text-center" id="motion-table-header-{pid}">List of Motions</h3>
       <button
         class="btn btn-icon variant-filled-primary"
         onclick={sortMotions}
@@ -176,7 +176,7 @@
           }}
           onconsider={(e) => dndItems = e.detail.items}
           onfinalize={(e) => $motions = dndItems = e.detail.items}
-          aria-labelledby="motion-table-header"
+          aria-labelledby="motion-table-header-{pid}"
         >
           {#each dndItems as motion, i (motion.id)}
             {@const delAttrs = findDelegate($delegates, motion.delegate)}
