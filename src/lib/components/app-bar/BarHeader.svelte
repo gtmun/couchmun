@@ -2,6 +2,8 @@
   @component The title text in the header.
 -->
 <script lang="ts">
+    import { makeEditable } from "$lib/util";
+
     interface Props {
         /** Title text */
         title: string,
@@ -14,33 +16,19 @@
     }
 
     let { title = $bindable(), size = "md", styles = "", editable = true }: Props = $props();
-    let heading: HTMLHeadingElement | undefined = $state();
-
-    function updateTitle() {
-        // When unfocused, update title
-        if (heading) {
-            heading.textContent = title = heading.textContent?.trim() || title;
-        }
-    }
-    function keyDown(e: KeyboardEvent) {
-        // If Enter is pressed, unfocus the title
-        if (e.code === "Enter") {
-            e.preventDefault();
-            heading?.blur();
-        }
-    }
 </script>
 
 
 <h1 
-    class="{styles} text-center break-all rounded {editable ? "border-b-4 border-transparent hover:border-surface-500 focus:border-surface-500 transition-[border-color,font-size]" : ""}"
+    class="{styles} text-center break-all"
     class:h1={size == "lg"}
     class:h2={size == "md"}
     class:h3={size == "sm"}
-    contenteditable={editable}
-    onfocusout={updateTitle}
-    onkeydown={keyDown}
-    bind:this={heading}
+    use:makeEditable={{
+        when: editable,
+        get value() { return title },
+        set value(text) { title = text }
+    }}
 >
     {title}
 </h1>
