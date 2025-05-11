@@ -19,7 +19,7 @@
 
 <script lang="ts">
     import type { Delegate } from "$lib/db/delegates";
-    import { Autocomplete, type AutocompleteOption } from "@skeletonlabs/skeleton";
+    import { type AutocompleteOption } from "@skeletonlabs/skeleton-svelte";
 
     interface Props {
         /**

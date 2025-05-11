@@ -14,7 +14,6 @@
     import type { Motion } from "$lib/types";
     
     import type { z } from "zod";
-    import { popup } from "@skeletonlabs/skeleton";
     import { type Snippet } from 'svelte';
 
     const { selectedMotion, delegates, preferences } = getSessionContext();
@@ -247,7 +246,7 @@
         {@render buttons()}
     {:else}
         <button 
-            class="btn variant-filled-primary" 
+            class="btn preset-filled-primary-500" 
             type="submit"
         >
             Add Motion

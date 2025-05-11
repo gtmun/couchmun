@@ -2,7 +2,7 @@
  * Miscellaneous helper functions.
  */
 
-import type { ModalSettings, ModalStore } from "@skeletonlabs/skeleton";
+import type { ModalSettings, ModalStore } from "@skeletonlabs/skeleton-svelte";
 import { cubicOut } from "svelte/easing";
 import type { Action } from "svelte/action";
 import type { TransitionConfig } from "svelte/transition";

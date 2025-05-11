@@ -13,8 +13,6 @@
     import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
     import { isDndShadow } from "$lib/util/dnd";
     import { triggerConfirmModal } from "$lib/util";
-    
-    import { getModalStore, popup } from "@skeletonlabs/skeleton";
     import { tick, untrack, type Snippet } from "svelte";
     import { flip } from "svelte/animate";
     import { dragHandle, dragHandleZone } from "svelte-dnd-action";
@@ -316,7 +314,7 @@
             <li
                 class="grid! grid-cols-subgrid col-span-4 dnd-list-item"
                 class:visible!={shadow}
-                class:bg-surface-300-600-token!={shadow}
+                class:bg-surface-300-700!={shadow}
                 animate:flip={{ duration: 150 }}
                 aria-label={speakerLabel}
             >
@@ -326,10 +324,10 @@
                 <span class="enumerated-index">{i + 1}.</span>
                 <button 
                     class="btn text-wrap! p-2 px-5 justify-start rounded-lg overflow-hidden"
-                    class:variant-filled-primary={selected}
-                    class:variant-soft-surface={!selected && speaker.completed}
-                    class:variant-ringed-surface={!selected && !speaker.completed}
-                    class:hover:variant-ringed-primary={!selected && !speaker.completed}
+                    class:preset-filled-primary-500={selected}
+                    class:preset-tonal-surface={!selected && speaker.completed}
+                    class:preset-outlined-surface-500={!selected && !speaker.completed}
+                    class:hover:preset-outlined-primary-500={!selected && !speaker.completed}
                     onclick={() => setSelectedSpeaker(speaker)}
                     title="Select {speakerLabel}"
                     aria-label="Select {speakerLabel}"
@@ -340,7 +338,7 @@
                 <div class="btn-icon">
                     <button 
                         class="btn-icon 
-                            {speaker.completed ? "variant-soft-surface" : "variant-soft-error hover:variant-filled-error"}"
+                            {speaker.completed ? "preset-tonal-surface" : "preset-tonal-error hover:preset-filled-error-500"}"
                         onclick={() => deleteSpeaker(i)}
                         title="Delete {speakerLabel}"
                         aria-label="Delete {speakerLabel}"
@@ -375,7 +373,7 @@
                     <div class="ml-2">
                         <button
                             type="submit"
-                            class="btn btn-icon variant-filled-primary"
+                            class="btn btn-icon preset-filled-primary-500"
                             disabled={noDelegatesPresent}
                             aria-label="Add to Speakers List"
                             title="Add to Speakers List"
@@ -387,7 +385,7 @@
                         <!-- Clear order -->
                         <button
                             type="button"
-                            class="btn btn-icon variant-filled-primary"
+                            class="btn btn-icon preset-filled-primary-500"
                             disabled={order.length === 0}
                             onclick={clearSpeakers}
                             aria-label="Clear Speakers List"

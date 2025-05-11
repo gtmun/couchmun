@@ -17,11 +17,11 @@
     
         <!-- Entry buttons -->
         <div class="flex justify-center gap-3">
-            <a class="btn variant-filled-primary" href="{base}/dashboard">
+            <a class="btn preset-filled-primary-500" href="{base}/dashboard">
                 Open Dashboard
             </a>
             <a 
-                class="btn-icon variant-filled-primary" 
+                class="btn-icon preset-filled-primary-500" 
                 href="{base}/admin/settings"
                 aria-label="Settings"
                 title="Settings"

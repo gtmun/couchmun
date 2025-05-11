@@ -5,8 +5,7 @@
   It also provides "close" and "submit" methods, which can be used to exit the modal.
 -->
 <script lang="ts">
-    import { getModalStore } from "@skeletonlabs/skeleton";
-    import { type Snippet } from "svelte";
+        import { type Snippet } from "svelte";
 
     interface Props {
         /**

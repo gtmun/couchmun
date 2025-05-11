@@ -13,7 +13,7 @@
  * For additional details on autocomplete popups, see `DelAutocomplete.svelte`.
  */
 
-import type { PopupSettings } from "@skeletonlabs/skeleton";
+import type { PopupSettings } from "@skeletonlabs/skeleton-svelte";
 
 /**
  * Default Tailwind classes for popup cards.

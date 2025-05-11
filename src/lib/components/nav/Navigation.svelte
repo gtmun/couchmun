@@ -34,7 +34,7 @@
                 <a 
                     onclick={close} 
                     {href} 
-                    class:variant-soft-primary={selected}
+                    class:preset-tonal-primary={selected}
                     data-focusindex={1 - +selected}
                     tabindex={i + 1}
                 >

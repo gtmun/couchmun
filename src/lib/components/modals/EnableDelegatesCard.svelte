@@ -60,8 +60,8 @@
                 <textarea class="textarea" rows={10} readonly>{enabledText}</textarea>
             </div>
             <div class="flex justify-end gap-1">
-                <button class="btn variant-filled-error" type="button" onclick={close}>Cancel</button>
-                <button class="btn variant-filled-primary" type="button" onclick={() => submit(enabled)}>Done</button>
+                <button class="btn preset-filled-error-500" type="button" onclick={close}>Cancel</button>
+                <button class="btn preset-filled-primary-500" type="button" onclick={() => submit(enabled)}>Done</button>
             </div>
         </div>
     {/snippet}

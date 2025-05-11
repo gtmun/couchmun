@@ -12,8 +12,6 @@
     import { lazyslide } from "$lib/util";
     import { interactivePopup, POPUP_CARD_CLASSES } from "$lib/util/popup";
     import { parseTime } from "$lib/util/time";
-
-    import { popup } from "@skeletonlabs/skeleton";
     import MdiWrench from "~icons/mdi/wrench";
 
     const { delegates } = getSessionContext();
@@ -47,7 +45,7 @@
 
 <div class="flex flex-col h-full items-stretch">
     <button
-        class="btn-icon variant-filled-surface self-end"
+        class="btn-icon preset-filled-surface-500 self-end"
         use:popup={interactivePopup(POPUP_TARGET)}
         aria-label="Configure Utilities"
         title="Configure Utilities"
@@ -75,10 +73,10 @@
             />
     
             <div class="flex flex-row gap-3 justify-center">
-                <button class="btn variant-filled-primary" onclick={() => running = !running}>
+                <button class="btn preset-filled-primary-500" onclick={() => running = !running}>
                     {!running ? 'Start' : 'Pause'}
                 </button>
-                <button class="btn variant-filled-primary" disabled={!timer?.canReset()} onclick={timer?.reset}>Reset</button>
+                <button class="btn preset-filled-primary-500" disabled={!timer?.canReset()} onclick={timer?.reset}>Reset</button>
             </div>
         </div>
         {/if}
@@ -118,7 +116,7 @@
                     <input class="input" bind:value={labelText} />
                 </label>
                 {#if labelType === "delegate"}
-                    <div class="card bg-surface-200-700-token">
+                    <div class="card bg-surface-200-800">
                         <DelAutocomplete
                             bind:input={labelText}
                             delegates={Object.values($delegates)}

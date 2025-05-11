@@ -20,8 +20,6 @@
   import type { Motion } from "$lib/types";
   import { createDragTr, isDndShadow } from "$lib/util/dnd";
   import { stringifyTime } from "$lib/util/time";
-
-  import { getModalStore } from "@skeletonlabs/skeleton";
   import { flip } from "svelte/animate";
   import { dndzone } from "svelte-dnd-action";
   import MdiAccountClock from "~icons/mdi/account-clock";
@@ -142,12 +140,12 @@
     <div class="grid grid-cols-[1fr_auto] items-center">
       <h3 class="h3 text-center" id="motion-table-header-{pid}">List of Motions</h3>
       <button
-        class="btn btn-icon variant-filled-primary"
+        class="btn btn-icon preset-filled-primary-500"
         onclick={sortMotions}
         aria-label="Sort Motions"
         title="Sort Motions"
 
-        class:variant-filled-surface!={motionsSorted}
+        class:preset-filled-surface-500!={motionsSorted}
         disabled={motionsSorted}
       >
         <MdiSort />
@@ -191,7 +189,7 @@
             <tr 
               class="dnd-list-item hover:bg-primary-500/25!"
               class:visible!={shadow}
-              class:bg-surface-300-600-token!={shadow}
+              class:bg-surface-300-700!={shadow}
               animate:flip={{ duration: 150 }}
               aria-label="{delName}'s Motion"
             >

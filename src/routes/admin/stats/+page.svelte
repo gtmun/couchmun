@@ -12,7 +12,7 @@
     import { interactivePopup, POPUP_CARD_CLASSES } from "$lib/util/popup";
     import { stringifyTime } from "$lib/util/time";
     
-    import { ProgressBar, popup, type PaginationSettings, Paginator } from "@skeletonlabs/skeleton";
+    import { type PaginationSettings, Progress, Pagination } from "@skeletonlabs/skeleton-svelte";
     import MdiArrowUp from "~icons/mdi/arrow-up";
     import MdiDatabaseExportOutline from "~icons/mdi/database-export-outline";
 
@@ -121,13 +121,13 @@
     }
 </script>
 
-<MetaTags title="Stats Screen &middot; CouchMUN (Admin)" />
+<MetaTags title="Stats Screen · CouchMUN (Admin)" />
 
 <div class="flex flex-col gap-1">
     <div class="flex items-center justify-end gap-2">
-        <Paginator showNumerals bind:settings={pageSettings} />
+        <Pagination showNumerals bind:settings={pageSettings} />
         <button 
-            class="btn-icon variant-filled-warning"
+            class="btn-icon preset-filled-warning-500"
             aria-label="Edit Stats"
             title="Edit Stats"
             use:popup={interactivePopup(POPUP_TARGET)}
@@ -158,14 +158,14 @@
             <tbody>
                 {#each displayEntries as del (del.id)}
                 {@const absent = !del.isPresent()}
-                <tr class:bg-surface-300-600-token!={absent}>
+                <tr class:bg-surface-300-700!={absent}>
                     <td class="align-middle!">
                         {#if absent}
                         <div class="flex gap-1">
                             <span class="line-through italic">
                                 <DelLabel attrs={del} inline />
                             </span>
-                            <span class="text-error-500-400-token">
+                            <span class="text-error-600-400">
                                 (Absent)
                             </span>
                         </div>
@@ -180,10 +180,10 @@
                         <div class="flex items-center justify-end gap-3">
                             {stringifyTime(del.stats.durationSpoken / 1000, "round")}
                             <div class="flex w-[33vw]">
-                                <ProgressBar
+                                <Progress
                                     height="h-8"
                                     transition="duration-500 transition-width"
-                                    track="bg-surface-300-600-token"
+                                    track="bg-surface-300-700"
                                     meter="bg-primary-500"
                                     value={del.stats.durationSpoken * 100 / maxDurationSpoken}
                                 />
@@ -201,7 +201,7 @@
 <div class="{POPUP_CARD_CLASSES}" data-popup={POPUP_TARGET}>
     <div class="flex flex-col gap-2 overflow-hidden">
         <h4 class="h4">Export Statistics</h4>
-        <button class="btn variant-filled-primary" onclick={exportAllStats}>Export All Sessions</button>
-        <button class="btn variant-filled-primary" onclick={exportStats}>Export Session {pageSettings.page + 1}</button>
+        <button class="btn preset-filled-primary-500" onclick={exportAllStats}>Export All Sessions</button>
+        <button class="btn preset-filled-primary-500" onclick={exportStats}>Export Session {pageSettings.page + 1}</button>
     </div>
 </div>

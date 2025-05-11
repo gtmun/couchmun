@@ -5,7 +5,7 @@
   `SlideToggle` on its own can be used, but this one looks nicer.
 -->
 <script lang="ts">
-    import { SlideToggle } from "@skeletonlabs/skeleton";
+    import { Switch } from "@skeletonlabs/skeleton-svelte";
     import { type Snippet } from "svelte";
 
     interface Props {
@@ -45,11 +45,12 @@
 
 <label class={labelClass}>
     {@render children()}
-    <SlideToggle 
+    <Switch 
         {name}
-        bind:checked
+        {checked}
+        onCheckedChange={e => checked = e.checked}
         {disabled}
-        active="bg-primary-500"
+        controlActive="bg-primary-500"
         {...rest}
     />
 </label>

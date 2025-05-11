@@ -9,7 +9,7 @@
 <script lang="ts">
     import { clamp, makeEditable } from "$lib/util";
     import { parseTime, stringifyTime } from "$lib/util/time";
-    import { ProgressBar } from "@skeletonlabs/skeleton";
+    import { Progress } from "@skeletonlabs/skeleton-svelte";
     import { onDestroy, onMount, untrack } from "svelte";
     import MdiPause from "~icons/mdi/pause";
     import MdiPlay from "~icons/mdi/play";
@@ -121,7 +121,7 @@
         height,
         transition: `duration-1000 ${running ? 'transition-[background-color]' : 'transition-[background-color,width]'}`,
         meter: color,
-        track: "bg-surface-300-600-token",
+        track: "bg-surface-300-700",
         labelledby: `timer-text-${tid}`
     });
 
@@ -286,11 +286,11 @@
     </h2>
     <div class="grid grid-cols-[1fr_auto] gap-1">
         <!-- The progress bar -->
-        <ProgressBar {...barProps} />
+        <Progress {...barProps} />
         <!-- A start/pause button -->
         {#if !hidePlay}
             <button 
-                class="btn btn-icon variant-filled-primary" 
+                class="btn btn-icon preset-filled-primary-500" 
                 onclick={() => running = !running}
                 disabled={disablePlay || isElapsed()}
                 aria-label={running ? "Pause Timer" : "Start Timer"}

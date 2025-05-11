@@ -8,7 +8,7 @@
     import BarHeader from '$lib/components/app-bar/BarHeader.svelte';
     import { db } from '$lib/db/index.svelte';
     
-    import { AppBar, LightSwitch } from '@skeletonlabs/skeleton';
+    import { AppBar } from '@skeletonlabs/skeleton-svelte';
     import MdiChevronLeft from "~icons/mdi/chevron-left";
 
     let { children } = $props();
@@ -24,10 +24,10 @@
     <!-- Header -->
     <header>
         <AppBar 
-            background="bg-warning-300-600-token" 
-            gridColumns="grid-cols-[auto_1fr_auto]" 
-            slotDefault="place-self-center"
-            slotTrail="place-content-end"
+            background="bg-warning-300-700" 
+            toolbarGridCols="grid-cols-[auto_1fr_auto]" 
+            centerClasses="place-self-center"
+            trailClasses="place-content-end"
         >
             {#snippet lead()}
                 <a

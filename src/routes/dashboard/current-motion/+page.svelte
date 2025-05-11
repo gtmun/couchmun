@@ -38,7 +38,7 @@
             <h3 class="h3">No motion set.</h3>
             Visit 
             <a
-                class="btn btn-sm variant-soft-primary"
+                class="btn btn-sm preset-tonal-primary"
                 href="{base}/dashboard/points-motions"
                 tabindex="0"
             >

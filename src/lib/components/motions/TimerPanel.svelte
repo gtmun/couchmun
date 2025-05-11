@@ -261,7 +261,7 @@
                 <!-- If sync, it is assured that this is the only run state. -->
                 {@const running = runStates[0]}
                 <button 
-                    class="btn variant-filled-primary"
+                    class="btn preset-filled-primary-500"
                     disabled={!running && !isTimerPlayable()}
                     onclick={() => runStates[0] = !running}
                 >
@@ -269,7 +269,7 @@
                 </button>
             {/if}
             <!-- Next -->
-            <button class="btn variant-filled-primary" disabled={speakersList?.isAllDone() ?? true} onclick={next}>Next</button>
+            <button class="btn preset-filled-primary-500" disabled={speakersList?.isAllDone() ?? true} onclick={next}>Next</button>
             <!-- Reset (or the custom defined buttons) -->
             {#if resetButtons}
                 {@render resetButtons(reset, canReset)}
@@ -298,7 +298,7 @@
     indices?: number[]
 )}
     <button
-        class="btn variant-filled-primary"
+        class="btn preset-filled-primary-500"
         disabled={!canReset(...(indices ?? []))}
         onclick={() => reset(...(indices ?? []))}
     >

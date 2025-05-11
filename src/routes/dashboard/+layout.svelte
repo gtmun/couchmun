@@ -13,7 +13,7 @@
     import SettingsNavigation from '$lib/components/nav/SettingsNavigation.svelte';
     import { getSessionContext } from '$lib/context/index.svelte';
     
-    import { AppBar, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
+    import { AppBar } from '@skeletonlabs/skeleton-svelte';
     import MdiMenu from "~icons/mdi/menu";
     import MdiGear from "~icons/mdi/gear";
 
@@ -54,7 +54,7 @@
 </script>
 
 {#if typeof thisLink !== "undefined"}
-    <MetaTags title="{thisLink.label} &middot; CouchMUN" />
+    <MetaTags title="{thisLink.label} · CouchMUN" />
     {:else}
     <MetaTags title="CouchMUN" />
 {/if}
@@ -72,10 +72,10 @@
     <!-- Header -->
     <header>
         <AppBar 
-            background="bg-surface-300-600-token" 
-            gridColumns="grid-cols-[auto_1fr_auto]" 
-            slotDefault="place-self-center"
-            slotTrail="place-content-end"
+            background="bg-surface-300-700" 
+            toolbarGridCols="grid-cols-[auto_1fr_auto]" 
+            centerClasses="place-self-center"
+            trailClasses="place-content-end"
         >
             {#snippet lead()}
                 <!-- Hamburger menu button -->
@@ -100,7 +100,7 @@
                     class:flex-col={committeeMain}
                 >
                     <BarHeader bind:title={$barTitle} size={committeeMain ? "md" : "sm"} />
-                    <div class="border-2 border-surface-800-100-token {committeeMain ? "m-1 mt-0" : "mx-4"}" role="separator"></div>
+                    <div class="border-2 border-surface-900-100 {committeeMain ? "m-1 mt-0" : "mx-4"}" role="separator"></div>
                     <div class="flex items-center justify-center">
                         <BarStats total={delegateCount} />
                     </div>
@@ -127,5 +127,5 @@
         {@render children?.()}
     </main>
     <!-- Footer -->
-    <footer class="bg-surface-300-600-token p-4"></footer>
+    <footer class="bg-surface-300-700 p-4"></footer>
 </div>

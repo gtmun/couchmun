@@ -8,7 +8,6 @@
 <script lang="ts">
     import "../app.css";
     import { computePosition, autoUpdate, offset, shift, flip, arrow, size } from '@floating-ui/dom';
-    import { initializeStores, Modal, storePopup } from "@skeletonlabs/skeleton";
     import { createSessionContext } from "$lib/context/index.svelte";
 
     let { children } = $props();

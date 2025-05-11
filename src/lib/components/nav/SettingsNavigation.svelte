@@ -8,8 +8,6 @@
     import { base } from "$app/paths";
     import { getSessionContext, resetSessionContext } from "$lib/context/index.svelte";
     import { db, queryStore } from "$lib/db/index.svelte";
-    
-    import { LightSwitch } from "@skeletonlabs/skeleton";
     import MdiOpenInNew from "~icons/mdi/open-in-new";
     import MdiPalette from "~icons/mdi/palette";
     import MdiPlus from "~icons/mdi/plus";
@@ -49,10 +47,10 @@
 <nav class="list-nav p-2">
     <ul>
         <a onclick={close} href="{base}/admin/settings" tabindex="0">
-            Settings&nbsp;<MdiOpenInNew class="text-surface-400-500-token" width="1em" height="1em" />
+            Settings <MdiOpenInNew class="text-surface-500" width="1em" height="1em" />
         </a>
         <a onclick={close} target="_blank" href="{base}/admin/stats" tabindex="0">
-            Stats&nbsp;<MdiOpenInNew class="text-surface-400-500-token" width="1em" height="1em" />
+            Stats <MdiOpenInNew class="text-surface-500" width="1em" height="1em" />
         </a>
     </ul>
 </nav>
@@ -79,7 +77,7 @@
     {@const selected = $selectedSession === key}
     {@const displayKey = +(key ?? $prevSessions.length) + 1}
     <button
-        class="btn {selected ? "variant-filled-primary" : "variant-soft-surface"}"
+        class="btn {selected ? "preset-filled-primary-500" : "preset-tonal-surface"}"
         onclick={() => { if (typeof key === "number" && !selected) db.loadSessionData(key); }}
         aria-label="Select{selected ? "ed" : ""} Session {displayKey}"
         aria-pressed={selected}
@@ -99,7 +97,7 @@
     </div>
     <!-- Add session button -->
     <button 
-        class="btn variant-ghost-surface" 
+        class="btn preset-tonal-surface border border-surface-500" 
         onclick={createNewSession}
     >
         <MdiPlus />

@@ -3,7 +3,7 @@
 -->
 
 <script lang="ts">
-    import { ConicGradient, type ConicStop } from '@skeletonlabs/skeleton';
+    import { type ConicStop } from '@skeletonlabs/skeleton-svelte';
 
     interface Props {
         /**

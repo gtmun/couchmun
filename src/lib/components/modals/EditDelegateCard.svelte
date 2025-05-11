@@ -57,8 +57,8 @@
                 <input class="input" bind:value={newAttrs.flagURL} placeholder="https://example.com/flag.svg">
             </label>
             <div class="flex justify-end gap-3">
-                <button class="btn variant-filled-error" type="button" onclick={close}>Cancel</button>
-                <button class="btn variant-filled-primary" type="submit">Submit</button>
+                <button class="btn preset-filled-error-500" type="button" onclick={close}>Cancel</button>
+                <button class="btn preset-filled-primary-500" type="submit">Submit</button>
             </div>
         </form>
     {/snippet}

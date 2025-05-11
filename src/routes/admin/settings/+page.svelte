@@ -11,7 +11,7 @@
     import type { DelegateAttrs, Settings } from "$lib/types";
     import { downloadFile, triggerConfirmModal } from "$lib/util";
 
-    import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
+    import { FileUpload } from "@skeletonlabs/skeleton-svelte";
     import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
     import { _legacyFixDelFlag, db, queryStore } from "$lib/db/index.svelte";
     import { toKeyValueArray, toObject } from "$lib/db/keyval";
@@ -36,11 +36,10 @@
         { key: "yieldMainTimer", label: "Return time yielded by delegates to main timer" },
     ] as const;
     const modalStore = getModalStore();
-    let files: FileList | undefined = $state();
 
     // IMPORT & EXPORT
-    async function importFile() {
-        const file = files?.item(0);
+    async function importFile(files: File[]) {
+        const [file] = files;
         if (file) {
             const text = await file.text();
             const json = JSON.parse(text);
@@ -197,29 +196,29 @@
     }
 </script>
 
-<MetaTags title="Settings &middot; CouchMUN (Admin)" />
+<MetaTags title="Settings · CouchMUN (Admin)" />
 {#if $settings && Object.keys($settings).length}
 <div class="flex flex-col p-4 gap-4">
     <div class="panel">
         <h3 class="h3 text-center">Control Panel</h3>
         <div class="flex gap-3 justify-center">
-            <FileButton 
-                name="import" 
-                button="btn variant-filled-primary" 
-                bind:files 
-                on:change={importFile} 
+            <FileUpload 
+                name="import"
                 accept="application/json"
+                onFileAccept={e => importFile(e.files)}
             >
-                Import from file...
-            </FileButton>
+                <button class="btn preset-filled-primary-500">
+                    Import from file...
+                </button>
+            </FileUpload>
             <button
-                class="btn variant-filled-primary"
+                class="btn preset-filled-primary-500"
                 onclick={exportFile}
             >
                 Export to file...
             </button>
             <button
-                class="btn variant-filled-error"
+                class="btn preset-filled-error-500"
                 onclick={resetAllSettings}
             >
                 Reset all settings
@@ -282,7 +281,7 @@
                             <td>
                                 <div class="flex gap-3 items-center">
                                     {#each entry.order as key, oi}
-                                    <div class="card p-1 flex items-center bg-surface-300-600-token">
+                                    <div class="card p-1 flex items-center bg-surface-300-700">
                                         <span>{SORT_PROPERTY_NAMES[key.property]}</span>
                                         <button onclick={() => {
                                             db.settings.update("sortOrder", ({ val: order }) => { order[ei].order[oi].ascending = !order[ei].order[oi].ascending })
@@ -319,9 +318,9 @@
                 </select>
             </label>
             <div class="flex gap-3 justify-center">
-                <button class="btn variant-filled-primary" onclick={() => editDelegate(undefined)}>Add Delegate</button>
-                <button class="btn variant-filled-primary" onclick={() => configureEnableDelegates()}>Enable/Disable Delegates</button>
-                <button class="btn variant-filled-error" onclick={clearDelegates}>Clear Delegates</button>
+                <button class="btn preset-filled-primary-500" onclick={() => editDelegate(undefined)}>Add Delegate</button>
+                <button class="btn preset-filled-primary-500" onclick={() => configureEnableDelegates()}>Enable/Disable Delegates</button>
+                <button class="btn preset-filled-error-500" onclick={clearDelegates}>Clear Delegates</button>
             </div>
         </div>
         <!-- Delegate Table -->
