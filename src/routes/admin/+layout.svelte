@@ -15,11 +15,6 @@
     const title = db.settingStore("title", "");
 </script>
 
-<div class="hidden">
-    <!-- Needed to make dark mode work reliably cross-tabs -->
-    <LightSwitch />
-</div>
-
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">
     <!-- Header -->
     <header>

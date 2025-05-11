@@ -12,7 +12,7 @@
     import { POPUP_CARD_CLASSES } from "$lib/util/popup";
     import { stringifyTime } from "$lib/util/time";
     
-    import { type PaginationSettings, Progress, Pagination, Popover } from "@skeletonlabs/skeleton-svelte";
+    import { Progress, Pagination, Popover } from "@skeletonlabs/skeleton-svelte";
     import MdiArrowUp from "~icons/mdi/arrow-up";
     import MdiDatabaseExportOutline from "~icons/mdi/database-export-outline";
 
@@ -31,7 +31,7 @@
         return nPrevSessions + +(typeof currentSessionKey === "undefined");
     }, 0);
 
-    let pageSettings: PaginationSettings = $state({
+    let pageSettings = $state({
         page: -1,
         limit: 1,
         size: 0,
@@ -125,7 +125,8 @@
 
 <div class="flex flex-col gap-1">
     <div class="flex items-center justify-end gap-2">
-        <Pagination showNumerals bind:settings={pageSettings} />
+        <!-- TODO: pagination -->
+        <Pagination data={[1,2,3,4,5]} />
         <Popover
             open={statsPopupOpen}
             onOpenChange={e => statsPopupOpen = e.open}

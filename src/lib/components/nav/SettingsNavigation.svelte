@@ -8,6 +8,7 @@
     import { base } from "$app/paths";
     import { getSessionContext, resetSessionContext } from "$lib/context/index.svelte";
     import { db, queryStore } from "$lib/db/index.svelte";
+    import { Switch } from "@skeletonlabs/skeleton-svelte";
     import MdiOpenInNew from "~icons/mdi/open-in-new";
     import MdiPalette from "~icons/mdi/palette";
     import MdiPlus from "~icons/mdi/plus";
@@ -64,7 +65,8 @@
         <MdiPalette />
     </div>
     <div class="flex justify-between">
-        Active Theme <LightSwitch />
+        <!-- TODO: LightSwitch -->
+        Active Theme <Switch />
     </div>
 </div>
 
