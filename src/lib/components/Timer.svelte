@@ -10,7 +10,7 @@
     import { clamp, makeEditable } from "$lib/util";
     import { parseTime, stringifyTime } from "$lib/util/time";
     import { Progress } from "@skeletonlabs/skeleton-svelte";
-    import { onDestroy, onMount, untrack } from "svelte";
+    import { onDestroy, onMount, untrack, type Component } from "svelte";
     import MdiPause from "~icons/mdi/pause";
     import MdiPlay from "~icons/mdi/play";
 
@@ -119,11 +119,11 @@
     let barProps = $derived({
         value: 100 * progress,
         height,
-        transition: `duration-1000 ${running ? 'transition-[background-color]' : 'transition-[background-color,width]'}`,
-        meter: color,
-        track: "bg-surface-300-700",
+        meterTransition: `duration-1000 ${running ? 'transition-[background-color]' : 'transition-[background-color,width]'}`,
+        meterBg: color,
+        trackBg: "bg-surface-300-700",
         labelledby: `timer-text-${tid}`
-    });
+    } satisfies (typeof Progress extends Component<infer R, any, any> ? R : never));
 
     // Timer related handlers
     let lastStart: number | undefined = undefined;
