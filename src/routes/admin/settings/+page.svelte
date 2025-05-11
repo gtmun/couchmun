@@ -2,7 +2,7 @@
   @component The admin settings page (used for configuring settings).
 -->
 <script lang="ts">
-    import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
+    import LabeledSwitch from "$lib/components/LabeledSwitch.svelte";
     import MetaTags from "$lib/components/MetaTags.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import EditDelegateCard from "$lib/components/modals/EditDelegateCard.svelte";
@@ -230,7 +230,7 @@
         <h3 class="h3 text-center">Preferences</h3>
         <div class="flex flex-col gap-3">
             {#each PREFERENCES_LABELS as { key, label }}
-                <LabeledSlideToggle 
+                <LabeledSwitch 
                     name="prefs-{key}"
                     bind:checked={
                         () => $settings.preferences[key],
@@ -238,7 +238,7 @@
                     }
                 >
                     <div>{label}</div>
-                </LabeledSlideToggle>
+                </LabeledSwitch>
             {/each}
         </div>
     </div>

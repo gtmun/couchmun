@@ -6,13 +6,14 @@
 <script lang="ts">
     import DelAutocomplete from "$lib/components/DelAutocomplete.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
+    import LabeledSwitch from "$lib/components/LabeledSwitch.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { lazyslide } from "$lib/util";
-    import { interactivePopup, POPUP_CARD_CLASSES } from "$lib/util/popup";
     import { parseTime } from "$lib/util/time";
     import MdiWrench from "~icons/mdi/wrench";
+    import { Popover } from "@skeletonlabs/skeleton-svelte";
+    import { POPUP_CARD_CLASSES } from "$lib/util/popup";
 
     const { delegates } = getSessionContext();
 
@@ -29,7 +30,7 @@
     let labelText: string = $state("");
 
     // Configuration
-    const POPUP_TARGET = "configure-popup";
+    let configurePopupOpen = $state(false);
     function setDuration() {
         let secs = parseTime(durInput);
         if (typeof secs !== "undefined") {
@@ -44,14 +45,66 @@
 </script>
 
 <div class="flex flex-col h-full items-stretch">
-    <button
-        class="btn-icon preset-filled-surface-500 self-end"
-        use:popup={interactivePopup(POPUP_TARGET)}
-        aria-label="Configure Utilities"
-        title="Configure Utilities"
+    <Popover
+        open={configurePopupOpen}
+        onOpenChange={e => configurePopupOpen = e.open}
+        positioning={{ placement: 'bottom' }}
+        triggerBase="preset-filled-surface-500"
+        triggerClasses="btn-icon self-end"
+        triggerAriaLabel="Configure Utilities"
+        contentBase={POPUP_CARD_CLASSES}
+        arrow
     >
-        <MdiWrench />
-    </button>
+        {#snippet trigger()}
+            <MdiWrench />
+        {/snippet}
+        {#snippet content()}
+            <div class="flex flex-col gap-4 overflow-hidden">
+                <!-- Timer config -->
+                    <LabeledSwitch name="enable-timer" bind:checked={timerEnabled}>
+                    <span><strong>Timer</strong></span>
+                    </LabeledSwitch>
+                {#if timerEnabled}
+                    <div class="flex flex-row gap-5">
+                        <form class="contents" onsubmit={submitDuration}>
+                            <label class="flex grow items-center justify-between gap-3">
+                                <span>Time</span>
+                                <input class="input" bind:value={durInput} oninput={setDuration} placeholder="mm:ss" />
+                            </label>
+                        </form>
+                    </div>
+                {/if}
+                <hr />
+                <!-- Label config -->
+                <form class="contents">
+                    <label class="flex grow items-center justify-between gap-3">
+                        <span><strong>Label</strong></span>
+                        <select class="select" bind:value={labelType}>
+                            <option value="delegate" label="Delegate"></option>
+                            <option value="title" label="Title"></option>
+                            <option value="none" label="None"></option>
+                        </select>
+                    </label>
+                    {#if labelType !== "none"}
+                        <label class="flex grow items-center justify-between gap-3">
+                            <span>Text</span>
+                            <input class="input" bind:value={labelText} />
+                        </label>
+                        {#if labelType === "delegate"}
+                            <div class="card bg-surface-200-800">
+                                <DelAutocomplete
+                                    bind:input={labelText}
+                                    delegates={Object.values($delegates)}
+                                    maxHeight="max-h-36"
+                                    on:selection={e => labelText = e.detail.label}
+                                />
+                            </div>
+                        {/if}
+                    {/if}
+                </form>
+            </div>
+        {/snippet}
+    </Popover>
     <div class="flex flex-col grow gap-5 justify-center">
         <div class="pb-5">
             {#if labelType === "delegate"}
@@ -80,52 +133,5 @@
             </div>
         </div>
         {/if}
-    </div>
-</div>
-
-<div class="{POPUP_CARD_CLASSES}" data-popup={POPUP_TARGET}>
-    <div class="flex flex-col gap-4 overflow-hidden">
-        <!-- Timer config -->
-            <LabeledSlideToggle name="enable-timer" bind:checked={timerEnabled}>
-            <span><strong>Timer</strong></span>
-            </LabeledSlideToggle>
-        {#if timerEnabled}
-            <div class="flex flex-row gap-5">
-                <form class="contents" onsubmit={submitDuration}>
-                    <label class="flex grow items-center justify-between gap-3">
-                        <span>Time</span>
-                        <input class="input" bind:value={durInput} oninput={setDuration} placeholder="mm:ss" />
-                    </label>
-                </form>
-            </div>
-        {/if}
-        <hr />
-        <!-- Label config -->
-        <form class="contents">
-            <label class="flex grow items-center justify-between gap-3">
-                <span><strong>Label</strong></span>
-                <select class="select" bind:value={labelType}>
-                    <option value="delegate" label="Delegate"></option>
-                    <option value="title" label="Title"></option>
-                    <option value="none" label="None"></option>
-                </select>
-            </label>
-            {#if labelType !== "none"}
-                <label class="flex grow items-center justify-between gap-3">
-                    <span>Text</span>
-                    <input class="input" bind:value={labelText} />
-                </label>
-                {#if labelType === "delegate"}
-                    <div class="card bg-surface-200-800">
-                        <DelAutocomplete
-                            bind:input={labelText}
-                            delegates={Object.values($delegates)}
-                            maxHeight="max-h-36"
-                            on:selection={e => labelText = e.detail.label}
-                        />
-                    </div>
-                {/if}
-            {/if}
-        </form>
     </div>
 </div>

@@ -9,10 +9,10 @@
     import { Delegate } from "$lib/db/delegates";
     import type { StatsData } from "$lib/types";
     import { compare, downloadFile } from "$lib/util";
-    import { interactivePopup, POPUP_CARD_CLASSES } from "$lib/util/popup";
+    import { POPUP_CARD_CLASSES } from "$lib/util/popup";
     import { stringifyTime } from "$lib/util/time";
     
-    import { type PaginationSettings, Progress, Pagination } from "@skeletonlabs/skeleton-svelte";
+    import { type PaginationSettings, Progress, Pagination, Popover } from "@skeletonlabs/skeleton-svelte";
     import MdiArrowUp from "~icons/mdi/arrow-up";
     import MdiDatabaseExportOutline from "~icons/mdi/database-export-outline";
 
@@ -99,7 +99,7 @@
     );
 
     // Configuration
-    const POPUP_TARGET = "export-stats-popup";
+    let statsPopupOpen = $state(false);
     function exportStats() {
         let data = {
             committee: $barTitle,
@@ -126,14 +126,27 @@
 <div class="flex flex-col gap-1">
     <div class="flex items-center justify-end gap-2">
         <Pagination showNumerals bind:settings={pageSettings} />
-        <button 
-            class="btn-icon preset-filled-warning-500"
-            aria-label="Edit Stats"
-            title="Edit Stats"
-            use:popup={interactivePopup(POPUP_TARGET)}
+        <Popover
+            open={statsPopupOpen}
+            onOpenChange={e => statsPopupOpen = e.open}
+            positioning={{ placement: 'bottom' }}
+            triggerBase="preset-filled-warning-500"
+            triggerClasses="btn-icon"
+            triggerAriaLabel="Edit Stats"
+            contentBase={POPUP_CARD_CLASSES}
+            arrow
         >
-            <MdiDatabaseExportOutline />
-        </button>
+            {#snippet trigger()}
+                <MdiDatabaseExportOutline />
+            {/snippet}
+            {#snippet content()}
+                <div class="flex flex-col gap-2 overflow-hidden">
+                    <h4 class="h4">Export Statistics</h4>
+                    <button class="btn preset-filled-primary-500" onclick={exportAllStats}>Export All Sessions</button>
+                    <button class="btn preset-filled-primary-500" onclick={exportStats}>Export Session {pageSettings.page + 1}</button>
+                </div>
+            {/snippet}
+        </Popover>
     </div>
     <div class="table-container">
         <table class="table table-compact">
@@ -182,9 +195,9 @@
                             <div class="flex w-[33vw]">
                                 <Progress
                                     height="h-8"
-                                    transition="duration-500 transition-width"
-                                    track="bg-surface-300-700"
-                                    meter="bg-primary-500"
+                                    trackBg="bg-surface-300-700"
+                                    meterBg="bg-primary-500"
+                                    meterTransition="duration-500 transition-width"
                                     value={del.stats.durationSpoken * 100 / maxDurationSpoken}
                                 />
                             </div>
@@ -194,14 +207,5 @@
                 {/each}
             </tbody>
         </table>
-    </div>
-      
-</div>
-
-<div class="{POPUP_CARD_CLASSES}" data-popup={POPUP_TARGET}>
-    <div class="flex flex-col gap-2 overflow-hidden">
-        <h4 class="h4">Export Statistics</h4>
-        <button class="btn preset-filled-primary-500" onclick={exportAllStats}>Export All Sessions</button>
-        <button class="btn preset-filled-primary-500" onclick={exportStats}>Export Session {pageSettings.page + 1}</button>
     </div>
 </div>

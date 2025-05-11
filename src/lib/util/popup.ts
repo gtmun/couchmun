@@ -18,22 +18,7 @@ import type { PopupSettings } from "@skeletonlabs/skeleton-svelte";
 /**
  * Default Tailwind classes for popup cards.
  */
-export const POPUP_CARD_CLASSES = "card overflow-hidden p-4";
-
-/**
- * Defaults for a popup whose contents are meant to be interacted with
- * and not dismissed when interacted with.
- * 
- * @param target popup ID
- * @returns the settings
- */
-export function interactivePopup(target: string): PopupSettings {
-    return {
-        event: 'focus-click',
-        target,
-        closeQuery: ''
-    }
-}
+export const POPUP_CARD_CLASSES = "card overflow-hidden p-4 preset-filled-surface-100-900";
 
 /**
  * Defaults for a popup which holds an autocomplete module.

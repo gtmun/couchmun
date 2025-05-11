@@ -7,13 +7,9 @@
 
 <script lang="ts">
     import "../app.css";
-    import { computePosition, autoUpdate, offset, shift, flip, arrow, size } from '@floating-ui/dom';
     import { createSessionContext } from "$lib/context/index.svelte";
 
     let { children } = $props();
-
-    initializeStores();
-    storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow, size });
 
     createSessionContext();
     
@@ -24,8 +20,6 @@
         }
     }
 </script>
-
-<Modal />
 
 {@render children()}
 

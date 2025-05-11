@@ -3,7 +3,7 @@
     to create or edit a motion.
 -->
 <script lang="ts">
-    import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
+    import LabeledSwitch from "$lib/components/LabeledSwitch.svelte";
     import DelAutocomplete, { autocompletePlaceholders } from "$lib/components/DelAutocomplete.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { createMotionSchema, inputifyMotion, MOTION_FIELDS, MOTION_LABELS } from "$lib/motions/definitions";
@@ -229,9 +229,9 @@
 
     <!-- Extension toggle -->
     {#if $preferences.enableMotionExt && hasField(inputMotion, ["isExtension"]) && $selectedMotion?.kind === inputMotion.kind}
-        <LabeledSlideToggle name="extension-toggle" bind:checked={inputMotion.isExtension}>
+        <LabeledSwitch name="extension-toggle" bind:checked={inputMotion.isExtension}>
             <span>Extend previous motion?</span>
-        </LabeledSlideToggle>
+        </LabeledSwitch>
     {/if}
 
     <!-- Number of speakers display -->
