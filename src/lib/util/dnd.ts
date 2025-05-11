@@ -83,7 +83,7 @@ export function createDragTr(el?: HTMLElement, origTable?: HTMLTableElement) {
     // Copies <thead>, <tbody>, <table>
     let thead = origTable.querySelector("thead")!.cloneNode(true) as HTMLTableSectionElement;
     thead.id = "";
-    thead.classList.add("!collapse");
+    thead.classList.add("collapse!");
 
     let tbody = origTable.querySelector("tbody")!.cloneNode() as HTMLTableSectionElement;
     tbody.id = "";

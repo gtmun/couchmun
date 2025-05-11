@@ -223,7 +223,7 @@
 <div class="flex justify-center h-6 lg:hidden">
     <!-- Placeholder which matches size of chevron-down -->
 </div>
-<div class="flex flex-col justify-center flex-grow">
+<div class="flex flex-col justify-center grow">
     {#key selectedSpeaker?.key}
         <div class="pb-5" transition:lazyslide>
             {#if typeof selectedSpeaker !== "undefined"}

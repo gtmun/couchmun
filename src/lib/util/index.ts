@@ -166,7 +166,7 @@ export const makeEditable = ((el: HTMLElement, options?: EditableParameter) => {
 
     // Set styling to editable styling:
     function setStyling(enabled: boolean) {
-        const STANDARD_STYLES = ["border-b-4", "border-transparent", "hover:border-surface-500", "focus:border-surface-500", "rounded"];
+        const STANDARD_STYLES = ["border-b-4", "border-transparent", "hover:border-surface-500", "focus:border-surface-500", "rounded-sm"];
         const DELAYED_STYLES = ["transition-[border-color,font-size]"];
         if (enabled) {
             // Add editable styling

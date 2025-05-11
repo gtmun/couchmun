@@ -284,12 +284,12 @@
     }
 </script>
 
-<div class="card p-4 overflow-y-hidden flex-grow flex flex-col items-stretch gap-4">
+<div class="card p-4 overflow-y-hidden grow flex flex-col items-stretch gap-4">
     <h4 class="h4 flex justify-center" id="sl-header-{sid}">
         Speakers List
     </h4>
 
-    <ol class="p-2 list overflow-y-auto grid grid-cols-[auto_auto_1fr_auto] auto-rows-min flex-grow"
+    <ol class="p-2 list overflow-y-auto grid grid-cols-[auto_auto_1fr_auto] auto-rows-min grow"
         bind:this={listEl}
         use:dragHandleZone={{
             items: dndItems,
@@ -314,9 +314,9 @@
             {@const speakerLabel = delAttrs?.name ?? "unknown"}
 
             <li
-                class="!grid grid-cols-subgrid col-span-4 dnd-list-item"
-                class:!visible={shadow}
-                class:!bg-surface-300-600-token={shadow}
+                class="grid! grid-cols-subgrid col-span-4 dnd-list-item"
+                class:visible!={shadow}
+                class:bg-surface-300-600-token!={shadow}
                 animate:flip={{ duration: 150 }}
                 aria-label={speakerLabel}
             >
@@ -325,7 +325,7 @@
                 </div>
                 <span class="enumerated-index">{i + 1}.</span>
                 <button 
-                    class="btn !text-wrap p-2 px-5 justify-start rounded-lg overflow-hidden"
+                    class="btn text-wrap! p-2 px-5 justify-start rounded-lg overflow-hidden"
                     class:variant-filled-primary={selected}
                     class:variant-soft-surface={!selected && speaker.completed}
                     class:variant-ringed-surface={!selected && !speaker.completed}
@@ -422,14 +422,15 @@
     {/if}
 </div>
 
-<style lang="postcss">
-    /* Styling for dragged element */
+<style>
+    /* TODO: restyle dragged element
+    Styling for dragged element
     :global(#dnd-action-dragged-el).dnd-list-item {
-        @apply !bg-surface-50;
-        @apply !grid grid-cols-[auto_auto_1fr_auto] gap-4;
-        @apply !opacity-90;
+        @apply bg-surface-50!;
+        @apply grid! grid-cols-[auto_auto_1fr_auto] gap-4;
+        @apply opacity-90!;
     }
     :global(.dark #dnd-action-dragged-el).dnd-list-item {
-        @apply !bg-surface-900;
-    }
+        @apply bg-surface-900!;
+    } */
 </style>

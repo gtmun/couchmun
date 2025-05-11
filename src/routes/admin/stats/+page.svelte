@@ -158,8 +158,8 @@
             <tbody>
                 {#each displayEntries as del (del.id)}
                 {@const absent = !del.isPresent()}
-                <tr class:!bg-surface-300-600-token={absent}>
-                    <td class="!align-middle">
+                <tr class:bg-surface-300-600-token!={absent}>
+                    <td class="align-middle!">
                         {#if absent}
                         <div class="flex gap-1">
                             <span class="line-through italic">
@@ -173,10 +173,10 @@
                         <DelLabel attrs={del} inline />
                         {/if}
                     </td>
-                    <td class="!align-middle">{del.stats.motionsProposed}</td>
-                    <td class="!align-middle">{del.stats.motionsAccepted}</td>
-                    <td class="!align-middle">{del.stats.timesSpoken}</td>
-                    <td class="!align-middle">
+                    <td class="align-middle!">{del.stats.motionsProposed}</td>
+                    <td class="align-middle!">{del.stats.motionsAccepted}</td>
+                    <td class="align-middle!">{del.stats.timesSpoken}</td>
+                    <td class="align-middle!">
                         <div class="flex items-center justify-end gap-3">
                             {stringifyTime(del.stats.durationSpoken / 1000, "round")}
                             <div class="flex w-[33vw]">

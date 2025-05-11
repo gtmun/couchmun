@@ -147,7 +147,7 @@
         aria-label="Sort Motions"
         title="Sort Motions"
 
-        class:!variant-filled-surface={motionsSorted}
+        class:variant-filled-surface!={motionsSorted}
         disabled={motionsSorted}
       >
         <MdiSort />
@@ -155,10 +155,10 @@
     </div>
     
     <div class="table-container">
-      <table class="table [&_td]:!align-middle [&_td]:!text-wrap" bind:this={motionTable}>
+      <table class="table [&_td]:align-middle! [&_td]:text-wrap!" bind:this={motionTable}>
         <thead>
           <tr>
-            <td class="w-[7.5rem]"></td>
+            <td class="w-30"></td>
             <td class="px-3 w-24">Motion</td>
             <td class="px-3 w-32">By</td>
             <td class="px-3">Topic</td>
@@ -189,9 +189,9 @@
             {@const delName = delAttrs?.name ?? "unknown"}
             {@const shadow = isDndShadow(motion)}
             <tr 
-              class="dnd-list-item hover:!bg-primary-500/25"
-              class:!visible={shadow}
-              class:!bg-surface-300-600-token={shadow}
+              class="dnd-list-item hover:bg-primary-500/25!"
+              class:visible!={shadow}
+              class:bg-surface-300-600-token!={shadow}
               animate:flip={{ duration: 150 }}
               aria-label="{delName}'s Motion"
             >
@@ -239,9 +239,9 @@
   </div>
 </div>
 
-<style lang="postcss">
+<style>
   /* Styling for dragged element */
   :global(#dnd-action-dragged-el).dnd-list-item {
-      @apply !opacity-90;
+      opacity: 90% !important;
   }
 </style>

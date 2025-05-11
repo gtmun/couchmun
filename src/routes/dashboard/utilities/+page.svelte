@@ -54,7 +54,7 @@
     >
         <MdiWrench />
     </button>
-    <div class="flex flex-col flex-grow gap-5 justify-center">
+    <div class="flex flex-col grow gap-5 justify-center">
         <div class="pb-5">
             {#if labelType === "delegate"}
                 <div transition:lazyslide>
@@ -94,7 +94,7 @@
         {#if timerEnabled}
             <div class="flex flex-row gap-5">
                 <form class="contents" onsubmit={submitDuration}>
-                    <label class="flex flex-grow items-center justify-between gap-3">
+                    <label class="flex grow items-center justify-between gap-3">
                         <span>Time</span>
                         <input class="input" bind:value={durInput} oninput={setDuration} placeholder="mm:ss" />
                     </label>
@@ -104,7 +104,7 @@
         <hr />
         <!-- Label config -->
         <form class="contents">
-            <label class="flex flex-grow items-center justify-between gap-3">
+            <label class="flex grow items-center justify-between gap-3">
                 <span><strong>Label</strong></span>
                 <select class="select" bind:value={labelType}>
                     <option value="delegate" label="Delegate"></option>
@@ -113,7 +113,7 @@
                 </select>
             </label>
             {#if labelType !== "none"}
-                <label class="flex flex-grow items-center justify-between gap-3">
+                <label class="flex grow items-center justify-between gap-3">
                     <span>Text</span>
                     <input class="input" bind:value={labelText} />
                 </label>
