@@ -37,8 +37,7 @@
   const pid = $props.id();
 
   // A clone of $motions used solely for use:dndzone
-  let dndItems = $state($state.snapshot($motions));
-  $effect(() => { dndItems = $motions; });
+  let dndItems = $derived($motions);
 
   let motionTable: HTMLTableElement | undefined = $state();
 

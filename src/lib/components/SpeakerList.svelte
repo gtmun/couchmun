@@ -63,8 +63,7 @@
     const sid = $props.id();
 
     // A clone of order used solely for use:dragHandleZone
-    let dndItems = $state($state.snapshot(order));
-    $effect(() => { dndItems = order; });
+    let dndItems = $derived(order);
 
     // Input properties (the current input, any errors with input, and the input validator)
     // Input validator currently doesn't have support to be changed, but if needed,
