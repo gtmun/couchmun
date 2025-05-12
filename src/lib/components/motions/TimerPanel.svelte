@@ -64,7 +64,7 @@
          * If defined, this replaces the default "Reset" button (which resets all timers)
          * with HTML content of your choice.
          */
-        resetButtons?: Snippet<[typeof reset, typeof canReset]>,
+        resetButtons?: Snippet<[typeof resetButton, typeof reset, typeof canReset]>,
 
         /**
          * Listener to reset events. Called when reset is called.
@@ -216,9 +216,6 @@
         speakersList?.next();
     }
 </script>
-<script module>
-    export { resetButton };
-</script>
 
 <div class="flex justify-center h-6 lg:hidden">
     <!-- Placeholder which matches size of chevron-down -->
@@ -272,7 +269,7 @@
             <button class="btn preset-filled-primary-500" disabled={speakersList?.isAllDone() ?? true} onclick={next}>Next</button>
             <!-- Reset (or the custom defined buttons) -->
             {#if resetButtons}
-                {@render resetButtons(reset, canReset)}
+                {@render resetButtons(resetButton, reset, canReset)}
             {:else}
                 {@render resetButton(reset, canReset)}
             {/if}

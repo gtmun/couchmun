@@ -49,8 +49,9 @@
         open={configurePopupOpen}
         onOpenChange={e => configurePopupOpen = e.open}
         positioning={{ placement: 'bottom' }}
+        classes="self-end"
         triggerBase="preset-filled-surface-500"
-        triggerClasses="btn-icon self-end"
+        triggerClasses="btn-icon"
         triggerAriaLabel="Configure Utilities"
         contentBase={POPUP_CARD_CLASSES}
         arrow
