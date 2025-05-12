@@ -4,17 +4,16 @@
 -->
 <script lang="ts">
     import LabeledSwitch from "$lib/components/LabeledSwitch.svelte";
-    import DelAutocomplete, { autocompletePlaceholders } from "$lib/components/DelAutocomplete.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { createMotionSchema, inputifyMotion, MOTION_FIELDS, MOTION_LABELS } from "$lib/motions/definitions";
     import { formatValidationError } from "$lib/motions/form_validation";
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
-    import { autocompletePopup, POPUP_CARD_CLASSES } from "$lib/util/popup";
     import { addColons, parseTime } from "$lib/util/time";
     import type { Motion } from "$lib/types";
     
     import type { z } from "zod";
     import { type Snippet } from 'svelte';
+    import DelCombobox from "./DelCombobox.svelte";
 
     const { selectedMotion, delegates, preferences } = getSessionContext();
     const motionSchema = $derived(createMotionSchema($delegates));
@@ -59,9 +58,6 @@
         return Object.entries(MOTION_LABELS)
             .filter(([kind]) => filters[kind] ?? true);
     });
-
-    let noDelegatesPresent = $derived($delegates.every(d => !d.isPresent()));
-    const POPUP_TARGET = "delegate-input-popup";
     
     // Motion validation and submission.
     function submitMotion(e: SubmitEvent) {
@@ -160,14 +156,12 @@
     <!-- Delegate input -->
     <label class="label">
         <span>Delegate</span>
-        <input 
-            class="input"
-            class:input-error={inputError?.path.includes("delegate")}
-            bind:value={inputMotion.delegate}
-            required
-            use:popup={autocompletePopup(POPUP_TARGET)}
-            {...autocompletePlaceholders(noDelegatesPresent)}
-        >
+        <!-- TODO: focus on next el after this one is done -->
+        <DelCombobox
+            bind:input={inputMotion.delegate}
+            delegates={$delegates}
+            error={inputError?.path.includes("delegate")}
+        />
     </label>
 
     <!-- Motion dropdown -->
@@ -256,17 +250,4 @@
     {#if typeof inputError !== "undefined"}
         <div class="text-error-500 text-center">{inputError.message}</div>
     {/if}
-
-    <!-- Delegate autocomplete popup -->
-    <div class="{POPUP_CARD_CLASSES}" data-popup={POPUP_TARGET}>
-        <DelAutocomplete
-            bind:input={inputMotion.delegate}
-            delegates={$delegates}
-            on:selection={e => {
-                inputMotion.delegate = e.detail.label;
-                resetInputErrors();
-                (formEl?.children[1] as HTMLElement)?.focus?.();
-            }}
-        />
-    </div>
 </form>

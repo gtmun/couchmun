@@ -24,3 +24,13 @@
     border-color: var(--color-gray-200, currentcolor);
   }
 }
+
+.preset-input-error {
+  background-color: var(--color-error-100);
+  color: var(--color-error-900);
+  --tw-ring-color: var(--color-error-900);
+  /* To deal with comboboxes */
+  & > * {
+    border-color: var(--color-error-900);
+  }
+}

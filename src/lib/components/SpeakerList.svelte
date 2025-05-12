@@ -7,7 +7,6 @@
  -->
 <script lang="ts">
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import DelAutocomplete, { autocompletePlaceholders } from "$lib/components/DelAutocomplete.svelte";
     import ConfirmModalCard from "$lib/components/modals/ConfirmModalCard.svelte";
     import { type Delegate, findDelegate } from "$lib/db/delegates";
     import { formatValidationError, presentDelegateSchema } from "$lib/motions/form_validation";
@@ -16,12 +15,12 @@
     import { tick, untrack, type Snippet } from "svelte";
     import { flip } from "svelte/animate";
     import { dragHandle, dragHandleZone } from "svelte-dnd-action";
-    import { autocompletePopup, POPUP_CARD_CLASSES } from "$lib/util/popup";
     import MdiCancel from "~icons/mdi/cancel";
     import MdiDelete from "~icons/mdi/delete";
     import MdiDragVertical from "~icons/mdi/drag-vertical";
     import MdiPlus from "~icons/mdi/plus";
     import { Modal } from "@skeletonlabs/skeleton-svelte";
+    import DelCombobox from "./DelCombobox.svelte";
     
     interface Props {
         /**
@@ -67,16 +66,10 @@
     // just add a new prop for it.
     //
     // The `addDelInput` and `addDelError` properties only apply if `controls` is not defined.
-    let addDelInputEl = $state<HTMLInputElement>();
     let addDelInput: string = $state("");
     let addDelError: string = $state("");
     let addDelValidator = $derived(presentDelegateSchema(delegates));
-
-    /**
-     * ID for target. (Cannot be changed, but if needed just add a prop for it.)
-     */
-    const POPUP_TARGET = "add-delegate-popup";
-
+    
     // The UUID of the currently selected speaker object:
     let selectedSpeakerId = $state<SpeakerEntryID>();
     // A mapping from IDs to Speakers:
@@ -211,12 +204,6 @@
     function submitSpeaker(e: SubmitEvent) {
         e.preventDefault();
         addSpeaker(addDelInput, true);
-
-        // HACK: Make autocomplete appear immediately
-        setTimeout(() => {
-            addDelInputEl?.blur();
-            addDelInputEl?.focus();
-        }, 200);
     }
     /**
      * Deletes the speaker at index i in the speakers list.
@@ -355,14 +342,7 @@
             <div class="flex flex-row gap-1">
                 <!-- Add delegate -->
                 <form class="contents" onsubmit={submitSpeaker} oninput={() => addDelError = ""}>
-                    <input 
-                        class="input" 
-                        class:input-error={error}
-                        bind:value={addDelInput}
-                        bind:this={addDelInputEl}
-                        use:popup={{ ...autocompletePopup(POPUP_TARGET), placement: "left-end", closeQuery: "" }}
-                        {...autocompletePlaceholders(noDelegatesPresent)}
-                    />
+                    <DelCombobox bind:input={addDelInput} {delegates} {error} />
                     <div class="ml-2">
                         <button
                             type="submit"
@@ -399,22 +379,6 @@
             <div class="text-error-500 text-center transition-[height] overflow-hidden {error ? 'h-6' : 'h-0'}">
                 {addDelError || "\xA0"}
             </div>
-        </div>
-
-        <!-- Delegate popup. 
-            Note: this is in the middle of the document, 
-            so it might overlap with another element and cause visual bugs.
-
-            The solution used here is to not put another element over the popup :)
-        -->
-        <div class="{POPUP_CARD_CLASSES}" data-popup={POPUP_TARGET}>
-            <DelAutocomplete
-                bind:input={addDelInput}
-                {delegates}
-                on:selection={(e) => {
-                    addSpeaker(e.detail.label, true);
-                }}
-            />
         </div>
     {/if}
 </div>

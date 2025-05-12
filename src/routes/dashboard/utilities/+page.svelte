@@ -4,7 +4,6 @@
   Notably, this page includes a timer and title, which can be used quite generically.
 -->
 <script lang="ts">
-    import DelAutocomplete from "$lib/components/DelAutocomplete.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import LabeledSwitch from "$lib/components/LabeledSwitch.svelte";
     import Timer from "$lib/components/Timer.svelte";
@@ -14,6 +13,7 @@
     import MdiWrench from "~icons/mdi/wrench";
     import { Popover } from "@skeletonlabs/skeleton-svelte";
     import { POPUP_CARD_CLASSES } from "$lib/util/popup";
+    import DelCombobox from "$lib/components/DelCombobox.svelte";
 
     const { delegates } = getSessionContext();
 
@@ -88,18 +88,12 @@
                     {#if labelType !== "none"}
                         <label class="flex grow items-center justify-between gap-3">
                             <span>Text</span>
-                            <input class="input" bind:value={labelText} />
+                            {#if labelType === "delegate"}
+                                <DelCombobox bind:input={labelText} delegates={Object.values($delegates)} />
+                            {:else}
+                                <input class="input" bind:value={labelText} />
+                            {/if}
                         </label>
-                        {#if labelType === "delegate"}
-                            <div class="card bg-surface-200-800">
-                                <DelAutocomplete
-                                    bind:input={labelText}
-                                    delegates={Object.values($delegates)}
-                                    maxHeight="max-h-36"
-                                    on:selection={e => labelText = e.detail.label}
-                                />
-                            </div>
-                        {/if}
                     {/if}
                 </form>
             </div>

@@ -1,43 +1,32 @@
 /**
  * Utilities for creating and managing popups.
  * 
- * The basic setup is the following:
- * - On the element you need to trigger the popup on, you attach the `use:popup={interactivePopup(POPUP_TARGET)}` action.
- * - To create the popup, create a popup `<div>`, like so:
- * ```html
- * <div class="{POPUP_CARD_CLASSES}" data-popup={POPUP_TARGET}>
- *     <!-- contents -->
- * </div>
- * ```
+ * To create a popup, you want to use the `<Popover>` component,
+ * define an open state, positioning, trigger classes (a button),
+ * and use `POPUP_CARD_CLASSES` as the content base.
  * 
- * For additional details on autocomplete popups, see `DelAutocomplete.svelte`.
+ * ```html
+ * <Popover
+ *     open={popupOpen}
+ *     onOpenChange={e => popupOpen = e.open}
+ *     positioning={{ placement: 'bottom' }}
+ *     triggerBase="preset-filled-warning-500"
+ *     triggerClasses="btn-icon"
+ *     triggerAriaLabel="<label to supplement icon>"
+ *     contentBase={POPUP_CARD_CLASSES}
+ *     arrow
+ * >
+ *     {#snippet trigger()}
+ *         <MdiIcon />
+ *     {/snippet}
+ *     {#snippet content()}
+ *         ...
+ *     {/snippet}
+ * </Popover>
+ * ```
  */
-
-import type { PopupSettings } from "@skeletonlabs/skeleton-svelte";
 
 /**
  * Default Tailwind classes for popup cards.
  */
 export const POPUP_CARD_CLASSES = "card overflow-hidden p-4 preset-filled-surface-100-900";
-
-/**
- * Defaults for a popup which holds an autocomplete module.
- * @param target popup ID
- * @returns the settings
- */
-export function autocompletePopup(target: string): PopupSettings {
-    return {
-        event: 'focus-click',
-        target,
-        placement: 'bottom',
-        middleware: {
-            size: {
-                apply({availableHeight, elements}: any) {
-                    Object.assign(elements.floating.style, {
-                        maxHeight: `${availableHeight}px`,
-                    });
-                },
-            }
-        }
-    };
-}
