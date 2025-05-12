@@ -7,6 +7,7 @@
   The timer will automatically pause (setting `running` to false) when the full duration elapses.
 -->
 <script lang="ts">
+    import { clamp, makeEditable } from "$lib/util";
     import { parseTime, stringifyTime } from "$lib/util/time";
     import { ProgressBar } from "@skeletonlabs/skeleton";
     import { onDestroy, onMount, untrack } from "svelte";
@@ -21,12 +22,6 @@
          * in which case the duration is updated when the timer is edited.
          */
         duration: number;
-
-        /**
-         * The name of the timer. This should have some unique name per page.
-         * It does not have to be descriptive; it could literally just be `1`.
-         */
-        name: string;
 
         /**
          * Whether or not this timer is running.
@@ -90,7 +85,6 @@
 
     let {
         duration = $bindable(),
-        name,
         running = $bindable(false),
         height = "h-10",
         hideText = false,
@@ -100,7 +94,7 @@
         useKeyHandlers = true,
         onPause = undefined,
     }: Props = $props();
-
+    const tid = $props.id();
     
     const COLOR_THRESHOLDS = [
         // color = the color class to apply
@@ -128,7 +122,7 @@
         transition: `duration-1000 ${running ? 'transition-[background-color]' : 'transition-[background-color,width]'}`,
         meter: color,
         track: "bg-surface-300-600-token",
-        labelledby: `timer-text-${name}`
+        labelledby: `timer-text-${tid}`
     });
 
     // Timer related handlers
@@ -253,16 +247,7 @@
         if (e.code === "Space") running = false;
     }
 
-    // Editable time:
-    let totalTimeText: HTMLSpanElement | undefined = $state();
-    function titleKeyDown(e: KeyboardEvent) {
-        if (e.code === "Enter") {
-            e.preventDefault();
-            totalTimeText?.blur();
-        }
-    }
-    function setDuration() {
-        let text = totalTimeText?.textContent;
+    function setDuration(text?: string) {
         let time = text ? parseTime(text) : undefined;
         duration = time ?? duration;
     }
@@ -270,7 +255,6 @@
 
 <script module lang="ts">
     import type { ClockMessage } from "$lib/types";
-    import { clamp } from "$lib/util";
     import ClockSourceWorker from "$lib/util/clock?worker";
 
     // This is a synchronized timer for all Timer components.
@@ -289,20 +273,16 @@
         class:hidden={hideText}
         id={barProps.labelledby}
     >
-        {#if editable && !running}
-            {stringifyTime(secsRemaining())}/<span
-                class="border-b-4 border-transparent hover:border-surface-500 focus:border-surface-500 transition rounded"
-                contenteditable
-                onfocusout={setDuration}
-                onkeydown={titleKeyDown}
-                bind:this={totalTimeText}
-                role="none"
-            >
-                {stringifyTime(duration)}
-            </span>
-        {:else}
-            {stringifyTime(secsRemaining())}/{stringifyTime(duration)}
-        {/if}
+        {stringifyTime(secsRemaining())}/<span
+            use:makeEditable={{
+                when: editable && !running,
+                get value() { return stringifyTime(duration) },
+                set value(time) { setDuration(time) }
+            }}
+            role="none"
+        >
+            {stringifyTime(duration)}
+        </span>
     </h2>
     <div class="grid grid-cols-[1fr_auto] gap-1">
         <!-- The progress bar -->

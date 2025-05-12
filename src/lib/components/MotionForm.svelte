@@ -79,6 +79,9 @@
                 delete inputMotion[key];
             }
         }
+        if ($selectedMotion?.kind !== inputMotion.kind && "isExtension" in inputMotion) {
+            delete inputMotion["isExtension"];
+        }
 
         // Validate input
         const result = motionSchema.safeParse(inputMotion);

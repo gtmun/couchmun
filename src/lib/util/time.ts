@@ -26,9 +26,9 @@ export function parseTime(timeStr: string): number | undefined {
     // Handling seconds:
     if (segments.length === 1) {
         let [secs] = segments;
-        let colonized = addColons(secs);
+        let colonized = addColons(secs, false);
         
-        return colonized.includes(":") ? parseTime(addColons(secs)) : _safeInteger(+colonized);
+        return colonized.includes(":") ? parseTime(colonized) : _safeInteger(+colonized);
     }
 
     // Handling formats -- mm:ss to yy:dd:hh:mm:ss
@@ -104,9 +104,10 @@ function stringifySegments(segments: number[]): string {
 /**
  * Adds colons to a numeric string.
  * @param numStr the numeric string
+ * @param requireMinSegments Whether the string produced should have at least the minimum number of segments (default, true)
  * @returns the numeric string with colons (or the string again if not numeric)
  */
-export function addColons(numStr: string): string {
+export function addColons(numStr: string, requireMinSegments: boolean = true): string {
     if (typeof numStr === "undefined") return "";
     if (!NUM_REGEX.test(numStr)) return numStr;
 
@@ -130,5 +131,8 @@ export function addColons(numStr: string): string {
         time[u + 1] += d;
     }
 
+    if (requireMinSegments && time.length < MIN_SEGMENTS) {
+        time.push(...Array.from({ length: MIN_SEGMENTS - time.length }, () => 0));
+    }
     return stringifySegments(time);
 }

@@ -241,7 +241,6 @@
             -->
             {@const last = i == timers.length - 1}
             <Timer
-                name="timer-{i}"
                 bind:duration={() => getDuration(i), d => setDuration(i, d)}
                 bind:running={() => getRunState(i), s => setRunState(i, s)}
                 bind:this={timers[i]}

@@ -4,6 +4,7 @@
 
 import type { ModalSettings, ModalStore } from "@skeletonlabs/skeleton";
 import { cubicOut } from "svelte/easing";
+import type { Action } from "svelte/action";
 import type { TransitionConfig } from "svelte/transition";
 
 /**
@@ -115,3 +116,90 @@ export function clamp(value: number, min: number, max: number) {
     if (value > max) return max;
     return value;
 }
+
+async function waitNextFrame() {
+    return new Promise<number>(resolve => {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(resolve)
+        });
+    });
+}
+
+type EditableParameter = {
+    when?: boolean,
+    value?: string
+}
+/**
+ * Action to make an element editable (when `when` is true).
+ * 
+ * This applies the standard styling for editable elements as well as adds listeners on content update.
+ * On content update, the `options.value` parameter is updated. This can be replaced with a get/set pair
+ * to perform arbitrary update handlers.
+ */
+export const makeEditable = ((el: HTMLElement, options?: EditableParameter) => {
+    // Event handlers.
+    // Editable element should exit when defocused or enter is pressed:
+    function onKeyDown(e: KeyboardEvent) {
+        if (e.code === "Enter") {
+            e.preventDefault();
+            el.blur();
+        }
+    }
+    function onFocusOut() {
+        if (options) {
+            const trimmed = el.textContent?.trim();
+            if (trimmed) {
+                options.value = trimmed;
+            }
+            el.textContent = options.value ?? "";
+        }
+    };
+    function setHandlers(enabled: boolean) {
+        if (enabled) {
+            el.addEventListener("keydown", onKeyDown);
+            el.addEventListener("focusout", onFocusOut);
+        } else {
+            el.removeEventListener("keydown", onKeyDown);
+            el.removeEventListener("focusout", onFocusOut);
+        }
+    }
+
+    // Set styling to editable styling:
+    function setStyling(enabled: boolean) {
+        const STANDARD_STYLES = ["border-b-4", "border-transparent", "hover:border-surface-500", "focus:border-surface-500", "rounded"];
+        const DELAYED_STYLES = ["transition-[border-color,font-size]"];
+        if (enabled) {
+            // Add editable styling
+            el.classList.add(...STANDARD_STYLES);
+            waitNextFrame().then(() => el.classList.add(...DELAYED_STYLES));
+        } else {
+            el.classList.remove(...STANDARD_STYLES, ...DELAYED_STYLES);
+        }
+    }
+
+    // Init: Set styling + handlers if applicable:
+    let editable = typeof options?.when === "undefined" || options.when;
+    el.contentEditable = editable ? "plaintext-only" : "inherit";
+    if (editable) {
+        setStyling(true);
+        setHandlers(true);
+    }
+    
+    return {
+        update(newOptions) {
+            // On update, update options + update handlers/styling accordingly:
+            options = newOptions;
+            let newEditable = typeof options?.when === "undefined" || options.when;
+            el.contentEditable = newEditable ? "plaintext-only" : "inherit";
+            if (editable != newEditable) {
+                editable = newEditable;
+                setStyling(editable);
+                setHandlers(editable);
+            }
+            
+        },
+        destroy() {
+            setHandlers(false);
+        },
+    };
+}) satisfies Action<HTMLElement, EditableParameter>;

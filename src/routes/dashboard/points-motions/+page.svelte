@@ -11,8 +11,9 @@
   import IconLabel from "$lib/components/IconLabel.svelte";
   import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
+  import { createSpeaker } from "$lib/components/SpeakerList.svelte";
   import { getSessionContext } from "$lib/context/index.svelte";
-  import { db, DEFAULT_SESSION_DATA, queryStore } from "$lib/db/index.svelte";
+  import { db } from "$lib/db/index.svelte";
   import { findDelegate } from "$lib/db/delegates";
   import { MOTION_LABELS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
@@ -30,14 +31,13 @@
   import MdiClock from "~icons/mdi/clock";
   import MdiPencil from "~icons/mdi/pencil";
   import MdiSort from "~icons/mdi/sort";
-  import { tick } from "svelte";
 
   const { motions, selectedMotion, selectedMotionState, delegates, sortOrder } = getSessionContext();
   const modalStore = getModalStore();
+  const pid = $props.id();
 
   // A clone of $motions used solely for use:dndzone
-  let dndItems = $state($state.snapshot($motions));
-  $effect(() => { dndItems = $motions; });
+  let dndItems = $derived($motions);
 
   let motionTable: HTMLTableElement | undefined = $state();
 
@@ -86,11 +86,17 @@
       return $m;
     })
   }
+
   async function acceptMotion(motion: Motion) {
-    // TODO: Properly type this to note asynchronous of .set
-    await selectedMotion.set(motion);
-    await selectedMotionState.set(structuredClone(DEFAULT_SESSION_DATA.selectedMotionState));
-    await motions.set([]);
+    // Update selected motion and initialize selected motion state:
+    $selectedMotion = motion;
+    if (motion.kind === "rr") {
+      $selectedMotionState = { speakersList: $delegates.filter(d => d.isPresent()).map(s => createSpeaker(s.id)) };
+    } else {
+      $selectedMotionState = { speakersList: [] };
+    }
+
+    $motions = [];
     await db.updateDelegate(motion.delegate, d => { d.stats.motionsAccepted++; });
   }
   async function acceptMotionAndGoto(motion: Motion) {
@@ -134,7 +140,7 @@
   
   <div class="flex flex-col gap-2 overflow-x-auto">
     <div class="grid grid-cols-[1fr_auto] items-center">
-      <h3 class="h3 text-center" id="motion-table-header">List of Motions</h3>
+      <h3 class="h3 text-center" id="motion-table-header-{pid}">List of Motions</h3>
       <button
         class="btn btn-icon variant-filled-primary"
         onclick={sortMotions}
@@ -176,7 +182,7 @@
           }}
           onconsider={(e) => dndItems = e.detail.items}
           onfinalize={(e) => $motions = dndItems = e.detail.items}
-          aria-labelledby="motion-table-header"
+          aria-labelledby="motion-table-header-{pid}"
         >
           {#each dndItems as motion, i (motion.id)}
             {@const delAttrs = findDelegate($delegates, motion.delegate)}
