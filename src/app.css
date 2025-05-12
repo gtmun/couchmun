@@ -39,7 +39,10 @@
     border-color: var(--color-error-900);
   }
 }
-@utility nav-anchor {
-  background-color: var(--color-primary-100-900);
-  color: var(--color-primary-900-100);
+@utility btn-icon-std {
+  @apply btn-icon;
+  font-size: var(--text-xl);
+  width: var(--text-xl);
+  height: var(--text-xl);
+  padding: calc(var(--spacing) * 2);
 }

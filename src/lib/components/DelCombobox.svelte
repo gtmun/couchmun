@@ -9,6 +9,7 @@
     import type { Delegate } from "$lib/db/delegates";
     import { Combobox } from "@skeletonlabs/skeleton-svelte";
     import DelLabel from "./del-label/DelLabel.svelte";
+    import type { ClassValue } from "svelte/elements";
 
     interface Props {
         /**
@@ -23,12 +24,18 @@
          * Whether the input has an error.
          */
         error?: boolean;
+
+        /**
+         * Classes to apply to top of combobox.
+         */
+        class?: string;
     }
 
     let {
         input = $bindable(),
         error = false,
-        delegates
+        delegates,
+        class: classes = "",
     }: Props = $props();
     
     let data = $derived(
@@ -58,6 +65,7 @@
     placeholder={!delsEmpty ? "Select..." : "No delegates present"}
     inputBehavior="autohighlight"
     inputGroupClasses="{error ? 'preset-input-error' : ''} transition-colors"
+    {classes}
 >
     {#snippet item(item)}
         <DelLabel attrs={{ name: item.label, flagURL: item.flag }} inline />

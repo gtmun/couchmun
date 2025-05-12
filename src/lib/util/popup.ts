@@ -11,7 +11,7 @@
  *     onOpenChange={e => popupOpen = e.open}
  *     positioning={{ placement: 'bottom' }}
  *     triggerBase="preset-filled-warning-500"
- *     triggerClasses="btn-icon"
+ *     triggerClasses="btn-icon-std"
  *     triggerAriaLabel="<label to supplement icon>"
  *     contentBase={POPUP_CARD_CLASSES}
  *     arrow

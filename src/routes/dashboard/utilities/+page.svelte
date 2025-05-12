@@ -50,8 +50,8 @@
         onOpenChange={e => configurePopupOpen = e.open}
         positioning={{ placement: 'bottom' }}
         classes="self-end"
-        triggerBase="preset-filled-surface-500"
-        triggerClasses="btn-icon"
+        triggerBase="preset-filled-surface-400-600"
+        triggerClasses="btn-icon-std"
         triggerAriaLabel="Configure Utilities"
         contentBase={POPUP_CARD_CLASSES}
         arrow
@@ -76,7 +76,7 @@
                         </form>
                     </div>
                 {/if}
-                <hr />
+                <hr class="hr" />
                 <!-- Label config -->
                 <form class="contents">
                     <label class="flex grow items-center justify-between gap-3">

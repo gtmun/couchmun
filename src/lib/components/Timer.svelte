@@ -290,7 +290,7 @@
         <!-- A start/pause button -->
         {#if !hidePlay}
             <button 
-                class="btn btn-icon preset-filled-primary-500" 
+                class="btn-icon-std preset-filled-primary-500" 
                 onclick={() => running = !running}
                 disabled={disablePlay || isElapsed()}
                 aria-label={running ? "Pause Timer" : "Start Timer"}

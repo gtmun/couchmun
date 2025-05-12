@@ -21,6 +21,7 @@
     import MdiPlus from "~icons/mdi/plus";
     import { Modal } from "@skeletonlabs/skeleton-svelte";
     import DelCombobox from "./DelCombobox.svelte";
+    import { defaultModalClasses } from "./modals/ModalContent.svelte";
     
     interface Props {
         /**
@@ -299,7 +300,7 @@
                 animate:flip={{ duration: 150 }}
                 aria-label={speakerLabel}
             >
-                <div class="btn-icon w-6" use:dragHandle>
+                <div class="btn-icon-std w-6" use:dragHandle>
                     <MdiDragVertical />
                 </div>
                 <span class="enumerated-index">{i + 1}.</span>
@@ -318,9 +319,9 @@
                 >
                     <DelLabel attrs={delAttrs} fallbackName={speakerLabel} inline />
                 </button>
-                <div class="btn-icon">
+                <div class="btn-icon-std">
                     <button 
-                        class="btn-icon 
+                        class="btn-icon-std 
                             {speaker.completed ? "preset-tonal-surface" : "preset-tonal-error hover:preset-filled-error-500"}"
                         onclick={() => deleteSpeaker(i)}
                         title="Delete {speakerLabel}"
@@ -342,14 +343,14 @@
         {@const noDelegatesPresent = delegates.every(d => !d.isPresent())}
 
         <div class="flex flex-col gap-1">
-            <div class="flex flex-row gap-1">
+            <div class="flex flex-row gap-1 items-center">
                 <!-- Add delegate -->
                 <form class="contents" onsubmit={submitSpeaker} oninput={() => addDelError = ""}>
-                    <DelCombobox bind:input={addDelInput} {delegates} {error} />
-                    <div class="ml-2">
+                    <DelCombobox bind:input={addDelInput} {delegates} {error} class="grow" />
+                    <div class="ml-2 flex items-center">
                         <button
                             type="submit"
-                            class="btn btn-icon preset-filled-primary-500"
+                            class="btn-icon-std preset-filled-primary-500"
                             disabled={noDelegatesPresent}
                             aria-label="Add to Speakers List"
                             title="Add to Speakers List"
@@ -357,25 +358,25 @@
                             <MdiPlus />
                         </button>
                     </div>
-                    <div>
-                        <!-- Clear order -->
-                        <!-- TODO: disabled={order.length === 0 } -->
-                        <Modal
-                            open={openModals.clearSpeakers}
-                            onOpenChange={e => openModals.clearSpeakers = e.open}
-                            triggerBase="btn btn-icon preset-filled-primary-500"
-                            aria-label="Clear Speakers List"
-                        >
-                            {#snippet trigger()}
-                                <MdiDelete />
-                            {/snippet}
-                            {#snippet content()}
-                                <ConfirmModalCard bind:open={openModals.clearSpeakers} success={() => order = []}>
-                                    Are you sure you want to clear the Speakers List?
-                                </ConfirmModalCard>
-                            {/snippet}
-                        </Modal>
-                    </div>
+                    <!-- Clear order -->
+                    <!-- TODO: disabled={order.length === 0 } -->
+                    <Modal
+                        open={openModals.clearSpeakers}
+                        onOpenChange={e => openModals.clearSpeakers = e.open}
+                        triggerBase="btn-icon-std preset-filled-primary-500"
+                        aria-label="Clear Speakers List"
+                        classes="flex items-center"
+                        {...defaultModalClasses}
+                    >
+                        {#snippet trigger()}
+                            <MdiDelete />
+                        {/snippet}
+                        {#snippet content()}
+                            <ConfirmModalCard bind:open={openModals.clearSpeakers} success={() => order = []}>
+                                Are you sure you want to clear the Speakers List?
+                            </ConfirmModalCard>
+                        {/snippet}
+                    </Modal>
                 </form>
             </div>
             <!-- Error messages! -->

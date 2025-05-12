@@ -52,15 +52,16 @@
         <AppBar 
             background="bg-surface-100-900" 
             toolbarGridCols="grid-cols-[auto_1fr_auto]" 
+            leadClasses="items-center "
             headlineClasses="place-self-center"
-            trailClasses="place-content-end"
+            trailClasses="items-center place-content-end"
         >
             {#snippet lead()}
                 <!-- Hamburger menu button -->
                 <Modal
                     open={openDrawer === "nav"}
                     onOpenChange={e => openDrawer = e.open ? "nav" : null}
-                    triggerBase="btn btn-icon"
+                    triggerBase="btn-icon-std"
                     contentBase="bg-surface-50-950 p-4 space-y-4 shadow-xl w-[280px] md:w-[480px] h-screen"
                     backdropBackground="bg-surface-500/50"
                     positionerJustify="justify-start"
@@ -90,7 +91,7 @@
                     class:flex-col={committeeMain}
                 >
                     <BarHeader bind:title={$barTitle} size={committeeMain ? "md" : "sm"} />
-                    <div class="border-2 border-surface-900-100 {committeeMain ? "m-1 mt-0" : "mx-4"}" role="separator"></div>
+                    <div class="border-2 rounded border-surface-900-100 {committeeMain ? "m-1 mt-0" : "mx-4"}" role="separator"></div>
                     <div class="flex items-center justify-center">
                         <BarStats total={delegateCount} />
                     </div>
@@ -104,7 +105,7 @@
                 <Modal
                     open={openDrawer === "settings"}
                     onOpenChange={e => openDrawer = e.open ? "settings" : null}
-                    triggerBase="btn btn-icon"
+                    triggerBase="btn-icon-std"
                     contentBase="bg-surface-50-950 p-4 space-y-4 shadow-xl w-[280px] md:w-[480px] h-screen"
                     backdropBackground="bg-surface-500/50"
                     positionerJustify="justify-end"

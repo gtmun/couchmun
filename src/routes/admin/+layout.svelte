@@ -27,7 +27,7 @@
             {#snippet lead()}
                 <a
                     href="{base}/dashboard"
-                    class="btn btn-icon"
+                    class="btn-icon-std"
                     aria-label="Return to Dashboard"
                     title="Return to Dashboard"
                     tabindex={0}
@@ -40,7 +40,7 @@
             </div>
             {#snippet trail()}
                 <!-- Alignment spacing -->
-                <div class="btn-icon"></div>
+                <div class="btn-icon-std"></div>
             {/snippet}
         </AppBar>
     </header>

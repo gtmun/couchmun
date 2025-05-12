@@ -44,7 +44,7 @@
                     
                 >
                     {#each radio as { presence, label, icon }}
-                        <Segment.Item value={presence}>
+                        <Segment.Item value={presence} classes="hover:preset-tonal">
                             <IconLabel {icon} {label} />
                         </Segment.Item>
                     {/each}

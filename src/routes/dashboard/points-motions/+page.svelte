@@ -135,7 +135,7 @@
     <div class="grid grid-cols-[1fr_auto] items-center">
       <h3 class="h3 text-center" id="motion-table-header-{pid}">List of Motions</h3>
       <button
-        class="btn btn-icon preset-filled-primary-500"
+        class="btn-icon-std preset-filled-primary-500"
         onclick={sortMotions}
         aria-label="Sort Motions"
         title="Sort Motions"
@@ -191,7 +191,7 @@
               <td>
                 <div class="flex flex-row">
                   <button
-                    class="btn btn-sm btn-icon w-8"
+                    class="btn-icon btn-icon-sm w-8"
                     onclick={() => removeMotion(i)}
                     data-label="Reject {delName}'s Motion"
                     title="Reject {delName}'s Motion"
@@ -199,7 +199,7 @@
                     <MdiCancel class="text-error-500" />
                   </button>
                   <button
-                    class="btn btn-sm btn-icon w-8"
+                    class="btn-icon btn-icon-sm w-8"
                     onclick={() => acceptMotionAndGoto(motion)}
                     data-label="Accept {delName}'s Motion"
                     title="Accept {delName}'s Motion"
@@ -209,7 +209,7 @@
                   <Modal
                     open={openModals.editMotion}
                     onOpenChange={e => openModals.editMotion = e.open}
-                    triggerBase="btn btn-sm btn-icon w-8"
+                    triggerBase="btn-icon btn-icon-sm w-8"
                     {...defaultModalClasses}
                   >
                     {#snippet trigger()}

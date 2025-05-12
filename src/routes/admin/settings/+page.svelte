@@ -215,7 +215,7 @@
             </Modal>
         </div>
     </div>
-    <hr />
+    <hr class="hr" />
     <div class="panel">
         <h3 class="h3 text-center">Preferences</h3>
         <div class="flex flex-col gap-3">
@@ -232,7 +232,7 @@
             {/each}
         </div>
     </div>
-    <hr />
+    <hr class="hr" />
     <div class="panel">
         <h3 class="h3 text-center">Sort Order (WIP)</h3>
         <div class="flex gap-3">
@@ -252,7 +252,7 @@
                                 {#each entry.kind as k, ki}
                                     <div class="flex items-center">
                                         <button 
-                                            class="btn btn-icon" 
+                                            class="btn-icon-std" 
                                             onclick={() => mergeUnmergeOrder(ei, ki)} 
                                             disabled={ei == 0 && ki == 0}
                                             aria-label="Merge With Above Cell"
@@ -294,7 +294,7 @@
             </div>
         </div>
     </div>
-    <hr />
+    <hr class="hr" />
     <div class="panel">
         <!-- Delegate Main Settings -->
         <div class="card-filled p-4 flex flex-col gap-3">
@@ -403,7 +403,7 @@
             </table>
         </div>
     </div>
-    <hr />
+    <hr class="hr" />
 </div>
 {/if}
 

@@ -132,7 +132,7 @@
             onOpenChange={e => statsPopupOpen = e.open}
             positioning={{ placement: 'bottom' }}
             triggerBase="preset-filled-warning-500"
-            triggerClasses="btn-icon"
+            triggerClasses="btn-icon-std"
             triggerAriaLabel="Edit Stats"
             contentBase={POPUP_CARD_CLASSES}
             arrow
