@@ -74,8 +74,8 @@
      * Default classes for dialog modals.
      */
     export const defaultModalClasses = {
-        contentBase: "card bg-surface-100-900 p-4 space-y-4 shadow-xl max-w-screen-sm",
-        backdropClasses: "backdrop-blur-sm",
+        contentBase: "card-filled p-4 space-y-4 shadow-xl sm:min-w-100 max-w-screen-sm",
+        backdropBackground: "bg-surface-500/50",
     };
 </script>
 

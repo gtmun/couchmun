@@ -24,6 +24,17 @@
 {@render children()}
 
 <svelte:window onkeydown={keydown} />
+<svelte:head>
+    <script>
+        const mode = localStorage.getItem('color-scheme') || 'light';
+        if (mode == "dark") {
+            document.documentElement.classList.add("dark");
+        } else if (mode == "light") {
+            document.documentElement.classList.remove("dark");
+        }
+    </script>
+</svelte:head>
+
 <div class="hidden">
     <!-- Force these styling classes to always exist -->
     <!-- see IconLabel.svelte -->

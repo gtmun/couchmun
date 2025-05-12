@@ -43,7 +43,7 @@
         clearDelegates: false,
         addDelegate: false,
         configureEnableDelegates: false,
-        editDelegate: false
+        editDelegate: {} as Record<number, boolean>
     });
 
     // IMPORT & EXPORT
@@ -271,7 +271,7 @@
                             <td>
                                 <div class="flex gap-3 items-center">
                                     {#each entry.order as key, oi}
-                                    <div class="card p-1 flex items-center bg-surface-300-700">
+                                    <div class="card-filled p-1 flex items-center">
                                         <span>{SORT_PROPERTY_NAMES[key.property]}</span>
                                         <button onclick={() => {
                                             db.settings.update("sortOrder", ({ val: order }) => { order[ei].order[oi].ascending = !order[ei].order[oi].ascending })
@@ -297,7 +297,7 @@
     <hr />
     <div class="panel">
         <!-- Delegate Main Settings -->
-        <div class="card p-4 flex flex-col gap-3">
+        <div class="card-filled p-4 flex flex-col gap-3">
             <h3 class="h3 text-center">Delegates</h3>
             <label class="flex gap-3 justify-center items-center">
                 <span>Apply Preset</span>
@@ -374,8 +374,8 @@
                         </td>
                         <td class="text-right">
                             <Modal
-                                open={openModals.editDelegate}
-                                onOpenChange={e => openModals.editDelegate = e.open}
+                                open={openModals.editDelegate[attrs.id]}
+                                onOpenChange={e => openModals.editDelegate[attrs.id] = e.open}
                                 triggerBase=""
                                 aria-label="Edit {attrs.name}"
                                 {...defaultModalClasses}

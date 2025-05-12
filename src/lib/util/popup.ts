@@ -29,4 +29,4 @@
 /**
  * Default Tailwind classes for popup cards.
  */
-export const POPUP_CARD_CLASSES = "card overflow-hidden p-4 preset-filled-surface-100-900";
+export const POPUP_CARD_CLASSES = "card-filled overflow-hidden p-4";

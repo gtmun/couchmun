@@ -5,7 +5,7 @@
 @source "../node_modules/@skeletonlabs/skeleton-svelte/dist";
 @plugin '@tailwindcss/forms';
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
@@ -25,7 +25,12 @@
   }
 }
 
-.preset-input-error {
+@utility card-filled {
+  @apply card;
+  background-color: var(--color-surface-50-950);
+  color: var(--color-surface-contrast-50-950);
+}
+@utility preset-input-error {
   background-color: var(--color-error-100);
   color: var(--color-error-900);
   --tw-ring-color: var(--color-error-900);
@@ -33,4 +38,8 @@
   & > * {
     border-color: var(--color-error-900);
   }
+}
+@utility nav-anchor {
+  background-color: var(--color-primary-100-900);
+  color: var(--color-primary-900-100);
 }

@@ -8,11 +8,10 @@
     import { base } from "$app/paths";
     import { getSessionContext, resetSessionContext } from "$lib/context/index.svelte";
     import { db, queryStore } from "$lib/db/index.svelte";
-    import { Switch } from "@skeletonlabs/skeleton-svelte";
-    import MdiOpenInNew from "~icons/mdi/open-in-new";
     import MdiPalette from "~icons/mdi/palette";
     import MdiPlus from "~icons/mdi/plus";
     import MdiWrench from "~icons/mdi/wrench";
+    import LightSwitch from "../LightSwitch.svelte";
 
     interface Props {
         /**
@@ -38,39 +37,40 @@
     }
 </script>
 
-<div class="flex p-4 gap-3 items-center">
-    <h3 class="h3">Configure</h3>
-    <MdiWrench />
-</div>
-<hr />
-
 <!-- External link to admin pages -->
-<nav class="list-nav p-2">
-    <ul>
-        <a onclick={close} href="{base}/admin/settings" tabindex="0">
-            Settings <MdiOpenInNew class="text-surface-500" width="1em" height="1em" />
-        </a>
-        <a onclick={close} target="_blank" href="{base}/admin/stats" tabindex="0">
-            Stats <MdiOpenInNew class="text-surface-500" width="1em" height="1em" />
-        </a>
+<nav>
+    <div class="flex p-2 gap-3 items-center">
+        <div class="text-xl font-bold">Configure</div>
+        <MdiWrench />
+    </div>
+    <ul class="flex flex-col gap-1">
+        <li class="flex">
+            <a class="grow hover:preset-tonal p-2 rounded" onclick={close} href="{base}/admin/settings" tabindex="0">
+                Settings
+            </a>
+        </li>
+        <li class="flex">
+            <a class="grow hover:preset-tonal p-2 rounded" onclick={close} target="_blank" href="{base}/admin/stats" tabindex="0">
+                Stats
+            </a>
+        </li>
     </ul>
 </nav>
 
-<hr />
+<hr class="hr" />
 
 <!-- Theming -->
-<div class="p-4 flex flex-col gap-3">
+<div class="flex flex-col p-2 gap-3">
     <div class="flex gap-3 items-center">
-        <h3 class="h3">Theme</h3>
+        <div class="text-xl font-bold">Theme</div>
         <MdiPalette />
     </div>
     <div class="flex justify-between">
-        <!-- TODO: LightSwitch -->
-        Active Theme <Switch />
+        Color Scheme <LightSwitch />
     </div>
 </div>
 
-<hr />
+<hr class="hr" />
 
 <!-- Session management -->
 
@@ -79,7 +79,7 @@
     {@const selected = $selectedSession === key}
     {@const displayKey = +(key ?? $prevSessions.length) + 1}
     <button
-        class="btn {selected ? "preset-filled-primary-500" : "preset-tonal-surface"}"
+        class="btn {selected ? "preset-filled-primary-500" : "preset-tonal hover:preset-tonal-surface"}"
         onclick={() => { if (typeof key === "number" && !selected) db.loadSessionData(key); }}
         aria-label="Select{selected ? "ed" : ""} Session {displayKey}"
         aria-pressed={selected}
@@ -87,7 +87,7 @@
         Session {displayKey}
     </button>
 {/snippet}
-<div class="p-4 flex flex-col gap-3">
+<div class="p-2 flex flex-col gap-3">
     <div class="grid grid-cols-1 gap-1">
         <!-- All sessions -->
         {#each $prevSessions as sessionKey}

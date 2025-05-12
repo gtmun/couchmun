@@ -5,6 +5,7 @@
 import { cubicOut } from "svelte/easing";
 import type { Action } from "svelte/action";
 import type { TransitionConfig } from "svelte/transition";
+import type { Component } from "svelte";
 
 export type Comparator<K> = (a: K, b: K) => number;
 
@@ -142,8 +143,8 @@ export const makeEditable = ((el: HTMLElement, options?: EditableParameter) => {
 
     // Set styling to editable styling:
     function setStyling(enabled: boolean) {
-        const STANDARD_STYLES = ["border-b-4", "border-transparent", "hover:border-surface-500", "focus:border-surface-500", "rounded-sm"];
-        const DELAYED_STYLES = ["transition-[border-color,font-size]"];
+        const STANDARD_STYLES = ["hover:bg-surface-500/25", "focus:bg-surface-500/25", "rounded"];
+        const DELAYED_STYLES = ["transition-[background-color,font-size]"];
         if (enabled) {
             // Add editable styling
             el.classList.add(...STANDARD_STYLES);
@@ -195,3 +196,8 @@ export function eqInsensitive(s: string, t: string) {
 export function includesInsensitive(full: string, sub: string) {
     return full.toLowerCase().includes(sub.toLowerCase());
 }
+
+/**
+ * Gets the props type of this Svelte component.
+ */
+export type PropsOf<C extends Component<any, any, any>> = C extends Component<infer P, any, any> ? P : never;

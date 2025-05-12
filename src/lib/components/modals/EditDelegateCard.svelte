@@ -46,7 +46,7 @@
 
 <ModalContent title="Editing {newAttrs.name}" bind:open {onSubmit}>
     {#snippet main({ submit, close })}
-        <form class="flex flex-col gap-3" onsubmit={(e) => submitValue(e, submit)}>
+        <form class="flex flex-col grow gap-3" onsubmit={(e) => submitValue(e, submit)}>
             <label>
                 <span>Name</span>
                 <input class="input" bind:value={newAttrs.name} required placeholder="Modelunia">

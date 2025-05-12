@@ -13,7 +13,7 @@
 <div class="flex flex-col justify-between h-screen p-3">
     <div></div>
     <div class="flex flex-col justify-center h-screen gap-3">
-        <h1 class="h1 text-center">CouchMUN</h1>
+        <h1 class="h1 font-bold text-center">CouchMUN</h1>
     
         <!-- Entry buttons -->
         <div class="flex justify-center gap-3">

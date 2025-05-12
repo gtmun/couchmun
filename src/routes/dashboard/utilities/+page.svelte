@@ -55,6 +55,7 @@
         triggerAriaLabel="Configure Utilities"
         contentBase={POPUP_CARD_CLASSES}
         arrow
+        arrowBackground="bg-surface-50-950!"
     >
         {#snippet trigger()}
             <MdiWrench />

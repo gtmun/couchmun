@@ -3,6 +3,7 @@
 -->
 <script lang="ts">
     import { makeEditable } from "$lib/util";
+    import type { ClassValue } from "svelte/elements";
 
     interface Props {
         /** Title text */
@@ -10,7 +11,7 @@
         /** Size of text (using Tailwind media sizes) */
         size?: "sm" | "md" | "lg",
         /** Additional properties to apply to the title */
-        styles?: string,
+        styles?: ClassValue,
         /** Whether the title is editable (by default, this is true) */
         editable?: boolean
     }
@@ -19,11 +20,14 @@
 </script>
 
 
-<h1 
-    class="{styles} text-center break-all"
-    class:h1={size == "lg"}
-    class:h2={size == "md"}
-    class:h3={size == "sm"}
+<h1
+    class={[
+        styles,
+        "text-center break-all",
+        (size == "lg") && "h1",
+        (size == "md") && "h2",
+        (size == "sm") && "h3",
+    ]}
     use:makeEditable={{
         when: editable,
         get value() { return title },

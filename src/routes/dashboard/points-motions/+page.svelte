@@ -127,7 +127,7 @@
 </script>
 
 <div class="grid gap-5 min-h-full md:grid-cols-[1fr_2fr] md:h-full">
-  <div class="card motion-form">
+  <div class="card-filled motion-form">
     <MotionForm submit={submitMotion} />
   </div>
   

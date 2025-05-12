@@ -7,10 +7,10 @@
   The timer will automatically pause (setting `running` to false) when the full duration elapses.
 -->
 <script lang="ts">
-    import { clamp, makeEditable } from "$lib/util";
+    import { clamp, makeEditable, type PropsOf } from "$lib/util";
     import { parseTime, stringifyTime } from "$lib/util/time";
     import { Progress } from "@skeletonlabs/skeleton-svelte";
-    import { onDestroy, onMount, untrack, type Component } from "svelte";
+    import { onDestroy, onMount, untrack } from "svelte";
     import MdiPause from "~icons/mdi/pause";
     import MdiPlay from "~icons/mdi/play";
 
@@ -121,9 +121,9 @@
         height,
         meterTransition: `duration-1000 ${running ? 'transition-[background-color]' : 'transition-[background-color,width]'}`,
         meterBg: color,
-        trackBg: "bg-surface-300-700",
+        trackBg: "bg-surface-100-900",
         labelledby: `timer-text-${tid}`
-    } satisfies (typeof Progress extends Component<infer R, any, any> ? R : never));
+    } satisfies PropsOf<typeof Progress>);
 
     // Timer related handlers
     let lastStart: number | undefined = undefined;

@@ -262,7 +262,7 @@
     }
 </script>
 
-<div class="card p-4 overflow-y-hidden grow flex flex-col items-stretch gap-4">
+<div class="card-filled p-4 overflow-y-hidden grow flex flex-col items-stretch gap-4">
     <h4 class="h4 flex justify-center" id="sl-header-{sid}">
         Speakers List
     </h4>
@@ -292,9 +292,10 @@
             {@const speakerLabel = delAttrs?.name ?? "unknown"}
 
             <li
-                class="grid! grid-cols-subgrid col-span-4 dnd-list-item"
-                class:visible!={shadow}
-                class:bg-surface-300-700!={shadow}
+                class={[
+                    "grid! grid-cols-subgrid col-span-4 dnd-list-item",
+                    shadow && "visible! bg-surface-100-900!"
+                ]}
                 animate:flip={{ duration: 150 }}
                 aria-label={speakerLabel}
             >
@@ -303,11 +304,13 @@
                 </div>
                 <span class="enumerated-index">{i + 1}.</span>
                 <button 
-                    class="btn text-wrap! p-2 px-5 justify-start rounded-lg overflow-hidden"
-                    class:preset-filled-primary-500={selected}
-                    class:preset-tonal-surface={!selected && speaker.completed}
-                    class:preset-outlined-surface-500={!selected && !speaker.completed}
-                    class:hover:preset-outlined-primary-500={!selected && !speaker.completed}
+                    class="btn text-wrap! p-2 px-5 justify-start rounded-lg overflow-hidden {
+                        selected
+                            ? 'preset-filled-primary-500'
+                            : speaker.completed
+                                ? 'preset-tonal-surface'
+                                : 'preset-outlined-surface-500 hover:preset-outlined-primary-500'
+                    }"
                     onclick={() => setSelectedSpeaker(speaker)}
                     title="Select {speakerLabel}"
                     aria-label="Select {speakerLabel}"

@@ -19,7 +19,7 @@
     const radio = [
         { presence: "NP", label: "Absent", icon: MdiAccountOff },
         { presence: "P",  label: "Present", icon: MdiAccount },
-        { presence: "PV", label: "Present and Voting", icon: MdiAccountCheck },
+        { presence: "PV", label: "Present & Voting", icon: MdiAccountCheck },
     ] as const;
 
     function asPresence(s?: string | null): DelegatePresence {
@@ -30,14 +30,19 @@
 
 <!-- Render a table to display participants and their statuses -->
 {#if $delegates.length}
-<div class="card grid">
+<div class="grid">
     {#each $delegates as attrs, i (attrs.id)}
-        <div class="grid grid-cols-subgrid col-span-2 even:bg-surface-100-900 odd:bg-surface-200-800">
+        <div class="grid grid-cols-subgrid col-span-2 even:bg-surface-50-950 odd:bg-surface-100-900">
             <div class="flex items-center p-4">
                 <DelLabel {attrs} inline />
             </div>
-            <div class="flex flex-col justify-center p-2">
-                <Segment name="presence-{attrs.id}" value={$delegates[i].presence} onValueChange={e => db.updateDelegate(attrs.id, { presence: asPresence(e.value) })}>
+            <div class="flex justify-end p-2">
+                <Segment
+                    name="presence-{attrs.id}"
+                    value={$delegates[i].presence}
+                    onValueChange={e => db.updateDelegate(attrs.id, { presence: asPresence(e.value) })}
+                    
+                >
                     {#each radio as { presence, label, icon }}
                         <Segment.Item value={presence}>
                             <IconLabel {icon} {label} />

@@ -50,7 +50,7 @@
     <!-- Header -->
     <header>
         <AppBar 
-            background="bg-surface-300-700" 
+            background="bg-surface-100-900" 
             toolbarGridCols="grid-cols-[auto_1fr_auto]" 
             headlineClasses="place-self-center"
             trailClasses="place-content-end"
@@ -61,7 +61,8 @@
                     open={openDrawer === "nav"}
                     onOpenChange={e => openDrawer = e.open ? "nav" : null}
                     triggerBase="btn btn-icon"
-                    contentBase="bg-surface-100-900 p-4 space-y-4 shadow-xl w-[280px] md:w-[480px] h-screen"
+                    contentBase="bg-surface-50-950 p-4 space-y-4 shadow-xl w-[280px] md:w-[480px] h-screen"
+                    backdropBackground="bg-surface-500/50"
                     positionerJustify="justify-start"
                     positionerAlign=""
                     positionerPadding=""
@@ -104,7 +105,8 @@
                     open={openDrawer === "settings"}
                     onOpenChange={e => openDrawer = e.open ? "settings" : null}
                     triggerBase="btn btn-icon"
-                    contentBase="bg-surface-100-900 p-4 space-y-4 shadow-xl w-[280px] md:w-[480px] h-screen"
+                    contentBase="bg-surface-50-950 p-4 space-y-4 shadow-xl w-[280px] md:w-[480px] h-screen"
+                    backdropBackground="bg-surface-500/50"
                     positionerJustify="justify-end"
                     positionerAlign=""
                     positionerPadding=""
@@ -127,5 +129,5 @@
         {@render children?.()}
     </main>
     <!-- Footer -->
-    <footer class="bg-surface-300-700 p-4"></footer>
+    <footer class="bg-surface-100-900 p-4"></footer>
 </div>
