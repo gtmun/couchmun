@@ -75,9 +75,8 @@
             .map(d => ({
                 value: String(d.id),
                 label: d.name,
-                flag: d.flagURL,
                 // TODO: support keywords
-                keywords: d.aliases.join(",")
+                attrs: d.getAttributes()
             }))
     );
 
@@ -105,6 +104,6 @@
     {selectionBehavior}
 >
     {#snippet item(item)}
-        <DelLabel attrs={{ name: item.label, flagURL: item.flag }} inline />
+        <DelLabel attrs={item.attrs} inline />
     {/snippet}
 </Combobox>
