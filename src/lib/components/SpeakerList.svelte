@@ -268,24 +268,25 @@
 
             <li
                 class={[
-                    "grid! grid-cols-subgrid col-span-4 dnd-list-item",
-                    shadow && "visible! bg-surface-100-900!"
+                    "grid! grid-cols-subgrid col-span-4 dnd-list-item items-center gap-3 p-1",
+                    shadow && "visible! bg-surface-100-900! rounded"
                 ]}
                 animate:flip={{ duration: 150 }}
                 aria-label={speakerLabel}
             >
-                <div class="btn-icon-std w-6" use:dragHandle>
+                <div use:dragHandle>
                     <MdiDragVertical />
                 </div>
                 <span class="enumerated-index">{i + 1}.</span>
                 <button 
-                    class="btn text-wrap! p-2 px-5 justify-start rounded-lg overflow-hidden {
+                    class={[
+                        "btn text-wrap! justify-start overflow-hidden",
                         selected
                             ? 'preset-filled-primary-500'
                             : speaker.completed
                                 ? 'preset-tonal-surface'
                                 : 'preset-outlined-surface-500 hover:preset-outlined-primary-500'
-                    }"
+                    ]}
                     onclick={() => setSelectedSpeaker(speaker)}
                     title="Select {speakerLabel}"
                     aria-label="Select {speakerLabel}"
@@ -293,18 +294,18 @@
                 >
                     <DelLabel attrs={delAttrs} fallbackName={speakerLabel} inline />
                 </button>
-                <div class="btn-icon-std">
-                    <button 
-                        class="btn-icon-std 
-                            {speaker.completed ? "preset-tonal-surface" : "preset-tonal-error hover:preset-filled-error-500"}"
-                        onclick={() => deleteSpeaker(i)}
-                        title="Delete {speakerLabel}"
-                        aria-label="Delete {speakerLabel}"
-                        disabled={speaker.completed}
-                    >
-                        <MdiCancel />
-                    </button>
-                </div>
+                <button 
+                    class={[
+                        "btn-icon-std",
+                        speaker.completed ? "preset-tonal-surface" : "preset-tonal-error hover:preset-filled-error-500"
+                    ]}
+                    onclick={() => deleteSpeaker(i)}
+                    title="Delete {speakerLabel}"
+                    aria-label="Delete {speakerLabel}"
+                    disabled={speaker.completed}
+                >
+                    <MdiCancel />
+                </button>
             </li>
         {/each}
     </ol>
@@ -345,14 +346,16 @@
 </div>
 
 <style>
-    /* TODO: restyle dragged element
-    Styling for dragged element
+    @reference "$lib/../app.css";
+    /* Styling for dragged element */
     :global(#dnd-action-dragged-el).dnd-list-item {
-        @apply bg-surface-50!;
-        @apply grid! grid-cols-[auto_auto_1fr_auto] gap-4;
-        @apply opacity-90!;
+        background-color: var(--color-surface-50) !important;
+        opacity: 90% !important;
+        @apply border-2! border-surface-950-50!;
+        @apply grid! grid-cols-[auto_auto_1fr_auto] items-center gap-3 p-1;
+
+        @variant dark {
+            background-color: var(--color-surface-950) !important;
+        }
     }
-    :global(.dark #dnd-action-dragged-el).dnd-list-item {
-        @apply bg-surface-900!;
-    } */
 </style>
