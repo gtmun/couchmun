@@ -37,7 +37,7 @@
             {@const selected = page.url.pathname === href}
             <li class="flex">
                 <a
-                    class="grow p-2 rounded {selected ? 'preset-filled-primary-500' : 'hover:preset-tonal'}"
+                    class={["grow p-2 rounded", selected ? "preset-filled-primary-500" : "hover:preset-tonal"]}
                     onclick={close} 
                     {href}
                     tabindex="0"

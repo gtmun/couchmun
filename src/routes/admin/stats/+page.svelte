@@ -160,7 +160,7 @@
                             {#if sortOrder.item === key}
                             <div class="flex items-center gap-1" aria-sort={sortOrder.descending ? "descending" : "ascending"}>
                                 {col.label}
-                                <MdiArrowUp class="{sortOrder.descending ? 'rotate-180' : ''} transition-[transform]" />
+                                <MdiArrowUp class={["transition-transform", sortOrder.descending && "rotate-180"]} />
                             </div>
                             {:else}
                             {col.label}
@@ -173,7 +173,7 @@
             <tbody>
                 {#each displayEntries as del (del.id)}
                 {@const absent = !del.isPresent()}
-                <tr class:bg-surface-300-700!={absent}>
+                <tr class={[absent && "bg-surface-300-700!"]}>
                     <td class="align-middle!">
                         {#if absent}
                         <div class="flex gap-1">

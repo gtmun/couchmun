@@ -269,8 +269,7 @@
 
 <div class="flex flex-col gap-3">
     <h2 
-        class="h2 text-center"
-        class:hidden={hideText}
+        class={["h2", "text-center", hideText && "hidden"]}
         id={barProps.labelledby}
     >
         {stringifyTime(secsRemaining())}/<span

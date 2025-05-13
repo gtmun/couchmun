@@ -135,12 +135,10 @@
     <div class="grid grid-cols-[1fr_auto] items-center">
       <h3 class="h3 text-center" id="motion-table-header-{pid}">List of Motions</h3>
       <button
-        class="btn-icon-std preset-filled-primary-500"
+        class={["btn-icon-std preset-filled-primary-500", motionsSorted && "preset-filled-surface-500!"]}
         onclick={sortMotions}
         aria-label="Sort Motions"
         title="Sort Motions"
-
-        class:preset-filled-surface-500!={motionsSorted}
         disabled={motionsSorted}
       >
         <MdiSort />
@@ -181,10 +179,11 @@
             {@const delAttrs = findDelegate($delegates, motion.delegate)}
             {@const delName = delAttrs?.name ?? "unknown"}
             {@const shadow = isDndShadow(motion)}
-            <tr 
-              class="dnd-list-item hover:bg-primary-500/25!"
-              class:visible!={shadow}
-              class:bg-surface-300-700!={shadow}
+            <tr
+              class={[
+                "dnd-list-item hover:bg-primary-500/25!",
+                shadow && "visible! bg-surface-300-700!"
+              ]}
               animate:flip={{ duration: 150 }}
               aria-label="{delName}'s Motion"
             >

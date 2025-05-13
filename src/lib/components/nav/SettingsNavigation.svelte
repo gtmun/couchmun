@@ -79,7 +79,7 @@
     {@const selected = $selectedSession === key}
     {@const displayKey = +(key ?? $prevSessions.length) + 1}
     <button
-        class="btn {selected ? "preset-filled-primary-500" : "preset-tonal hover:preset-tonal-surface"}"
+        class={["btn", selected ? "preset-filled-primary-500" : "preset-tonal hover:preset-tonal-surface"]}
         onclick={() => { if (typeof key === "number" && !selected) db.loadSessionData(key); }}
         aria-label="Select{selected ? "ed" : ""} Session {displayKey}"
         aria-pressed={selected}

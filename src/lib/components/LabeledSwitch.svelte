@@ -7,6 +7,7 @@
 <script lang="ts">
     import { Switch } from "@skeletonlabs/skeleton-svelte";
     import { type Snippet } from "svelte";
+    import type { ClassValue } from "svelte/elements";
 
     interface Props {
         /**
@@ -30,7 +31,7 @@
         /**
          * The Tailwind CSS classes applied on the label.
          */
-        labelClass?: string,
+        labelClass?: ClassValue,
         [key: string]: any
     }
     let {

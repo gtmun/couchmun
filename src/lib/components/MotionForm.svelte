@@ -14,7 +14,7 @@
 
     import type { z } from "zod";
     import { type Snippet } from 'svelte';
-    
+
     import MdiPlus from "~icons/mdi/plus";
 
     const { selectedMotion, delegates, preferences } = getSessionContext();
@@ -170,8 +170,7 @@
     <label class="label">
         <span>Motion</span>
         <select 
-            class="select" 
-            class:input-error={inputError?.path.includes("kind")}
+            class={["select", inputError?.path.includes("kind") && "preset-input-error"]}
             bind:value={inputMotion.kind}
             >
             {#each allowedMotions as [value, label]}
@@ -185,9 +184,8 @@
     <label class="label">
         <span>Total Time</span>
         <input 
-            class="input" 
+            class={["input", inputError?.path.includes("totalTime") && "preset-input-error"]}
             placeholder="mm:ss" 
-            class:input-error={inputError?.path.includes("totalTime")}
             bind:value={inputMotion.totalTime}
             onblur={() => handleBlurTime("totalTime")}
             required
@@ -200,9 +198,8 @@
     <label class="label">
         <span>Speaking Time</span>
         <input 
-            class="input" 
+            class={["input", inputError?.path.includes("speakingTime") && "preset-input-error"]}
             placeholder="mm:ss" 
-            class:input-error={inputError?.path.includes("speakingTime")}
             bind:value={inputMotion.speakingTime}
             onblur={() => handleBlurTime("speakingTime")}
             disabled={isExtending(inputMotion)}
@@ -215,8 +212,7 @@
     <label class="label">
         <span>Topic</span>
         <input 
-            class="input" 
-            class:input-error={inputError?.path.includes("topic")}
+            class={["input", inputError?.path.includes("topic") && "preset-input-error"]}
             bind:value={inputMotion.topic}
             disabled={isExtending(inputMotion)}
         >

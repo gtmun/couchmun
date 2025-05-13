@@ -278,7 +278,7 @@
                                         }}>
                                             <!-- TODO: add aria-label, title -->
                                             <MdiArrowDown
-                                                class="{key.ascending ? 'rotate-180' : ''} transition-[transform]"
+                                                class={["transition-transform", key.ascending && "rotating-180"]}
                                                 width="1.2em"
                                                 height="1.2em"
                                             />
