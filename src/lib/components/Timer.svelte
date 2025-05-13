@@ -7,7 +7,8 @@
   The timer will automatically pause (setting `running` to false) when the full duration elapses.
 -->
 <script lang="ts">
-    import { clamp, makeEditable, type PropsOf } from "$lib/util";
+    import { clamp, type PropsOf } from "$lib/util";
+    import { makeEditable } from "$lib/util/action.svelte";
     import { parseTime, stringifyTime } from "$lib/util/time";
     import { Progress } from "@skeletonlabs/skeleton-svelte";
     import { onDestroy, onMount, untrack } from "svelte";
@@ -273,8 +274,9 @@
         id={barProps.labelledby}
     >
         {stringifyTime(secsRemaining())}/<span
+            class="contenteditable:editable-std"
             use:makeEditable={{
-                when: editable && !running,
+                get when() { return editable && !running; },
                 get value() { return stringifyTime(duration) },
                 set value(time) { setDuration(time) }
             }}

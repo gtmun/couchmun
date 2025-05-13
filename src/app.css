@@ -6,6 +6,7 @@
 @plugin '@tailwindcss/forms';
 
 @custom-variant dark (&:where(.dark, .dark *));
+@custom-variant contenteditable (&:is([contenteditable]));
 
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
@@ -45,4 +46,17 @@
   width: var(--text-xl);
   height: var(--text-xl);
   padding: calc(var(--spacing) * 2);
+}
+@utility editable-std {
+  @apply hover:bg-surface-500/25 focus:bg-surface-500/25 transition-[background-color,font-size];
+  border-radius: 0.25rem;
+
+  @variant empty {
+    cursor: text;
+    &::before {
+      content: attr(placeholder);
+      opacity: 0.75;
+      font-style: italic;
+    }
+  }
 }

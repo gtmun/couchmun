@@ -2,7 +2,7 @@
   @component The title text in the header.
 -->
 <script lang="ts">
-    import { makeEditable } from "$lib/util";
+    import { makeEditable } from "$lib/util/action.svelte";
     import type { ClassValue } from "svelte/elements";
 
     interface Props {
@@ -24,6 +24,7 @@
     class={[
         styles,
         "text-center break-all",
+        "contenteditable:editable-std",
         (size == "lg") && "h1",
         (size == "md") && "h2",
         (size == "sm") && "h3",

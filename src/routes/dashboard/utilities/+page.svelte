@@ -4,111 +4,79 @@
   Notably, this page includes a timer and title, which can be used quite generically.
 -->
 <script lang="ts">
-    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import LabeledSwitch from "$lib/components/LabeledSwitch.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { lazyslide } from "$lib/util";
-    import { parseTime } from "$lib/util/time";
-    import MdiWrench from "~icons/mdi/wrench";
-    import { Popover } from "@skeletonlabs/skeleton-svelte";
-    import { POPUP_CARD_CLASSES } from "$lib/util/popup";
-    import DelCombobox from "$lib/components/DelCombobox.svelte";
+    import { makeEditable } from "$lib/util/action.svelte";
+    import { Switch } from "@skeletonlabs/skeleton-svelte";
+    
+    import MdiFlag from "~icons/mdi/flag";
+    import MdiFlagOff from "~icons/mdi/flag-off";
+    import DelFlag from "$lib/components/del-label/DelFlag.svelte";
 
     const { delegates } = getSessionContext();
 
     // Timer
     let timerEnabled: boolean = $state(true);
-    let durInput: string = $state("");
     
-    let duration: number = $state(60);
-    let running: boolean = $state(false);
-    let timer: Timer | undefined = $state();
+    let duration = $state<number>(60);
+    let running = $state<boolean>(false);
+    let timer = $state<Timer>();
     
     // Label
-    let labelType: "delegate" | "title" | "none" = $state("title");
-    let labelText: string = $state("");
-
-    // Configuration
-    let configurePopupOpen = $state(false);
-    function setDuration() {
-        let secs = parseTime(durInput);
-        if (typeof secs !== "undefined") {
-            duration = secs;
-            timer?.reset();
-        }
-    }
-    function submitDuration(e: SubmitEvent) {
-        e.preventDefault();
-        setDuration();
-    }
+    let labelText = $state<string>("");
+    let showFlag = $state<boolean>(false);
 </script>
 
 <div class="flex flex-col h-full items-stretch">
-    <Popover
-        open={configurePopupOpen}
-        onOpenChange={e => configurePopupOpen = e.open}
-        positioning={{ placement: 'bottom' }}
-        classes="self-end"
-        triggerBase="preset-filled-surface-400-600"
-        triggerClasses="btn-icon-std"
-        triggerAriaLabel="Configure Utilities"
-        contentBase={POPUP_CARD_CLASSES}
-        arrow
-        arrowBackground="bg-surface-50-950!"
-    >
-        {#snippet trigger()}
-            <MdiWrench />
-        {/snippet}
-        {#snippet content()}
-            <div class="flex flex-col gap-4 overflow-hidden">
-                <!-- Timer config -->
-                    <LabeledSwitch name="enable-timer" bind:checked={timerEnabled}>
-                    <span><strong>Timer</strong></span>
-                    </LabeledSwitch>
-                {#if timerEnabled}
-                    <div class="flex flex-row gap-5">
-                        <form class="contents" onsubmit={submitDuration}>
-                            <label class="flex grow items-center justify-between gap-3">
-                                <span>Time</span>
-                                <input class="input" bind:value={durInput} oninput={setDuration} placeholder="mm:ss" />
-                            </label>
-                        </form>
-                    </div>
-                {/if}
-                <hr class="hr" />
-                <!-- Label config -->
-                <form class="contents">
-                    <label class="flex grow items-center justify-between gap-3">
-                        <span><strong>Label</strong></span>
-                        <select class="select" bind:value={labelType}>
-                            <option value="delegate" label="Delegate"></option>
-                            <option value="title" label="Title"></option>
-                            <option value="none" label="None"></option>
-                        </select>
-                    </label>
-                    {#if labelType !== "none"}
-                        <label class="flex grow items-center justify-between gap-3">
-                            <span>Text</span>
-                            {#if labelType === "delegate"}
-                                <DelCombobox bind:input={labelText} delegates={Object.values($delegates)} />
-                            {:else}
-                                <input class="input" bind:value={labelText} />
-                            {/if}
-                        </label>
-                    {/if}
-                </form>
-            </div>
-        {/snippet}
-    </Popover>
     <div class="flex flex-col grow gap-5 justify-center">
-        <div class="pb-5">
-            {#if labelType === "delegate"}
-                <div transition:lazyslide>
-                    <DelLabel attrs={$delegates.find(d => d.nameEquals(labelText))} fallbackName={labelText} />
+        <div class="flex flex-col items-center">
+            {#if !(running && labelText.length === 0)}
+                <!-- Title, which should appear if not running or if non-empty whilst running -->
+                <div class={["flex justify-center items-center", showFlag && "pb-3"]} transition:lazyslide>
+                    <h2 
+                        class="h2 text-center contenteditable:editable-std"
+                        use:makeEditable={{
+                            get when() { return !running; },
+                            get value() { return labelText; },
+                            set value(text) { labelText = text; },
+                            allowEmpty: true
+                        }}
+                        placeholder="Add a title..."
+                    >
+                        {labelText}
+                    </h2>
+                    <!-- "Show flag" switch, which should appear if not running -->
+                    {#if !running}
+                        <!-- The a11y options appear to be missing from Switch, so I've added them here -->
+                        <div 
+                            class="pl-3"
+                            transition:lazyslide={{ axis: "x" }}
+                            aria-label={showFlag ? "Hide Flag" : "Show Flag"}
+                            role="switch"
+                            aria-checked={showFlag}
+                        >
+                            <Switch
+                                name="utils-flag-toggle"
+                                controlActive="preset-filled-primary-500"
+                                checked={showFlag}
+                                onCheckedChange={e => showFlag = e.checked}
+                                compact
+                                label={showFlag ? "Hide Flag" : "Show Flag"}
+                            >
+                                {#snippet inactiveChild()}<MdiFlagOff />{/snippet}
+                                {#snippet activeChild()}<MdiFlag />{/snippet}
+                            </Switch>
+                        </div>
+                    {/if}
                 </div>
-            {:else if labelType === "title"}
-                <h2 class="h2 text-center">{labelText}</h2>
+            {/if}
+            <!-- Flag, which should appear if showFlag is true -->
+            {#if showFlag}
+                {@const attrs = $delegates.find(d => d.nameEquals(labelText))}
+                <div transition:lazyslide>
+                    <DelFlag label={labelText} url={attrs?.flagURL} height="h-[25dvh]" fallback="un" />
+                </div>
             {/if}
         </div>
 
