@@ -3,6 +3,7 @@
     to create or edit a motion.
 -->
 <script lang="ts">
+    import DelCombobox from "$lib/components/DelCombobox.svelte";
     import LabeledSwitch from "$lib/components/LabeledSwitch.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { createMotionSchema, inputifyMotion, MOTION_FIELDS, MOTION_LABELS } from "$lib/motions/definitions";
@@ -10,10 +11,11 @@
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
     import { addColons, parseTime } from "$lib/util/time";
     import type { Motion } from "$lib/types";
-    
+
     import type { z } from "zod";
     import { type Snippet } from 'svelte';
-    import DelCombobox from "./DelCombobox.svelte";
+    
+    import MdiPlus from "~icons/mdi/plus";
 
     const { selectedMotion, delegates, preferences } = getSessionContext();
     const motionSchema = $derived(createMotionSchema($delegates));
@@ -243,6 +245,7 @@
             class="btn preset-filled-primary-500" 
             type="submit"
         >
+            <MdiPlus />
             Add Motion
         </button>
     {/if}

@@ -9,7 +9,6 @@
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import ConfirmModalCard from "$lib/components/modals/ConfirmModalCard.svelte";
     import { type Delegate, findDelegate } from "$lib/db/delegates";
-    import { formatValidationError, presentDelegateSchema } from "$lib/motions/form_validation";
     import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
     import { isDndShadow } from "$lib/util/dnd";
     import { tick, untrack, type Snippet } from "svelte";
@@ -18,7 +17,6 @@
     import MdiCancel from "~icons/mdi/cancel";
     import MdiDelete from "~icons/mdi/delete";
     import MdiDragVertical from "~icons/mdi/drag-vertical";
-    import MdiPlus from "~icons/mdi/plus";
     import { Modal } from "@skeletonlabs/skeleton-svelte";
     import DelCombobox from "./DelCombobox.svelte";
     import { defaultModalClasses } from "./modals/ModalContent.svelte";
@@ -62,15 +60,6 @@
     // A clone of order used solely for use:dragHandleZone
     let dndItems = $derived(order);
 
-    // Input properties (the current input, any errors with input, and the input validator)
-    // Input validator currently doesn't have support to be changed, but if needed,
-    // just add a new prop for it.
-    //
-    // The `addDelInput` and `addDelError` properties only apply if `controls` is not defined.
-    let addDelInput: string = $state("");
-    let addDelError: string = $state("");
-    let addDelValidator = $derived(presentDelegateSchema(delegates));
-    
     // The UUID of the currently selected speaker object:
     let selectedSpeakerId = $state<SpeakerEntryID>();
     // A mapping from IDs to Speakers:
@@ -78,6 +67,7 @@
         order.filter(s => typeof s.id === "string" && s.id)
             .map((speaker, i) => [speaker.id, { speaker, i }])
     ));
+    let acSpeaker = $state<DelegateID>();
 
     // List item elements per order item
     let listEl = $state<HTMLOListElement>();
@@ -165,47 +155,31 @@
 
     /**
      * Adds a speaker to the speakers list.
-     * @param name The full name of the speaker (not a key; this is parsed by the default validator)
-     * @param clearControlInput Whether this function call should clear the input (by default false)
+     * @param key The key of the speaker
+     * @returns if key exists (asserting adding succeeds)
      */
-    export function addSpeaker(name: string, clearControlInput: boolean = false) {
-        const result = addDelValidator.safeParse(name);
-        if (result.success) {
-            const key = result.data;
-            // Successful, so add speakers:
-            let speaker = createSpeaker(key);
-            order.push(speaker);
-            order = order;
+    export function addSpeaker(key: number): boolean {
+        if (!delegates.some(k => k.id === key)) return false;
 
-            // Jump to this speaker when DOM updates.
-            // HACK: this is waiting for 2 frames, which is usually enough for the dom to update
+        // Successful, so add speakers:
+        let speaker = createSpeaker(key);
+        order.push(speaker);
+        order = order;
+
+        // Jump to this speaker when DOM updates.
+        // HACK: this is waiting for 2 frames, which is usually enough for the dom to update
+        requestAnimationFrame(() => {
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        jumpToSpeaker();
-                    })
-                });
+                    jumpToSpeaker();
+                })
             });
+        });
 
-            // Only applies to default controls
-            if (typeof controls === "undefined") {
-                addDelError = "";
-                // Clear the control input if it exists and it was requested to be cleared.
-                if (clearControlInput) addDelInput = "";
-            }
-        } else {
-            addDelError = formatValidationError(result.error).message;
-        }
+        return true;
     }
 
     // DEFAULT CONTROLS
-    /**
-     * Wrapper around `addSpeaker`.
-     */
-    function submitSpeaker(e: SubmitEvent) {
-        e.preventDefault();
-        addSpeaker(addDelInput, true);
-    }
     /**
      * Deletes the speaker at index i in the speakers list.
      * @param i The index.
@@ -338,51 +312,34 @@
     {#if controls}
         {@render controls()}
     {:else}
-        <!-- Default controls, consisting of a delegate input, an add button, and a clear button. -->
-        {@const error = !!addDelError}
-        {@const noDelegatesPresent = delegates.every(d => !d.isPresent())}
-
-        <div class="flex flex-col gap-1">
-            <div class="flex flex-row gap-1 items-center">
-                <!-- Add delegate -->
-                <form class="contents" onsubmit={submitSpeaker} oninput={() => addDelError = ""}>
-                    <DelCombobox bind:input={addDelInput} {delegates} {error} class="grow" />
-                    <div class="ml-2 flex items-center">
-                        <button
-                            type="submit"
-                            class="btn-icon-std preset-filled-primary-500"
-                            disabled={noDelegatesPresent}
-                            aria-label="Add to Speakers List"
-                            title="Add to Speakers List"
-                        >
-                            <MdiPlus />
-                        </button>
-                    </div>
-                    <!-- Clear order -->
-                    <!-- TODO: disabled={order.length === 0 } -->
-                    <Modal
-                        open={openModals.clearSpeakers}
-                        onOpenChange={e => openModals.clearSpeakers = e.open}
-                        triggerBase="btn-icon-std preset-filled-primary-500"
-                        aria-label="Clear Speakers List"
-                        classes="flex items-center"
-                        {...defaultModalClasses}
-                    >
-                        {#snippet trigger()}
-                            <MdiDelete />
-                        {/snippet}
-                        {#snippet content()}
-                            <ConfirmModalCard bind:open={openModals.clearSpeakers} success={() => order = []}>
-                                Are you sure you want to clear the Speakers List?
-                            </ConfirmModalCard>
-                        {/snippet}
-                    </Modal>
-                </form>
-            </div>
-            <!-- Error messages! -->
-            <div class="text-error-500 text-center transition-[height] overflow-hidden {error ? 'h-6' : 'h-0'}">
-                {addDelError || "\xA0"}
-            </div>
+        <div class="flex flex-row gap-1 items-center">
+            <!-- Delegate combobox -->
+            <DelCombobox
+                {delegates}
+                selectionBehavior="clear"
+                class="grow"
+                forgetSelected
+                onSelect={addSpeaker}
+            />
+            <!-- Clear order -->
+            <!-- TODO: disabled={order.length === 0 } -->
+            <Modal
+                open={openModals.clearSpeakers}
+                onOpenChange={e => openModals.clearSpeakers = e.open}
+                triggerBase="btn-icon-std preset-filled-primary-500"
+                aria-label="Clear Speakers List"
+                classes="flex items-center"
+                {...defaultModalClasses}
+            >
+                {#snippet trigger()}
+                    <MdiDelete />
+                {/snippet}
+                {#snippet content()}
+                    <ConfirmModalCard bind:open={openModals.clearSpeakers} success={() => order = []}>
+                        Are you sure you want to clear the Speakers List?
+                    </ConfirmModalCard>
+                {/snippet}
+            </Modal>
         </div>
     {/if}
 </div>

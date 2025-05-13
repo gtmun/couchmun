@@ -9,13 +9,17 @@
     import type { Delegate } from "$lib/db/delegates";
     import { Combobox } from "@skeletonlabs/skeleton-svelte";
     import DelLabel from "./del-label/DelLabel.svelte";
-    import type { ClassValue } from "svelte/elements";
+    import type { DelegateID } from "$lib/types";
 
     interface Props {
         /**
          * Bindable property representing the input text which the autocomplete tries to complete.
          */
-        input: string | undefined;
+        input?: string;
+        /**
+         * Bindable property representing where to place the value after selection.
+         */
+        value?: DelegateID;
         /**
          * List of delegates. The autocomplete will automatically filter out non-present delegates.
          */
@@ -29,13 +33,40 @@
          * Classes to apply to top of combobox.
          */
         class?: string;
+
+        /**
+         * Autocompletion behavior of combobox.
+         */
+        inputBehavior?: "autohighlight" | "autocomplete" | "none",
+        /**
+         * What happens to the input after a value has been selected.
+         */
+        selectionBehavior?: "clear" | "replace" | "preserve",
+        /**
+         * This prop determines what happens to the selected item after the combobox is interacted with again.
+         * 
+         * If false (default), the selected value is preserved and highlighted on second interaction. 
+         *     It cannot be reselected until it has been deselected.
+         * If true, the selected value is not kept, not highlighted, and can be reselected on second interaction.
+         */
+        forgetSelected?: boolean,
+        /**
+         * Action to perform when a delegate has been selected.
+         * This is done after the value property is set (if that is used).
+         */
+        onSelect?: (item: DelegateID) => void,
     }
 
     let {
         input = $bindable(),
+        value = $bindable(),
         error = false,
         delegates,
         class: classes = "",
+        selectionBehavior,
+        inputBehavior = "autohighlight",
+        forgetSelected = false,
+        onSelect
     }: Props = $props();
     
     let data = $derived(
@@ -51,21 +82,27 @@
     );
 
     let delsEmpty = $derived(data.length == 0);
-    let state = $state<string[]>(["2"]);
+    let comboboxValue = $derived(typeof value !== "undefined" ? [String(value)] : []);
 </script>
 
-<!-- TODO: keyword support -->
-<!-- TODO: fix the weird scroll thru everything issue -->
-<!-- TODO: Reconnect back to input -->
 <Combobox
     {data}
-    value={state}
-    onValueChange={e => state = e.value}
+    inputValue={input ?? ""}
+    onInputValueChange={e => input = e.inputValue}
+    value={comboboxValue}
+    onValueChange={e => {
+        let newValue = +e.value[0];
+        if (!forgetSelected) {
+            value = newValue;
+        }
+        onSelect?.(newValue);
+    }}
     disabled={delsEmpty}
     placeholder={!delsEmpty ? "Select..." : "No delegates present"}
-    inputBehavior="autohighlight"
     inputGroupClasses="{error ? 'preset-input-error' : ''} transition-colors"
     {classes}
+    {inputBehavior}
+    {selectionBehavior}
 >
     {#snippet item(item)}
         <DelLabel attrs={{ name: item.label, flagURL: item.flag }} inline />
