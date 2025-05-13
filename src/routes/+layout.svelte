@@ -26,11 +26,13 @@
 <svelte:window onkeydown={keydown} />
 <svelte:head>
     <script>
-        const mode = localStorage.getItem('color-scheme') || 'light';
-        if (mode == "dark") {
-            document.documentElement.classList.add("dark");
-        } else if (mode == "light") {
-            document.documentElement.classList.remove("dark");
+        {
+            const mode = localStorage.getItem('color-scheme') || 'light';
+            if (mode == "dark") {
+                document.documentElement.classList.add("dark");
+            } else if (mode == "light") {
+                document.documentElement.classList.remove("dark");
+            }
         }
     </script>
 </svelte:head>
