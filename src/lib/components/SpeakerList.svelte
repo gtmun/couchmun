@@ -282,10 +282,10 @@
                     class={[
                         "btn text-wrap! justify-start overflow-hidden",
                         selected
-                            ? 'preset-filled-primary-500'
+                            ? 'preset-ui-activated'
                             : speaker.completed
-                                ? 'preset-tonal-surface'
-                                : 'preset-outlined-surface-500 hover:preset-outlined-primary-500'
+                                ? 'preset-ui-depressed'
+                                : 'preset-ui-ready'
                     ]}
                     onclick={() => setSelectedSpeaker(speaker)}
                     title="Select {speakerLabel}"
@@ -297,7 +297,7 @@
                 <button 
                     class={[
                         "btn-icon-std",
-                        speaker.completed ? "preset-tonal-surface" : "preset-tonal-error hover:preset-filled-error-500"
+                        speaker.completed ? "preset-ui-depressed" : "preset-filled-error-100-900 hover:preset-filled-error-500"
                     ]}
                     onclick={() => deleteSpeaker(i)}
                     title="Delete {speakerLabel}"
