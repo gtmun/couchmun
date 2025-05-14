@@ -135,7 +135,7 @@
     <div class="grid grid-cols-[1fr_auto] items-center">
       <h3 class="h3 text-center" id="motion-table-header-{pid}">List of Motions</h3>
       <button
-        class={["btn-icon-std preset-filled-primary-500", motionsSorted && "preset-filled-surface-500!"]}
+        class={["btn-icon-std transition-colors", motionsSorted ? "preset-ui-depressed" : "preset-ui-activated"]}
         onclick={sortMotions}
         aria-label="Sort Motions"
         title="Sort Motions"

@@ -27,9 +27,7 @@
 }
 
 @utility card-filled {
-  @apply card;
-  background-color: var(--color-surface-50-950);
-  color: var(--color-surface-contrast-50-950);
+  @apply card preset-ui;
 }
 @utility preset-input-error {
   background-color: var(--color-error-100);
@@ -39,6 +37,16 @@
   & > * {
     border-color: var(--color-error-900);
   }
+}
+@utility preset-ui {
+  background-color: var(--color-surface-50-950);
+  color: var(--color-surface-contrast-50-950);
+}
+@utility preset-ui-header {
+  background-color: var(--color-surface-100-900);
+}
+@utility preset-ui-admin-header {
+  background-color: var(--color-warning-100-900);
 }
 @utility preset-ui-ready {
   border-width: 1px;

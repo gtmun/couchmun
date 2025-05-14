@@ -296,7 +296,7 @@
                 </button>
                 <button 
                     class={[
-                        "btn-icon-std",
+                        "btn-icon-std transition",
                         speaker.completed ? "preset-ui-depressed" : "preset-filled-error-100-900 hover:preset-filled-error-500"
                     ]}
                     onclick={() => deleteSpeaker(i)}
@@ -351,7 +351,7 @@
     :global(#dnd-action-dragged-el).dnd-list-item {
         background-color: var(--color-surface-50) !important;
         opacity: 90% !important;
-        @apply border-2! border-surface-950-50!;
+        @apply border-2! border-surface-contrast-50-950!;
         @apply grid! grid-cols-[auto_auto_1fr_auto] items-center gap-3 p-1;
 
         @variant dark {

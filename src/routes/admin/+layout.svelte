@@ -19,7 +19,7 @@
     <!-- Header -->
     <header>
         <AppBar 
-            background="bg-warning-100-900" 
+            background="preset-ui-admin-header" 
             toolbarGridCols="grid-cols-[auto_1fr_auto]" 
             centerClasses="place-self-center"
             trailClasses="place-content-end"
