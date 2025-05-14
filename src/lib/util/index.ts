@@ -3,7 +3,7 @@
  */
 
 import { cubicOut } from "svelte/easing";
-import type { TransitionConfig } from "svelte/transition";
+import type { SlideParams, TransitionConfig } from "svelte/transition";
 import type { Component } from "svelte";
 
 export type Comparator<K> = (a: K, b: K) => number;
@@ -48,7 +48,7 @@ export function downloadFile(filename: string, contents: string, type: string) {
  * reducing it to only width/height and padding properties,
  * as well as implementing delayed style computation.
  */
-export function lazyslide(node: HTMLElement, { delay = 0, duration = 400, easing = cubicOut, axis = 'y' } = {}) {
+export function lazyslide(node: Element, { delay = 0, duration = 400, easing = cubicOut, axis = 'y' }: SlideParams = {}) {
     let style: CSSStyleDeclaration | undefined = undefined;
     const dimProperty = axis === 'y' ? 'height' : 'width';
     const padProperty = axis === 'y' ? ['paddingTop', 'paddingBottom'] as const : ['paddingLeft', 'paddingRight'] as const;

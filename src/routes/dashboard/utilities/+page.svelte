@@ -26,6 +26,8 @@
     // Label
     let labelText = $state<string>("");
     let showFlag = $state<boolean>(false);
+
+    const attrs = $derived($delegates.find(d => d.nameEquals(labelText)));
 </script>
 
 <div class="flex flex-col h-full items-stretch">
@@ -72,12 +74,14 @@
                 </div>
             {/if}
             <!-- Flag, which should appear if showFlag is true -->
-            {#if showFlag}
-                {@const attrs = $delegates.find(d => d.nameEquals(labelText))}
+            <!-- This setup asserts that the animation only occurs when showFlag changes or when attrs?.flagURL changes. -->
+            {#key showFlag && attrs?.flagURL}
                 <div transition:lazyslide>
-                    <DelFlag label={labelText} url={attrs?.flagURL} height="h-[25dvh]" fallback="un" />
+                    {#if showFlag}
+                        <DelFlag label={labelText} url={attrs?.flagURL} height="h-[25dvh]" fallback="un" />
+                    {/if}
                 </div>
-            {/if}
+            {/key}
         </div>
 
         {#if timerEnabled}
