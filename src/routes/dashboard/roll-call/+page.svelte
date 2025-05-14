@@ -30,7 +30,7 @@
 
 <!-- Render a table to display participants and their statuses -->
 {#if $delegates.length}
-<div class="grid">
+<div class="grid border border-surface-200-800">
     {#each $delegates as attrs, i (attrs.id)}
         <div class="grid grid-cols-subgrid col-span-2 even:bg-surface-50-950 odd:bg-surface-100-900">
             <div class="flex items-center p-4">
