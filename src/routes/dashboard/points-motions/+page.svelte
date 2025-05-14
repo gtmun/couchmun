@@ -190,7 +190,7 @@
               <td>
                 <div class="flex flex-row">
                   <button
-                    class="btn-icon btn-icon-sm w-8"
+                    class="btn-icon-std p-1"
                     onclick={() => removeMotion(i)}
                     data-label="Reject {delName}'s Motion"
                     title="Reject {delName}'s Motion"
@@ -198,7 +198,7 @@
                     <MdiCancel class="text-error-500" />
                   </button>
                   <button
-                    class="btn-icon btn-icon-sm w-8"
+                    class="btn-icon-std p-1"
                     onclick={() => acceptMotionAndGoto(motion)}
                     data-label="Accept {delName}'s Motion"
                     title="Accept {delName}'s Motion"
@@ -208,7 +208,7 @@
                   <Modal
                     open={openModals.editMotion}
                     onOpenChange={e => openModals.editMotion = e.open}
-                    triggerBase="btn-icon btn-icon-sm w-8"
+                    triggerBase="btn-icon-std p-1"
                     {...defaultModalClasses}
                   >
                     {#snippet trigger()}

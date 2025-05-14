@@ -67,14 +67,14 @@
     <img
         {src}
         alt="Flag of {label}"
-        class={[!inline && "border-2", height]}
+        class={[!inline && "border-2 border-surface-100-900", height]}
     >
 {:else if fallback === "un"}
     {#await getFlagUrl("un") then unFallbackFlag}
         <img
             src={unFallbackFlag!.href}
             alt="Flag of {label} (missing)"
-            class={[!inline && "border-2", height]}
+            class={[!inline && "border-2 border-surface-100-900", height]}
         >   
     {/await}
 {:else if fallback === "icon"}
