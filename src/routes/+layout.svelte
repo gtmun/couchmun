@@ -19,15 +19,25 @@
             (document.activeElement as HTMLElement)?.blur?.();
         }
     }
+    function onstorage(e: StorageEvent) {
+        if (e.key === "color-scheme") {
+            let mode = e.newValue === "dark" ? "dark" : 'light';
+            if (mode === "dark") {
+                document.documentElement.classList.add("dark");
+            } else if (mode === "light") {
+                document.documentElement.classList.remove("dark");
+            }
+        }
+    }
 </script>
 
 {@render children()}
 
-<svelte:window onkeydown={keydown} />
+<svelte:window onkeydown={keydown} onstorage={onstorage} />
 <svelte:head>
     <script>
         {
-            const mode = localStorage.getItem('color-scheme') || 'light';
+            const mode = localStorage.getItem('color-scheme') === "dark" ? "dark" : 'light';
             if (mode == "dark") {
                 document.documentElement.classList.add("dark");
             } else if (mode == "light") {

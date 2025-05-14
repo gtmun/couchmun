@@ -5,7 +5,7 @@
 
     let checked = $state(false);
     $effect(() => {
-      const mode = localStorage.getItem('color-scheme') || 'light';
+      const mode = localStorage.getItem('color-scheme') === "dark" ? "dark" : 'light';
       checked = mode === 'light';
     });
   
