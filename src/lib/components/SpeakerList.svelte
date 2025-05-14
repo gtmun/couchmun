@@ -277,7 +277,7 @@
                 <div use:dragHandle>
                     <MdiDragVertical />
                 </div>
-                <span class="enumerated-index">{i + 1}.</span>
+                <span class="enumerated-index tabular-nums">{i + 1}.</span>
                 <button 
                     class={[
                         "btn text-wrap! justify-start overflow-hidden",

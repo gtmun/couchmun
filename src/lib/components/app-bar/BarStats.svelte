@@ -64,7 +64,7 @@
         background-color: var(--color-tertiary-500);
     }
 </style>
-<div class="flex flex-row gap-3 justify-center">
+<div class="flex flex-row gap-3 justify-center tabular-nums">
     <div class="flex flex-row gap-1 items-center" aria-label="Majority ({maj})" title="Majority ({maj})">
         <div class="size-6 rounded-full conic-half"></div>
         {maj}

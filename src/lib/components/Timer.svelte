@@ -270,7 +270,7 @@
 
 <div class="flex flex-col gap-3">
     <h2 
-        class={["h2", "text-center", hideText && "hidden"]}
+        class={["h2", "text-center", "tabular-nums", hideText && "hidden"]}
         id={barProps.labelledby}
     >
         {stringifyTime(secsRemaining())}/<span
