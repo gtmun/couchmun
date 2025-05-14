@@ -122,7 +122,7 @@
         height,
         meterTransition: `duration-1000 ${running ? 'transition-[background-color]' : 'transition-[background-color,width]'}`,
         meterBg: color,
-        trackBg: "bg-surface-100-900",
+        trackBg: "preset-ui-depressed",
         labelledby: `timer-text-${tid}`
     } satisfies PropsOf<typeof Progress>);
 

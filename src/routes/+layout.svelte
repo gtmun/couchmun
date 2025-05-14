@@ -8,6 +8,7 @@
 <script lang="ts">
     import "../app.css";
     import { createSessionContext } from "$lib/context/index.svelte";
+    import { genStyles } from "$lib/util/chroma";
 
     let { children } = $props();
 
@@ -45,6 +46,8 @@
             }
         }
     </script>
+    <!-- HACK: Adding styles programmatically and without FOUC -->
+    {@html `<style>${genStyles()}</style>`}
 </svelte:head>
 
 <div class="hidden">

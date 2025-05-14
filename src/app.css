@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 @import "@skeletonlabs/skeleton";
 @import "@skeletonlabs/skeleton/optional/presets";
-@import "@skeletonlabs/skeleton/themes/legacy";
+@import "./theme.css";
 @source "../node_modules/@skeletonlabs/skeleton-svelte/dist";
 @plugin '@tailwindcss/forms';
 
@@ -39,14 +39,15 @@
   }
 }
 @utility preset-ui {
-  background-color: var(--color-surface-50-950);
-  color: var(--color-surface-contrast-50-950);
+  background-color: var(--color-surface-100-900);
+  color: var(--color-surface-contrast-100-900);
+  border: 1px solid var(--color-surface-200-800);
 }
 @utility preset-ui-header {
-  background-color: var(--color-surface-100-900);
+  background-color: var(--color-surface-200-800);
 }
 @utility preset-ui-admin-header {
-  background-color: var(--color-warning-100-900);
+  background-color: var(--color-warning-200-800);
 }
 @utility preset-ui-ready {
   border-width: 1px;
@@ -56,8 +57,8 @@
   }
 }
 @utility preset-ui-depressed {
-  background-color: var(--color-surface-100-900);
-  color: var(--color-surface-contrast-100-900);
+  background-color: var(--color-surface-200-800);
+  color: var(--color-surface-contrast-200-800);
 }
 @utility preset-ui-activated {
   background-color: var(--color-primary-500);

@@ -98,8 +98,10 @@
     }}
     disabled={delsEmpty}
     placeholder={!delsEmpty ? "Select..." : "No delegates present"}
+    optionHover='hover:preset-tonal hover:brightness-100'
     inputGroupClasses="{error ? 'preset-input-error' : ''} transition-colors"
     {classes}
+    contentClasses="max-h-48 overflow-auto"
     {inputBehavior}
     {selectionBehavior}
 >
