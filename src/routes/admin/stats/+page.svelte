@@ -7,7 +7,7 @@
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db, queryStore, SessionDatabase } from "$lib/db/index.svelte";
     import { Delegate } from "$lib/db/delegates";
-    import type { StatsData } from "$lib/types";
+    import type { DelSessionData, StatsData } from "$lib/types";
     import { compare, downloadFile } from "$lib/util";
     import { POPUP_CARD_CLASSES } from "$lib/util/popup";
     import { stringifyTime } from "$lib/util/time";
@@ -15,6 +15,10 @@
     import { Progress, Pagination, Popover } from "@skeletonlabs/skeleton-svelte";
     import MdiArrowUp from "~icons/mdi/arrow-up";
     import MdiDatabaseExportOutline from "~icons/mdi/database-export-outline";
+    import MdiDotsHorizontal from "~icons/mdi/dots-horizontal";
+    import MdiChevronRight from "~icons/mdi/chevron-right";
+    import MdiChevronLeft from "~icons/mdi/chevron-left";
+    import MdiStar from "~icons/mdi/star";
 
     const { delegates, barTitle } = getSessionContext();
 
@@ -31,22 +35,40 @@
         return nPrevSessions + +(typeof currentSessionKey === "undefined");
     }, 0);
 
-    let pageSettings = $state({
-        page: -1,
-        limit: 1,
-        size: 0,
-        amounts: []
-    });
+    let page = $state(-1);
     $effect(() => {
-        pageSettings.size = $nSessions;
-        if (pageSettings.page === -1) pageSettings.page = $currentSessionKey ?? ($nSessions - 1);
+        // When either cSK or nSessions update, it'll force page to not be -1.
+        if (page === -1) page = $currentSessionKey ?? ($nSessions - 1);
     });
-
+    
     const delAttrMap = $derived(new Map<number, Delegate>($delegates.map(d => [d.id, d])));
-    let sessionDelegates = $derived.by(() => {
-        let session = $prevSessions[pageSettings.page];
+    const sessionDelegates = $derived.by(() => {
+        let session = $prevSessions[page];
+        if (page === $nSessions) {
+            // All sessions
+            let delStats = new Map<number, DelSessionData>();
+            for (let del of $delegates) {
+                delStats.set(del.id, del.getSessionData());
+            }
+            for (let session of $prevSessions) {
+                for (let del of session) {
+                    let currentData = delStats.get(del.id);
+                    if (typeof currentData !== "undefined") {
+                        if (currentData.presence == "NP") currentData.presence = del.session.presence;
+                        currentData.stats.durationSpoken += del.session.stats.durationSpoken;
+                        currentData.stats.motionsAccepted += del.session.stats.motionsAccepted;
+                        currentData.stats.motionsProposed += del.session.stats.motionsProposed;
+                        currentData.stats.timesSpoken += del.session.stats.timesSpoken;
+                    } else {
+                        delStats.set(del.id, del.session);
+                    }
+                }
+            }
 
-        if (pageSettings.page === $currentSessionKey || !session) {
+            return Array.from(delStats, ([id, session]) => Object.assign(
+                Object.create(Delegate.prototype), delAttrMap.get(id), session
+            ));
+        } else if (page === $currentSessionKey || !session) {
             // Current session:
             return $delegates;
         } else {
@@ -125,8 +147,31 @@
 
 <div class="flex flex-col gap-1">
     <div class="flex items-center justify-end gap-2">
-        <!-- TODO: pagination -->
-        <Pagination data={[1,2,3,4,5]} />
+        <Pagination
+            data={Array.from({ length: $nSessions })}
+            page={page + 1}
+            onPageChange={e => page = e.page - 1}
+            pageSize={1}
+            background=""
+            border=""
+            gap="gap-0.5"
+            buttonInactive="preset-ui-depressed"
+        >
+            {#snippet labelEllipsis()}<MdiDotsHorizontal />{/snippet}
+            {#snippet labelNext()}<MdiChevronRight />{/snippet}
+            {#snippet labelPrevious()}<MdiChevronLeft />{/snippet}
+        </Pagination>
+        <button
+            class={[
+                "btn-icon-std",
+                page == $nSessions ? "preset-filled" : "preset-ui-depressed hover:preset-filled"
+            ]}
+            title="All Sessions"
+            aria-label="All Sessions"
+            onclick={() => page = $nSessions}
+        >
+            <MdiStar />
+        </button>
         <Popover
             open={statsPopupOpen}
             onOpenChange={e => statsPopupOpen = e.open}
@@ -145,7 +190,9 @@
                 <div class="flex flex-col gap-2 overflow-hidden">
                     <h4 class="h4">Export Statistics</h4>
                     <button class="btn preset-filled-primary-500" onclick={exportAllStats}>Export All Sessions</button>
-                    <button class="btn preset-filled-primary-500" onclick={exportStats}>Export Session {pageSettings.page + 1}</button>
+                    {#if page < $nSessions}
+                        <button class="btn preset-filled-primary-500" onclick={exportStats}>Export Session {page + 1}</button>
+                    {/if}
                 </div>
             {/snippet}
         </Popover>
@@ -197,10 +244,10 @@
                             <div class="flex w-[33vw]">
                                 <Progress
                                     height="h-8"
-                                    trackBg="bg-surface-300-700"
+                                    trackBg="bg-surface-100-900"
                                     meterBg="bg-primary-500"
                                     meterTransition="duration-500 transition-width"
-                                    value={del.stats.durationSpoken * 100 / maxDurationSpoken}
+                                    value={maxDurationSpoken ? del.stats.durationSpoken * 100 / maxDurationSpoken : 100}
                                 />
                             </div>
                         </div>
