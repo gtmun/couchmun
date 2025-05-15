@@ -49,10 +49,3 @@
     <!-- HACK: Adding styles programmatically and without FOUC -->
     {@html `<style>${genStyles()}</style>`}
 </svelte:head>
-
-<div class="hidden">
-    <!-- Force these styling classes to always exist -->
-    <!-- see IconLabel.svelte -->
-    <div class="sm:hidden md:hidden lg:hidden xl:hidden 2xl:hidden"></div>
-    <div class="sm:block md:block lg:block xl:block 2xl:block"></div>
-</div>
