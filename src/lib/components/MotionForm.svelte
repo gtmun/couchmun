@@ -16,6 +16,7 @@
     import { type Snippet } from 'svelte';
 
     import MdiPlus from "~icons/mdi/plus";
+    import { fade } from "svelte/transition";
 
     const { selectedMotion, delegates, preferences } = getSessionContext();
     const motionSchema = $derived(createMotionSchema($delegates));
@@ -154,7 +155,7 @@
     }
 </script>
 
-<form onsubmit={submitMotion} oninput={resetInputErrors} class="flex flex-col gap-3 p-3" bind:this={formEl}>
+<form onsubmit={submitMotion} oninput={resetInputErrors} class="flex flex-col gap-3 p-3 [&>label>*]:transition-colors" bind:this={formEl}>
     <!-- Delegate input -->
     <label class="label">
         <span>Delegate</span>
@@ -247,6 +248,6 @@
     {/if}
 
     {#if typeof inputError !== "undefined"}
-        <div class="text-error-500 text-center">{inputError.message}</div>
+        <div class="text-error-500 text-center" transition:fade={{ duration: 150 }}>{inputError.message}</div>
     {/if}
 </form>

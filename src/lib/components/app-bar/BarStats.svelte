@@ -50,18 +50,20 @@
 <style>
     .conic-half {
         background: conic-gradient(
-            var(--color-primary-800) 0deg 180deg,
+            var(--color-primary-900) 0deg 180deg,
             var(--color-primary-500) 180deg 360deg
         );
     }
     .conic-tth {
         background: conic-gradient(
-            var(--color-secondary-800) 0deg 120deg,
-            var(--color-secondary-500) 120deg 360deg
+            var(--color-primary-900) 0deg 120deg,
+            var(--color-primary-500) 120deg 360deg
         );
+        filter: hue-rotate(45deg);
     }
     .conic-full {
-        background-color: var(--color-tertiary-500);
+        background-color: var(--color-primary-500);
+        filter: hue-rotate(90deg);
     }
 </style>
 <div class="flex flex-row gap-3 justify-center tabular-nums">

@@ -351,7 +351,7 @@
     :global(#dnd-action-dragged-el).dnd-list-item {
         background-color: var(--color-surface-50) !important;
         opacity: 90% !important;
-        @apply border-2! border-surface-contrast-50-950!;
+        @apply border-2! border-surface-950-50!;
         @apply grid! grid-cols-[auto_auto_1fr_auto] items-center gap-3 p-1;
 
         @variant dark {

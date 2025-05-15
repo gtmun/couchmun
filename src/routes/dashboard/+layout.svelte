@@ -88,7 +88,7 @@
             <div class="flex flex-col items-center gap-2">
                 <div class={["flex max-sm:flex-col gap-1 items-stretch", committeeMain && "flex-col"]}>
                     <BarHeader bind:title={$barTitle} size={committeeMain ? "md" : "sm"} />
-                    <div class={["border-2 rounded border-surface-contrast-100-900", committeeMain ? "m-1 mt-0" : "mx-4"]} role="separator"></div>
+                    <div class={["border-2 rounded border-surface-900-100", committeeMain ? "m-1 mt-0" : "mx-4"]} role="separator"></div>
                     <div class="flex items-center justify-center">
                         <BarStats total={delegateCount} />
                     </div>
