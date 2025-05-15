@@ -242,7 +242,7 @@
         Speakers List
     </h4>
 
-    <ol class="p-2 list overflow-y-auto grid grid-cols-[auto_auto_1fr_auto] auto-rows-min grow"
+    <ol class="p-2 overflow-y-auto grid grid-cols-[auto_auto_1fr_auto] auto-rows-min grow"
         bind:this={listEl}
         use:dragHandleZone={{
             items: dndItems,

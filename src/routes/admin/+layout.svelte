@@ -21,8 +21,9 @@
         <AppBar 
             background="preset-ui-admin-header" 
             toolbarGridCols="grid-cols-[auto_1fr_auto]" 
+            leadClasses="items-center"
             centerClasses="place-self-center"
-            trailClasses="place-content-end"
+            trailClasses="items-center place-content-end"
         >
             {#snippet lead()}
                 <a
@@ -32,7 +33,7 @@
                     title="Return to Dashboard"
                     tabindex={0}
                 >
-                    <MdiChevronLeft width="36" height="36" />
+                    <MdiChevronLeft />
                 </a>
             {/snippet}
             <div class="flex flex-col gap-1">

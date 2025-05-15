@@ -237,8 +237,8 @@
         <h3 class="h3 text-center">Sort Order (WIP)</h3>
         <div class="flex gap-3">
             <!-- Sort Order Table -->
-            <div class="table-container">
-                <table class="table table-compact del-table">
+            <div class="table-wrap rounded border border-surface-200-800">
+                <table class="table">
                     <thead>
                         <tr>
                             <th>Motion</th>
@@ -352,8 +352,8 @@
             </div>
         </div>
         <!-- Delegate Table -->
-        <div class="table-container">
-            <table class="table table-compact del-table">
+        <div class="table-wrap rounded border border-surface-200-800">
+            <table class="table">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -414,8 +414,5 @@
         gap: 0.75rem;
         width: 75%;
         align-self: center;
-    }
-    .del-table td {
-        vertical-align: middle;
     }
 </style>

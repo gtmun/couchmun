@@ -145,13 +145,12 @@
       </button>
     </div>
     
-    <div class="table-container">
-      <table class="table [&_td]:align-middle! [&_td]:text-wrap!" bind:this={motionTable}>
-        <thead>
+    <div class="table-wrap rounded border border-surface-200-800">
+      <table class="table" bind:this={motionTable}>
+        <thead class="preset-ui">
           <tr>
-            <td class="w-30"></td>
-            <td class="px-3 w-24">Motion</td>
-            <td class="px-3 w-32">By</td>
+            <td class="px-3 w-28">Motion</td>
+            <td class="px-3 w-36">By</td>
             <td class="px-3">Topic</td>
             <td class="px-3 w-16">
               <IconLabel icon={MdiClock} label="Total Time" />
@@ -162,6 +161,7 @@
             <td class="px-3 w-16">
               <IconLabel icon={MdiAccountMultiple} label="No. of Speakers" />
             </td>
+            <td class="w-30"></td>
           </tr>
         </thead>
         <tbody
@@ -181,14 +181,22 @@
             {@const shadow = isDndShadow(motion)}
             <tr
               class={[
-                "dnd-list-item hover:bg-primary-500/25!",
-                shadow && "visible! bg-surface-300-700!"
+                "dnd-list-item hover:preset-tonal-primary",
+                shadow && "visible! bg-surface-200-800!"
               ]}
               animate:flip={{ duration: 150 }}
               aria-label="{delName}'s Motion"
             >
+              <td>{motionName(motion)}</td>
               <td>
-                <div class="flex flex-row">
+                <DelLabel attrs={delAttrs} fallbackName={delName} inline />
+              </td>
+              <td>{apply(motion, ["topic"], m => m.topic, "-")}</td>
+              <td>{'totalSpeakers' in motion ? stringifyTime(motion.totalSpeakers * motion.speakingTime) : apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
+              <td>{apply(motion, ["speakingTime"], m => stringifyTime(m.speakingTime), "-")}</td>
+              <td>{'totalSpeakers' in motion ? motion.totalSpeakers : apply(motion, ["totalTime", "speakingTime"], m => numSpeakersStr(m.totalTime, m.speakingTime), "-")}</td>
+              <td>
+                <div class="flex flex-row justify-end">
                   <button
                     class="btn-icon-std p-1"
                     onclick={() => removeMotion(i)}
@@ -220,14 +228,6 @@
                   </Modal>
                 </div>
               </td>
-              <td>{motionName(motion)}</td>
-              <td>
-                <DelLabel attrs={delAttrs} fallbackName={delName} inline />
-              </td>
-              <td>{apply(motion, ["topic"], m => m.topic, "-")}</td>
-              <td>{'totalSpeakers' in motion ? stringifyTime(motion.totalSpeakers * motion.speakingTime) : apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
-              <td>{apply(motion, ["speakingTime"], m => stringifyTime(m.speakingTime), "-")}</td>
-              <td>{'totalSpeakers' in motion ? motion.totalSpeakers : apply(motion, ["totalTime", "speakingTime"], m => numSpeakersStr(m.totalTime, m.speakingTime), "-")}</td>
             </tr>
           {/each}
         </tbody>

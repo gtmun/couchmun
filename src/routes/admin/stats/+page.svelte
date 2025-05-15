@@ -197,9 +197,9 @@
             {/snippet}
         </Popover>
     </div>
-    <div class="table-container">
-        <table class="table table-compact">
-            <thead>
+    <div class="table-wrap rounded border border-surface-200-800">
+        <table class="table">
+            <thead class="preset-ui">
                 <tr>
                     {#each Object.entries(COLUMNS) as [key, col]}
                     <th>
@@ -220,7 +220,7 @@
             <tbody>
                 {#each displayEntries as del (del.id)}
                 {@const absent = !del.isPresent()}
-                <tr class={[absent && "bg-surface-300-700!"]}>
+                <tr class={[absent ? "bg-surface-200-800" : "hover:preset-tonal-primary"]}>
                     <td class="align-middle!">
                         {#if absent}
                         <div class="flex gap-1">
@@ -247,7 +247,7 @@
                                     trackBg="bg-surface-100-900"
                                     meterBg="bg-primary-500"
                                     meterTransition="duration-500 transition-width"
-                                    value={maxDurationSpoken ? del.stats.durationSpoken * 100 / maxDurationSpoken : 100}
+                                    value={maxDurationSpoken ? del.stats.durationSpoken * 100 / maxDurationSpoken : 0}
                                 />
                             </div>
                         </div>

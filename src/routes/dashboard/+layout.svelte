@@ -52,7 +52,7 @@
         <AppBar 
             background="preset-ui-header" 
             toolbarGridCols="grid-cols-[auto_1fr_auto]" 
-            leadClasses="items-center "
+            leadClasses="items-center"
             headlineClasses="place-self-center"
             trailClasses="items-center place-content-end"
         >

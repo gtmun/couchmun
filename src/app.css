@@ -28,6 +28,7 @@
 
 @utility card-filled {
   @apply card preset-ui;
+  border: 1px solid var(--color-surface-200-800);
 }
 @utility preset-input-error {
   background-color: var(--color-error-100);
@@ -41,7 +42,6 @@
 @utility preset-ui {
   background-color: var(--color-surface-100-900);
   color: var(--color-surface-contrast-100-900);
-  border: 1px solid var(--color-surface-200-800);
 }
 @utility preset-ui-header {
   background-color: var(--color-surface-200-800);
