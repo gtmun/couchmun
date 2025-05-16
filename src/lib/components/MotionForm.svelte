@@ -248,6 +248,12 @@
     {/if}
 
     {#if typeof inputError !== "undefined"}
-        <div class="text-error-500 text-center" transition:fade={{ duration: 150 }}>{inputError.message}</div>
+        <div 
+            class="text-error-500 text-center"
+            role="alert"
+            transition:fade={{ duration: 150 }}
+        >
+            {inputError.message}
+        </div>
     {/if}
 </form>

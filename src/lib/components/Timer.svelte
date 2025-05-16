@@ -95,7 +95,6 @@
         useKeyHandlers = true,
         onPause = undefined,
     }: Props = $props();
-    const tid = $props.id();
     
     const COLOR_THRESHOLDS = [
         // color = the color class to apply
@@ -118,12 +117,11 @@
     let progress = $derived(clamp(msRemaining / DURATION_MS, 0, 1))
     let color = $derived((COLOR_THRESHOLDS.findLast(t => progress <= t.threshold) ?? COLOR_THRESHOLDS[0]).color);
     let barProps = $derived({
-        value: 100 * progress,
+        value: Math.round(10000 * progress) / 100,
         height,
         meterTransition: `duration-1000 ${running ? 'transition-[background-color]' : 'transition-[background-color,width]'}`,
         meterBg: color,
-        trackBg: "preset-ui-depressed",
-        labelledby: `timer-text-${tid}`
+        trackBg: "preset-ui-depressed"
     } satisfies PropsOf<typeof Progress>);
 
     // Timer related handlers
@@ -271,7 +269,7 @@
 <div class="flex flex-col gap-3">
     <h2 
         class={["h2", "text-center", "tabular-nums", hideText && "hidden"]}
-        id={barProps.labelledby}
+        role="timer"
     >
         {stringifyTime(secsRemaining())}/<span
             class="contenteditable:editable-std"
