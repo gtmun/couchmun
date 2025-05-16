@@ -53,17 +53,17 @@
             var(--color-primary-900) 0deg 180deg,
             var(--color-primary-500) 180deg 360deg
         );
+        filter: hue-rotate(-45deg);
     }
     .conic-tth {
         background: conic-gradient(
             var(--color-primary-900) 0deg 120deg,
             var(--color-primary-500) 120deg 360deg
         );
-        filter: hue-rotate(45deg);
     }
     .conic-full {
         background-color: var(--color-primary-500);
-        filter: hue-rotate(90deg);
+        filter: hue-rotate(45deg);
     }
 </style>
 <div class="flex flex-row gap-3 justify-center tabular-nums">

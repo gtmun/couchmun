@@ -101,9 +101,9 @@
         // color = the color class to apply
         // threshold = the maximum value needed for this color apply
         //     e.g., if (threshold_0 < progress <= threshold_1), we use color_1
-        { color: "bg-emerald-500", threshold: 1   },
-        { color: "bg-yellow-500",  threshold: 0.5 },
-        { color: "bg-red-500",     threshold: 0.2 },
+        { color: "bg-primary-500", threshold: 1   },
+        { color: "bg-yellow-400",  threshold: 0.5 },
+        { color: "bg-red-400",     threshold: 0.2 },
     ] as const;
 
     let DURATION_MS = $derived(duration * 1000);

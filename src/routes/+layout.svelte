@@ -9,6 +9,7 @@
     import "../app.css";
     import { createSessionContext } from "$lib/context/index.svelte";
     import { genStyles } from "$lib/util/chroma";
+    import { setContext } from "svelte";
 
     let { children } = $props();
 
@@ -30,6 +31,12 @@
             }
         }
     }
+
+    let ctx = $state({
+        primary: "default-primary",
+        surface: "default-surface"
+    });
+    const shades: { primary?: string, surface?: string } = setContext("shade", ctx);
 </script>
 
 {@render children()}
@@ -47,5 +54,5 @@
         }
     </script>
     <!-- HACK: Adding styles programmatically and without FOUC -->
-    {@html `<style>${genStyles()}</style>`}
+    {@html `<style>${genStyles(shades.primary, shades.surface)}</style>`}
 </svelte:head>

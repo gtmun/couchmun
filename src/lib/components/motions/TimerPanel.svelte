@@ -222,9 +222,11 @@
 </div>
 <div class="flex flex-col justify-center grow">
     {#key selectedSpeaker?.key}
-        <div class="pb-5" transition:lazyslide>
+        <div transition:lazyslide>
             {#if typeof selectedSpeaker !== "undefined"}
-                <DelLabel attrs={findDelegate(delegates, selectedSpeaker.key)} />
+                <div class="pb-5">
+                    <DelLabel attrs={findDelegate(delegates, selectedSpeaker.key)} />
+                </div>
             {/if}
         </div>
     {/key}
