@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
     import { getFlagUrl } from "$lib/flags/flagcdn";
+    import type { ClassValue } from "svelte/elements";
     import MdiFlagOff from "~icons/mdi/flag-off";
 
     interface Props {
@@ -23,7 +24,7 @@
         /**
          * The height of the flag, which should be defined with Tailwind CSS classes.
          */
-        height?: string;
+        height?: ClassValue;
         /**
          * The fallback if the URL provided doesn't exist.
          * - `un`: Fallback to the United Nations flag
@@ -66,14 +67,14 @@
     <img
         {src}
         alt="Flag of {label}"
-        class={height}
+        class={[!inline && "border-2 border-surface-200-800", height]}
     >
 {:else if fallback === "un"}
     {#await getFlagUrl("un") then unFallbackFlag}
         <img
             src={unFallbackFlag!.href}
             alt="Flag of {label} (missing)"
-            class={height}
+            class={[!inline && "border-2 border-surface-200-800", height]}
         >   
     {/await}
 {:else if fallback === "icon"}

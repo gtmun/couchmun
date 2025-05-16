@@ -6,6 +6,8 @@
 <script lang="ts">
     import { base } from "$app/paths";
     import { page } from "$app/state";
+    import { tick } from "svelte";
+    import type { Action } from "svelte/action";
 
     interface Props {
         /**
@@ -19,24 +21,27 @@
         close: () => void;
     }
     let { links, close }: Props = $props();
+
+    const focusIfSelected = ((e: HTMLElement, selected: boolean) => {
+        if (selected) tick().then(() => e.focus());
+    }) satisfies Action<HTMLElement, boolean>;
 </script>
 
-<h3 class="h3 p-4">Dashboard</h3>
-<hr />
 <!-- Nav links -->
-<nav class="list-nav p-2">
-    <ul>
-        {#each Object.entries(links) as [id, { label }], i}
+<nav>
+    <h1 class="p-2 text-xl font-bold">Dashboard</h1>
+    <ul class="flex flex-col gap-1">
+        {#each Object.entries(links) as [id, { label }]}
             <!-- base does not end with /, whereas id starts with / -->
             {@const href = `${base}${id}`}
             {@const selected = page.url.pathname === href}
-            <li>
-                <a 
+            <li class="flex">
+                <a
+                    class={["grow p-2 rounded", selected ? "preset-filled-primary-500" : "hover:preset-tonal"]}
                     onclick={close} 
-                    {href} 
-                    class:variant-soft-primary={selected}
-                    data-focusindex={1 - +selected}
-                    tabindex={i + 1}
+                    {href}
+                    tabindex="0"
+                    use:focusIfSelected={selected}
                 >
                     {label}
                 </a>

@@ -22,9 +22,9 @@
         bind:running
     />
     <div class="flex flex-row gap-3 justify-center">
-        <button class="btn variant-filled-primary" onclick={() => running = !running}>
+        <button class="btn preset-filled-primary-500" onclick={() => running = !running}>
             {!running ? 'Start' : 'Pause'}
         </button>
-        <button class="btn variant-filled-primary" onclick={timer?.reset}>Reset</button>
+        <button class="btn preset-filled-primary-500" onclick={timer?.reset}>Reset</button>
     </div>
 </div>

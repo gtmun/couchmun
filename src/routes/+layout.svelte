@@ -7,14 +7,11 @@
 
 <script lang="ts">
     import "../app.css";
-    import { computePosition, autoUpdate, offset, shift, flip, arrow, size } from '@floating-ui/dom';
-    import { initializeStores, Modal, storePopup } from "@skeletonlabs/skeleton";
     import { createSessionContext } from "$lib/context/index.svelte";
+    import { genStyles } from "$lib/util/chroma";
+    import { setContext } from "svelte";
 
     let { children } = $props();
-
-    initializeStores();
-    storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow, size });
 
     createSessionContext();
     
@@ -24,16 +21,38 @@
             (document.activeElement as HTMLElement)?.blur?.();
         }
     }
-</script>
+    function onstorage(e: StorageEvent) {
+        if (e.key === "color-scheme") {
+            let mode = e.newValue === "dark" ? "dark" : 'light';
+            if (mode === "dark") {
+                document.documentElement.classList.add("dark");
+            } else if (mode === "light") {
+                document.documentElement.classList.remove("dark");
+            }
+        }
+    }
 
-<Modal />
+    let ctx = $state({
+        primary: "default-primary",
+        surface: "default-surface"
+    });
+    const shades: { primary?: string, surface?: string } = setContext("shade", ctx);
+</script>
 
 {@render children()}
 
-<svelte:window onkeydown={keydown} />
-<div class="hidden">
-    <!-- Force these styling classes to always exist -->
-    <!-- see IconLabel.svelte -->
-    <div class="sm:hidden md:hidden lg:hidden xl:hidden 2xl:hidden"></div>
-    <div class="sm:block md:block lg:block xl:block 2xl:block"></div>
-</div>
+<svelte:window onkeydown={keydown} onstorage={onstorage} />
+<svelte:head>
+    <script>
+        {
+            const mode = localStorage.getItem('color-scheme') === "dark" ? "dark" : 'light';
+            if (mode == "dark") {
+                document.documentElement.classList.add("dark");
+            } else if (mode == "light") {
+                document.documentElement.classList.remove("dark");
+            }
+        }
+    </script>
+    <!-- HACK: Adding styles programmatically and without FOUC -->
+    {@html `<style>${genStyles(shades.primary, shades.surface)}</style>`}
+</svelte:head>

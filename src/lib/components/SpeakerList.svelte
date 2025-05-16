@@ -7,25 +7,20 @@
  -->
 <script lang="ts">
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import DelAutocomplete, { autocompletePlaceholders } from "$lib/components/DelAutocomplete.svelte";
+    import ConfirmModalCard from "$lib/components/modals/ConfirmModalCard.svelte";
     import { type Delegate, findDelegate } from "$lib/db/delegates";
-    import { formatValidationError, presentDelegateSchema } from "$lib/motions/form_validation";
     import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
     import { isDndShadow } from "$lib/util/dnd";
-    import { triggerConfirmModal } from "$lib/util";
-    
-    import { getModalStore, popup } from "@skeletonlabs/skeleton";
     import { tick, untrack, type Snippet } from "svelte";
     import { flip } from "svelte/animate";
     import { dragHandle, dragHandleZone } from "svelte-dnd-action";
-    import { autocompletePopup, POPUP_CARD_CLASSES } from "$lib/util/popup";
     import MdiCancel from "~icons/mdi/cancel";
     import MdiDelete from "~icons/mdi/delete";
     import MdiDragVertical from "~icons/mdi/drag-vertical";
-    import MdiPlus from "~icons/mdi/plus";
-
-    const modalStore = getModalStore();
-
+    import { Modal } from "@skeletonlabs/skeleton-svelte";
+    import DelCombobox from "./DelCombobox.svelte";
+    import { defaultModalClasses } from "./modals/ModalContent.svelte";
+    
     interface Props {
         /**
          * The order of speakers for the speakers list.
@@ -65,21 +60,6 @@
     // A clone of order used solely for use:dragHandleZone
     let dndItems = $derived(order);
 
-    // Input properties (the current input, any errors with input, and the input validator)
-    // Input validator currently doesn't have support to be changed, but if needed,
-    // just add a new prop for it.
-    //
-    // The `addDelInput` and `addDelError` properties only apply if `controls` is not defined.
-    let addDelInputEl = $state<HTMLInputElement>();
-    let addDelInput: string = $state("");
-    let addDelError: string = $state("");
-    let addDelValidator = $derived(presentDelegateSchema(delegates));
-
-    /**
-     * ID for target. (Cannot be changed, but if needed just add a prop for it.)
-     */
-    const POPUP_TARGET = "add-delegate-popup";
-
     // The UUID of the currently selected speaker object:
     let selectedSpeakerId = $state<SpeakerEntryID>();
     // A mapping from IDs to Speakers:
@@ -87,6 +67,7 @@
         order.filter(s => typeof s.id === "string" && s.id)
             .map((speaker, i) => [speaker.id, { speaker, i }])
     ));
+    let acSpeaker = $state<DelegateID>();
 
     // List item elements per order item
     let listEl = $state<HTMLOListElement>();
@@ -109,6 +90,10 @@
             behavior: "smooth"
         });
     }
+
+    let openModals = $state({
+        clearSpeakers: false
+    });
 
     /**
      * Whether the speakers list is complete (there are no other speakers left in the list).
@@ -170,53 +155,31 @@
 
     /**
      * Adds a speaker to the speakers list.
-     * @param name The full name of the speaker (not a key; this is parsed by the default validator)
-     * @param clearControlInput Whether this function call should clear the input (by default false)
+     * @param key The key of the speaker
+     * @returns if key exists (asserting adding succeeds)
      */
-    export function addSpeaker(name: string, clearControlInput: boolean = false) {
-        const result = addDelValidator.safeParse(name);
-        if (result.success) {
-            const key = result.data;
-            // Successful, so add speakers:
-            let speaker = createSpeaker(key);
-            order.push(speaker);
-            order = order;
+    export function addSpeaker(key: number): boolean {
+        if (!delegates.some(k => k.id === key)) return false;
 
-            // Jump to this speaker when DOM updates.
-            // HACK: this is waiting for 2 frames, which is usually enough for the dom to update
+        // Successful, so add speakers:
+        let speaker = createSpeaker(key);
+        order.push(speaker);
+        order = order;
+
+        // Jump to this speaker when DOM updates.
+        // HACK: this is waiting for 2 frames, which is usually enough for the dom to update
+        requestAnimationFrame(() => {
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        jumpToSpeaker();
-                    })
-                });
+                    jumpToSpeaker();
+                })
             });
+        });
 
-            // Only applies to default controls
-            if (typeof controls === "undefined") {
-                addDelError = "";
-                // Clear the control input if it exists and it was requested to be cleared.
-                if (clearControlInput) addDelInput = "";
-            }
-        } else {
-            addDelError = formatValidationError(result.error).message;
-        }
+        return true;
     }
 
     // DEFAULT CONTROLS
-    /**
-     * Wrapper around `addSpeaker`.
-     */
-    function submitSpeaker(e: SubmitEvent) {
-        e.preventDefault();
-        addSpeaker(addDelInput, true);
-
-        // HACK: Make autocomplete appear immediately
-        setTimeout(() => {
-            addDelInputEl?.blur();
-            addDelInputEl?.focus();
-        }, 200);
-    }
     /**
      * Deletes the speaker at index i in the speakers list.
      * @param i The index.
@@ -229,16 +192,6 @@
             setSelectedSpeaker(undefined);
         }
     }
-    /**
-     * Remove all speakers from the speakers list.
-     */
-    function clearSpeakers() {
-        triggerConfirmModal(
-            modalStore, "Are you sure you want to clear the Speakers List?",
-            () => order = []
-        );
-    }
-    /// Sets the selected speaker.
 
     /**
      * Sets the selected speaker and activates the "onBeforeSpeakerUpdate" listener.
@@ -284,12 +237,12 @@
     }
 </script>
 
-<div class="card p-4 overflow-y-hidden flex-grow flex flex-col items-stretch gap-4">
+<div class="card-filled p-4 overflow-y-hidden grow flex flex-col items-stretch gap-4">
     <h4 class="h4 flex justify-center" id="sl-header-{sid}">
         Speakers List
     </h4>
 
-    <ol class="p-2 list overflow-y-auto grid grid-cols-[auto_auto_1fr_auto] auto-rows-min flex-grow"
+    <ol class="p-2 overflow-y-auto grid grid-cols-[auto_auto_1fr_auto] auto-rows-min grow"
         bind:this={listEl}
         use:dragHandleZone={{
             items: dndItems,
@@ -314,22 +267,26 @@
             {@const speakerLabel = delAttrs?.name ?? "unknown"}
 
             <li
-                class="!grid grid-cols-subgrid col-span-4 dnd-list-item"
-                class:!visible={shadow}
-                class:!bg-surface-300-600-token={shadow}
+                class={[
+                    "grid! grid-cols-subgrid col-span-4 dnd-list-item items-center gap-3 p-1",
+                    shadow && "visible! bg-surface-100-900! rounded"
+                ]}
                 animate:flip={{ duration: 150 }}
                 aria-label={speakerLabel}
             >
-                <div class="btn-icon w-6" use:dragHandle>
+                <div use:dragHandle>
                     <MdiDragVertical />
                 </div>
-                <span class="enumerated-index">{i + 1}.</span>
+                <span class="enumerated-index tabular-nums">{i + 1}.</span>
                 <button 
-                    class="btn !text-wrap p-2 px-5 justify-start rounded-lg overflow-hidden"
-                    class:variant-filled-primary={selected}
-                    class:variant-soft-surface={!selected && speaker.completed}
-                    class:variant-ringed-surface={!selected && !speaker.completed}
-                    class:hover:variant-ringed-primary={!selected && !speaker.completed}
+                    class={[
+                        "btn text-wrap! justify-start overflow-hidden",
+                        selected
+                            ? 'preset-ui-activated'
+                            : speaker.completed
+                                ? 'preset-ui-depressed'
+                                : 'preset-ui-ready'
+                    ]}
                     onclick={() => setSelectedSpeaker(speaker)}
                     title="Select {speakerLabel}"
                     aria-label="Select {speakerLabel}"
@@ -337,18 +294,18 @@
                 >
                     <DelLabel attrs={delAttrs} fallbackName={speakerLabel} inline />
                 </button>
-                <div class="btn-icon">
-                    <button 
-                        class="btn-icon 
-                            {speaker.completed ? "variant-soft-surface" : "variant-soft-error hover:variant-filled-error"}"
-                        onclick={() => deleteSpeaker(i)}
-                        title="Delete {speakerLabel}"
-                        aria-label="Delete {speakerLabel}"
-                        disabled={speaker.completed}
-                    >
-                        <MdiCancel />
-                    </button>
-                </div>
+                <button 
+                    class={[
+                        "btn-icon-std transition",
+                        speaker.completed ? "preset-ui-depressed" : "preset-filled-error-100-900 hover:preset-filled-error-500"
+                    ]}
+                    onclick={() => deleteSpeaker(i)}
+                    title="Delete {speakerLabel}"
+                    aria-label="Delete {speakerLabel}"
+                    disabled={speaker.completed}
+                >
+                    <MdiCancel />
+                </button>
             </li>
         {/each}
     </ol>
@@ -356,80 +313,49 @@
     {#if controls}
         {@render controls()}
     {:else}
-        <!-- Default controls, consisting of a delegate input, an add button, and a clear button. -->
-        {@const error = !!addDelError}
-        {@const noDelegatesPresent = delegates.every(d => !d.isPresent())}
-
-        <div class="flex flex-col gap-1">
-            <div class="flex flex-row gap-1">
-                <!-- Add delegate -->
-                <form class="contents" onsubmit={submitSpeaker} oninput={() => addDelError = ""}>
-                    <input 
-                        class="input" 
-                        class:input-error={error}
-                        bind:value={addDelInput}
-                        bind:this={addDelInputEl}
-                        use:popup={{ ...autocompletePopup(POPUP_TARGET), placement: "left-end", closeQuery: "" }}
-                        {...autocompletePlaceholders(noDelegatesPresent)}
-                    />
-                    <div class="ml-2">
-                        <button
-                            type="submit"
-                            class="btn btn-icon variant-filled-primary"
-                            disabled={noDelegatesPresent}
-                            aria-label="Add to Speakers List"
-                            title="Add to Speakers List"
-                        >
-                            <MdiPlus />
-                        </button>
-                    </div>
-                    <div>
-                        <!-- Clear order -->
-                        <button
-                            type="button"
-                            class="btn btn-icon variant-filled-primary"
-                            disabled={order.length === 0}
-                            onclick={clearSpeakers}
-                            aria-label="Clear Speakers List"
-                            title="Clear Speakers List"
-                        >
-                            <MdiDelete />
-                        </button>
-                    </div>
-                </form>
-            </div>
-            <!-- Error messages! -->
-            <div class="text-error-500 text-center transition-[height] overflow-hidden {error ? 'h-6' : 'h-0'}">
-                {addDelError || "\xA0"}
-            </div>
-        </div>
-
-        <!-- Delegate popup. 
-            Note: this is in the middle of the document, 
-            so it might overlap with another element and cause visual bugs.
-
-            The solution used here is to not put another element over the popup :)
-        -->
-        <div class="{POPUP_CARD_CLASSES}" data-popup={POPUP_TARGET}>
-            <DelAutocomplete
-                bind:input={addDelInput}
+        <div class="flex flex-row gap-1 items-center">
+            <!-- Delegate combobox -->
+            <DelCombobox
                 {delegates}
-                on:selection={(e) => {
-                    addSpeaker(e.detail.label, true);
-                }}
+                selectionBehavior="clear"
+                class="grow"
+                forgetSelected
+                onSelect={addSpeaker}
             />
+            <!-- Clear order -->
+            <!-- TODO: disabled={order.length === 0 } -->
+            <Modal
+                open={openModals.clearSpeakers}
+                onOpenChange={e => openModals.clearSpeakers = e.open}
+                triggerBase="btn-icon-std preset-filled-primary-500"
+                aria-label="Clear Speakers List"
+                classes="flex items-center"
+                {...defaultModalClasses}
+            >
+                {#snippet trigger()}
+                    <MdiDelete />
+                {/snippet}
+                {#snippet content()}
+                    <ConfirmModalCard bind:open={openModals.clearSpeakers} success={() => order = []}>
+                        Are you sure you want to clear the Speakers List?
+                    </ConfirmModalCard>
+                {/snippet}
+            </Modal>
         </div>
     {/if}
 </div>
 
-<style lang="postcss">
+<style>
+    @reference "$lib/../app.css";
     /* Styling for dragged element */
     :global(#dnd-action-dragged-el).dnd-list-item {
-        @apply !bg-surface-50;
-        @apply !grid grid-cols-[auto_auto_1fr_auto] gap-4;
-        @apply !opacity-90;
-    }
-    :global(.dark #dnd-action-dragged-el).dnd-list-item {
-        @apply !bg-surface-900;
+        background-color: var(--color-surface-50) !important;
+        opacity: 90% !important;
+        @apply border-2! border-surface-950-50!;
+        @apply grid! grid-cols-[auto_auto_1fr_auto] items-center gap-3 p-1;
+
+        @variant dark {
+            background-color: var(--color-surface-950) !important;
+        }
     }
 </style>

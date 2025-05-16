@@ -7,7 +7,7 @@
 <script lang="ts">
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import type Timer from "$lib/components/Timer.svelte";
-    import TimerPanel, { resetButton } from "$lib/components/motions/TimerPanel.svelte";
+    import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import type { Motion, Speaker } from "$lib/types";
@@ -50,7 +50,7 @@
         with the left side being the timer and the right side being the speakers list.
     -->
     <!-- Left/Top -->
-    <div class="flex flex-col flex-grow flex-shrink-0 basis-full lg:basis-auto">
+    <div class="flex flex-col grow shrink-0 basis-full lg:basis-auto">
         <TimerPanel
             delegates={$delegates}
             {speakersList}
@@ -59,14 +59,14 @@
             onBeforeReset={deductTime}
             bind:this={timerPanel}
         >
-        {#snippet resetButtons(reset, canReset)}
-            {@render resetButton(reset, canReset, "Reset", [0])}
-            {@render resetButton(reset, canReset, "Reset All")}
+        {#snippet resetButtons(btn, reset, canReset)}
+            {@render btn(reset, canReset, "Reset", [0])}
+            {@render btn(reset, canReset, "Reset All")}
         {/snippet}
         </TimerPanel>
     </div>
     <!-- Right/Bottom -->
-    <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-[25rem] lg:max-w-[33%]">
+    <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-100 lg:max-w-[33%]">
         <!-- List -->
         <SpeakerList
             bind:order

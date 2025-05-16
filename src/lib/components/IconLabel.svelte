@@ -16,12 +16,6 @@
          */
         label: string,
         /**
-         * The screen width needed for the text to take effect.
-         * This is any of Tailwind's default media sizes (e.g., 'sm', 'md', 'lg', etc.)
-         */
-        size?: string,
-
-        /**
          * The width of the icon.
          */
         iconWidth?: number,
@@ -31,12 +25,12 @@
         iconHeight?: number
     }
 
-    let { icon: Icon, label, size = "md", iconWidth = 24, iconHeight = 24 }: Props = $props();
+    let { icon: Icon, label, iconWidth = 24, iconHeight = 24 }: Props = $props();
 </script>
 
 <!-- If on a smaller device, use an icon -->
-<div class="flex justify-center items-center {size}:hidden" aria-label={label} title={label}>
+<div class="flex justify-center items-center md:hidden" aria-label={label} title={label}>
     <Icon width={iconWidth} height={iconHeight} />
 </div>
 <!-- If on a larger device, use the full text -->
-<span class="hidden {size}:block">{label}</span>
+<span class="hidden md:block">{label}</span>

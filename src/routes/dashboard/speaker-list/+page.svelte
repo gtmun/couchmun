@@ -41,7 +41,7 @@
         with the left side being the timer and the right side being the speakers list.
     -->
     <!-- Left/Top -->
-    <div class="flex flex-col flex-grow flex-shrink-0 basis-full lg:basis-auto">
+    <div class="flex flex-col grow shrink-0 basis-full lg:basis-auto">
         <TimerPanel
             delegates={$delegates}
             {speakersList}
@@ -51,7 +51,7 @@
         />
     </div>
     <!-- Right/Bottom -->
-    <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-[25rem] lg:max-w-[33%]">
+    <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-100 lg:max-w-[33%]">
         <!-- List -->
         <SpeakerList
             delegates={$delegates}
@@ -63,9 +63,9 @@
         <!-- Timer config -->
         <div class="flex flex-row gap-5">
             <form class="contents" onsubmit={setDuration}>
-                <label class="flex flex-grow items-center">
+                <label class="flex grow items-center">
                     <span>Speaker Time</span>
-                    <input class="input flex-grow" bind:value={durInput} placeholder="mm:ss" />
+                    <input class="input grow" bind:value={durInput} placeholder="mm:ss" />
                 </label>
             </form>
         </div>

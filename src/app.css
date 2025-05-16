@@ -1,3 +1,69 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+@import 'tailwindcss';
+@import "@skeletonlabs/skeleton";
+@import "@skeletonlabs/skeleton/optional/presets";
+@import "./theme.css";
+@source "../node_modules/@skeletonlabs/skeleton-svelte/dist";
+@plugin '@tailwindcss/forms';
+
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant contenteditable (&:is([contenteditable]));
+
+@utility card-filled {
+  @apply card preset-ui;
+  border: 1px solid var(--color-surface-200-800);
+}
+@utility preset-input-error {
+  background-color: var(--color-error-100);
+  color: var(--color-error-900);
+  --tw-ring-color: var(--color-error-900);
+  /* To deal with comboboxes */
+  & > * {
+    border-color: var(--color-error-900);
+  }
+}
+@utility preset-ui {
+  background-color: var(--color-surface-100-900);
+  color: var(--color-surface-contrast-100-900);
+}
+@utility preset-ui-header {
+  background-color: var(--color-surface-200-800);
+}
+@utility preset-ui-admin-header {
+  background-color: var(--color-warning-200-800);
+}
+@utility preset-ui-ready {
+  border-width: 1px;
+  border-color: var(--color-surface-500);
+  &:hover {
+    border-color: var(--color-primary-500);
+  }
+}
+@utility preset-ui-depressed {
+  background-color: var(--color-surface-200-800);
+  color: var(--color-surface-contrast-200-800);
+}
+@utility preset-ui-activated {
+  background-color: var(--color-primary-500);
+  color: var(--color-primary-contrast-500);
+}
+
+@utility btn-icon-std {
+  @apply btn-icon;
+  font-size: var(--text-xl);
+  width: var(--text-xl);
+  height: var(--text-xl);
+  padding: calc(var(--spacing) * 2);
+}
+@utility editable-std {
+  @apply hover:bg-surface-500/25 focus:bg-surface-500/25 transition-[background-color,font-size];
+  border-radius: 0.25rem;
+
+  @variant empty {
+    cursor: text;
+    &::before {
+      content: attr(placeholder);
+      opacity: 0.75;
+      font-style: italic;
+    }
+  }
+}

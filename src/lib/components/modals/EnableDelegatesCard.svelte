@@ -12,17 +12,17 @@
 
 <script lang="ts">
     import { SvelteSet } from "svelte/reactivity";
-    import EditModal from "./EditModal.svelte";
+    import ModalContent, { type ExitProps } from "$lib/components/modals/ModalContent.svelte";
     import type { Delegate } from "$lib/db/delegates";
 
-    interface Props {
+    interface Props extends ExitProps<Set<number>> {
         /**
          * List of delegates.
          */
         attrs: Delegate[];
     }
 
-    let { attrs }: Props = $props();
+    let { attrs, open = $bindable(), onSubmit }: Props = $props();
     let enabled = new SvelteSet<number>();
     let inputText: string = $state("");
 
@@ -51,18 +51,20 @@
             .join("\n")
     );
 </script>
-<EditModal title="Enable/Disable Delegates">
-    {#snippet children({ submit, close })}
+<ModalContent title="Enable/Disable Delegates" bind:open {onSubmit}>
+    {#snippet main()}
         <div class="flex flex-col gap-3">
             Enter all delegates to enable:
             <div class="grid grid-cols-2 gap-3">
                 <textarea class="textarea" rows={10} onkeydown={keydown} bind:value={inputText}></textarea>
                 <textarea class="textarea" rows={10} readonly>{enabledText}</textarea>
             </div>
-            <div class="flex justify-end gap-1">
-                <button class="btn variant-filled-error" type="button" onclick={close}>Cancel</button>
-                <button class="btn variant-filled-primary" type="button" onclick={() => submit(enabled)}>Done</button>
-            </div>
         </div>
     {/snippet}
-</EditModal>
+    {#snippet footer({ submit, close })}
+        <div class="flex justify-end gap-1">
+            <button class="btn preset-filled-error-500" type="button" onclick={close}>Cancel</button>
+            <button class="btn preset-filled-primary-500" type="button" onclick={() => submit(enabled)}>Done</button>
+        </div>
+    {/snippet}
+</ModalContent>

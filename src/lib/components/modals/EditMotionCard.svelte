@@ -9,31 +9,31 @@
 <script lang="ts">
     import type { Motion } from "$lib/types";
     import MotionForm from "$lib/components/MotionForm.svelte";
-    import EditModal from "$lib/components/modals/EditModal.svelte";
+    import ModalContent, { type ExitProps } from "$lib/components/modals/ModalContent.svelte";
     import { db } from "$lib/db/index.svelte";
     import { inputifyMotion } from "$lib/motions/definitions";
     
-    interface Props {
+    interface Props extends ExitProps<Motion> {
         /**
          * The motion data to edit.
          */
         motion: Motion;
     }
-    let { motion }: Props = $props();
+    let { motion, open = $bindable(), onSubmit }: Props = $props();
 
     let inputMotion = $state(inputifyMotion(motion));
     inputifyMotion(motion, db.delegates).then(im => inputMotion = im);
 </script>
 
-<EditModal title="Editing Motion">
-    {#snippet children({ submit, close })}
+<ModalContent title="Editing Motion" bind:open {onSubmit}>
+    {#snippet main({ submit, close })}
         <MotionForm {submit} bind:inputMotion>
             {#snippet buttons()}
                 <div class="flex justify-end gap-3">
-                    <button class="btn variant-filled-error" type="button" onclick={close}>Cancel</button>
-                    <button class="btn variant-filled-primary" type="submit">Submit</button>
+                    <button class="btn preset-filled-error-500" type="button" onclick={close}>Cancel</button>
+                    <button class="btn preset-filled-primary-500" type="submit">Submit</button>
                 </div>
             {/snippet}
         </MotionForm>
     {/snippet}
-</EditModal>
+</ModalContent>
