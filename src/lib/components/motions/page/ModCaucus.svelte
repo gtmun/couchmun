@@ -11,6 +11,7 @@
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import type { Motion, Speaker } from "$lib/types";
+    import { stringifyTime } from "$lib/util/time";
 
     interface Props {
         motion: Motion & { kind: "mod" };
@@ -39,6 +40,15 @@
         if (!delTimer || !totalTimer) return;
         totalTimer.offsetDuration(-delTimer.secsRemaining());
     }
+
+    $effect(() => {
+        if (timerPanel?.getRunState(0)) {
+            let secs = timerPanel.secsRemaining(0);
+            sessionData.tabTitleExtras = typeof secs !== "undefined" ? stringifyTime(secs) : undefined;
+        } else {
+            sessionData.tabTitleExtras = undefined;
+        }
+    });
 </script>
 
 <div class="flex flex-col lg:flex-row h-full gap-8 items-stretch">

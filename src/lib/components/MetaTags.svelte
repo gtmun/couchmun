@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
     import { page } from "$app/state";
+    import { getSessionContext } from "$lib/context/index.svelte";
 
     interface Props {
         title: string;
@@ -20,11 +21,20 @@
     }: Props = $props();
 
     let thumbnailURL = $derived(typeof thumbnail === "string" ? new URL(thumbnail, page.url.origin) : undefined);
+
+    let sessionData = getSessionContext();
+    let tabTitle = $derived.by(() => {
+        if (sessionData.tabTitleExtras) {
+            return `${sessionData.tabTitleExtras} \xB7 ${title}`;
+        } else {
+            return title;
+        }
+    });
 </script>
 
 <svelte:head>
     <!-- Title tags -->
-    <title>{title}</title>
+    <title>{tabTitle}</title>
     <meta name="title" content={title}>
     <meta property="og:title" content={title}>
     <meta property="twitter:title" content={title}>

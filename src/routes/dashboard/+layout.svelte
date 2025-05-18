@@ -37,7 +37,10 @@
     let settingsBackdrop = $state(true);
     // When navigating to a different page, reset topic:
     $effect(() => {
-        if (navigating.type != null) sessionData.barTopic = undefined;
+        if (navigating.type != null) {
+            sessionData.barTopic = undefined;
+            sessionData.tabTitleExtras = undefined;
+        }
     })
 </script>
 

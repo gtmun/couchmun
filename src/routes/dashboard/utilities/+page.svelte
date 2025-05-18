@@ -14,7 +14,8 @@
     import MdiFlagOff from "~icons/mdi/flag-off";
     import DelFlag from "$lib/components/del-label/DelFlag.svelte";
 
-    const { delegates } = getSessionContext();
+    const sessionData = getSessionContext();
+    const { delegates } = sessionData;
 
     // Timer
     let timerEnabled: boolean = $state(true);
@@ -28,6 +29,13 @@
     let showFlag = $state<boolean>(false);
 
     const attrs = $derived($delegates.find(d => d.nameEquals(labelText)));
+    $effect(() => {
+        if (timer && running) {
+            sessionData.tabTitleExtras = timer.secsRemainingString();
+        } else {
+            sessionData.tabTitleExtras = undefined;
+        }
+    });
 </script>
 
 <div class="flex flex-col h-full items-stretch">

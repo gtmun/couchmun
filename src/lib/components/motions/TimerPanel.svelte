@@ -127,7 +127,7 @@
     }
     
     // Getter/setter for run state, since it depends on timer interaction
-    function getRunState(i: number): boolean {
+    export function getRunState(i: number): boolean {
         if (timerInteraction === "sync") {
             return runStates[0];
         } else if (timerInteraction === "cascade") {
@@ -195,6 +195,14 @@
         } else {
             return indices.some(i => timers[i]?.canReset());
         }
+    }
+
+    /**
+     * @param timerIndex the index of the timer
+     * @returns the seconds remaining for the timer of the given index
+     */
+    export function secsRemaining(timerIndex: number) {
+        return timers[timerIndex]?.secsRemaining();
     }
 
     /**

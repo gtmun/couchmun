@@ -197,6 +197,13 @@
         return msRemaining / 1000;
     }
     /**
+     * @returns the number of seconds remaining in the timer as a time string.
+     */
+    export function secsRemainingString() {
+        return stringifyTime(secsRemaining());
+    }
+
+    /**
      * @returns whether the timer has completed its full time.
      */
     export function isElapsed() {
