@@ -5,7 +5,8 @@
   This is used with `DelLabel` to handle the display of delegates.
 -->
 <script lang="ts">
-    import { getFlagUrl } from "$lib/flags/flagcdn";
+    import { getFlagCodes, getFlagUrl } from "$lib/flags/flagcdn";
+    import { onMount } from "svelte";
     import type { ClassValue } from "svelte/elements";
     import MdiFlagOff from "~icons/mdi/flag-off";
 
@@ -48,35 +49,44 @@
         inline = false
     }: Props = $props();
 
+    let _flagCodes: Record<string, string> = $state({});
+    onMount(async () => {
+        Object.assign(_flagCodes, await getFlagCodes());
+    });
     /**
-     * Hack to implement fixed flags for FlagCDN flags.
+     * Hack to implement fixed flags for FlagCDN flags + fallback to national flags.
      */
-    function _legacyFixedFlagSrc(url: string) {
+    function _legacyFixedFlagSrc(url: string | undefined, label: string, inline: boolean) {
+        if (!url) {
+            let key = Object.keys(_flagCodes)
+                .find(k => _flagCodes[k].localeCompare(label, undefined, { sensitivity: "base" }) == 0);
+            if (key) {
+                url = getFlagUrl(key, false)!.toString();
+            }
+        }
+
         let match;
-        if (inline && (match = url.match(/^https:\/\/flagcdn.com\/(\w+).svg\/?$/))) {
+        if (inline && (match = url?.match(/^https:\/\/flagcdn.com\/(\w+).svg\/?$/))) {
             return `https://flagcdn.com/80x60/${match[1]}.png`;
         } else {
             return url;
         }
     }
+    let _flagURL = $derived(_legacyFixedFlagSrc(flagURL, label, inline));
 </script>
 
-{#if flagURL}
-    <!-- Temporary HACK to support fixed-size flags from FlagCDN -->
-    {@const src = _legacyFixedFlagSrc(flagURL)}
+{#if _flagURL}
     <img
-        {src}
+        src={_flagURL}
         alt="Flag of {label}"
-        class={[!inline && "border-2 border-surface-200-800", height]}
+        class={height}
     >
 {:else if fallback === "un"}
-    {#await getFlagUrl("un") then unFallbackFlag}
-        <img
-            src={unFallbackFlag!.href}
-            alt="Flag of {label} (missing)"
-            class={[!inline && "border-2 border-surface-200-800", height]}
-        >   
-    {/await}
+    <img
+        src={getFlagUrl("un", false)!.toString()}
+        alt="Flag of {label} (missing)"
+        class={height}
+    >
 {:else if fallback === "icon"}
     <!-- HACK: Just don't use this if not inline. -->
     <MdiFlagOff 

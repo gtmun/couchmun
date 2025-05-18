@@ -2,10 +2,8 @@
  * Flag URLs via FlagCDN.
  */
 
-import { browser } from "$app/environment";
-
 let FLAG_CODES: Record<string, string> = {};
-async function _flag_codes(): Promise<typeof FLAG_CODES> {
+export async function getFlagCodes(): Promise<typeof FLAG_CODES> {
     if (Object.keys(FLAG_CODES).length > 0) return FLAG_CODES;
 
     return FLAG_CODES = (
@@ -17,12 +15,15 @@ async function _flag_codes(): Promise<typeof FLAG_CODES> {
 
 /**
  * Gets the flag URL associated with a given ISO 3166-1 alpha-2 code.
+ * 
+ * `getFlagCodes()` should be called at some point before this function is called.
+ * 
  * @param key The two-letter code
+ * @param validate Whether to validate this code exists before synthesizing URL
  * @returns the URL, if it exists
  */
-export async function getFlagUrl(key: string): Promise<URL | undefined> {
-    if (!browser) return;
-    if (key.toLowerCase() in await _flag_codes()) {
+export function getFlagUrl(key: string, validate: boolean = true): URL | undefined {
+    if (!validate || key.toLowerCase() in FLAG_CODES) {
         return new URL(key.toLowerCase() + ".svg", "https://flagcdn.com/");
     }
 }
