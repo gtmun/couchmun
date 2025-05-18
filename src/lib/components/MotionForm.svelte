@@ -9,7 +9,7 @@
     import { createMotionSchema, inputifyMotion, MOTION_FIELDS, MOTION_LABELS } from "$lib/motions/definitions";
     import { formatValidationError } from "$lib/motions/form_validation";
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
-    import { addColons, parseTime } from "$lib/util/time";
+    import { parseTime, sanitizeTime } from "$lib/util/time";
     import type { Motion } from "$lib/types";
 
     import type { z } from "zod";
@@ -93,12 +93,14 @@
         }
     }
 
+    let showTimeGuide = $state<string>();
     /**
      * When user unfocuses on a time input, update the input to include colons.
      */
     function handleBlurTime<A extends string>(attr: A) {
+        showTimeGuide = undefined;
         if (attr in inputMotion) {
-            (inputMotion as any)[attr] = addColons((inputMotion as any)[attr] ?? "");
+            (inputMotion as any)[attr] = sanitizeTime((inputMotion as any)[attr]);
         }
     }
 
@@ -139,8 +141,8 @@
      */
     export function numSpeakersStr(totalTime: number | string | undefined, speakingTime: number | string | undefined): string | undefined {
         // Parse arguments as either seconds or time string.
-        if (typeof totalTime === "string") totalTime = parseTime(totalTime);
-        if (typeof speakingTime === "string") speakingTime = parseTime(speakingTime);
+        if (typeof totalTime === "string") totalTime = parseTime(sanitizeTime(totalTime));
+        if (typeof speakingTime === "string") speakingTime = parseTime(sanitizeTime(speakingTime));
 
         // Handle undefined cases
         if (typeof totalTime === "undefined") return;
@@ -159,10 +161,15 @@
     <!-- Delegate input -->
     <label class="label">
         <span>Delegate</span>
-        <!-- TODO: focus on next el after this one is done -->
         <DelCombobox
             bind:input={inputMotion.delegate}
             delegates={$delegates}
+            onSelect={() => {
+                // Once selected, move to next item in form
+                setTimeout(() => {
+                    (formEl?.children[1] as HTMLElement)?.focus?.()
+                });
+            }}
             error={inputError?.path.includes("delegate")}
         />
     </label>
@@ -183,11 +190,21 @@
     <!-- Total time input -->
     {#if hasField(inputMotion, ["totalTime"])}
     <label class="label">
-        <span>Total Time</span>
+        <span>
+            Total Time
+            {#if showTimeGuide === "totalTime"}
+                <!-- Time guide -->
+                <span class="text-surface-500" transition:fade={{ duration: 150 }}>
+                    &middot; {sanitizeTime(inputMotion.totalTime)}
+                </span>
+            {/if}
+        </span>
         <input 
+            name="total-time"
             class={["input", inputError?.path.includes("totalTime") && "preset-input-error"]}
             placeholder="mm:ss" 
             bind:value={inputMotion.totalTime}
+            onfocus={() => showTimeGuide = "totalTime"}
             onblur={() => handleBlurTime("totalTime")}
             required
         >
@@ -197,11 +214,21 @@
     <!-- Speaking time input -->
     {#if hasField(inputMotion, ["speakingTime"])}
     <label class="label">
-        <span>Speaking Time</span>
-        <input 
+        <span>
+            Speaking Time
+            {#if showTimeGuide === "speakingTime"}
+                <!-- Time guide -->
+                <span class="text-surface-500" transition:fade={{ duration: 150 }}>
+                    &middot; {sanitizeTime(inputMotion.speakingTime)}
+                </span>
+            {/if}
+        </span>
+        <input
+            name="speaking-time"
             class={["input", inputError?.path.includes("speakingTime") && "preset-input-error"]}
             placeholder="mm:ss" 
             bind:value={inputMotion.speakingTime}
+            onfocus={() => showTimeGuide = "speakingTime"}
             onblur={() => handleBlurTime("speakingTime")}
             disabled={isExtending(inputMotion)}
         >
