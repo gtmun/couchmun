@@ -24,7 +24,7 @@
     import MdiPencil from "~icons/mdi/pencil";
 
     const settings = queryStore(async () => toObject(await db.settings.toArray()) as Settings);
-    
+
     let delegates = queryStore(() => db.delegates.orderBy("order").toArray(), []);
     let delsEnabledAll = $derived.by(() => {
         const [first, ...rest] = $delegates.map(del => del.enabled);
@@ -115,7 +115,7 @@
     async function setPreset() {
         const preset = await getPreset(currentPreset);
         if (typeof preset !== "undefined") {
-            let entries = await _legacyFixDelFlag(preset);
+            let entries = _legacyFixDelFlag(preset);
             await db.transaction("rw", db.delegates, async () => {
                 await db.delegates.clear();
                 await db.addDelegates(entries);
