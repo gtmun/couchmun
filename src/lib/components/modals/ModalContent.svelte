@@ -83,7 +83,7 @@
     <header class="flex">
         <h3 class="h3">{title}</h3>
     </header>
-    <article class="flex">
+    <article class="flex *:grow">
         {@render main?.({ submit, close })}
     </article>
     <footer class="flex justify-end">

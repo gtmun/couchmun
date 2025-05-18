@@ -24,7 +24,7 @@
     import MdiPencil from "~icons/mdi/pencil";
 
     const settings = queryStore(async () => toObject(await db.settings.toArray()) as Settings);
-
+    
     let delegates = queryStore(() => db.delegates.orderBy("order").toArray(), []);
     let delsEnabledAll = $derived.by(() => {
         const [first, ...rest] = $delegates.map(del => del.enabled);
@@ -385,7 +385,7 @@
                                 {/snippet}
                                 {#snippet content()}
                                     {#await db.delegates.get(attrs.id) then del}
-                                        <EditDelegateCard attrs={del?.getAttributes()} bind:open={openModals.addDelegate} onSubmit={d => editDelegate(attrs.id, d)} />
+                                        <EditDelegateCard attrs={del?.getAttributes()} bind:open={openModals.editDelegate[attrs.id]} onSubmit={d => editDelegate(attrs.id, d)} />
                                     {/await}
                                 {/snippet}
                             </Modal>
