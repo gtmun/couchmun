@@ -9,7 +9,8 @@
     import "../app.css";
     import { createSessionContext } from "$lib/context/index.svelte";
     import { genStyles } from "$lib/util/chroma";
-    import { setContext } from "svelte";
+    import { onMount, setContext } from "svelte";
+    import { initThemeState, THEME_DEFAULTS, type Theme } from "$lib/context/theme.svelte";
 
     let { children } = $props();
 
@@ -22,21 +23,26 @@
         }
     }
     function onstorage(e: StorageEvent) {
-        if (e.key === "color-scheme") {
-            let mode = e.newValue === "dark" ? "dark" : 'light';
-            if (mode === "dark") {
-                document.documentElement.classList.add("dark");
-            } else if (mode === "light") {
-                document.documentElement.classList.remove("dark");
-            }
+        if (e.key?.startsWith("theme.")) {
+            let key = e.key.slice(6);
+            let val = e.newValue ?? (THEME_DEFAULTS as any)[key];
+            (theme as any)[key] = val;
         }
     }
 
-    let ctx = $state({
-        primary: "default-primary",
-        surface: "default-surface"
+    let theme = $state<Theme>(THEME_DEFAULTS);
+    setContext("theme", theme);
+    onMount(() => {
+        initThemeState(theme);
+    })
+    $effect(() => {
+        if (theme.colorScheme === "dark") {
+            document.documentElement.classList.add("dark");
+        } else {
+            if (theme.colorScheme !== "light") theme.colorScheme = "light";
+            document.documentElement.classList.remove("dark");
+        }
     });
-    const shades: { primary?: string, surface?: string } = setContext("shade", ctx);
 </script>
 
 {@render children()}
@@ -45,7 +51,7 @@
 <svelte:head>
     <script>
         {
-            const mode = localStorage.getItem('color-scheme') === "dark" ? "dark" : 'light';
+            const mode = localStorage.getItem('theme.colorScheme') === "dark" ? "dark" : 'light';
             if (mode == "dark") {
                 document.documentElement.classList.add("dark");
             } else if (mode == "light") {
@@ -54,5 +60,5 @@
         }
     </script>
     <!-- HACK: Adding styles programmatically and without FOUC -->
-    {@html `<style>${genStyles(shades.primary, shades.surface)}</style>`}
+    {@html `<style>${genStyles(theme.primaryShade, theme.surfaceShade)}</style>`}
 </svelte:head>

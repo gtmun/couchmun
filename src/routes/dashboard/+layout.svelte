@@ -34,6 +34,7 @@
     };
     let thisLink = $derived(typeof page.route.id == "string" ? links[page.route.id] : undefined);
 
+    let settingsBackdrop = $state(true);
     // When navigating to a different page, reset topic:
     $effect(() => {
         if (navigating.type != null) sessionData.barTopic = undefined;
@@ -104,7 +105,7 @@
                     onOpenChange={e => openDrawer = e.open ? "settings" : null}
                     triggerBase="btn-icon-std"
                     contentBase="bg-surface-50-950 p-4 space-y-4 shadow-xl w-[280px] md:w-[480px] h-screen"
-                    backdropBackground="bg-surface-500/50"
+                    backdropBackground="transition-colors {settingsBackdrop ? "bg-surface-500/50" : ''}"
                     positionerJustify="justify-end"
                     positionerAlign=""
                     positionerPadding=""
@@ -116,7 +117,10 @@
                         <MdiGear />
                     {/snippet}
                     {#snippet content()}
-                        <SettingsNavigation close={() => openDrawer = null} />
+                        <SettingsNavigation
+                            close={() => openDrawer = null}
+                            bind:showBackdrop={settingsBackdrop}
+                        />
                     {/snippet}
                 </Modal>
             {/snippet}

@@ -3,28 +3,19 @@
     import MdiWeatherNight from "~icons/mdi/weather-night";
     import MdiWeatherSunny from "~icons/mdi/weather-sunny";
 
-    let checked = $state(false);
-    $effect(() => {
-      const mode = localStorage.getItem('color-scheme') === "dark" ? "dark" : 'light';
-      checked = mode === 'light';
-    });
-  
-    const onCheckedChange = (event: { checked: boolean }) => {
-      const mode = event.checked ? 'light' : 'dark';
-
-    if (mode == "dark") {
-        document.documentElement.classList.add("dark");
-    } else if (mode == "light") {
-        document.documentElement.classList.remove("dark");
+    interface Props {
+      colorScheme: "light" | "dark"
     }
-      localStorage.setItem('color-scheme', mode);
-      checked = event.checked;
+    let { colorScheme = $bindable() }: Props = $props();
+
+    const onCheckedChange = (event: { checked: boolean }) => {
+      colorScheme = event.checked ? 'light' : 'dark';
     };
 </script>
 
 <Switch
     name="color-scheme"
-    {checked}
+    checked={colorScheme !== "dark"}
     {onCheckedChange}
     controlInactive="bg-indigo-500"
     thumbInactive="bg-indigo-900"

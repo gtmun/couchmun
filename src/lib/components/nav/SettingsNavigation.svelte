@@ -13,11 +13,13 @@
 
     import MdiPalette from "~icons/mdi/palette";
     import MdiPlus from "~icons/mdi/plus";
+    import MdiReload from "~icons/mdi/reload";
     import MdiWrench from "~icons/mdi/wrench";
     import MdiSquareRoundedOutline from "~icons/mdi/square-rounded-outline";
     import MdiStarOutline from "~icons/mdi/star-outline";
     import PaletteSelector from "../PaletteSelector.svelte";
     import { getContext } from "svelte";
+    import { THEME_DEFAULTS, type Theme } from "$lib/context/theme.svelte";
 
     interface Props {
         /**
@@ -25,15 +27,21 @@
          * this navigation resides under.
          */
         close: () => void;
+
+        /**
+         * A bindable designating whether the backdrop for the modal
+         * should be shown.
+         */
+        showBackdrop: boolean;
     }
-    let { close }: Props = $props();
+    let { close, showBackdrop = $bindable() }: Props = $props();
 
     const prevSessions = queryStore(() => db.prevSessions.toCollection().keys(), []);
     const selectedSession = queryStore(() => db.getSessionValue("sessionKey"));
     const sessionData = getSessionContext();
     
     let accordion = $state<string[]>([]);
-    let shades = getContext("shade");
+    let theme = getContext<Theme>("theme");
 
     /**
      * This implements the functionality of the "Add Session" button.
@@ -44,6 +52,11 @@
         await resetSessionContext(sessionData);
         goto(`${base}/dashboard/roll-call`);
     }
+
+    // Hide backdrop when accordions are all closed.
+    $effect(() => {
+        showBackdrop = accordion.length == 0;
+    });
 </script>
 
 <!-- External link to admin pages -->
@@ -75,14 +88,14 @@
         <MdiPalette />
     </div>
     <div class="flex justify-between">
-        Color Scheme <LightSwitch />
+        Color Scheme <LightSwitch bind:colorScheme={theme.colorScheme} />
     </div>
     <Accordion value={accordion} multiple onValueChange={e => accordion = e.value}>
         <Accordion.Item value="primary" classes="text-primary-500">
             {#snippet lead()}<MdiStarOutline />{/snippet}
             {#snippet control()}Primary{/snippet}
             {#snippet panel()}
-                <PaletteSelector bind:selectedColor={shades.primary} colors={[
+                <PaletteSelector bind:selectedColor={theme.primaryShade} colors={[
                     {id: "tw:red",          label: "Red",     displayShade: "var(--color-red-500)"},
                     {id: "tw:orange",       label: "Orange",  displayShade: "var(--color-orange-500)"},
                     {id: "tw:amber",        label: "Amber",   displayShade: "var(--color-amber-500)"},
@@ -112,17 +125,26 @@
             {#snippet lead()}<MdiSquareRoundedOutline />{/snippet}
             {#snippet control()}Surface{/snippet}
             {#snippet panel()}
-                <PaletteSelector bind:selectedColor={shades.surface} colors={[
+                <PaletteSelector bind:selectedColor={theme.surfaceShade} colors={[
                     {id: "default-surface", label: "Default", displayShade: "#666666"},
                     {id: "tw:slate-500",    label: "Slate",   displayShade: "var(--color-slate-500)"},
                     {id: "tw:gray-500",     label: "Gray",    displayShade: "var(--color-gray-500)"},
                     {id: "tw:zinc-500",     label: "Zinc",    displayShade: "var(--color-zinc-500)"},
                     {id: "tw:neutral-500",  label: "Neutral", displayShade: "var(--color-neutral-500)"},
                     {id: "tw:stone-500",    label: "Stone",   displayShade: "var(--color-stone-500)"},
-                ]} />
+                ]} withCustom />
             {/snippet}
         </Accordion.Item>
     </Accordion>
+    <div class="flex">
+        <button
+            class="btn preset-tonal-surface border border-surface-500 grow"
+            onclick={() => Object.assign(theme, THEME_DEFAULTS)}
+        >
+            <MdiReload />
+            Reset Theme
+        </button>
+    </div>
 </div>
 
 <hr class="hr" />

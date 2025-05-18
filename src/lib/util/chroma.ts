@@ -7,7 +7,12 @@ const SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
  */
 type Palette = chroma.Color[];
 
-export function fromTailwind(color: string): Palette {
+/**
+ * Gets the palette of a builtin Tailwind color.
+ * @param color The name of the color.
+ * @returns the palette
+ */
+function fromTailwind(color: string): Palette {
     let o = (colors as any)[color];
     return SHADES.map(i => o[i]);
 }
@@ -16,12 +21,18 @@ export function fromTailwind(color: string): Palette {
  * @param scale the set of shades
  * @returns a list of tuples, designating the shade value and its color
  */
-export function getPalette(...scale: string[]): Palette {
+function getPalette(...scale: string[]): Palette {
     let scl = chroma.scale(scale);
 
     return SHADES.map(shade => scl(shade / 1000));
 }
-export function getContrastPalette(name: string, palette: Palette) {
+/**
+ * Computes the contrast color pseudo-palette from the provided palette.
+ * @param name the name of the palette
+ * @param palette the palette colors
+ * @returns a pseudo-palette of the colors.
+ */
+function getContrastPalette(name: string, palette: Palette) {
     const light = chroma(palette[0] ?? "#FFFFFF");
     const dark = chroma(palette[palette.length - 1] ?? "#000000");
 
@@ -39,15 +50,21 @@ export function getContrastPalette(name: string, palette: Palette) {
  * @param palette Palette to assign
  * @returns CSS lines
  */
-export function setPalette(name: string, palette: (chroma.Color | string)[]) {
+function setPalette(name: string, palette: (chroma.Color | string)[]) {
     return palette.map((color, i) => `--color-${name}-${SHADES[i]}: ${typeof color === "string" ? color : color.css('oklab')};`)
         .join("\n");
 }
-export function setContrastPalette(name: string, palette: Palette) {
+/**
+ * Creates a set of CSS lines which set the contrast color variables to the contrasted version of the provided palette.
+ * @param name Color variable to assign
+ * @param palette Non-contrast palette
+ * @returns CSS line
+ */
+function setContrastPalette(name: string, palette: Palette) {
     return setPalette(`${name}-contrast`, getContrastPalette(name, palette));
 }
 
-export function parsePalette(palId: string): Palette {
+function parsePalette(palId: string): Palette {
     if (palId === "default-surface") palId = "#666666";
 
     if (palId.startsWith("tw:")) {
