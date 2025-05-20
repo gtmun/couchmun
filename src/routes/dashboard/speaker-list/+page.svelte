@@ -8,9 +8,10 @@
     import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
-    import { parseTime } from "$lib/util/time";
+    import { parseTime, stringifyTime } from "$lib/util/time";
 
-    const { speakersList: order, delegates } = getSessionContext();
+    const sessionData = getSessionContext();
+    const { speakersList: order, delegates } = sessionData;
 
     let duration: number = $state(60);
     let timerPanel = $state<TimerPanel>();
@@ -30,6 +31,15 @@
         }
         durInput = "";
     }
+
+    $effect(() => {
+        if (timerPanel?.getRunState(0)) {
+            let secs = timerPanel.secsRemaining(0);
+            sessionData.tabTitleExtras = typeof secs !== "undefined" ? stringifyTime(secs) : undefined;
+        } else {
+            sessionData.tabTitleExtras = undefined;
+        }
+    });
 </script>
 
 <div class="flex flex-col lg:flex-row h-full gap-8 items-stretch">
@@ -41,7 +51,7 @@
         with the left side being the timer and the right side being the speakers list.
     -->
     <!-- Left/Top -->
-    <div class="flex flex-col flex-grow flex-shrink-0 basis-full lg:basis-auto">
+    <div class="flex flex-col grow shrink-0 basis-full lg:basis-auto">
         <TimerPanel
             delegates={$delegates}
             {speakersList}
@@ -51,7 +61,7 @@
         />
     </div>
     <!-- Right/Bottom -->
-    <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-[25rem] lg:max-w-[33%]">
+    <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-100 lg:max-w-[33%]">
         <!-- List -->
         <SpeakerList
             delegates={$delegates}
@@ -63,9 +73,9 @@
         <!-- Timer config -->
         <div class="flex flex-row gap-5">
             <form class="contents" onsubmit={setDuration}>
-                <label class="flex flex-grow items-center">
+                <label class="flex grow items-center">
                     <span>Speaker Time</span>
-                    <input class="input flex-grow" bind:value={durInput} placeholder="mm:ss" />
+                    <input class="input grow" bind:value={durInput} placeholder="mm:ss" />
                 </label>
             </form>
         </div>

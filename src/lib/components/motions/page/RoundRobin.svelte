@@ -10,6 +10,7 @@
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import type { Motion, Speaker } from "$lib/types";
+    import { stringifyTime } from "$lib/util/time";
 
     interface Props {
         motion: Motion & { kind: "rr" };
@@ -26,6 +27,15 @@
     function reset() {
         timerPanel?.reset();
     }
+
+    $effect(() => {
+        if (timerPanel?.getRunState(0)) {
+            let secs = timerPanel.secsRemaining(0);
+            sessionData.tabTitleExtras = typeof secs !== "undefined" ? stringifyTime(secs) : undefined;
+        } else {
+            sessionData.tabTitleExtras = undefined;
+        }
+    });
 </script>
 
 <div class="flex flex-col lg:flex-row h-full gap-8 items-stretch">
@@ -37,7 +47,7 @@
         with the left side being the timer and the right side being the speakers list.
     -->
     <!-- Left/Top -->
-    <div class="flex flex-col flex-grow flex-shrink-0 basis-full lg:basis-auto">
+    <div class="flex flex-col grow shrink-0 basis-full lg:basis-auto">
         <TimerPanel
             delegates={$delegates}
             {speakersList}
@@ -46,7 +56,7 @@
         />
     </div>
     <!-- Right/Bottom -->
-    <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-[25rem] lg:max-w-[33%]">
+    <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-100 lg:max-w-[33%]">
         <!-- List -->
         <SpeakerList
             bind:order

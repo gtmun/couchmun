@@ -37,6 +37,7 @@ class SessionImpl implements SessionContext {
     preferences = db.settingStore("preferences", DEFAULT_SETTINGS.preferences);
 
     barTopic = $state<string>();
+    tabTitleExtras = $state<string>();
 }
 
 /**
@@ -70,4 +71,5 @@ export async function resetSessionContext(ctx: SessionContext) {
 
     // Additional attributes to clear:
     ctx.barTopic = undefined;
+    ctx.tabTitleExtras = undefined;
 }

@@ -305,6 +305,10 @@ export type SessionContext = {
      * Current topic of discussion, visible on the app bar.
      */
     barTopic: string | undefined,
+    /**
+     * Extra information to include in the tab title (usually a timer)
+     */
+    tabTitleExtras: string | undefined,
 };
 
 export type ClockMessage = 

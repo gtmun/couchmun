@@ -107,7 +107,7 @@ function stringifySegments(segments: number[]): string {
  * @param requireMinSegments Whether the string produced should have at least the minimum number of segments (default, true)
  * @returns the numeric string with colons (or the string again if not numeric)
  */
-export function addColons(numStr: string, requireMinSegments: boolean = true): string {
+function addColons(numStr: string, requireMinSegments: boolean = true): string {
     if (typeof numStr === "undefined") return "";
     if (!NUM_REGEX.test(numStr)) return numStr;
 
@@ -135,4 +135,17 @@ export function addColons(numStr: string, requireMinSegments: boolean = true): s
         time.push(...Array.from({ length: MIN_SEGMENTS - time.length }, () => 0));
     }
     return stringifySegments(time);
+}
+
+/**
+ * Takes a string that is meant to be a time string and formats it into time string form.
+ * @param timeStr the time string
+ * @returns the sanitized time string
+ */
+export function sanitizeTime(timeStr: string | undefined) {
+    return addColons(
+        timeStr?.replaceAll(":", "") // remove all colons
+            .replace(/^0+/, "") // remove all leading zeroes
+        ?? ""
+    );
 }

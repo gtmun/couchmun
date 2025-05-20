@@ -7,9 +7,10 @@
   The timer will automatically pause (setting `running` to false) when the full duration elapses.
 -->
 <script lang="ts">
-    import { clamp, makeEditable } from "$lib/util";
+    import { clamp, type PropsOf } from "$lib/util";
+    import { makeEditable } from "$lib/util/action.svelte";
     import { parseTime, stringifyTime } from "$lib/util/time";
-    import { ProgressBar } from "@skeletonlabs/skeleton";
+    import { Progress } from "@skeletonlabs/skeleton-svelte";
     import { onDestroy, onMount, untrack } from "svelte";
     import MdiPause from "~icons/mdi/pause";
     import MdiPlay from "~icons/mdi/play";
@@ -94,15 +95,14 @@
         useKeyHandlers = true,
         onPause = undefined,
     }: Props = $props();
-    const tid = $props.id();
     
     const COLOR_THRESHOLDS = [
         // color = the color class to apply
         // threshold = the maximum value needed for this color apply
         //     e.g., if (threshold_0 < progress <= threshold_1), we use color_1
-        { color: "bg-emerald-500", threshold: 1   },
-        { color: "bg-yellow-500",  threshold: 0.5 },
-        { color: "bg-red-500",     threshold: 0.2 },
+        { color: "bg-primary-500", threshold: 1   },
+        { color: "bg-yellow-400",  threshold: 0.5 },
+        { color: "bg-red-400",     threshold: 0.2 },
     ] as const;
 
     let DURATION_MS = $derived(duration * 1000);
@@ -117,13 +117,12 @@
     let progress = $derived(clamp(msRemaining / DURATION_MS, 0, 1))
     let color = $derived((COLOR_THRESHOLDS.findLast(t => progress <= t.threshold) ?? COLOR_THRESHOLDS[0]).color);
     let barProps = $derived({
-        value: 100 * progress,
+        value: Math.round(10000 * progress) / 100,
         height,
-        transition: `duration-1000 ${running ? 'transition-[background-color]' : 'transition-[background-color,width]'}`,
-        meter: color,
-        track: "bg-surface-300-600-token",
-        labelledby: `timer-text-${tid}`
-    });
+        meterTransition: `duration-1000 ${running ? 'transition-[background-color]' : 'transition-[background-color,width]'}`,
+        meterBg: color,
+        trackBg: "preset-ui-depressed"
+    } satisfies PropsOf<typeof Progress>);
 
     // Timer related handlers
     let lastStart: number | undefined = undefined;
@@ -198,6 +197,13 @@
         return msRemaining / 1000;
     }
     /**
+     * @returns the number of seconds remaining in the timer as a time string.
+     */
+    export function secsRemainingString() {
+        return stringifyTime(secsRemaining());
+    }
+
+    /**
      * @returns whether the timer has completed its full time.
      */
     export function isElapsed() {
@@ -269,13 +275,13 @@
 
 <div class="flex flex-col gap-3">
     <h2 
-        class="h2 text-center"
-        class:hidden={hideText}
-        id={barProps.labelledby}
+        class={["h2", "text-center", "tabular-nums", hideText && "hidden"]}
+        role="timer"
     >
         {stringifyTime(secsRemaining())}/<span
+            class="contenteditable:editable-std"
             use:makeEditable={{
-                when: editable && !running,
+                get when() { return editable && !running; },
                 get value() { return stringifyTime(duration) },
                 set value(time) { setDuration(time) }
             }}
@@ -286,11 +292,11 @@
     </h2>
     <div class="grid grid-cols-[1fr_auto] gap-1">
         <!-- The progress bar -->
-        <ProgressBar {...barProps} />
+        <Progress {...barProps} />
         <!-- A start/pause button -->
         {#if !hidePlay}
             <button 
-                class="btn btn-icon variant-filled-primary" 
+                class="btn-icon-std preset-filled-primary-500" 
                 onclick={() => running = !running}
                 disabled={disablePlay || isElapsed()}
                 aria-label={running ? "Pause Timer" : "Start Timer"}

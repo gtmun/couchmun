@@ -7,14 +7,18 @@
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db, queryStore, SessionDatabase } from "$lib/db/index.svelte";
     import { Delegate } from "$lib/db/delegates";
-    import type { StatsData } from "$lib/types";
+    import type { DelSessionData, StatsData } from "$lib/types";
     import { compare, downloadFile } from "$lib/util";
-    import { interactivePopup, POPUP_CARD_CLASSES } from "$lib/util/popup";
+    import { POPUP_CARD_CLASSES } from "$lib/util/popup";
     import { stringifyTime } from "$lib/util/time";
     
-    import { ProgressBar, popup, type PaginationSettings, Paginator } from "@skeletonlabs/skeleton";
+    import { Progress, Pagination, Popover } from "@skeletonlabs/skeleton-svelte";
     import MdiArrowUp from "~icons/mdi/arrow-up";
     import MdiDatabaseExportOutline from "~icons/mdi/database-export-outline";
+    import MdiDotsHorizontal from "~icons/mdi/dots-horizontal";
+    import MdiChevronRight from "~icons/mdi/chevron-right";
+    import MdiChevronLeft from "~icons/mdi/chevron-left";
+    import MdiStar from "~icons/mdi/star";
 
     const { delegates, barTitle } = getSessionContext();
 
@@ -31,22 +35,40 @@
         return nPrevSessions + +(typeof currentSessionKey === "undefined");
     }, 0);
 
-    let pageSettings: PaginationSettings = $state({
-        page: -1,
-        limit: 1,
-        size: 0,
-        amounts: []
-    });
+    let page = $state(-1);
     $effect(() => {
-        pageSettings.size = $nSessions;
-        if (pageSettings.page === -1) pageSettings.page = $currentSessionKey ?? ($nSessions - 1);
+        // When either cSK or nSessions update, it'll force page to not be -1.
+        if (page === -1) page = $currentSessionKey ?? ($nSessions - 1);
     });
-
+    
     const delAttrMap = $derived(new Map<number, Delegate>($delegates.map(d => [d.id, d])));
-    let sessionDelegates = $derived.by(() => {
-        let session = $prevSessions[pageSettings.page];
+    const sessionDelegates = $derived.by(() => {
+        let session = $prevSessions[page];
+        if (page === $nSessions) {
+            // All sessions
+            let delStats = new Map<number, DelSessionData>();
+            for (let del of $delegates) {
+                delStats.set(del.id, del.getSessionData());
+            }
+            for (let session of $prevSessions) {
+                for (let del of session) {
+                    let currentData = delStats.get(del.id);
+                    if (typeof currentData !== "undefined") {
+                        if (currentData.presence == "NP") currentData.presence = del.session.presence;
+                        currentData.stats.durationSpoken += del.session.stats.durationSpoken;
+                        currentData.stats.motionsAccepted += del.session.stats.motionsAccepted;
+                        currentData.stats.motionsProposed += del.session.stats.motionsProposed;
+                        currentData.stats.timesSpoken += del.session.stats.timesSpoken;
+                    } else {
+                        delStats.set(del.id, del.session);
+                    }
+                }
+            }
 
-        if (pageSettings.page === $currentSessionKey || !session) {
+            return Array.from(delStats, ([id, session]) => Object.assign(
+                Object.create(Delegate.prototype), delAttrMap.get(id), session
+            ));
+        } else if (page === $currentSessionKey || !session) {
             // Current session:
             return $delegates;
         } else {
@@ -99,7 +121,7 @@
     );
 
     // Configuration
-    const POPUP_TARGET = "export-stats-popup";
+    let statsPopupOpen = $state(false);
     function exportStats() {
         let data = {
             committee: $barTitle,
@@ -121,23 +143,63 @@
     }
 </script>
 
-<MetaTags title="Stats Screen &middot; CouchMUN (Admin)" />
+<MetaTags title="Stats Screen · CouchMUN (Admin)" />
 
 <div class="flex flex-col gap-1">
     <div class="flex items-center justify-end gap-2">
-        <Paginator showNumerals bind:settings={pageSettings} />
-        <button 
-            class="btn-icon variant-filled-warning"
-            aria-label="Edit Stats"
-            title="Edit Stats"
-            use:popup={interactivePopup(POPUP_TARGET)}
+        <Pagination
+            data={Array.from({ length: $nSessions })}
+            page={page + 1}
+            onPageChange={e => page = e.page - 1}
+            pageSize={1}
+            background=""
+            border=""
+            gap="gap-0.5"
+            buttonInactive="preset-ui-depressed"
         >
-            <MdiDatabaseExportOutline />
+            {#snippet labelEllipsis()}<MdiDotsHorizontal />{/snippet}
+            {#snippet labelNext()}<MdiChevronRight />{/snippet}
+            {#snippet labelPrevious()}<MdiChevronLeft />{/snippet}
+        </Pagination>
+        <button
+            class={[
+                "btn-icon-std",
+                page == $nSessions ? "preset-filled" : "preset-ui-depressed hover:preset-filled"
+            ]}
+            title="All Sessions"
+            aria-label="All Sessions"
+            onclick={() => page = $nSessions}
+        >
+            <MdiStar />
         </button>
+        <Popover
+            open={statsPopupOpen}
+            onOpenChange={e => statsPopupOpen = e.open}
+            positioning={{ placement: 'bottom' }}
+            triggerBase="preset-filled-warning-500"
+            triggerClasses="btn-icon-std"
+            triggerAriaLabel="Edit Stats"
+            contentBase={POPUP_CARD_CLASSES}
+            arrow
+            arrowBackground="bg-surface-50-950!"
+        >
+            {#snippet trigger()}
+                <MdiDatabaseExportOutline />
+            {/snippet}
+            {#snippet content()}
+                <div class="flex flex-col gap-2 overflow-hidden">
+                    <h4 class="h4">Export Statistics</h4>
+                    <button class="btn preset-filled-primary-500" onclick={exportAllStats}>Export All Sessions</button>
+                    {#if page < $nSessions}
+                        <button class="btn preset-filled-primary-500" onclick={exportStats}>Export Session {page + 1}</button>
+                    {/if}
+                </div>
+            {/snippet}
+        </Popover>
     </div>
-    <div class="table-container">
-        <table class="table table-compact">
-            <thead>
+    <div class="table-wrap rounded border border-surface-200-800">
+        <table class="table">
+            <thead class="preset-ui">
                 <tr>
                     {#each Object.entries(COLUMNS) as [key, col]}
                     <th>
@@ -145,7 +207,7 @@
                             {#if sortOrder.item === key}
                             <div class="flex items-center gap-1" aria-sort={sortOrder.descending ? "descending" : "ascending"}>
                                 {col.label}
-                                <MdiArrowUp class="{sortOrder.descending ? 'rotate-180' : ''} transition-[transform]" />
+                                <MdiArrowUp class={["transition-transform", sortOrder.descending && "rotate-180"]} />
                             </div>
                             {:else}
                             {col.label}
@@ -158,14 +220,14 @@
             <tbody>
                 {#each displayEntries as del (del.id)}
                 {@const absent = !del.isPresent()}
-                <tr class:!bg-surface-300-600-token={absent}>
-                    <td class="!align-middle">
+                <tr class={[absent ? "bg-surface-200-800" : "hover:preset-tonal-primary"]}>
+                    <td class="align-middle!">
                         {#if absent}
                         <div class="flex gap-1">
                             <span class="line-through italic">
                                 <DelLabel attrs={del} inline />
                             </span>
-                            <span class="text-error-500-400-token">
+                            <span class="text-error-600-400">
                                 (Absent)
                             </span>
                         </div>
@@ -173,19 +235,19 @@
                         <DelLabel attrs={del} inline />
                         {/if}
                     </td>
-                    <td class="!align-middle">{del.stats.motionsProposed}</td>
-                    <td class="!align-middle">{del.stats.motionsAccepted}</td>
-                    <td class="!align-middle">{del.stats.timesSpoken}</td>
-                    <td class="!align-middle">
+                    <td class="align-middle!">{del.stats.motionsProposed}</td>
+                    <td class="align-middle!">{del.stats.motionsAccepted}</td>
+                    <td class="align-middle!">{del.stats.timesSpoken}</td>
+                    <td class="align-middle!">
                         <div class="flex items-center justify-end gap-3">
                             {stringifyTime(del.stats.durationSpoken / 1000, "round")}
                             <div class="flex w-[33vw]">
-                                <ProgressBar
+                                <Progress
                                     height="h-8"
-                                    transition="duration-500 transition-width"
-                                    track="bg-surface-300-600-token"
-                                    meter="bg-primary-500"
-                                    value={del.stats.durationSpoken * 100 / maxDurationSpoken}
+                                    trackBg="bg-surface-100-900"
+                                    meterBg="bg-primary-500"
+                                    meterTransition="duration-500 transition-width"
+                                    value={maxDurationSpoken ? del.stats.durationSpoken * 100 / maxDurationSpoken : 0}
                                 />
                             </div>
                         </div>
@@ -194,14 +256,5 @@
                 {/each}
             </tbody>
         </table>
-    </div>
-      
-</div>
-
-<div class="{POPUP_CARD_CLASSES}" data-popup={POPUP_TARGET}>
-    <div class="flex flex-col gap-2 overflow-hidden">
-        <h4 class="h4">Export Statistics</h4>
-        <button class="btn variant-filled-primary" onclick={exportAllStats}>Export All Sessions</button>
-        <button class="btn variant-filled-primary" onclick={exportStats}>Export Session {pageSettings.page + 1}</button>
     </div>
 </div>

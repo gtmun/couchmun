@@ -8,7 +8,7 @@
 import { Delegate } from "./delegates";
 import { KeyValuePair, toKeyValueArray, toObject } from "./keyval";
 import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
-import { getFlagUrl } from "$lib/flags/flagcdn";
+import { getFlagCodes, getFlagUrl } from "$lib/flags/flagcdn";
 import { DEFAULT_SORT_PRIORITY } from "$lib/motions/definitions";
 import type { DelegateAttrs, DelegateID, DelSessionData, PrevSessionData, SessionData, Settings } from "$lib/types";
 import { Dexie, liveQuery, type EntityTable, type IndexableType, type InsertType } from "dexie";
@@ -240,18 +240,20 @@ export class SessionDatabase extends Dexie {
  */
 export const db = new SessionDatabase();
 
-db.on("ready", async (tx) => {
-    let txdb = tx as typeof db;
-    if (await txdb.delegates.count() == 0) {
-        const dels = await _legacyFixDelFlag(DEFAULT_DELEGATES);
-        await txdb.addDelegates(dels);
-    }
-    if (await txdb.settings.count() == 0) {
-        await txdb.resetSettings();
-    }
-    if (await txdb.sessionData.count() == 0) {
-        await txdb.sessionData.bulkAdd(toKeyValueArray(DEFAULT_SESSION_DATA));
-    }
+getFlagCodes().then(() => {
+    db.on("ready", async (tx) => {
+        let txdb = tx as typeof db;
+        if (await txdb.delegates.count() == 0) {
+            const dels = _legacyFixDelFlag(DEFAULT_DELEGATES);
+            await txdb.addDelegates(dels);
+        }
+        if (await txdb.settings.count() == 0) {
+            await txdb.resetSettings();
+        }
+        if (await txdb.sessionData.count() == 0) {
+            await txdb.sessionData.bulkAdd(toKeyValueArray(DEFAULT_SESSION_DATA));
+        }
+    });
 })
 
 /**
@@ -307,24 +309,22 @@ function populateDelegate(attrs: DelegateAttrs, order: number): InsertType<Deleg
  * @param flagKey the flag key
  * @param attrs the delegate attributes
  */
-export async function _legacyFixDelFlag(flagKey: string, attrs: DelegateAttrs): Promise<DelegateAttrs>;
+export function _legacyFixDelFlag(flagKey: string, attrs: DelegateAttrs): DelegateAttrs;
 /**
  * Method to handle legacy `Record<string, DelegateAttrs>` format.
  * @param delegates the list of delegates, as a flag key-delegate attribute mapping.
  */
-export async function _legacyFixDelFlag(delegates: Record<string, DelegateAttrs>): Promise<DelegateAttrs[]>;
-export async function _legacyFixDelFlag(flagKeyOrDelegates: string | Record<string, DelegateAttrs>, attrs?: DelegateAttrs): Promise<DelegateAttrs | DelegateAttrs[]> {
+export function _legacyFixDelFlag(delegates: Record<string, DelegateAttrs>): DelegateAttrs[];
+export function _legacyFixDelFlag(flagKeyOrDelegates: string | Record<string, DelegateAttrs>, attrs?: DelegateAttrs): DelegateAttrs | DelegateAttrs[] {
     if (typeof flagKeyOrDelegates === "string" && typeof attrs === "object") {
         let flagKey = flagKeyOrDelegates;
         let { name, aliases, flagURL: mFlagURL } = attrs;
-        let flagURL = mFlagURL ?? (await getFlagUrl(flagKey))?.href ?? (await getFlagUrl("un"))!.href;
+        let flagURL = mFlagURL ?? getFlagUrl(flagKey)?.href ?? getFlagUrl("un")!.href;
         return { name, aliases, flagURL };
     } else if (typeof flagKeyOrDelegates === "object") {
         let delegates = flagKeyOrDelegates;
-        return Promise.all(
-            Object.entries(delegates)
-                .map(([k, attrs]) => _legacyFixDelFlag(k, attrs))
-        );
+        return Object.entries(delegates)
+            .map(([k, attrs]) => _legacyFixDelFlag(k, attrs));
     } else {
         throw new TypeError("Invalid arguments");
     }

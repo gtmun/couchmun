@@ -3,19 +3,20 @@
     to create or edit a motion.
 -->
 <script lang="ts">
-    import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
-    import DelAutocomplete, { autocompletePlaceholders } from "$lib/components/DelAutocomplete.svelte";
+    import DelCombobox from "$lib/components/DelCombobox.svelte";
+    import LabeledSwitch from "$lib/components/LabeledSwitch.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { createMotionSchema, inputifyMotion, MOTION_FIELDS, MOTION_LABELS } from "$lib/motions/definitions";
     import { formatValidationError } from "$lib/motions/form_validation";
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
-    import { autocompletePopup, POPUP_CARD_CLASSES } from "$lib/util/popup";
-    import { addColons, parseTime } from "$lib/util/time";
+    import { parseTime, sanitizeTime } from "$lib/util/time";
     import type { Motion } from "$lib/types";
-    
+
     import type { z } from "zod";
-    import { popup } from "@skeletonlabs/skeleton";
     import { type Snippet } from 'svelte';
+
+    import MdiPlus from "~icons/mdi/plus";
+    import { fade } from "svelte/transition";
 
     const { selectedMotion, delegates, preferences } = getSessionContext();
     const motionSchema = $derived(createMotionSchema($delegates));
@@ -60,9 +61,6 @@
         return Object.entries(MOTION_LABELS)
             .filter(([kind]) => filters[kind] ?? true);
     });
-
-    let noDelegatesPresent = $derived($delegates.every(d => !d.isPresent()));
-    const POPUP_TARGET = "delegate-input-popup";
     
     // Motion validation and submission.
     function submitMotion(e: SubmitEvent) {
@@ -95,12 +93,14 @@
         }
     }
 
+    let showTimeGuide = $state<string>();
     /**
      * When user unfocuses on a time input, update the input to include colons.
      */
     function handleBlurTime<A extends string>(attr: A) {
+        showTimeGuide = undefined;
         if (attr in inputMotion) {
-            (inputMotion as any)[attr] = addColons((inputMotion as any)[attr] ?? "");
+            (inputMotion as any)[attr] = sanitizeTime((inputMotion as any)[attr]);
         }
     }
 
@@ -141,8 +141,8 @@
      */
     export function numSpeakersStr(totalTime: number | string | undefined, speakingTime: number | string | undefined): string | undefined {
         // Parse arguments as either seconds or time string.
-        if (typeof totalTime === "string") totalTime = parseTime(totalTime);
-        if (typeof speakingTime === "string") speakingTime = parseTime(speakingTime);
+        if (typeof totalTime === "string") totalTime = parseTime(sanitizeTime(totalTime));
+        if (typeof speakingTime === "string") speakingTime = parseTime(sanitizeTime(speakingTime));
 
         // Handle undefined cases
         if (typeof totalTime === "undefined") return;
@@ -157,26 +157,28 @@
     }
 </script>
 
-<form onsubmit={submitMotion} oninput={resetInputErrors} class="flex flex-col gap-3 p-3" bind:this={formEl}>
+<form onsubmit={submitMotion} oninput={resetInputErrors} class="flex flex-col gap-3 p-3 [&>label>*]:transition-colors" bind:this={formEl}>
     <!-- Delegate input -->
     <label class="label">
         <span>Delegate</span>
-        <input 
-            class="input"
-            class:input-error={inputError?.path.includes("delegate")}
-            bind:value={inputMotion.delegate}
-            required
-            use:popup={autocompletePopup(POPUP_TARGET)}
-            {...autocompletePlaceholders(noDelegatesPresent)}
-        >
+        <DelCombobox
+            bind:input={inputMotion.delegate}
+            delegates={$delegates}
+            onSelect={() => {
+                // Once selected, move to next item in form
+                setTimeout(() => {
+                    (formEl?.children[1] as HTMLElement)?.focus?.()
+                });
+            }}
+            error={inputError?.path.includes("delegate")}
+        />
     </label>
 
     <!-- Motion dropdown -->
     <label class="label">
         <span>Motion</span>
         <select 
-            class="select" 
-            class:input-error={inputError?.path.includes("kind")}
+            class={["select", inputError?.path.includes("kind") && "preset-input-error"]}
             bind:value={inputMotion.kind}
             >
             {#each allowedMotions as [value, label]}
@@ -188,12 +190,21 @@
     <!-- Total time input -->
     {#if hasField(inputMotion, ["totalTime"])}
     <label class="label">
-        <span>Total Time</span>
+        <span>
+            Total Time
+            {#if showTimeGuide === "totalTime"}
+                <!-- Time guide -->
+                <span class="text-surface-500" transition:fade={{ duration: 150 }}>
+                    &middot; {sanitizeTime(inputMotion.totalTime)}
+                </span>
+            {/if}
+        </span>
         <input 
-            class="input" 
+            name="total-time"
+            class={["input", inputError?.path.includes("totalTime") && "preset-input-error"]}
             placeholder="mm:ss" 
-            class:input-error={inputError?.path.includes("totalTime")}
             bind:value={inputMotion.totalTime}
+            onfocus={() => showTimeGuide = "totalTime"}
             onblur={() => handleBlurTime("totalTime")}
             required
         >
@@ -203,12 +214,21 @@
     <!-- Speaking time input -->
     {#if hasField(inputMotion, ["speakingTime"])}
     <label class="label">
-        <span>Speaking Time</span>
-        <input 
-            class="input" 
+        <span>
+            Speaking Time
+            {#if showTimeGuide === "speakingTime"}
+                <!-- Time guide -->
+                <span class="text-surface-500" transition:fade={{ duration: 150 }}>
+                    &middot; {sanitizeTime(inputMotion.speakingTime)}
+                </span>
+            {/if}
+        </span>
+        <input
+            name="speaking-time"
+            class={["input", inputError?.path.includes("speakingTime") && "preset-input-error"]}
             placeholder="mm:ss" 
-            class:input-error={inputError?.path.includes("speakingTime")}
             bind:value={inputMotion.speakingTime}
+            onfocus={() => showTimeGuide = "speakingTime"}
             onblur={() => handleBlurTime("speakingTime")}
             disabled={isExtending(inputMotion)}
         >
@@ -220,8 +240,7 @@
     <label class="label">
         <span>Topic</span>
         <input 
-            class="input" 
-            class:input-error={inputError?.path.includes("topic")}
+            class={["input", inputError?.path.includes("topic") && "preset-input-error"]}
             bind:value={inputMotion.topic}
             disabled={isExtending(inputMotion)}
         >
@@ -230,9 +249,9 @@
 
     <!-- Extension toggle -->
     {#if $preferences.enableMotionExt && hasField(inputMotion, ["isExtension"]) && $selectedMotion?.kind === inputMotion.kind}
-        <LabeledSlideToggle name="extension-toggle" bind:checked={inputMotion.isExtension}>
+        <LabeledSwitch name="extension-toggle" bind:checked={inputMotion.isExtension}>
             <span>Extend previous motion?</span>
-        </LabeledSlideToggle>
+        </LabeledSwitch>
     {/if}
 
     <!-- Number of speakers display -->
@@ -247,27 +266,21 @@
         {@render buttons()}
     {:else}
         <button 
-            class="btn variant-filled-primary" 
+            class="btn preset-filled-primary-500" 
             type="submit"
         >
+            <MdiPlus />
             Add Motion
         </button>
     {/if}
 
     {#if typeof inputError !== "undefined"}
-        <div class="text-error-500 text-center">{inputError.message}</div>
+        <div 
+            class="text-error-500 text-center"
+            role="alert"
+            transition:fade={{ duration: 150 }}
+        >
+            {inputError.message}
+        </div>
     {/if}
-
-    <!-- Delegate autocomplete popup -->
-    <div class="{POPUP_CARD_CLASSES}" data-popup={POPUP_TARGET}>
-        <DelAutocomplete
-            bind:input={inputMotion.delegate}
-            delegates={$delegates}
-            on:selection={e => {
-                inputMotion.delegate = e.detail.label;
-                resetInputErrors();
-                (formEl?.children[1] as HTMLElement)?.focus?.();
-            }}
-        />
-    </div>
 </form>
