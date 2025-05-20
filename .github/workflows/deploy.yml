@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ['main', 'dev']
+    branches: ['main']
 
 jobs:
   # Builds production site and creates 'build-prod' artifact
