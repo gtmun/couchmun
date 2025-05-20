@@ -2,10 +2,11 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: 'main'
+    branches: ['main', 'dev']
 
 jobs:
-  build_site:
+  # Builds production site and creates 'build-prod' artifact
+  build-prod:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -26,22 +27,94 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: build
+      - name: Build production site
         # Since we have a top-level domain, this is no longer necessary
         # If we ever need to return to gtmun.github.io/couchmun,
         # uncomment these two lines.
-        # env:
-        #   BASE_PATH: '/${{ github.event.repository.name }}'
-        run: |
-          npm run build
+        env:
+          BASE_PATH: '/${{ github.event.repository.name }}'
+        run: npm run build
 
-      - name: Upload Artifacts
+      - name: Upload production build
+        uses: actions/upload-artifact@v4
+        with:
+          name: 'build-prod'
+          path: 'build'
+
+  # Checks that dev branch exists to build dev site from
+  does-dev-exist:
+    runs-on: ubuntu-latest
+    outputs:
+      dev-exists: ${{ steps.check.outputs.dev-exists }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check whether dev branch exists
+        id: check
+        run: |
+          if git ls-remote --exit-code --heads origin dev; then
+            echo "dev-exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "dev-exists=false" >> "$GITHUB_OUTPUT"
+          fi
+  # Builds dev site and creates 'build-dev' artifact
+  build-dev:
+    needs: does-dev-exist
+    if: ${{ needs.does-dev-exist.outputs.dev-exists == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: "dev"
+      
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build dev site
+        env:
+          BASE_PATH: '/dev'
+        run: npm run build
+      
+      - name: Upload production build
+        uses: actions/upload-artifact@v4
+        with:
+          name: 'build-dev'
+          path: 'build'
+  
+  # Combines artifacts into single GitHub Pages artifact (allowing dev page to be skipped if not present)
+  upload-site:
+    needs: [build-prod, build-dev]
+    if: ${{ !cancelled() && needs.build-prod.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download production build
+        uses: actions/download-artifact@v4
+        with:
+          name: 'build-prod'
+          path: 'build'
+      
+      - name: Download dev build
+        uses: actions/download-artifact@v4
+        id: dl-dev-build
+        with:
+          name: 'build-dev'
+          path: 'build/dev'
+        continue-on-error: true
+      
+      - name: Show warning
+        if: ${{ steps.dl-dev-build.outcome == 'failure' }}
+        run: echo ::warning "title:Dev build failure::Could not build dev branch. Dev site will not be deployed."
+      
+      - name: Upload artifacts
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'build/'
-
+          path: 'build'
+  
+  # Deploys GitHub artifact
   deploy:
-    needs: build_site
+    needs: upload-site
+    if: ${{ !cancelled() && needs.upload-site.result == 'success' }}
     runs-on: ubuntu-latest
 
     permissions:
