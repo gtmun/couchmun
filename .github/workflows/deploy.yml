@@ -31,8 +31,8 @@ jobs:
         # Since we have a top-level domain, this is no longer necessary
         # If we ever need to return to gtmun.github.io/couchmun,
         # uncomment these two lines.
-        env:
-          BASE_PATH: '/${{ github.event.repository.name }}'
+        # env:
+        #   BASE_PATH: '/${{ github.event.repository.name }}'
         run: npm run build
 
       - name: Upload production build
