@@ -4,6 +4,7 @@
 -->
 <script lang="ts">
     import Timer from "$lib/components/Timer.svelte";
+    import { getSessionContext } from "$lib/context/index.svelte";
     import type { Motion } from "$lib/types";
     
     interface Props {
@@ -11,8 +12,17 @@
     }
     let { motion }: Props = $props();
 
+    const sessionData = getSessionContext();
     let timer: Timer | undefined = $state();
     let running: boolean = $state(false);
+
+    $effect(() => {
+        if (timer && running) {
+            sessionData.tabTitleExtras = timer.secsRemainingString();
+        } else {
+            sessionData.tabTitleExtras = undefined;
+        }
+    });
 </script>
 
 <div class="flex flex-col gap-5">
@@ -22,9 +32,9 @@
         bind:running
     />
     <div class="flex flex-row gap-3 justify-center">
-        <button class="btn variant-filled-primary" onclick={() => running = !running}>
+        <button class="btn preset-filled-primary-500" onclick={() => running = !running}>
             {!running ? 'Start' : 'Pause'}
         </button>
-        <button class="btn variant-filled-primary" onclick={timer?.reset}>Reset</button>
+        <button class="btn preset-filled-primary-500" onclick={timer?.reset}>Reset</button>
     </div>
 </div>

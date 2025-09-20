@@ -8,36 +8,47 @@
     import IconLabel from "$lib/components/IconLabel.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
-    import { RadioGroup, RadioItem } from "@skeletonlabs/skeleton";
+    import { Segment } from "@skeletonlabs/skeleton-svelte";
     import MdiAccountOff from "~icons/mdi/account-off";
     import MdiAccount from "~icons/mdi/account";
     import MdiAccountCheck from "~icons/mdi/account-check";
+    import type { DelegatePresence } from "$lib/types";
 
     const { delegates } = getSessionContext();
 
     const radio = [
         { presence: "NP", label: "Absent", icon: MdiAccountOff },
         { presence: "P",  label: "Present", icon: MdiAccount },
-        { presence: "PV", label: "Present and Voting", icon: MdiAccountCheck },
+        { presence: "PV", label: "Present & Voting", icon: MdiAccountCheck },
     ] as const;
+
+    function asPresence(s?: string | null): DelegatePresence {
+        if (s === "P" || s === "PV") return s;
+        return "NP";
+    }
 </script>
 
 <!-- Render a table to display participants and their statuses -->
 {#if $delegates.length}
-<div class="card grid">
+<div class="grid border border-surface-200-800">
     {#each $delegates as attrs, i (attrs.id)}
-        <div class="grid grid-cols-subgrid col-span-2 even:bg-surface-100-800-token odd:bg-surface-200-700-token">
+        <div class="grid grid-cols-subgrid col-span-2 even:bg-surface-50-950 odd:bg-surface-100-900">
             <div class="flex items-center p-4">
                 <DelLabel {attrs} inline />
             </div>
-            <div class="flex flex-col justify-center p-2">
-                <RadioGroup active="variant-filled-primary" hover="hover:variant-soft-primary" border="" background="bg-surface-300-600-token">
+            <div class="flex justify-end p-2">
+                <Segment
+                    name="presence-{attrs.id}"
+                    value={$delegates[i].presence}
+                    onValueChange={e => db.updateDelegate(attrs.id, { presence: asPresence(e.value) })}
+                    
+                >
                     {#each radio as { presence, label, icon }}
-                        <RadioItem group={$delegates[i].presence} name="presence-{attrs.id}" value={presence} onchange={() => db.updateDelegate(attrs.id, { presence })}>
+                        <Segment.Item value={presence} classes="hover:preset-tonal">
                             <IconLabel {icon} {label} />
-                        </RadioItem>
+                        </Segment.Item>
                     {/each}
-                </RadioGroup>
+                </Segment>
             </div>
         </div>
     {/each}
@@ -48,7 +59,7 @@
         <h3 class="h3">No delegates enabled.</h3>
             Visit 
             <a
-                class="btn btn-sm variant-soft-warning"
+                class="btn btn-sm preset-filled-warning-100-900"
                 href="{base}/admin/settings"
                 tabindex="0"
             >

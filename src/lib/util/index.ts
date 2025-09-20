@@ -2,33 +2,9 @@
  * Miscellaneous helper functions.
  */
 
-import type { ModalSettings, ModalStore } from "@skeletonlabs/skeleton";
 import { cubicOut } from "svelte/easing";
-import type { Action } from "svelte/action";
-import type { TransitionConfig } from "svelte/transition";
-
-/**
- * Utility for creating a confirmation modal.
- * @param modalStore The modal store (obtainable via `getModalStore()`)
- * @param body Text content for the modal
- * @param successCallback What should happen if the user presses "confirm" on this modal
- * @param errorCallback What should happen if the user presses "cancel" on this modal (optional)
- */
-export function triggerConfirmModal(
-    modalStore: ModalStore, 
-    body: string, 
-    successCallback: () => void, 
-    errorCallback: () => void = () => {}
-) {
-    modalStore.trigger({
-        type: "confirm",
-        title: "Confirm",
-        body,
-        response(r: boolean) {
-            return r ? successCallback() : errorCallback();
-        }
-    } satisfies ModalSettings);
-}
+import type { SlideParams, TransitionConfig } from "svelte/transition";
+import type { Component } from "svelte";
 
 export type Comparator<K> = (a: K, b: K) => number;
 
@@ -72,7 +48,7 @@ export function downloadFile(filename: string, contents: string, type: string) {
  * reducing it to only width/height and padding properties,
  * as well as implementing delayed style computation.
  */
-export function lazyslide(node: HTMLElement, { delay = 0, duration = 400, easing = cubicOut, axis = 'y' } = {}) {
+export function lazyslide(node: Element, { delay = 0, duration = 400, easing = cubicOut, axis = 'y' }: SlideParams = {}) {
     let style: CSSStyleDeclaration | undefined = undefined;
     const dimProperty = axis === 'y' ? 'height' : 'width';
     const padProperty = axis === 'y' ? ['paddingTop', 'paddingBottom'] as const : ['paddingLeft', 'paddingRight'] as const;
@@ -125,81 +101,23 @@ async function waitNextFrame() {
     });
 }
 
-type EditableParameter = {
-    when?: boolean,
-    value?: string
-}
 /**
- * Action to make an element editable (when `when` is true).
- * 
- * This applies the standard styling for editable elements as well as adds listeners on content update.
- * On content update, the `options.value` parameter is updated. This can be replaced with a get/set pair
- * to perform arbitrary update handlers.
+ * Checks if two strings are equal, case insensitive.
  */
-export const makeEditable = ((el: HTMLElement, options?: EditableParameter) => {
-    // Event handlers.
-    // Editable element should exit when defocused or enter is pressed:
-    function onKeyDown(e: KeyboardEvent) {
-        if (e.code === "Enter") {
-            e.preventDefault();
-            el.blur();
-        }
-    }
-    function onFocusOut() {
-        if (options) {
-            const trimmed = el.textContent?.trim();
-            if (trimmed) {
-                options.value = trimmed;
-            }
-            el.textContent = options.value ?? "";
-        }
-    };
-    function setHandlers(enabled: boolean) {
-        if (enabled) {
-            el.addEventListener("keydown", onKeyDown);
-            el.addEventListener("focusout", onFocusOut);
-        } else {
-            el.removeEventListener("keydown", onKeyDown);
-            el.removeEventListener("focusout", onFocusOut);
-        }
-    }
+export function eqInsensitive(s: string, t: string) {
+    return s.localeCompare(t, undefined, { sensitivity: "base" }) == 0;
+}
 
-    // Set styling to editable styling:
-    function setStyling(enabled: boolean) {
-        const STANDARD_STYLES = ["border-b-4", "border-transparent", "hover:border-surface-500", "focus:border-surface-500", "rounded"];
-        const DELAYED_STYLES = ["transition-[border-color,font-size]"];
-        if (enabled) {
-            // Add editable styling
-            el.classList.add(...STANDARD_STYLES);
-            waitNextFrame().then(() => el.classList.add(...DELAYED_STYLES));
-        } else {
-            el.classList.remove(...STANDARD_STYLES, ...DELAYED_STYLES);
-        }
-    }
+/**
+ * Checks if the "full" string contains the "sub" string, case insensitive.
+ * @param full the larger string
+ * @param sub the substring
+ */
+export function includesInsensitive(full: string, sub: string) {
+    return full.toLowerCase().includes(sub.toLowerCase());
+}
 
-    // Init: Set styling + handlers if applicable:
-    let editable = typeof options?.when === "undefined" || options.when;
-    el.contentEditable = editable ? "plaintext-only" : "inherit";
-    if (editable) {
-        setStyling(true);
-        setHandlers(true);
-    }
-    
-    return {
-        update(newOptions) {
-            // On update, update options + update handlers/styling accordingly:
-            options = newOptions;
-            let newEditable = typeof options?.when === "undefined" || options.when;
-            el.contentEditable = newEditable ? "plaintext-only" : "inherit";
-            if (editable != newEditable) {
-                editable = newEditable;
-                setStyling(editable);
-                setHandlers(editable);
-            }
-            
-        },
-        destroy() {
-            setHandlers(false);
-        },
-    };
-}) satisfies Action<HTMLElement, EditableParameter>;
+/**
+ * Gets the props type of this Svelte component.
+ */
+export type PropsOf<C extends Component<any, any, any>> = C extends Component<infer P, any, any> ? P : never;

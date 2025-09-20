@@ -64,7 +64,7 @@
          * If defined, this replaces the default "Reset" button (which resets all timers)
          * with HTML content of your choice.
          */
-        resetButtons?: Snippet<[typeof reset, typeof canReset]>,
+        resetButtons?: Snippet<[typeof resetButton, typeof reset, typeof canReset]>,
 
         /**
          * Listener to reset events. Called when reset is called.
@@ -127,7 +127,7 @@
     }
     
     // Getter/setter for run state, since it depends on timer interaction
-    function getRunState(i: number): boolean {
+    export function getRunState(i: number): boolean {
         if (timerInteraction === "sync") {
             return runStates[0];
         } else if (timerInteraction === "cascade") {
@@ -198,6 +198,14 @@
     }
 
     /**
+     * @param timerIndex the index of the timer
+     * @returns the seconds remaining for the timer of the given index
+     */
+    export function secsRemaining(timerIndex: number) {
+        return timers[timerIndex]?.secsRemaining();
+    }
+
+    /**
      * Resets a given set of timers.
      * @param indices the indices of the timers to reset
      *    (0 being the top/left-most and incrementing down/right).
@@ -216,18 +224,17 @@
         speakersList?.next();
     }
 </script>
-<script module>
-    export { resetButton };
-</script>
 
 <div class="flex justify-center h-6 lg:hidden">
     <!-- Placeholder which matches size of chevron-down -->
 </div>
-<div class="flex flex-col justify-center flex-grow">
+<div class="flex flex-col justify-center grow">
     {#key selectedSpeaker?.key}
-        <div class="pb-5" transition:lazyslide>
+        <div transition:lazyslide>
             {#if typeof selectedSpeaker !== "undefined"}
-                <DelLabel attrs={findDelegate(delegates, selectedSpeaker.key)} />
+                <div class="pb-5">
+                    <DelLabel attrs={findDelegate(delegates, selectedSpeaker.key)} />
+                </div>
             {/if}
         </div>
     {/key}
@@ -261,7 +268,7 @@
                 <!-- If sync, it is assured that this is the only run state. -->
                 {@const running = runStates[0]}
                 <button 
-                    class="btn variant-filled-primary"
+                    class="btn preset-filled-primary-500"
                     disabled={!running && !isTimerPlayable()}
                     onclick={() => runStates[0] = !running}
                 >
@@ -269,10 +276,10 @@
                 </button>
             {/if}
             <!-- Next -->
-            <button class="btn variant-filled-primary" disabled={speakersList?.isAllDone() ?? true} onclick={next}>Next</button>
+            <button class="btn preset-filled-primary-500" disabled={speakersList?.isAllDone() ?? true} onclick={next}>Next</button>
             <!-- Reset (or the custom defined buttons) -->
             {#if resetButtons}
-                {@render resetButtons(reset, canReset)}
+                {@render resetButtons(resetButton, reset, canReset)}
             {:else}
                 {@render resetButton(reset, canReset)}
             {/if}
@@ -298,7 +305,7 @@
     indices?: number[]
 )}
     <button
-        class="btn variant-filled-primary"
+        class="btn preset-filled-primary-500"
         disabled={!canReset(...(indices ?? []))}
         onclick={() => reset(...(indices ?? []))}
     >

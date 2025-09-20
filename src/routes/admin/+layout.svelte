@@ -8,36 +8,32 @@
     import BarHeader from '$lib/components/app-bar/BarHeader.svelte';
     import { db } from '$lib/db/index.svelte';
     
-    import { AppBar, LightSwitch } from '@skeletonlabs/skeleton';
+    import { AppBar } from '@skeletonlabs/skeleton-svelte';
     import MdiChevronLeft from "~icons/mdi/chevron-left";
 
     let { children } = $props();
     const title = db.settingStore("title", "");
 </script>
 
-<div class="hidden">
-    <!-- Needed to make dark mode work reliably cross-tabs -->
-    <LightSwitch />
-</div>
-
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">
     <!-- Header -->
     <header>
         <AppBar 
-            background="bg-warning-300-600-token" 
-            gridColumns="grid-cols-[auto_1fr_auto]" 
-            slotDefault="place-self-center"
-            slotTrail="place-content-end"
+            background="preset-ui-admin-header" 
+            toolbarGridCols="grid-cols-[auto_1fr_auto]" 
+            leadClasses="items-center"
+            centerClasses="place-self-center"
+            trailClasses="items-center place-content-end"
         >
             {#snippet lead()}
                 <a
                     href="{base}/dashboard"
-                    class="btn btn-icon"
+                    class="btn-icon-std"
                     aria-label="Return to Dashboard"
                     title="Return to Dashboard"
                     tabindex={0}
                 >
-                    <MdiChevronLeft width="36" height="36" />
+                    <MdiChevronLeft />
                 </a>
             {/snippet}
             <div class="flex flex-col gap-1">
@@ -45,7 +41,7 @@
             </div>
             {#snippet trail()}
                 <!-- Alignment spacing -->
-                <div class="btn-icon"></div>
+                <div class="btn-icon-std"></div>
             {/snippet}
         </AppBar>
     </header>

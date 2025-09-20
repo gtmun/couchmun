@@ -13,6 +13,7 @@
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
   import { createSpeaker } from "$lib/components/SpeakerList.svelte";
   import { getSessionContext } from "$lib/context/index.svelte";
+  import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
   import { db } from "$lib/db/index.svelte";
   import { findDelegate } from "$lib/db/delegates";
   import { MOTION_LABELS } from "$lib/motions/definitions";
@@ -20,8 +21,7 @@
   import type { Motion } from "$lib/types";
   import { createDragTr, isDndShadow } from "$lib/util/dnd";
   import { stringifyTime } from "$lib/util/time";
-
-  import { getModalStore } from "@skeletonlabs/skeleton";
+  import { Modal } from "@skeletonlabs/skeleton-svelte";
   import { flip } from "svelte/animate";
   import { dndzone } from "svelte-dnd-action";
   import MdiAccountClock from "~icons/mdi/account-clock";
@@ -33,9 +33,11 @@
   import MdiSort from "~icons/mdi/sort";
 
   const { motions, selectedMotion, selectedMotionState, delegates, sortOrder } = getSessionContext();
-  const modalStore = getModalStore();
   const pid = $props.id();
 
+  let openModals = $state({
+    editMotion: false
+  });
   // A clone of $motions used solely for use:dndzone
   let dndItems = $derived($motions);
 
@@ -103,20 +105,11 @@
     await acceptMotion(motion);
     goto(`${base}/dashboard/current-motion`);
   }
-  function editMotion(i: number, motion: Motion) {
-    modalStore.trigger({
-        type: "component",
-        component: {
-            ref: EditMotionCard,
-            props: { motion }
-        },
-        response(motion?: Motion) {
-          if (!motion) return;
-          db.updateDelegate($motions[i].delegate, d => { d.stats.motionsProposed--; });
-          db.updateDelegate(motion.delegate, d => { d.stats.motionsProposed++; });
-          $motions[i] = motion;
-        }
-    });
+  function editMotion(i: number, motion?: Motion) {
+    if (!motion) return;
+    db.updateDelegate($motions[i].delegate, d => { d.stats.motionsProposed--; });
+    db.updateDelegate(motion.delegate, d => { d.stats.motionsProposed++; });
+    $motions[i] = motion;
   }
   function sortMotions() {
     $motions = $motions.sort(motionComparator($sortOrder));
@@ -134,7 +127,7 @@
 </script>
 
 <div class="grid gap-5 min-h-full md:grid-cols-[1fr_2fr] md:h-full">
-  <div class="card motion-form">
+  <div class="card-filled motion-form">
     <MotionForm submit={submitMotion} />
   </div>
   
@@ -142,25 +135,22 @@
     <div class="grid grid-cols-[1fr_auto] items-center">
       <h3 class="h3 text-center" id="motion-table-header-{pid}">List of Motions</h3>
       <button
-        class="btn btn-icon variant-filled-primary"
+        class={["btn-icon-std transition-colors", motionsSorted ? "preset-ui-depressed" : "preset-ui-activated"]}
         onclick={sortMotions}
         aria-label="Sort Motions"
         title="Sort Motions"
-
-        class:!variant-filled-surface={motionsSorted}
         disabled={motionsSorted}
       >
         <MdiSort />
       </button>
     </div>
     
-    <div class="table-container">
-      <table class="table [&_td]:!align-middle [&_td]:!text-wrap" bind:this={motionTable}>
-        <thead>
+    <div class="table-wrap rounded border border-surface-200-800">
+      <table class="table" bind:this={motionTable}>
+        <thead class="preset-ui">
           <tr>
-            <td class="w-[7.5rem]"></td>
-            <td class="px-3 w-24">Motion</td>
-            <td class="px-3 w-32">By</td>
+            <td class="px-3 w-28">Motion</td>
+            <td class="px-3 w-36">By</td>
             <td class="px-3">Topic</td>
             <td class="px-3 w-16">
               <IconLabel icon={MdiClock} label="Total Time" />
@@ -171,6 +161,7 @@
             <td class="px-3 w-16">
               <IconLabel icon={MdiAccountMultiple} label="No. of Speakers" />
             </td>
+            <td class="w-30"></td>
           </tr>
         </thead>
         <tbody
@@ -188,41 +179,14 @@
             {@const delAttrs = findDelegate($delegates, motion.delegate)}
             {@const delName = delAttrs?.name ?? "unknown"}
             {@const shadow = isDndShadow(motion)}
-            <tr 
-              class="dnd-list-item hover:!bg-primary-500/25"
-              class:!visible={shadow}
-              class:!bg-surface-300-600-token={shadow}
+            <tr
+              class={[
+                "dnd-list-item hover:preset-tonal-primary",
+                shadow && "visible! bg-surface-200-800!"
+              ]}
               animate:flip={{ duration: 150 }}
               aria-label="{delName}'s Motion"
             >
-              <td>
-                <div class="flex flex-row">
-                  <button
-                    class="btn btn-sm btn-icon w-8"
-                    onclick={() => removeMotion(i)}
-                    data-label="Reject {delName}'s Motion"
-                    title="Reject {delName}'s Motion"
-                  >
-                    <MdiCancel class="text-error-500" />
-                  </button>
-                  <button
-                    class="btn btn-sm btn-icon w-8"
-                    onclick={() => acceptMotionAndGoto(motion)}
-                    data-label="Accept {delName}'s Motion"
-                    title="Accept {delName}'s Motion"
-                  >
-                    <MdiCheck class="text-success-700" />
-                  </button>
-                  <button
-                    class="btn btn-sm btn-icon w-8"
-                    onclick={() => editMotion(i, motion)}
-                    data-label="Edit {delName}'s Motion"
-                    title="Edit {delName}'s Motion"
-                  >
-                    <MdiPencil />
-                  </button>
-                </div>
-              </td>
               <td>{motionName(motion)}</td>
               <td>
                 <DelLabel attrs={delAttrs} fallbackName={delName} inline />
@@ -231,6 +195,39 @@
               <td>{'totalSpeakers' in motion ? stringifyTime(motion.totalSpeakers * motion.speakingTime) : apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
               <td>{apply(motion, ["speakingTime"], m => stringifyTime(m.speakingTime), "-")}</td>
               <td>{'totalSpeakers' in motion ? motion.totalSpeakers : apply(motion, ["totalTime", "speakingTime"], m => numSpeakersStr(m.totalTime, m.speakingTime), "-")}</td>
+              <td>
+                <div class="flex flex-row justify-end">
+                  <button
+                    class="btn-icon-std p-1"
+                    onclick={() => removeMotion(i)}
+                    data-label="Reject {delName}'s Motion"
+                    title="Reject {delName}'s Motion"
+                  >
+                    <MdiCancel class="text-error-500" />
+                  </button>
+                  <button
+                    class="btn-icon-std p-1"
+                    onclick={() => acceptMotionAndGoto(motion)}
+                    data-label="Accept {delName}'s Motion"
+                    title="Accept {delName}'s Motion"
+                  >
+                    <MdiCheck class="text-success-700" />
+                  </button>
+                  <Modal
+                    open={openModals.editMotion}
+                    onOpenChange={e => openModals.editMotion = e.open}
+                    triggerBase="btn-icon-std p-1"
+                    {...defaultModalClasses}
+                  >
+                    {#snippet trigger()}
+                      <MdiPencil />
+                    {/snippet}
+                    {#snippet content()}
+                      <EditMotionCard {motion} bind:open={openModals.editMotion} onSubmit={m => editMotion(i, m)} />
+                    {/snippet}
+                  </Modal>
+                </div>
+              </td>
             </tr>
           {/each}
         </tbody>
@@ -239,9 +236,9 @@
   </div>
 </div>
 
-<style lang="postcss">
+<style>
   /* Styling for dragged element */
   :global(#dnd-action-dragged-el).dnd-list-item {
-      @apply !opacity-90;
+      opacity: 90% !important;
   }
 </style>

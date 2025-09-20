@@ -3,8 +3,6 @@
 -->
 
 <script lang="ts">
-    import { ConicGradient, type ConicStop } from '@skeletonlabs/skeleton';
-
     interface Props {
         /**
          * Total attendance.
@@ -33,17 +31,6 @@
     let maj: number = $derived(majOverride ?? smallestIntGt(total / 2));
     let supermaj: number = $derived(supermajOverride ?? smallestIntGe(total * 2 / 3));
 
-    const majConic: ConicStop[] = [
-        { color: 'rgb(var(--color-primary-800))', start: 0, end: 50 },
-        { color: 'rgb(var(--color-primary-500))', start: 50, end: 100 },
-    ];
-    const supermajConic: ConicStop[] = [
-        { color: 'rgb(var(--color-secondary-800))', start: 0, end: 33 },
-        { color: 'rgb(var(--color-secondary-500))', start: 33, end: 100 },
-    ];
-    const totalConic: ConicStop[] = [
-        { color: 'rgb(var(--color-tertiary-500))', start: 0, end: 100 },
-    ];
     /**
      * Smallest integer greater than `n`, capped to at least 0.
      * @param n total
@@ -60,17 +47,36 @@
     }
 </script>
 
-<div class="flex flex-row gap-3 justify-center">
-    <div class="flex flex-row gap-1 align-center" aria-label="Majority ({maj})" title="Majority ({maj})">
-        <ConicGradient width="w-6" height="h-6" stops={majConic} />
+<style>
+    .conic-half {
+        background: conic-gradient(
+            var(--color-primary-900) 0deg 180deg,
+            var(--color-primary-500) 180deg 360deg
+        );
+        filter: hue-rotate(-45deg);
+    }
+    .conic-tth {
+        background: conic-gradient(
+            var(--color-primary-900) 0deg 120deg,
+            var(--color-primary-500) 120deg 360deg
+        );
+    }
+    .conic-full {
+        background-color: var(--color-primary-500);
+        filter: hue-rotate(45deg);
+    }
+</style>
+<div class="flex flex-row gap-3 justify-center tabular-nums">
+    <div class="flex flex-row gap-1 items-center" aria-label="Majority ({maj})" title="Majority ({maj})">
+        <div class="size-6 rounded-full conic-half"></div>
         {maj}
     </div>
-    <div class="flex flex-row gap-1 align-center" aria-label="Supermajority ({supermaj})" title="Supermajority ({supermaj})">
-        <ConicGradient width="w-6" height="h-6" stops={supermajConic} />
+    <div class="flex flex-row gap-1 items-center" aria-label="Supermajority ({supermaj})" title="Supermajority ({supermaj})">
+        <div class="size-6 rounded-full conic-tth"></div>
         {supermaj}
     </div>
-    <div class="flex flex-row gap-1 align-center" aria-label="Total ({total})" title="Total ({total})">
-        <ConicGradient width="w-6" height="h-6" stops={totalConic} />
+    <div class="flex flex-row gap-1 items-center" aria-label="Total ({total})" title="Total ({total})">
+        <div class="size-6 rounded-full conic-full"></div>
         {total}
     </div>
 </div>

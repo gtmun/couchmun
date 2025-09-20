@@ -13,15 +13,15 @@
 <div class="flex flex-col justify-between h-screen p-3">
     <div></div>
     <div class="flex flex-col justify-center h-screen gap-3">
-        <h1 class="h1 text-center">CouchMUN</h1>
+        <h1 class="h1 font-bold text-center">CouchMUN</h1>
     
         <!-- Entry buttons -->
         <div class="flex justify-center gap-3">
-            <a class="btn variant-filled-primary" href="{base}/dashboard">
+            <a class="btn preset-filled-primary-500" href="{base}/dashboard">
                 Open Dashboard
             </a>
             <a 
-                class="btn-icon variant-filled-primary" 
+                class="btn-icon-std preset-filled-primary-500" 
                 href="{base}/admin/settings"
                 aria-label="Settings"
                 title="Settings"

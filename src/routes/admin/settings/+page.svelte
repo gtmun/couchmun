@@ -2,19 +2,21 @@
   @component The admin settings page (used for configuring settings).
 -->
 <script lang="ts">
-    import LabeledSlideToggle from "$lib/components/LabeledSlideToggle.svelte";
+    import LabeledSwitch from "$lib/components/LabeledSwitch.svelte";
     import MetaTags from "$lib/components/MetaTags.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
+    import ConfirmModalCard from "$lib/components/modals/ConfirmModalCard.svelte";
     import EditDelegateCard from "$lib/components/modals/EditDelegateCard.svelte";
+    import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
     import { DEFAULT_PRESET_KEY, getPreset, PRESETS } from "$lib/delegate_presets";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
     import type { DelegateAttrs, Settings } from "$lib/types";
-    import { downloadFile, triggerConfirmModal } from "$lib/util";
+    import { downloadFile } from "$lib/util";
 
-    import { FileButton, getModalStore } from "@skeletonlabs/skeleton";
-    import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
+    import { FileUpload, Modal } from "@skeletonlabs/skeleton-svelte";
     import { _legacyFixDelFlag, db, queryStore } from "$lib/db/index.svelte";
     import { toKeyValueArray, toObject } from "$lib/db/keyval";
+    import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
     import MdiArrowDown from "~icons/mdi/arrow-down";
     import MdiCancel from "~icons/mdi/cancel";
     import MdiCircleSmall from "~icons/mdi/circle-small";
@@ -35,12 +37,18 @@
         { key: "pauseMainTimer", label: "Pause main timer when delegate timer elapses" },
         { key: "yieldMainTimer", label: "Return time yielded by delegates to main timer" },
     ] as const;
-    const modalStore = getModalStore();
-    let files: FileList | undefined = $state();
+    
+    let openModals = $state({
+        resetAllSettings: false,
+        clearDelegates: false,
+        addDelegate: false,
+        configureEnableDelegates: false,
+        editDelegate: {} as Record<number, boolean>
+    });
 
     // IMPORT & EXPORT
-    async function importFile() {
-        const file = files?.item(0);
+    async function importFile(files: File[]) {
+        const [file] = files;
         if (file) {
             const text = await file.text();
             const json = JSON.parse(text);
@@ -66,21 +74,16 @@
 
         downloadFile("couchmun-config.json", JSON.stringify(exportSettings), "application/json");
     }
-    function resetAllSettings() {
-        triggerConfirmModal(modalStore,
-            "Are you sure you want to reset all settings? This will also wipe all sessions.", 
-            async () => {
-                // Reset preset state cause it's not bound to settings
-                currentPreset = DEFAULT_PRESET_KEY;
-                // Reset settings
-                await db.resetSettings();
-                await setPreset();
+    async function resetAllSettings() {
+        // Reset preset state cause it's not bound to settings
+        currentPreset = DEFAULT_PRESET_KEY;
+        // Reset settings
+        await db.resetSettings();
+        await setPreset();
 
-                // Remove session data + previous sessions.
-                await db.resetSessionData();
-                await db.prevSessions.clear();
-            }
-        )
+        // Remove session data + previous sessions.
+        await db.resetSessionData();
+        await db.prevSessions.clear();
     }
 
     // SORT ORDER
@@ -112,7 +115,7 @@
     async function setPreset() {
         const preset = await getPreset(currentPreset);
         if (typeof preset !== "undefined") {
-            let entries = await _legacyFixDelFlag(preset);
+            let entries = _legacyFixDelFlag(preset);
             await db.transaction("rw", db.delegates, async () => {
                 await db.delegates.clear();
                 await db.addDelegates(entries);
@@ -124,61 +127,38 @@
             await db.delegates.toCollection().modify({ enabled });
         })
     }
-    function clearDelegates() {
-        triggerConfirmModal(modalStore,
-            "Are you sure you want to remove all delegates?", 
-            async () => {
-                currentPreset = "custom";
-                await db.delegates.clear();
-            }
-        );
+
+    async function clearDelegates() {
+        currentPreset = "custom";
+        await db.delegates.clear();
     }
-
     /**
-     * Opens the delegate editing modal. This can also be used to add a new delegate.
+     * Updates delegate with delegate modal data.
      * @param id Key of delegate to edit (or undefined if adding a new delegate)
+     * @param data New data to add
      */
-    async function editDelegate(id: number | undefined) {
-        let attrs = typeof id === "number" 
-            ? (await db.delegates.get(id))?.getAttributes()
-            : undefined;
+    async function editDelegate(id: number | undefined, data?: { attrs: DelegateAttrs }) {
+        if (!data) return;
 
-        modalStore.trigger({
-            type: "component",
-            component: { ref: EditDelegateCard, props: { attrs } },
-            response(data?: { attrs: DelegateAttrs }) {
-                if (!data) return;
-
-                let newAttrs = data.attrs;
-                db.transaction("rw", db.delegates, async () => {
-                    // TODO: reject update if name conflict
-                    currentPreset = "custom";
-                    if (typeof id === "number") {
-                        await db.delegates.update(id, newAttrs);
-                    } else {
-                        await db.addDelegate(newAttrs);
-                    }
-                });
+        let newAttrs = data.attrs;
+        db.transaction("rw", db.delegates, async () => {
+            // TODO: reject update if name conflict
+            currentPreset = "custom";
+            if (typeof id === "number") {
+                await db.delegates.update(id, newAttrs);
+            } else {
+                await db.addDelegate(newAttrs);
             }
         });
     }
-    function configureEnableDelegates() {
-        modalStore.trigger({
-            type: "component",
-            component: {
-                ref: EnableDelegatesCard,
-                props: { attrs: $delegates }
-            },
-            response(data?: Set<number>) {
-                if (!data) return;
+    function configureEnableDelegates(data?: Set<number>) {
+        if (!data) return;
 
-                db.transaction("rw", db.delegates, async () => {
-                    await db.delegates.toCollection().modify((del) => {
-                        del.enabled = data.has(del.id);
-                    })
-                });
-            }
-        })
+        db.transaction("rw", db.delegates, async () => {
+            await db.delegates.toCollection().modify((del) => {
+                del.enabled = data.has(del.id);
+            })
+        });
     }
 
     async function deleteDelegate(id: number) {
@@ -197,41 +177,50 @@
     }
 </script>
 
-<MetaTags title="Settings &middot; CouchMUN (Admin)" />
+<MetaTags title="Settings · CouchMUN (Admin)" />
 {#if $settings && Object.keys($settings).length}
 <div class="flex flex-col p-4 gap-4">
     <div class="panel">
         <h3 class="h3 text-center">Control Panel</h3>
         <div class="flex gap-3 justify-center">
-            <FileButton 
-                name="import" 
-                button="btn variant-filled-primary" 
-                bind:files 
-                on:change={importFile} 
+            <FileUpload 
+                name="import"
                 accept="application/json"
+                onFileAccept={e => importFile(e.files)}
             >
-                Import from file...
-            </FileButton>
+                <button class="btn preset-filled-primary-500">
+                    Import from file...
+                </button>
+            </FileUpload>
             <button
-                class="btn variant-filled-primary"
+                class="btn preset-filled-primary-500"
                 onclick={exportFile}
             >
                 Export to file...
             </button>
-            <button
-                class="btn variant-filled-error"
-                onclick={resetAllSettings}
+            <Modal
+                open={openModals.resetAllSettings}
+                onOpenChange={e => openModals.resetAllSettings = e.open}
+                triggerBase="btn preset-filled-error-500"
+                {...defaultModalClasses}
             >
-                Reset all settings
-            </button>
+                {#snippet trigger()}
+                    Reset all settings
+                {/snippet}
+                {#snippet content()}
+                    <ConfirmModalCard bind:open={openModals.resetAllSettings} success={resetAllSettings}>
+                        Are you sure you want to reset all settings? This will also wipe all sessions.
+                    </ConfirmModalCard>
+                {/snippet}
+            </Modal>
         </div>
     </div>
-    <hr />
+    <hr class="hr" />
     <div class="panel">
         <h3 class="h3 text-center">Preferences</h3>
         <div class="flex flex-col gap-3">
             {#each PREFERENCES_LABELS as { key, label }}
-                <LabeledSlideToggle 
+                <LabeledSwitch 
                     name="prefs-{key}"
                     bind:checked={
                         () => $settings.preferences[key],
@@ -239,17 +228,17 @@
                     }
                 >
                     <div>{label}</div>
-                </LabeledSlideToggle>
+                </LabeledSwitch>
             {/each}
         </div>
     </div>
-    <hr />
+    <hr class="hr" />
     <div class="panel">
         <h3 class="h3 text-center">Sort Order (WIP)</h3>
         <div class="flex gap-3">
             <!-- Sort Order Table -->
-            <div class="table-container">
-                <table class="table table-compact del-table">
+            <div class="table-wrap rounded border border-surface-200-800">
+                <table class="table">
                     <thead>
                         <tr>
                             <th>Motion</th>
@@ -263,7 +252,7 @@
                                 {#each entry.kind as k, ki}
                                     <div class="flex items-center">
                                         <button 
-                                            class="btn btn-icon" 
+                                            class="btn-icon-std" 
                                             onclick={() => mergeUnmergeOrder(ei, ki)} 
                                             disabled={ei == 0 && ki == 0}
                                             aria-label="Merge With Above Cell"
@@ -282,14 +271,14 @@
                             <td>
                                 <div class="flex gap-3 items-center">
                                     {#each entry.order as key, oi}
-                                    <div class="card p-1 flex items-center bg-surface-300-600-token">
+                                    <div class="card-filled p-1 flex items-center">
                                         <span>{SORT_PROPERTY_NAMES[key.property]}</span>
                                         <button onclick={() => {
                                             db.settings.update("sortOrder", ({ val: order }) => { order[ei].order[oi].ascending = !order[ei].order[oi].ascending })
                                         }}>
                                             <!-- TODO: add aria-label, title -->
                                             <MdiArrowDown
-                                                class="{key.ascending ? 'rotate-180' : ''} transition-[transform]"
+                                                class={["transition-transform", key.ascending && "rotating-180"]}
                                                 width="1.2em"
                                                 height="1.2em"
                                             />
@@ -305,10 +294,10 @@
             </div>
         </div>
     </div>
-    <hr />
+    <hr class="hr" />
     <div class="panel">
         <!-- Delegate Main Settings -->
-        <div class="card p-4 flex flex-col gap-3">
+        <div class="card-filled p-4 flex flex-col gap-3">
             <h3 class="h3 text-center">Delegates</h3>
             <label class="flex gap-3 justify-center items-center">
                 <span>Apply Preset</span>
@@ -319,14 +308,52 @@
                 </select>
             </label>
             <div class="flex gap-3 justify-center">
-                <button class="btn variant-filled-primary" onclick={() => editDelegate(undefined)}>Add Delegate</button>
-                <button class="btn variant-filled-primary" onclick={() => configureEnableDelegates()}>Enable/Disable Delegates</button>
-                <button class="btn variant-filled-error" onclick={clearDelegates}>Clear Delegates</button>
+                <Modal
+                    open={openModals.addDelegate}
+                    onOpenChange={e => openModals.addDelegate = e.open}
+                    triggerBase="btn preset-filled-primary-500"
+                    {...defaultModalClasses}
+                >
+                    {#snippet trigger()}
+                        Add Delegate
+                    {/snippet}
+                    {#snippet content()}
+                        <EditDelegateCard bind:open={openModals.addDelegate} onSubmit={d => editDelegate(undefined, d)} />
+                    {/snippet}
+                </Modal>
+                <Modal
+                    open={openModals.configureEnableDelegates}
+                    onOpenChange={e => openModals.configureEnableDelegates = e.open}
+                    triggerBase="btn preset-filled-primary-500"
+                    {...defaultModalClasses}
+                >
+                    {#snippet trigger()}
+                        Enable/Disable Delegates
+                    {/snippet}
+                    {#snippet content()}
+                        <EnableDelegatesCard attrs={$delegates} bind:open={openModals.configureEnableDelegates} onSubmit={configureEnableDelegates} />
+                    {/snippet}
+                </Modal>
+                <Modal 
+                    open={openModals.clearDelegates}
+                    onOpenChange={e => openModals.clearDelegates = e.open}
+                    triggerBase="btn preset-filled-error-500"
+                    {...defaultModalClasses}
+                >
+                    {#snippet trigger()}
+                        Clear Delegates
+                    {/snippet}
+                    {#snippet content()}
+                        <ConfirmModalCard bind:open={openModals.clearDelegates} success={clearDelegates}>
+                            Are you sure you want to remove all delegates?
+                        </ConfirmModalCard>
+                    {/snippet}
+                </Modal>
             </div>
         </div>
         <!-- Delegate Table -->
-        <div class="table-container">
-            <table class="table table-compact del-table">
+        <div class="table-wrap rounded border border-surface-200-800">
+            <table class="table">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -346,13 +373,22 @@
                                 }>
                         </td>
                         <td class="text-right">
-                            <button
-                                onclick={() => editDelegate(attrs.id)}
+                            <Modal
+                                open={openModals.editDelegate[attrs.id]}
+                                onOpenChange={e => openModals.editDelegate[attrs.id] = e.open}
+                                triggerBase=""
                                 aria-label="Edit {attrs.name}"
-                                title="Edit {attrs.name}"
+                                {...defaultModalClasses}
                             >
-                                <MdiPencil />
-                            </button>
+                                {#snippet trigger()}
+                                    <MdiPencil />
+                                {/snippet}
+                                {#snippet content()}
+                                    {#await db.delegates.get(attrs.id) then del}
+                                        <EditDelegateCard attrs={del?.getAttributes()} bind:open={openModals.editDelegate[attrs.id]} onSubmit={d => editDelegate(attrs.id, d)} />
+                                    {/await}
+                                {/snippet}
+                            </Modal>
                             <button
                                 onclick={() => deleteDelegate(attrs.id)}
                                 aria-label="Delete {attrs.name}"
@@ -367,7 +403,7 @@
             </table>
         </div>
     </div>
-    <hr />
+    <hr class="hr" />
 </div>
 {/if}
 
@@ -378,8 +414,5 @@
         gap: 0.75rem;
         width: 75%;
         align-self: center;
-    }
-    .del-table td {
-        vertical-align: middle;
     }
 </style>

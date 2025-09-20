@@ -1,39 +1,33 @@
 # Modals
 
-These are components for dialog boxes (modals), particularly for dialog boxes that perform some sort of complex action.
+These are components for dialog boxes (modals). The main dialog is `ModalContent.svelte`, which holds a simple wrapper component for modals.
 
-The main dialog is `EditModal.svelte`, which holds a simple wrapper component for modals.
-
-This component wraps data in a card form (so there is a background for each modal), and provides two helper methods for modals to use:
+This component provides two helper methods for modals to use:
 
 - `submit`: Sends data back up to the parent and closes the modal
 - `close`: Cancels the modal action
 
-See the other modal components (labeled `EtcEtcCard.svelte`) to see how they wrap `EditModal.svelte`.
+See the other modal components (labeled `XXCard.svelte`) to see how they wrap `EditModal.svelte`. Note that by default, modals will not have a background. In order to provide a background, the `defaultModalClasses` should be passed to Skeleton's `<Modal>` component.
 
 ## Using Modals
 
-To deploy a modal, we can use Skeleton's `modalStore.trigger`:
+To deploy a modal, we can use Skeleton's `<Modal>` component:
 
-```ts
+```svelte
 // Somewhere in the top-level:
-import { getModalStore } from "@skeletonlabs/skeleton";
-const modalStore = getModalStore();
+import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
+import { Modal } from "@skeletonlabs/skeleton-svelte";
 
-// Where the modal is triggered:
-modalStore.trigger({
-    type: "component",
-    component: {
-        ref: EtcEtcCard,
-        props: ... // props into EtcEtcCard
-    },
-    response(data?: SubmitData) {
-        if (!data) return;
-
-        // Handle a submit request:
-        // ...
-    }
-})
+<Modal
+    bind:open
+    triggerBase="btn btn-classes"
+    {...defaultModalClasses}
+>
+    {#snippet trigger()}
+        Button Text
+    {/snippet}
+    {#snippet content()}
+        <EtcEtcCard foo={bar} bind:open onSubmit={...}>
+    {/snippet}
+</Modal>
 ```
-
-If you're handling a simple confirm (yes/no) modal, it may be simpler to instead use `triggerConfirmModal` from `$lib/util`.
