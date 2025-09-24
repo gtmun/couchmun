@@ -36,7 +36,7 @@
   const pid = $props.id();
 
   let openModals = $state({
-    editMotion: false
+    editMotion: -1
   });
   // A clone of $motions used solely for use:dndzone
   let dndItems = $derived($motions);
@@ -214,8 +214,8 @@
                     <MdiCheck class="text-success-700" />
                   </button>
                   <Modal
-                    open={openModals.editMotion}
-                    onOpenChange={e => openModals.editMotion = e.open}
+                    open={openModals.editMotion == i}
+                    onOpenChange={e => openModals.editMotion = e.open ? i : -1}
                     triggerBase="btn-icon-std p-1"
                     {...defaultModalClasses}
                   >
@@ -223,7 +223,14 @@
                       <MdiPencil />
                     {/snippet}
                     {#snippet content()}
-                      <EditMotionCard {motion} bind:open={openModals.editMotion} onSubmit={m => editMotion(i, m)} />
+                      <EditMotionCard
+                        {motion}
+                        bind:open={
+                          () => openModals.editMotion == i,
+                          open => openModals.editMotion = open ? i : -1
+                        }
+                        onSubmit={m => editMotion(i, m)}
+                      />
                     {/snippet}
                   </Modal>
                 </div>
