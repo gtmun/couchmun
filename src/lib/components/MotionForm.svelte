@@ -9,14 +9,16 @@
     import { createMotionSchema, inputifyMotion, MOTION_FIELDS, MOTION_LABELS } from "$lib/motions/definitions";
     import { formatValidationError } from "$lib/motions/form_validation";
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
-    import { parseTime, sanitizeTime } from "$lib/util/time";
+    import { parseTime, sanitizeTime, stringifyTime } from "$lib/util/time";
     import type { Motion } from "$lib/types";
 
     import type { z } from "zod";
     import { type Snippet } from 'svelte';
 
     import MdiPlus from "~icons/mdi/plus";
+    import MdiFractionOneHalf from "~icons/mdi/fraction-one-half";
     import { fade } from "svelte/transition";
+    import { lazyslide } from "$lib/util";
 
     const { selectedMotion, delegates, preferences } = getSessionContext();
     const motionSchema = $derived(createMotionSchema($delegates));
@@ -101,6 +103,14 @@
         showTimeGuide = undefined;
         if (attr in inputMotion) {
             (inputMotion as any)[attr] = sanitizeTime((inputMotion as any)[attr]);
+        }
+    }
+    /**
+     * Sets total time input to half of the previous motion.
+     */
+    function setTotalTimeToHalf() {
+        if (hasField(inputMotion, ["totalTime"]) && $selectedMotion && "totalTime" in $selectedMotion) {
+            inputMotion.totalTime = stringifyTime($selectedMotion.totalTime / 2);
         }
     }
 
@@ -190,15 +200,30 @@
     <!-- Total time input -->
     {#if hasField(inputMotion, ["totalTime"])}
     <label class="label">
-        <span>
-            Total Time
-            {#if showTimeGuide === "totalTime"}
-                <!-- Time guide -->
-                <span class="text-surface-500" transition:fade={{ duration: 150 }}>
-                    &middot; {sanitizeTime(inputMotion.totalTime)}
-                </span>
+        <div class="flex justify-between">
+            <span>
+                Total Time
+                {#if showTimeGuide === "totalTime"}
+                    <!-- Time guide -->
+                    <span class="text-surface-500" transition:fade={{ duration: 150 }}>
+                        &middot; {sanitizeTime(inputMotion.totalTime)}
+                    </span>
+                {/if}
+            </span>
+            {#if hasField(inputMotion, ["isExtension"]) && $selectedMotion?.kind === inputMotion.kind && inputMotion.isExtension}
+                <button
+                    type="button"
+                    class="btn btn-sm preset-filled"
+                    disabled={!!inputMotion.totalTime}
+                    onclick={setTotalTimeToHalf}
+                    aria-label="Set Time to Half"
+                    title="Set Time to Half"
+                    transition:lazyslide
+                >
+                    <MdiFractionOneHalf />
+                </button>
             {/if}
-        </span>
+        </div>
         <input 
             name="total-time"
             class={["input", inputError?.path.includes("totalTime") && "preset-input-error"]}
