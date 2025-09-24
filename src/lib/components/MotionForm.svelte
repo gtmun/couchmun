@@ -206,7 +206,6 @@
             bind:value={inputMotion.totalTime}
             onfocus={() => showTimeGuide = "totalTime"}
             onblur={() => handleBlurTime("totalTime")}
-            required
         >
     </label>
     {/if}
