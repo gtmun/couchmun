@@ -1073,21 +1073,24 @@
     "AE": {
         "name": "United Arab Emirates",
         "aliases": [
-            "United Arab Emirates (the)"
+            "United Arab Emirates (the)",
+            "UAE"
         ]
     },
     "GB": {
         "name": "United Kingdom",
         "aliases": [
             "United Kingdom of Great Britain and Northern Ireland (the)",
-            "United Kingdom of Great Britain and Northern Ireland"
+            "United Kingdom of Great Britain and Northern Ireland",
+            "UK"
         ]
     },
     "US": {
         "name": "United States",
         "aliases": [
             "United States of America (the)",
-            "United States of America"
+            "United States of America",
+            "US"
         ]
     },
     "UY": {
