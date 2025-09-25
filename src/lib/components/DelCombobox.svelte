@@ -69,25 +69,29 @@
         onSelect
     }: Props = $props();
     
-    let data = $derived(
+    let options = $derived(
         delegates
             .filter(d => d.isPresent())
             .map(d => ({
                 value: String(d.id),
                 label: d.name,
-                // TODO: support keywords
-                attrs: d.getAttributes()
+                delegate: d,
             }))
     );
+    let data = $derived(options);
 
-    let delsEmpty = $derived(data.length == 0);
+    function onInputValueChange(e: { inputValue: string }) {
+        input = e.inputValue;
+        data = options.filter(o => o.delegate.nameIncludes(e.inputValue))
+    }
+    let delsEmpty = $derived(options.length == 0);
     let comboboxValue = $derived(typeof value !== "undefined" ? [String(value)] : []);
 </script>
 
 <Combobox
     {data}
     inputValue={input ?? ""}
-    onInputValueChange={e => input = e.inputValue}
+    {onInputValueChange}
     value={comboboxValue}
     onValueChange={e => {
         let newValue = +e.value[0];
@@ -106,6 +110,6 @@
     {selectionBehavior}
 >
     {#snippet item(item)}
-        <DelLabel attrs={item.attrs} inline />
+        <DelLabel attrs={item.delegate.getAttributes()} inline />
     {/snippet}
 </Combobox>
