@@ -31,6 +31,7 @@
   import MdiClock from "~icons/mdi/clock";
   import MdiPencil from "~icons/mdi/pencil";
   import MdiSort from "~icons/mdi/sort";
+  import MdiUndo from "~icons/mdi/undo";
 
   const { motions, selectedMotion, selectedMotionState, delegates, sortOrder } = getSessionContext();
   const pid = $props.id();
@@ -83,10 +84,13 @@
 
   // MOTION BUTTONS
   function removeMotion(i: number) {
+    let removing: Motion[] = [];
     motions.update($m => {
-      $m.splice(i, 1);
+      removing.push(...$m.splice(i, 1));
       return $m;
-    })
+    });
+
+    deletedMotions.push(...removing);
   }
 
   async function acceptMotion(motion: Motion) {
@@ -124,6 +128,19 @@
       return true;
     }
   });
+
+  // Store any motions that were deleted
+  // (so we can recover it if someone presses the undo button).
+  let deletedMotions = $state<Motion[]>([]);
+  function undo() {
+    let el = $state.snapshot(deletedMotions.pop());
+    if (el) {
+      motions.update($m => {
+        $m.unshift(el);
+        return $m;
+      });
+    }
+  }
 </script>
 
 <div class="grid gap-5 min-h-full md:grid-cols-[1fr_2fr] md:h-full">
@@ -132,7 +149,16 @@
   </div>
   
   <div class="flex flex-col gap-2 overflow-x-auto">
-    <div class="grid grid-cols-[1fr_auto] items-center">
+    <div class="grid grid-cols-[auto_1fr_auto] items-center">
+      <button
+        class="btn-icon-std transition-colors preset-filled-primary-500"
+        onclick={undo}
+        aria-label="Undo Deleted Motion"
+        title="Undo Deleted Motion"
+        disabled={deletedMotions.length == 0}
+      >
+        <MdiUndo />
+      </button>
       <h3 class="h3 text-center" id="motion-table-header-{pid}">List of Motions</h3>
       <button
         class={["btn-icon-std transition-colors", motionsSorted ? "preset-ui-depressed" : "preset-ui-activated"]}
