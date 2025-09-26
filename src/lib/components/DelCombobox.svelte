@@ -6,7 +6,7 @@
 -->
 
 <script lang="ts">
-    import type { Delegate } from "$lib/db/delegates";
+    import { findDelegate, type Delegate } from "$lib/db/delegates";
     import { Combobox } from "@skeletonlabs/skeleton-svelte";
     import DelLabel from "./del-label/DelLabel.svelte";
     import type { DelegateID } from "$lib/types";
@@ -51,6 +51,15 @@
          */
         forgetSelected?: boolean,
         /**
+         * Selects item when unfocused.
+         * 
+         * If true, then on defocus, this will select whatever is keyboard-hovered
+         * when the menu is tabbed out.
+         * 
+         * By default, this is false.
+         */
+        selectOnBlur?: boolean,
+        /**
          * Action to perform when a delegate has been selected.
          * This is done after the value property is set (if that is used).
          */
@@ -66,6 +75,7 @@
         selectionBehavior,
         inputBehavior = "autohighlight",
         forgetSelected = false,
+        selectOnBlur = false,
         onSelect
     }: Props = $props();
     
@@ -86,6 +96,15 @@
     }
     let delsEmpty = $derived(options.length == 0);
     let comboboxValue = $derived(typeof value !== "undefined" ? [String(value)] : []);
+
+    let highlightedValue = $state<string | null>(null);
+
+    function onBlur() {
+        if (selectOnBlur && highlightedValue != null) {
+            value = +highlightedValue;
+            input = findDelegate(delegates, value)?.name;
+        }
+    }
 </script>
 
 <Combobox
@@ -101,6 +120,9 @@
         onSelect?.(newValue);
     }}
     disabled={delsEmpty}
+    {highlightedValue}
+    onHighlightChange={e => highlightedValue = e.highlightedValue}
+    onInteractOutside={onBlur}
     placeholder={!delsEmpty ? "Select..." : "No delegates present"}
     optionHover='hover:preset-tonal hover:brightness-100!'
     inputGroupClasses="{error ? 'preset-input-error' : ''} transition-colors"

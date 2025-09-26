@@ -181,6 +181,7 @@
                 });
             }}
             error={inputError?.path.includes("delegate")}
+            selectOnBlur
         />
     </label>
 
