@@ -25,6 +25,11 @@
     const defaultInputMotion = () => ({ id: crypto.randomUUID(), kind: "mod" } satisfies MotionInput);
     const resetInputErrors = () => { inputError = undefined };
 
+    const speakingTimeButtons = [
+        { time: 30, label: ":30" },
+        { time: 45, label: ":45" },
+        { time: 60, label: "1:00" },
+    ]
     interface Props {
         /**
          * The input data.
@@ -239,15 +244,30 @@
     <!-- Speaking time input -->
     {#if hasField(inputMotion, ["speakingTime"])}
     <label class="label">
-        <span>
-            Speaking Time
-            {#if showTimeGuide === "speakingTime"}
-                <!-- Time guide -->
-                <span class="text-surface-500" transition:fade={{ duration: 150 }}>
-                    &middot; {sanitizeTime(inputMotion.speakingTime)}
-                </span>
-            {/if}
-        </span>
+        <div class="flex justify-between">
+            <span>
+                Speaking Time
+                {#if showTimeGuide === "speakingTime"}
+                    <!-- Time guide -->
+                    <span class="text-surface-500" transition:fade={{ duration: 150 }}>
+                        &middot; {sanitizeTime(inputMotion.speakingTime)}
+                    </span>
+                {/if}
+            </span>
+            <div class="flex gap-1 items-center">
+                {#each speakingTimeButtons as btn}
+                    <button
+                        type="button"
+                        class="btn btn-sm preset-filled tabular-nums"
+                        disabled={isExtending(inputMotion) || (typeof inputMotion.speakingTime !== "undefined" && parseTime(inputMotion.speakingTime) == btn.time)}
+                        onclick={() => (inputMotion as any).speakingTime = stringifyTime(btn.time)}
+                        tabindex="-1"
+                    >
+                        {btn.label}
+                    </button>
+                {/each}
+            </div>
+        </div>
         <input
             name="speaking-time"
             class={["input", inputError?.path.includes("speakingTime") && "preset-input-error"]}
