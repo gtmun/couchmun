@@ -128,6 +128,7 @@
     inputGroupClasses="{error ? 'preset-input-error' : ''} transition-colors"
     {classes}
     contentClasses="max-h-48 overflow-auto"
+    positionerClasses="z-1!"
     {inputBehavior}
     {selectionBehavior}
 >
