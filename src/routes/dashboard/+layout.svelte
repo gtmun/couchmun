@@ -16,6 +16,7 @@
     import { AppBar, Modal } from '@skeletonlabs/skeleton-svelte';
     import MdiMenu from "~icons/mdi/menu";
     import MdiGear from "~icons/mdi/gear";
+    import type { RouteId } from '$app/types';
 
     let { children } = $props();
     type DrawerState = "nav" | "settings" | null;
@@ -25,7 +26,7 @@
     const { delegates, barTitle } = sessionData;
     let delegateCount = $derived($delegates.reduce((acc, d) => acc + d.isPresent(), 0));
 
-    const links: Record<string, { label: string }> = {
+    const links: Partial<Record<RouteId, { label: string }>> = {
         "/dashboard/roll-call":      { label: "Roll Call" },
         "/dashboard/speaker-list":   { label: "Speakers List" },
         "/dashboard/points-motions": { label: "Points and Motions" },

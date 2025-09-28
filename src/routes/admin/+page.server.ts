@@ -5,9 +5,9 @@
  * and won't redirect to /admin/settings/.
  */
 
-import { base } from "$app/paths";
+import { resolve } from "$app/paths";
 import { redirect } from "@sveltejs/kit";
 
 export function load() {
-    throw redirect(307, `${base}/admin/settings`);
+    throw redirect(307, resolve("/admin/settings"));
 }

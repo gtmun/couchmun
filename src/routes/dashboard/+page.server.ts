@@ -4,9 +4,9 @@
  * This is where users should start for the dashboard.
  */
 
-import { base } from "$app/paths";
+import { resolve } from "$app/paths";
 import { redirect } from "@sveltejs/kit";
 
 export function load() {
-    throw redirect(308, `${base}/dashboard/roll-call`);
+    throw redirect(308, resolve("/dashboard/roll-call"));
 }

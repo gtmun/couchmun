@@ -5,7 +5,7 @@
  -->
 <script lang="ts">
     import { goto } from "$app/navigation";
-    import { base } from "$app/paths";
+    import { resolve } from "$app/paths";
     import LightSwitch from "$lib/components/LightSwitch.svelte";
     import { getSessionContext, resetSessionContext } from "$lib/context/index.svelte";
     import { db, queryStore } from "$lib/db/index.svelte";
@@ -50,7 +50,7 @@
     async function createNewSession() {
         await db.saveSessionData();
         await resetSessionContext(sessionData);
-        goto(`${base}/dashboard/roll-call`);
+        goto(resolve("/dashboard/roll-call"));
     }
 
     // Hide backdrop when accordions are all closed.
@@ -67,12 +67,12 @@
     </div>
     <ul class="flex flex-col gap-1">
         <li class="flex">
-            <a class="grow hover:preset-tonal p-2 rounded" onclick={close} href="{base}/admin/settings" tabindex="0">
+            <a class="grow hover:preset-tonal p-2 rounded" onclick={close} href="{resolve("/admin/settings")}" tabindex="0">
                 Settings
             </a>
         </li>
         <li class="flex">
-            <a class="grow hover:preset-tonal p-2 rounded" onclick={close} target="_blank" href="{base}/admin/stats" tabindex="0">
+            <a class="grow hover:preset-tonal p-2 rounded" onclick={close} target="_blank" href="{resolve("/admin/stats")}" tabindex="0">
                 Stats
             </a>
         </li>

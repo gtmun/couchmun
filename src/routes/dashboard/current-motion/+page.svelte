@@ -4,7 +4,7 @@
   This page delegates to one of the motion components located in `$lib/components/motions/page`.
 -->
 <script lang="ts">
-    import { base } from "$app/paths";
+    import { resolve } from "$app/paths";
     import ModCaucus from "$lib/components/motions/page/ModCaucus.svelte";
     import RoundRobin from "$lib/components/motions/page/RoundRobin.svelte";
     import UnmodCaucus from "$lib/components/motions/page/UnmodCaucus.svelte";
@@ -39,7 +39,7 @@
             Visit 
             <a
                 class="btn btn-sm preset-filled-primary-100-900"
-                href="{base}/dashboard/points-motions"
+                href="{resolve("/dashboard/points-motions")}"
                 tabindex="0"
             >
                 Points and Motions

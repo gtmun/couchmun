@@ -4,8 +4,9 @@
   This drawer allows users to visit different pages on the site.
 -->
 <script lang="ts">
-    import { base } from "$app/paths";
+    import { resolve } from "$app/paths";
     import { page } from "$app/state";
+    import type { RouteId } from "$app/types";
     import { tick } from "svelte";
     import type { Action } from "svelte/action";
 
@@ -13,7 +14,7 @@
         /**
          * Record of accessible links and their display name.
          */
-        links: Record<string, { label: string }>;
+        links: Partial<Record<RouteId, { label: string }>>;
         /**
          * A method callback that "closes" the drawer that 
          * this navigation resides under.
@@ -33,7 +34,7 @@
     <ul class="flex flex-col gap-1">
         {#each Object.entries(links) as [id, { label }]}
             <!-- base does not end with /, whereas id starts with / -->
-            {@const href = `${base}${id}`}
+            {@const href = resolve(id as RouteId)}
             {@const selected = page.url.pathname === href}
             <li class="flex">
                 <a

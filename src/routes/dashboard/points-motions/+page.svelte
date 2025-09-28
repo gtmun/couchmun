@@ -6,7 +6,7 @@
 -->
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { base } from "$app/paths";
+  import { resolve } from "$app/paths";
   import DelLabel from "$lib/components/del-label/DelLabel.svelte";
   import IconLabel from "$lib/components/IconLabel.svelte";
   import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
@@ -107,7 +107,7 @@
   }
   async function acceptMotionAndGoto(motion: Motion) {
     await acceptMotion(motion);
-    goto(`${base}/dashboard/current-motion`);
+    goto(resolve("/dashboard/current-motion"));
   }
   function editMotion(i: number, motion?: Motion) {
     if (!motion) return;
