@@ -69,7 +69,8 @@
         if (!$settings || !$delegates) return;
         let exportSettings = {
             settings: $settings,
-            delegates: $delegates.map(d => d.getAttributes())
+            // HACK: Allows enabled to exist
+            delegates: $delegates.map(d => Object.assign(d.getAttributes(), { enabled: d.enabled }))
         };
 
         downloadFile("couchmun-config.json", JSON.stringify(exportSettings), "application/json");

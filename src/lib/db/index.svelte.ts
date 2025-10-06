@@ -301,7 +301,8 @@ export const DEFAULT_SETTINGS = {
 function populateDelegate(attrs: DelegateAttrs, order: number): InsertType<Delegate, "id"> {
     let { name, aliases, flagURL: mFlagURL } = attrs;
     return Object.assign({
-        name, aliases, order, enabled: true, flagURL: mFlagURL ?? ""
+        // HACK: allows enabled to exist
+        name, aliases, order, enabled: (attrs as any).enabled ?? true, flagURL: mFlagURL ?? ""
     }, DEFAULT_DEL_SESSION_DATA);
 }
 /**
