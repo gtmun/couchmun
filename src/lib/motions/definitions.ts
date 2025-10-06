@@ -56,8 +56,9 @@ const _assert: Is<TypeFields, ConstFields> = {};
  */
 export const DEFAULT_SORT_PRIORITY: SortOrder = [
     { kind: ["ext"], order: [] },
+    { kind: ["rr"], order: [{ property: "speakingTime", ascending: false }] },
     { kind: ["unmod"], order: [{ property: "totalTime", ascending: false }] },
-    { kind: ["mod", "rr"], order: [{ property: "nSpeakers", ascending: false }, { property: "totalTime", ascending: false }] }
+    { kind: ["mod"], order: [{ property: "nSpeakers", ascending: false }, { property: "totalTime", ascending: false }] }
 ];
 
 /**
