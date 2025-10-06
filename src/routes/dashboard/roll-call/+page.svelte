@@ -3,7 +3,7 @@
     which consists of a long list of delegates and an option to select NP/P/PV.
 -->
 <script lang="ts">
-    import { base } from "$app/paths";
+    import { resolve } from "$app/paths";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import IconLabel from "$lib/components/IconLabel.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
@@ -60,7 +60,7 @@
             Visit 
             <a
                 class="btn btn-sm preset-filled-warning-100-900"
-                href="{base}/admin/settings"
+                href="{resolve("/admin/settings")}"
                 tabindex="0"
             >
                 Settings

@@ -65,29 +65,36 @@ export const DEFAULT_SORT_PRIORITY: SortOrder = [
  * This takes the form inputs and verifies & creates the motion object associated with the form.
  */
 export function createMotionSchema(delegates: Delegate[]) {
-    const base = <K extends MotionKind>(k: K) => z.object({
-        id: nonEmptyString({ description: "ID" }),
+    const base = {
+        id: nonEmptyString("ID"),
         delegate: presentDelegateSchema(delegates),
-        kind: z.literal(k)
-    });
+    };
 
-    return z.union([
-        base("mod").extend({
+    return z.discriminatedUnion("kind", [
+        z.object({
+            ...base,
+            kind: z.literal("mod"),
             totalTime: timeSchema("Total time"),
             speakingTime: timeSchema("Speaking time"),
             topic: topicSchema(),
             isExtension: z.boolean().default(false)
         }).refine(...refineSpeakingTime()),
-        base("unmod").extend({
+        z.object({
+            ...base,
+            kind: z.literal("unmod"),
             totalTime: timeSchema("Total time"),
             isExtension: z.boolean().default(false)
         }),
-        base("rr").extend({
+        z.object({
+            ...base,
+            kind: z.literal("rr"),
             speakingTime: timeSchema("Speaking time"),
             topic: topicSchema(),
             totalSpeakers: z.string().transform((s) => parseInt(s))
         }),
-        base("other").extend({
+        z.object({
+            ...base,
+            kind: z.literal("other"),
             totalTime: timeSchema("Total time"),
             topic: topicSchema()
         })

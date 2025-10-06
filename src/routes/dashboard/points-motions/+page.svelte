@@ -6,7 +6,7 @@
 -->
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { base } from "$app/paths";
+  import { resolve } from "$app/paths";
   import DelLabel from "$lib/components/del-label/DelLabel.svelte";
   import IconLabel from "$lib/components/IconLabel.svelte";
   import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
@@ -31,12 +31,13 @@
   import MdiClock from "~icons/mdi/clock";
   import MdiPencil from "~icons/mdi/pencil";
   import MdiSort from "~icons/mdi/sort";
+  import MdiUndo from "~icons/mdi/undo";
 
   const { motions, selectedMotion, selectedMotionState, delegates, sortOrder } = getSessionContext();
   const pid = $props.id();
 
   let openModals = $state({
-    editMotion: false
+    editMotion: -1
   });
   // A clone of $motions used solely for use:dndzone
   let dndItems = $derived($motions);
@@ -83,10 +84,13 @@
 
   // MOTION BUTTONS
   function removeMotion(i: number) {
+    let removing: Motion[] = [];
     motions.update($m => {
-      $m.splice(i, 1);
+      removing.push(...$m.splice(i, 1));
       return $m;
-    })
+    });
+
+    deletedMotions.push(...removing);
   }
 
   async function acceptMotion(motion: Motion) {
@@ -103,7 +107,7 @@
   }
   async function acceptMotionAndGoto(motion: Motion) {
     await acceptMotion(motion);
-    goto(`${base}/dashboard/current-motion`);
+    goto(resolve("/dashboard/current-motion"));
   }
   function editMotion(i: number, motion?: Motion) {
     if (!motion) return;
@@ -124,6 +128,19 @@
       return true;
     }
   });
+
+  // Store any motions that were deleted
+  // (so we can recover it if someone presses the undo button).
+  let deletedMotions = $state<Motion[]>([]);
+  function undo() {
+    let el = $state.snapshot(deletedMotions.pop());
+    if (el) {
+      motions.update($m => {
+        $m.unshift(el);
+        return $m;
+      });
+    }
+  }
 </script>
 
 <div class="grid gap-5 min-h-full md:grid-cols-[1fr_2fr] md:h-full">
@@ -132,7 +149,16 @@
   </div>
   
   <div class="flex flex-col gap-2 overflow-x-auto">
-    <div class="grid grid-cols-[1fr_auto] items-center">
+    <div class="grid grid-cols-[auto_1fr_auto] items-center">
+      <button
+        class="btn-icon-std transition-colors preset-filled-primary-500"
+        onclick={undo}
+        aria-label="Undo Deleted Motion"
+        title="Undo Deleted Motion"
+        disabled={deletedMotions.length == 0}
+      >
+        <MdiUndo />
+      </button>
       <h3 class="h3 text-center" id="motion-table-header-{pid}">List of Motions</h3>
       <button
         class={["btn-icon-std transition-colors", motionsSorted ? "preset-ui-depressed" : "preset-ui-activated"]}
@@ -214,8 +240,8 @@
                     <MdiCheck class="text-success-700" />
                   </button>
                   <Modal
-                    open={openModals.editMotion}
-                    onOpenChange={e => openModals.editMotion = e.open}
+                    open={openModals.editMotion == i}
+                    onOpenChange={e => openModals.editMotion = e.open ? i : -1}
                     triggerBase="btn-icon-std p-1"
                     {...defaultModalClasses}
                   >
@@ -223,7 +249,14 @@
                       <MdiPencil />
                     {/snippet}
                     {#snippet content()}
-                      <EditMotionCard {motion} bind:open={openModals.editMotion} onSubmit={m => editMotion(i, m)} />
+                      <EditMotionCard
+                        {motion}
+                        bind:open={
+                          () => openModals.editMotion == i,
+                          open => openModals.editMotion = open ? i : -1
+                        }
+                        onSubmit={m => editMotion(i, m)}
+                      />
                     {/snippet}
                   </Modal>
                 </div>

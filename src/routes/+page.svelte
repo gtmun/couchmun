@@ -1,6 +1,6 @@
 <!-- @component The front page. -->
 <script lang="ts">
-    import { base } from "$app/paths";
+    import { resolve } from "$app/paths";
     import MetaTags from "$lib/components/MetaTags.svelte";
     import MdiGear from "~icons/mdi/gear";
 </script>
@@ -17,12 +17,12 @@
     
         <!-- Entry buttons -->
         <div class="flex justify-center gap-3">
-            <a class="btn preset-filled-primary-500" href="{base}/dashboard">
+            <a class="btn preset-filled-primary-500" href="{resolve("/dashboard")}">
                 Open Dashboard
             </a>
             <a 
                 class="btn-icon-std preset-filled-primary-500" 
-                href="{base}/admin/settings"
+                href="{resolve("/admin/settings")}"
                 aria-label="Settings"
                 title="Settings"
             >

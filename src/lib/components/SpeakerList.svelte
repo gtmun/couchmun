@@ -39,6 +39,19 @@
          */
         controls?: Snippet;
         /**
+         * Controls placed above the add speakers control.
+         * 
+         * If `controls` is defined, neither this nor the default add speakers control
+         * will appear.
+         */
+        subcontrols?: Snippet;
+        /**
+         * The title of the component, which appears at the top. 
+         * 
+         * By default, this "Speakers List"
+         */
+        title?: Snippet | string;
+        /**
          * If this prop is defined, the function callback is activated right before a speaker changes.
          */
         onBeforeSpeakerUpdate?: ((oldSpeaker: Speaker | undefined, newSpeaker: Speaker | undefined) => unknown);
@@ -52,6 +65,8 @@
         order = $bindable([]),
         delegates = [],
         controls = undefined,
+        subcontrols = undefined,
+        title = "Speakers List",
         onBeforeSpeakerUpdate = undefined,
         onMarkComplete = undefined
     }: Props = $props();
@@ -67,7 +82,8 @@
         order.filter(s => typeof s.id === "string" && s.id)
             .map((speaker, i) => [speaker.id, { speaker, i }])
     ));
-    let acSpeaker = $state<DelegateID>();
+    // Point to insert speakers (by number of elements from the end).
+    let insertPoint = $state(0);
 
     // List item elements per order item
     let listEl = $state<HTMLOListElement>();
@@ -163,7 +179,11 @@
 
         // Successful, so add speakers:
         let speaker = createSpeaker(key);
-        order.push(speaker);
+        if (insertPoint == 0) {
+            order.push(speaker);
+        } else {
+            order.splice(-insertPoint, 0, speaker);
+        }
         order = order;
 
         // Jump to this speaker when DOM updates.
@@ -179,12 +199,38 @@
         return true;
     }
 
+    export function addSpeakerFirst(key: number): boolean {
+        if (!delegates.some(k => k.id === key)) return false;
+
+        // Successful, so add speakers:
+        let speaker = createSpeaker(key);
+        order.unshift(speaker);
+        order = order;
+
+        return true;
+    }
+    export function addSpeakerLast(key: number): boolean {
+        if (!delegates.some(k => k.id === key)) return false;
+
+        // Successful, so add speakers:
+        let speaker = createSpeaker(key);
+        order.push(speaker);
+        order = order;
+        insertPoint++;
+
+        return true;
+    }
+
     // DEFAULT CONTROLS
     /**
      * Deletes the speaker at index i in the speakers list.
      * @param i The index.
      */
     function deleteSpeaker(i: number) {
+        if (i >= order.length - insertPoint) {
+            insertPoint--;
+        }
+
         let [removedSpeaker] = order.splice(i, 1);
         order = order;
         
@@ -239,7 +285,11 @@
 
 <div class="card-filled p-4 overflow-y-hidden grow flex flex-col items-stretch gap-4">
     <h4 class="h4 flex justify-center" id="sl-header-{sid}">
-        Speakers List
+        {#if typeof title === "string"}
+            {title}
+        {:else}
+            {@render title?.()}
+        {/if}
     </h4>
 
     <ol class="p-2 overflow-y-auto grid grid-cols-[auto_auto_1fr_auto] auto-rows-min grow"
@@ -257,7 +307,19 @@
             }
         }}
         onconsider={(e) => dndItems = e.detail.items}
-        onfinalize={(e) => order = dndItems = e.detail.items}
+        onfinalize={(e) => {
+            // If any of the end speakers are moved,
+            // then wipe the end list.
+            if (insertPoint > 0) {
+                const original = order.slice(-insertPoint);
+                const dragged = e.detail.items.slice(-insertPoint);
+
+                if (!original.every((k, i) => k.id == dragged[i].id)) {
+                    insertPoint = 0;
+                }
+            }
+            order = dndItems = e.detail.items;
+        }}
         aria-labelledby="sl-header-{sid}"
     >
         {#each dndItems as speaker, i (speaker.id)}
@@ -269,7 +331,8 @@
             <li
                 class={[
                     "grid! grid-cols-subgrid col-span-4 dnd-list-item items-center gap-3 p-1",
-                    shadow && "visible! bg-surface-100-900! rounded"
+                    shadow && "visible! bg-surface-100-900! rounded",
+                    insertPoint > 0 && (i == order.length - insertPoint) && "border-t-2 border-surface-500"
                 ]}
                 animate:flip={{ duration: 150 }}
                 aria-label={speakerLabel}
@@ -313,34 +376,37 @@
     {#if controls}
         {@render controls()}
     {:else}
-        <div class="flex flex-row gap-1 items-center">
-            <!-- Delegate combobox -->
-            <DelCombobox
-                {delegates}
-                selectionBehavior="clear"
-                class="grow"
-                forgetSelected
-                onSelect={addSpeaker}
-            />
-            <!-- Clear order -->
-            <!-- TODO: disabled={order.length === 0 } -->
-            <Modal
-                open={openModals.clearSpeakers}
-                onOpenChange={e => openModals.clearSpeakers = e.open}
-                triggerBase="btn-icon-std preset-filled-primary-500"
-                aria-label="Clear Speakers List"
-                classes="flex items-center"
-                {...defaultModalClasses}
-            >
-                {#snippet trigger()}
-                    <MdiDelete />
-                {/snippet}
-                {#snippet content()}
-                    <ConfirmModalCard bind:open={openModals.clearSpeakers} success={() => order = []}>
-                        Are you sure you want to clear the Speakers List?
-                    </ConfirmModalCard>
-                {/snippet}
-            </Modal>
+        <div class="flex flex-col items-stretch gap-1">
+            {@render subcontrols?.()}
+            <div class="flex flex-row gap-1 items-center">
+                <!-- Delegate combobox -->
+                <DelCombobox
+                    {delegates}
+                    selectionBehavior="clear"
+                    class="grow"
+                    forgetSelected
+                    onSelect={addSpeaker}
+                />
+                <!-- Clear order -->
+                <!-- TODO: disabled={order.length === 0 } -->
+                <Modal
+                    open={openModals.clearSpeakers}
+                    onOpenChange={e => openModals.clearSpeakers = e.open}
+                    triggerBase="btn-icon-std preset-filled-primary-500"
+                    aria-label="Clear Speakers List"
+                    classes="flex items-center"
+                    {...defaultModalClasses}
+                >
+                    {#snippet trigger()}
+                        <MdiDelete />
+                    {/snippet}
+                    {#snippet content()}
+                        <ConfirmModalCard bind:open={openModals.clearSpeakers} success={() => order = []}>
+                            Are you sure you want to clear the Speakers List?
+                        </ConfirmModalCard>
+                    {/snippet}
+                </Modal>
+            </div>
         </div>
     {/if}
 </div>

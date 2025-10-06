@@ -4,7 +4,7 @@
   This basically initializes the admin app bar (the yellow bar on the top).
 -->
 <script lang="ts">
-    import { base } from '$app/paths';
+    import { resolve } from "$app/paths";
     import BarHeader from '$lib/components/app-bar/BarHeader.svelte';
     import { db } from '$lib/db/index.svelte';
     
@@ -27,7 +27,7 @@
         >
             {#snippet lead()}
                 <a
-                    href="{base}/dashboard"
+                    href="{resolve("/dashboard")}"
                     class="btn-icon-std"
                     aria-label="Return to Dashboard"
                     title="Return to Dashboard"

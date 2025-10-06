@@ -5,12 +5,16 @@
     - An editable speakers list
 -->
 <script lang="ts">
+    import { numSpeakersStr } from "$lib/components/MotionForm.svelte";
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import type Timer from "$lib/components/Timer.svelte";
+    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
+    import { findDelegate } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";
     import type { Motion, Speaker } from "$lib/types";
+    import { lazyslide } from "$lib/util";
     import { stringifyTime } from "$lib/util/time";
 
     interface Props {
@@ -39,6 +43,13 @@
         if ($preferences.yieldMainTimer) return;
         if (!delTimer || !totalTimer) return;
         totalTimer.offsetDuration(-delTimer.secsRemaining());
+    }
+
+    function addFirst() {
+        speakersList?.addSpeaker(motion.delegate);
+    }
+    function addLast() {
+        speakersList?.addSpeaker(motion.delegate);
     }
 
     $effect(() => {
@@ -84,6 +95,24 @@
             bind:this={speakersList}
             onBeforeSpeakerUpdate={resetDel}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
-        />
+        >
+            {#snippet title()}
+                Speakers List (<span class="tabular-nums">{order.length}/{numSpeakersStr(motion.totalTime, motion.speakingTime)}</span>)
+            {/snippet}
+            {#snippet subcontrols()}
+                {#if !order.some(s => s.key == motion.delegate)}
+                    <div
+                        class="card card-filled p-2 flex justify-between items-center preset-filled-surface-200-800"
+                        transition:lazyslide
+                    >
+                        <DelLabel attrs={findDelegate($delegates, motion.delegate)} inline />
+                        <div>
+                            <button class="btn preset-filled-primary-500" onclick={e => speakersList?.addSpeakerFirst(motion.delegate)}>First</button>
+                            <button class="btn preset-filled-primary-500" onclick={e => speakersList?.addSpeakerLast(motion.delegate)}>Last</button>
+                        </div>
+                    </div>
+                {/if}
+            {/snippet}
+        </SpeakerList>
     </div>
 </div>
