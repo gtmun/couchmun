@@ -7,7 +7,7 @@
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db, queryStore, SessionDatabase } from "$lib/db/index.svelte";
     import { Delegate } from "$lib/db/delegates";
-    import type { DelSessionData, StatsData } from "$lib/types";
+    import type { DelegateID, DelSessionData, StatsData } from "$lib/types";
     import { compare, downloadFile } from "$lib/util";
     import { POPUP_CARD_CLASSES } from "$lib/util/popup";
     import { stringifyTime } from "$lib/util/time";
@@ -23,10 +23,9 @@
     const { delegates, barTitle } = getSessionContext();
 
     // Pagination
-    const prevSessions = queryStore(async () => {
-        const arr = await db.prevSessions.toArray();
-        return arr.map(e => e.val.delegates);
-    }, []);
+    const prevSessions = queryStore(
+        async () => Array.from(await db.prevSessions.toArray(), e => e.val.delegates), []
+    );
     const currentSessionKey = queryStore(() => db.getSessionValue("sessionKey"));
 
     const nSessions = queryStore(async () => {
@@ -41,12 +40,13 @@
         if (page === -1) page = $currentSessionKey ?? ($nSessions - 1);
     });
     
-    const delAttrMap = $derived(new Map<number, Delegate>($delegates.map(d => [d.id, d])));
-    const sessionDelegates = $derived.by(() => {
-        let session = $prevSessions[page];
+    const presentDelegateIds: Set<DelegateID> = $derived(new Set($delegates.map(d => d.id)));
+    const sessionDelegates: Delegate[] = $derived.by(() => {
+        let session = $prevSessions[page] ?? [];
+
         if (page === $nSessions) {
             // All sessions
-            let delStats = new Map<number, DelSessionData>();
+            let delStats = new Map<DelegateID, DelSessionData>();
             for (let del of $delegates) {
                 delStats.set(del.id, del.getSessionData());
             }
@@ -65,17 +65,14 @@
                 }
             }
 
-            return Array.from(delStats, ([id, session]) => Object.assign(
-                Object.create(Delegate.prototype), delAttrMap.get(id), session
-            ));
+            return Array.from($delegates, d => Object.assign(new Delegate(), d, delStats.get(d.id)));
         } else if (page === $currentSessionKey || !session) {
             // Current session:
             return $delegates;
         } else {
-            // Previous session:
-            return session.map<Delegate>(
-                d => Object.assign(Object.create(Delegate.prototype), delAttrMap.get(d.id), d.session)
-            );
+            // Past session:
+            let sessionMap = new Map(session.map(d => [d.id, d.session]));
+            return Array.from($delegates, d => Object.assign(new Delegate(), d, sessionMap.get(d.id)));
         }
     });
 
@@ -125,17 +122,17 @@
     function exportStats() {
         let data = {
             committee: $barTitle,
-            delegates: $delegates.map(d => d.getAttributes()),
-            session: SessionDatabase.delegatesAsSessionData($delegates)
+            delegates: $delegates.map(d => Object.assign(d.getAttributes(), { id: d.id })),
+            session: ($prevSessions[page] ?? []).filter(d => presentDelegateIds.has(d.id))
         };
         downloadFile("couchmun-del-stats.json", JSON.stringify(data), "application/json");
     }
     function exportAllStats() {
         let data = {
             committee: $barTitle,
-            delegates: $delegates.map(d => d.getAttributes()),
+            delegates: $delegates.map(d => Object.assign(d.getAttributes(), { id: d.id })),
             sessions: [
-                ...$prevSessions,
+                ...$prevSessions.map(s => s.filter(d => presentDelegateIds.has(d.id))),
                 SessionDatabase.delegatesAsSessionData($delegates)
             ]
         };
