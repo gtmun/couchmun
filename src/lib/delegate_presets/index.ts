@@ -25,14 +25,8 @@ export const DEFAULT_PRESET_KEY = "un";
  * The preset should be defined at `preset-${key}.json` in this folder.
  */
 export const PRESETS = {
-    un: { label: "United Nations" },
-    custom: { label: "Custom" }
+    un: { label: "United Nations" }
 }
-
-/**
- * These keys do not have presets. It really should just be `custom` that doesn't have preset data.
- */
-const NO_PRESET: readonly (keyof typeof PRESETS)[] = ["custom"];
 
 /**
  * Gets the preset data at a given file key.
@@ -41,8 +35,6 @@ const NO_PRESET: readonly (keyof typeof PRESETS)[] = ["custom"];
  * @throws if key is not in `PRESETS` or JSON is invalid or doesn't exist
  */
 export async function getPreset(key: keyof typeof PRESETS): Promise<DelProperties | undefined> {
-    if (!NO_PRESET.includes(key)) {
-        const { default: json } = await import(`$lib/delegate_presets/preset-${key}.json`);
-        return structuredClone(json);
-    }
+    const { default: json } = await import(`$lib/delegate_presets/preset-${key}.json`);
+    return structuredClone(json);
 }
