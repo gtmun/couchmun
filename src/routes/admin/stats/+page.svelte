@@ -18,6 +18,7 @@
     import MdiDotsHorizontal from "~icons/mdi/dots-horizontal";
     import MdiChevronRight from "~icons/mdi/chevron-right";
     import MdiChevronLeft from "~icons/mdi/chevron-left";
+    import MdiPencil from "~icons/mdi/pencil";
     import MdiStar from "~icons/mdi/star";
 
     const { delegates, barTitle } = getSessionContext();
@@ -143,56 +144,67 @@
 <MetaTags title="Stats Screen · CouchMUN (Admin)" />
 
 <div class="flex flex-col gap-1">
-    <div class="flex items-center justify-end gap-2">
-        <Pagination
-            data={Array.from({ length: $nSessions })}
-            page={page + 1}
-            onPageChange={e => page = e.page - 1}
-            pageSize={1}
-            background=""
-            border=""
-            gap="gap-0.5"
-            buttonInactive="preset-ui-depressed"
-        >
-            {#snippet labelEllipsis()}<MdiDotsHorizontal />{/snippet}
-            {#snippet labelNext()}<MdiChevronRight />{/snippet}
-            {#snippet labelPrevious()}<MdiChevronLeft />{/snippet}
-        </Pagination>
-        <button
-            class={[
-                "btn-icon-std",
-                page == $nSessions ? "preset-filled" : "preset-ui-depressed hover:preset-filled"
-            ]}
-            title="All Sessions"
-            aria-label="All Sessions"
-            onclick={() => page = $nSessions}
-        >
-            <MdiStar />
-        </button>
-        <Popover
-            open={statsPopupOpen}
-            onOpenChange={e => statsPopupOpen = e.open}
-            positioning={{ placement: 'bottom' }}
-            triggerBase="preset-filled-warning-500"
-            triggerClasses="btn-icon-std"
-            triggerAriaLabel="Edit Stats"
-            contentBase={POPUP_CARD_CLASSES}
-            arrow
-            arrowBackground="bg-surface-50-950!"
-        >
-            {#snippet trigger()}
-                <MdiDatabaseExportOutline />
-            {/snippet}
-            {#snippet content()}
-                <div class="flex flex-col gap-2 overflow-hidden">
-                    <h4 class="h4">Export Statistics</h4>
-                    <button class="btn preset-filled-primary-500" onclick={exportAllStats}>Export All Sessions</button>
-                    {#if page < $nSessions}
-                        <button class="btn preset-filled-primary-500" onclick={exportStats}>Export Session {page + 1}</button>
-                    {/if}
-                </div>
-            {/snippet}
-        </Popover>
+    <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center">
+            <Pagination
+                data={Array.from({ length: $nSessions })}
+                page={page + 1}
+                onPageChange={e => page = e.page - 1}
+                pageSize={1}
+                background=""
+                border=""
+                gap="gap-0.5"
+                buttonInactive="preset-ui-depressed"
+            >
+                {#snippet labelEllipsis()}<MdiDotsHorizontal />{/snippet}
+                {#snippet labelNext()}<MdiChevronRight />{/snippet}
+                {#snippet labelPrevious()}<MdiChevronLeft />{/snippet}
+            </Pagination>
+            <button
+                class={[
+                    "btn-icon-std",
+                    page == $nSessions ? "preset-filled" : "preset-ui-depressed hover:preset-filled"
+                ]}
+                title="All Sessions"
+                aria-label="All Sessions"
+                onclick={() => page = $nSessions}
+            >
+                <MdiStar />
+            </button>
+        </div>
+        <div class="flex items-center gap-1">
+            <button
+                class="btn-icon-std preset-filled"
+                title="Manually Add Stat"
+                aria-label="Manually Add Stat"
+            >
+                <MdiPencil />
+            </button>
+            <Popover
+                open={statsPopupOpen}
+                onOpenChange={e => statsPopupOpen = e.open}
+                positioning={{ placement: 'bottom' }}
+                triggerBase="preset-filled-warning-500"
+                triggerClasses="btn-icon-std"
+                triggerAriaLabel="Edit Stats"
+                contentBase={POPUP_CARD_CLASSES}
+                arrow
+                arrowBackground="bg-surface-50-950!"
+            >
+                {#snippet trigger()}
+                    <MdiDatabaseExportOutline />
+                {/snippet}
+                {#snippet content()}
+                    <div class="flex flex-col gap-2 overflow-hidden">
+                        <h4 class="h4">Export Statistics</h4>
+                        <button class="btn preset-filled-primary-500" onclick={exportAllStats}>Export All Sessions</button>
+                        {#if page < $nSessions}
+                            <button class="btn preset-filled-primary-500" onclick={exportStats}>Export Session {page + 1}</button>
+                        {/if}
+                    </div>
+                {/snippet}
+            </Popover>
+        </div>
     </div>
     <div class="table-wrap rounded border border-surface-200-800">
         <table class="table">
