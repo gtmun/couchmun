@@ -13,8 +13,7 @@
  * ```svelte
  * <script lang="ts">
  *   // (1)
- *   let dndItems = $state($state.snapshot(originalItems));
- *   $effect(() => { dndItems = originalItems });
+ *   let dndItems = $derived(originalItems);
  * 
  *   // ...
  * </script>

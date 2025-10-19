@@ -123,7 +123,7 @@
                     {#snippet content()}
                         <SettingsNavigation
                             close={() => openDrawer = null}
-                            bind:showBackdrop={settingsBackdrop}
+                            onAccordionOpenChange={open => settingsBackdrop = !open}
                         />
                     {/snippet}
                 </Modal>

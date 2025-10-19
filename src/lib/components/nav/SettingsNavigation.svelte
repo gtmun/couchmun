@@ -31,12 +31,16 @@
         close: () => void;
 
         /**
-         * A bindable designating whether the backdrop for the modal
-         * should be shown.
+         * A callable which triggers when switching from
+         * "all accordions are closed" to "any accordion is open"
+         * (and vice versa).
+         * 
+         * The input is true if any accordion is open
+         * and false if all are closed.
          */
-        showBackdrop: boolean;
+        onAccordionOpenChange?: (e: boolean) => void
     }
-    let { close, showBackdrop = $bindable() }: Props = $props();
+    let { close, onAccordionOpenChange = undefined }: Props = $props();
 
     const prevSessions = queryStore(() => db.prevSessions.toCollection().keys(), []);
     const selectedSession = queryStore(() => db.getSessionValue("sessionKey"));
@@ -55,10 +59,15 @@
         goto(resolve("/dashboard/roll-call"));
     }
 
-    // Hide backdrop when accordions are all closed.
-    $effect(() => {
-        showBackdrop = accordion.length == 0;
-    });
+    function accordionChange(newAcc: string[]) {
+        let oldStatus = accordion.length != 0;
+        let newStatus = newAcc.length != 0;
+        accordion = newAcc;
+
+        if (oldStatus != newStatus) {
+            onAccordionOpenChange?.(newStatus);
+        }
+    }
 </script>
 
 <!-- External link to admin pages -->
@@ -92,7 +101,7 @@
     <div class="flex justify-between">
         Color Scheme <LightSwitch bind:colorScheme={theme.colorScheme} />
     </div>
-    <Accordion value={accordion} multiple onValueChange={e => accordion = e.value}>
+    <Accordion value={accordion} multiple onValueChange={e => accordionChange(e.value)}>
         <Accordion.Item value="primary" classes="text-primary-500">
             {#snippet lead()}<MdiStarOutline />{/snippet}
             {#snippet control()}Primary{/snippet}
