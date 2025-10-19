@@ -3,6 +3,7 @@
  */
 
 import type { Readable, Writable } from "svelte/store";
+import type { Delegate } from "$lib/db/delegates";
 
 /**
  * ID of a delegate
