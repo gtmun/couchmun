@@ -3,8 +3,8 @@
     to create or edit a motion.
 -->
 <script lang="ts">
-    import DelCombobox from "$lib/components/DelCombobox.svelte";
-    import LabeledSwitch from "$lib/components/LabeledSwitch.svelte";
+    import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
+    import LabeledSwitch from "$lib/components/controls/LabeledSwitch.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { createMotionSchema, inputifyMotion, MOTION_FIELDS, MOTION_LABELS } from "$lib/motions/definitions";
     import { formatValidationError } from "$lib/motions/form_validation";

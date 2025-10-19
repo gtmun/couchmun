@@ -3,6 +3,8 @@
 -->
 <script lang="ts">
     import MetaTags from "$lib/components/MetaTags.svelte";
+    import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
+    import InputPlusMinus from "$lib/components/controls/InputPlusMinus.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db, queryStore, SessionDatabase } from "$lib/db/index.svelte";
@@ -23,8 +25,6 @@
     import MdiPlus from "~icons/mdi/plus";
     import MdiStar from "~icons/mdi/star";
     import MdiRhombusMediumOutline from "~icons/mdi/rhombus-medium-outline";
-    import DelCombobox from "$lib/components/DelCombobox.svelte";
-    import InputPlusMinus from "$lib/components/InputPlusMinus.svelte";
 
     const { delegates, barTitle } = getSessionContext();
     // Pagination

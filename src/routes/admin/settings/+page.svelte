@@ -2,8 +2,8 @@
   @component The admin settings page (used for configuring settings).
 -->
 <script lang="ts">
-    import LabeledSwitch from "$lib/components/LabeledSwitch.svelte";
     import MetaTags from "$lib/components/MetaTags.svelte";
+    import LabeledSwitch from "$lib/components/controls/LabeledSwitch.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import ConfirmModalCard from "$lib/components/modals/ConfirmModalCard.svelte";
     import EditDelegateCard from "$lib/components/modals/EditDelegateCard.svelte";
