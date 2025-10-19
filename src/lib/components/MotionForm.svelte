@@ -14,7 +14,7 @@
     import { formatValidationError } from "$lib/motions/form_validation";
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
     import type { Motion } from "$lib/types";
-    import { lazyslide } from "$lib/util";
+    import { hasKey, lazyslide } from "$lib/util";
     import { parseTime, sanitizeTime, stringifyTime } from "$lib/util/time";
     import MdiFractionOneHalf from "~icons/mdi/fraction-one-half";
     import MdiPlus from "~icons/mdi/plus";
@@ -83,7 +83,7 @@
                 delete inputMotion[key];
             }
         }
-        if ($selectedMotion?.kind !== inputMotion.kind && "isExtension" in inputMotion) {
+        if ($selectedMotion?.kind !== inputMotion.kind && hasKey(inputMotion, "isExtension")) {
             delete inputMotion["isExtension"];
         }
 
@@ -105,15 +105,15 @@
      */
     function handleBlurTime<A extends string>(attr: A) {
         showTimeGuide = undefined;
-        if (attr in inputMotion) {
-            (inputMotion as any)[attr] = sanitizeTime((inputMotion as any)[attr]);
+        if (hasKey(inputMotion, attr)) {
+            inputMotion[attr] = sanitizeTime(inputMotion[attr] as string) as any;
         }
     }
     /**
      * Sets total time input to half of the previous motion.
      */
     function setTotalTimeToHalf() {
-        if (hasField(inputMotion, ["totalTime"]) && $selectedMotion && "totalTime" in $selectedMotion) {
+        if (hasField(inputMotion, ["totalTime"]) && $selectedMotion && hasKey($selectedMotion, "totalTime")) {
             inputMotion.totalTime = stringifyTime($selectedMotion.totalTime / 2);
         }
     }
@@ -140,8 +140,8 @@
         if (isExtending(inputMotion)) {
             let inputified = inputifyMotion($selectedMotion!);
             
-            if ("topic" in inputified) (inputMotion as any).topic = inputified.topic;
-            if ("speakingTime" in inputified) (inputMotion as any).speakingTime = inputified.speakingTime;
+            if (hasKey(inputified, "topic")) (inputMotion as any).topic = inputified.topic;
+            if (hasKey(inputified, "speakingTime")) (inputMotion as any).speakingTime = inputified.speakingTime;
         }
     });
 </script>
@@ -196,7 +196,7 @@
             class={["select", inputError?.path.includes("kind") && "preset-input-error"]}
             bind:value={inputMotion.kind}
             >
-            {#each allowedMotions as [value, label]}
+            {#each allowedMotions as [value, label] (value)}
                 <option {value} {label}></option>
             {/each}
         </select>
@@ -254,6 +254,8 @@
                 {/if}
             </span>
             <div class="flex gap-1 items-center">
+                <!-- Items are const and won't change, so key not necessary -->
+                <!-- eslint-disable-next-line svelte/require-each-key -->
                 {#each speakingTimeButtons as btn}
                     <button
                         type="button"

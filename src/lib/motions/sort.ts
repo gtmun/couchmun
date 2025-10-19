@@ -9,7 +9,7 @@
  */
 
 import type { Motion, SortKind, SortOrder, SortOrderProperty } from "$lib/types";
-import { compare, type Comparator } from "$lib/util";
+import { compare, hasKey, type Comparator } from "$lib/util";
 
 export const SORT_KIND_NAMES: Record<SortKind, string> = {
     mod: "Moderated Caucus",
@@ -26,7 +26,7 @@ export const SORT_PROPERTY_NAMES: Record<SortOrderProperty, string> = {
     nSpeakers: "number of speakers"
 };
 
-type AllKeys<O> = O extends {} ? keyof O : never;
+type AllKeys<O> = O extends object ? keyof O : never;
 const SORT_PROPERTY_REQUIRES = {
     totalTime:    ["totalTime"],
     speakingTime: ["speakingTime"],
@@ -36,7 +36,7 @@ const SORT_PROPERTY_REQUIRES = {
 } as const satisfies Record<SortOrderProperty, readonly AllKeys<Motion>[]>;
 
 function getSortKind(m: Motion): SortKind | undefined {
-    if ("isExtension" in m && m.isExtension) return "ext";
+    if (hasKey(m, "isExtension") && m.isExtension) return "ext";
     return m.kind;
 }
 function getSortIndex(m: Motion, priority: SortOrder): number {
@@ -47,8 +47,8 @@ function getSortIndex(m: Motion, priority: SortOrder): number {
     return index >= 0 ? index : priority.length;
 }
 
-function hasSortProperty<P extends SortOrderProperty>(m: {}, key: P): m is Record<typeof SORT_PROPERTY_REQUIRES[P][number], unknown> {
-    return SORT_PROPERTY_REQUIRES[key].every(f => f in m);
+function hasSortProperty<P extends SortOrderProperty>(m: object, key: P): m is Record<typeof SORT_PROPERTY_REQUIRES[P][number], unknown> {
+    return SORT_PROPERTY_REQUIRES[key].every(f => hasKey(m, f));
 }
 function getSortProperty(m: Motion, key: SortOrderProperty): unknown {
     if (key === "delegate") {
@@ -94,7 +94,8 @@ export function compareMotions(priority: SortOrder): Comparator<Motion> {
         const ai = getSortIndex(a, priority);
         const bi = getSortIndex(b, priority);
 
-        if (k = compare(ai, bi)) return k;
+        k = compare(ai, bi);
+        if (k) return k;
         
         // Run through the order until we find a difference:
         const order = priority[ai ?? bi]?.order;
@@ -103,7 +104,8 @@ export function compareMotions(priority: SortOrder): Comparator<Motion> {
                 const av = getSortProperty(a, property);
                 const bv = getSortProperty(b, property);
     
-                if (k = compare(av, bv, !ascending)) return k;
+                k = compare(av, bv, !ascending);
+                if (k) return k;
             }
         }
 

@@ -45,13 +45,6 @@
         totalTimer.offsetDuration(-delTimer.secsRemaining());
     }
 
-    function addFirst() {
-        speakersList?.addSpeaker(motion.delegate);
-    }
-    function addLast() {
-        speakersList?.addSpeaker(motion.delegate);
-    }
-
     $effect(() => {
         if (timerPanel?.getRunState(0)) {
             let secs = timerPanel.secsRemaining(0);
@@ -107,8 +100,8 @@
                     >
                         <DelLabel attrs={findDelegate($delegates, motion.delegate)} inline />
                         <div>
-                            <button class="btn preset-filled-primary-500" onclick={e => speakersList?.addSpeakerFirst(motion.delegate)}>First</button>
-                            <button class="btn preset-filled-primary-500" onclick={e => speakersList?.addSpeakerLast(motion.delegate)}>Last</button>
+                            <button class="btn preset-filled-primary-500" onclick={() => speakersList?.addSpeakerFirst(motion.delegate)}>First</button>
+                            <button class="btn preset-filled-primary-500" onclick={() => speakersList?.addSpeakerLast(motion.delegate)}>Last</button>
                         </div>
                     </div>
                 {/if}

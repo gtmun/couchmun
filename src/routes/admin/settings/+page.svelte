@@ -218,7 +218,7 @@
     <div class="panel">
         <h3 class="h3 text-center">Preferences</h3>
         <div class="flex flex-col gap-3">
-            {#each PREFERENCES_LABELS as { key, label }}
+            {#each PREFERENCES_LABELS as { key, label } (key)}
                 <LabeledSwitch 
                     name="prefs-{key}"
                     bind:checked={
@@ -245,9 +245,13 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <!-- No key exists -->
+                        <!-- eslint-disable-next-line svelte/require-each-key -->
                         {#each $settings.sortOrder as entry, ei}
                         <tr>
                             <td>
+                                <!-- No key exists -->
+                                <!-- eslint-disable-next-line svelte/require-each-key -->
                                 {#each entry.kind as k, ki}
                                     <div class="flex items-center">
                                         <button 
@@ -269,6 +273,8 @@
                             </td>
                             <td>
                                 <div class="flex gap-3 items-center">
+                                    <!-- No key exists -->
+                                    <!-- eslint-disable-next-line svelte/require-each-key -->
                                     {#each entry.order as key, oi}
                                     <div class="card-filled p-1 flex items-center">
                                         <span>{SORT_PROPERTY_NAMES[key.property]}</span>
@@ -300,10 +306,10 @@
             <h3 class="h3 text-center">Delegates</h3>
             <label class="flex gap-3 justify-center items-center">
                 <span>Apply Preset</span>
-                <select class="select w-1/2" bind:value={inputPreset} onchange={e => setPreset()}>
+                <select class="select w-1/2" bind:value={inputPreset} onchange={() => setPreset()}>
                     <option disabled selected value>-- Select preset --</option>
-                    {#each Object.entries(PRESETS) as [value, preset]}
-                    <option {value} label={preset.label}></option>
+                    {#each Object.entries(PRESETS) as [value, preset] (value)}
+                        <option {value} label={preset.label}></option>
                     {/each}
                 </select>
             </label>

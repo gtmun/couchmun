@@ -2,6 +2,8 @@
  * Flag URLs via FlagCDN.
  */
 
+import { hasKey } from "$lib/util";
+
 let FLAG_CODES: Record<string, string> = {};
 export async function getFlagCodes(): Promise<typeof FLAG_CODES> {
     if (Object.keys(FLAG_CODES).length > 0) return FLAG_CODES;
@@ -9,7 +11,7 @@ export async function getFlagCodes(): Promise<typeof FLAG_CODES> {
     return FLAG_CODES = (
         await fetch("https://flagcdn.com/en/codes.json")
         .then(r => r.json())
-        .catch(e => {})
+        .catch(() => {})
     );
 }
 
@@ -23,7 +25,7 @@ export async function getFlagCodes(): Promise<typeof FLAG_CODES> {
  * @returns the URL, if it exists
  */
 export function getFlagUrl(key: string, validate: boolean = true): URL | undefined {
-    if (!validate || key.toLowerCase() in FLAG_CODES) {
+    if (!validate || hasKey(FLAG_CODES, key.toLowerCase())) {
         return new URL(key.toLowerCase() + ".svg", "https://flagcdn.com/");
     }
 }

@@ -60,6 +60,6 @@
             }
         }
     </script>
-    <!-- HACK: Adding styles programmatically and without FOUC -->
+    <!-- HACK: Adding styles programmatically and without FOUC. -->
     {@html `<style>${genStyles(theme.primaryShade, theme.surfaceShade)}</style>`}
 </svelte:head>

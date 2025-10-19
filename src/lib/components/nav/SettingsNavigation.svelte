@@ -169,7 +169,7 @@
 <div class="p-2 flex flex-col gap-3">
     <div class="grid grid-cols-1 gap-1">
         <!-- All sessions -->
-        {#each $prevSessions as sessionKey}
+        {#each $prevSessions as sessionKey (sessionKey)}
             {@render sessionRow(+sessionKey)}
         {/each}
         {#if typeof $selectedSession === "undefined"}

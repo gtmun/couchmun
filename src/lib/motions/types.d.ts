@@ -6,7 +6,7 @@ type Formify<T> = T extends number ? string : T;
 //    extends across unions,
 //    stringifies any non-string parameters, and
 //    allows for required values.
-type Form<O extends {}, Require extends keyof O = never> = O extends {} 
+type Form<O extends object, Require extends keyof O = never> = O extends object
 ? 
     {[P in keyof O]?: Formify<O[P]> } &
     {[P in Require]:  Formify<O[P]> }

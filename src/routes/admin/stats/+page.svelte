@@ -12,7 +12,7 @@
     import { Delegate, findDelegate } from "$lib/db/delegates";
     import { db, queryStore, SessionDatabase } from "$lib/db/index.svelte";
     import type { DelegateID, DelSessionData, StatsData } from "$lib/types";
-    import { compare, downloadFile, lazyslide } from "$lib/util";
+    import { compare, downloadFile, hasKey, lazyslide } from "$lib/util";
     import { POPUP_CARD_CLASSES } from "$lib/util/popup";
     import { parseTime, sanitizeTime, stringifyTime } from "$lib/util/time";
     import MdiArrowUp from "~icons/mdi/arrow-up";
@@ -51,6 +51,9 @@
 
         if (page === $nSessions) {
             // All sessions
+
+            // Not a map that will be exposed.
+            // eslint-disable-next-line svelte/prefer-svelte-reactivity
             let delStats = new Map<DelegateID, DelSessionData>();
             for (let del of $delegates) {
                 delStats.set(del.id, del.getSessionData());
@@ -100,7 +103,7 @@
         return entry.stats[key];
     }
     function isSortKey(k: string): k is SortKey {
-        return k in COLUMNS;
+        return hasKey(COLUMNS, k);
     }
     function setSort(item: string) {
         if (!isSortKey(item)) return;
@@ -280,6 +283,8 @@
                                         </span> -->
                                     {/if}
                                     <div class="flex gap-1">
+                                        <!-- durationButtons is const, so this will not update -->
+                                        <!-- eslint-disable-next-line svelte/require-each-key -->
                                         {#each durationButtons as item}
                                             {#if item.type === "sep"}
                                                 <span><MdiRhombusMediumOutline /></span>
@@ -358,7 +363,7 @@
         <table class="table">
             <thead class="preset-ui">
                 <tr>
-                    {#each Object.entries(COLUMNS) as [key, col]}
+                    {#each Object.entries(COLUMNS) as [key, col] (key)}
                     <th>
                         <button onclick={() => setSort(key)}>
                             {#if sortOrder.item === key}

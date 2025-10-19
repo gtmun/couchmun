@@ -109,6 +109,7 @@
     let DURATION_MS = $derived(duration * 1000);
     // reset timer on duration update:
     $effect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         duration;
         untrack(reset);
     });

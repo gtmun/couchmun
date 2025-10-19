@@ -9,19 +9,20 @@
     import RoundRobin from "$lib/components/motions/page/RoundRobin.svelte";
     import UnmodCaucus from "$lib/components/motions/page/UnmodCaucus.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
+    import { hasKey } from "$lib/util";
 
     const sessionData = getSessionContext();
     const { selectedMotion, selectedMotionState } = sessionData;
 
     $effect(() => {
-        if ($selectedMotion != null && "topic" in $selectedMotion) {
+        if ($selectedMotion != null && hasKey($selectedMotion, "topic")) {
             sessionData.barTopic = `Topic: ${$selectedMotion.topic}`;
         }
     })
 </script>
 
 <div class="h-full w-full flex flex-col items-stretch justify-center">
-    {#if $selectedMotion && "kind" in $selectedMotion}
+    {#if $selectedMotion && hasKey($selectedMotion, "kind")}
         {#if $selectedMotion.kind === "mod"}
             <ModCaucus motion={$selectedMotion} bind:order={$selectedMotionState.speakersList} />
         {:else if $selectedMotion.kind === "unmod"}

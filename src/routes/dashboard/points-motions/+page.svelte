@@ -23,6 +23,7 @@
   import { MOTION_LABELS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import type { Motion } from "$lib/types";
+  import { hasKey } from "$lib/util";
   import { createDragTr, isDndShadow } from "$lib/util/dnd";
   import { stringifyTime } from "$lib/util/time";
   import MdiAccountClock from "~icons/mdi/account-clock";
@@ -65,20 +66,22 @@
    * @param cb the callback to produce a value (if the motion has the required fields)
    * @param dflt the default value (if the motion does not have the required fields)
    */
-  function apply<M extends {}, F extends string, R>(
+  function apply<M extends object, F extends string, R>(
     m: M, 
     fields: F[], 
     cb: (m: WithFields<M, F>) => R | undefined, 
     dflt: R
   ): R {
-    if (fields.every(f => f in m)) return cb(m as any) ?? dflt;
+    if (fields.every(f => hasKey(m, f))) {
+      return cb(m as any) ?? dflt;
+    }
     return dflt;
   }
 
 
   function motionName(m: Motion) {
     const kindLabel = MOTION_LABELS[m.kind] ?? "-";
-    const extension = "isExtension" in m && m.isExtension;
+    const extension = hasKey(m, "isExtension") && m.isExtension;
     
     return kindLabel + (extension ? ' (Extension)': '');
   }
@@ -219,9 +222,9 @@
                 <DelLabel attrs={delAttrs} fallbackName={delName} inline />
               </td>
               <td>{apply(motion, ["topic"], m => m.topic, "-")}</td>
-              <td>{'totalSpeakers' in motion ? stringifyTime(motion.totalSpeakers * motion.speakingTime) : apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
+              <td>{hasKey(motion, 'totalSpeakers') ? stringifyTime(motion.totalSpeakers * motion.speakingTime) : apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
               <td>{apply(motion, ["speakingTime"], m => stringifyTime(m.speakingTime), "-")}</td>
-              <td>{'totalSpeakers' in motion ? motion.totalSpeakers : apply(motion, ["totalTime", "speakingTime"], m => numSpeakersStr(m.totalTime, m.speakingTime), "-")}</td>
+              <td>{hasKey(motion, 'totalSpeakers') ? motion.totalSpeakers : apply(motion, ["totalTime", "speakingTime"], m => numSpeakersStr(m.totalTime, m.speakingTime), "-")}</td>
               <td>
                 <div class="flex flex-row justify-end">
                   <button

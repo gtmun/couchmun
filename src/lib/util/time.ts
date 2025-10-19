@@ -64,14 +64,12 @@ export function parseTime(timeStr: string): number | undefined {
  * @returns the time string, or undefined if negative or non-finite or non-integral
  */
 export function stringifyTime(secs: number, roundingMode: "floor" | "round" | "ceil" = "ceil"): string | undefined {
-    switch (roundingMode) {
-        case "floor":
-            secs = Math.floor(secs);
-        case "round":
-            secs = Math.round(secs);
-        case "ceil":
-        default:
-            secs = Math.ceil(secs);
+    if (roundingMode === "floor") {
+        secs = Math.floor(secs);
+    } else if (roundingMode === "round") {
+        secs = Math.round(secs);
+    } else {
+        secs = Math.ceil(secs);
     }
 
     if (secs < 0) return;

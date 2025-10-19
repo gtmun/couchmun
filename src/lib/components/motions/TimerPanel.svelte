@@ -241,6 +241,8 @@
         </div>
     {/key}
     <div class="flex flex-col gap-5">
+        <!-- HACK: Each timer depends on its index, so key isn't required -->
+        <!-- eslint-disable-next-line svelte/require-each-key -->
         {#each timers as _, i}
             <!-- 
                 This const is needed because the event handlers should 

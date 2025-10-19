@@ -44,7 +44,7 @@
                     onValueChange={e => db.updateDelegate(attrs.id, { presence: asPresence(e.value) })}
                     
                 >
-                    {#each radio as { presence, label, icon }}
+                    {#each radio as { presence, label, icon } (presence)}
                         <Segment.Item value={presence} classes="hover:preset-tonal">
                             <IconLabel {icon} {label} />
                         </Segment.Item>

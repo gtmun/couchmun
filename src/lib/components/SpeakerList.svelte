@@ -80,7 +80,7 @@
     // The UUID of the currently selected speaker object:
     let selectedSpeakerId = $state<SpeakerEntryID>();
     // A mapping from IDs to Speakers:
-    let orderMap = $derived(Object.fromEntries(
+    let orderMap = $derived(new Map(
         order.filter(s => typeof s.id === "string" && s.id)
             .map((speaker, i) => [speaker.id, { speaker, i }])
     ));
@@ -140,7 +140,7 @@
      */
     function findSpeaker(speakerId: SpeakerEntryID | undefined): Speaker | undefined {
         if (typeof speakerId === "undefined") return;
-        return orderMap[speakerId]?.speaker;
+        return orderMap.get(speakerId)?.speaker;
     }
     /**
      * Marks the speaker as completed (and activates any listeners bound to "onMarkComplete").
@@ -265,7 +265,7 @@
     // Scroll to speaker if it is out of view.
     $effect(() => {
         if (typeof selectedSpeakerId !== "undefined") {
-            if (!(selectedSpeakerId in orderMap)) {
+            if (!orderMap.has(selectedSpeakerId)) {
                 setSelectedSpeaker(undefined);
             } else {
                 jumpToSpeaker(selectedSpeakerId);
