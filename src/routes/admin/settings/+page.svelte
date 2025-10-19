@@ -76,11 +76,9 @@
         downloadFile("couchmun-config.json", JSON.stringify(exportSettings), "application/json");
     }
     async function resetAllSettings() {
-        // Reset preset state cause it's not bound to settings
-        currentPreset = DEFAULT_PRESET_KEY;
         // Reset settings
         await db.resetSettings();
-        await setPreset();
+        await setPreset(DEFAULT_PRESET_KEY);
 
         // Remove session data + previous sessions.
         await db.resetSessionData();
@@ -112,9 +110,12 @@
         });
     }
     // DELEGATES
-    let currentPreset: keyof typeof PRESETS = $state(DEFAULT_PRESET_KEY);
-    async function setPreset() {
-        const preset = await getPreset(currentPreset);
+    let inputPreset = $state("");
+    async function setPreset(presetKey?: keyof typeof PRESETS) {
+        presetKey ??= inputPreset as keyof typeof PRESETS;
+        inputPreset = "";
+        
+        const preset = await getPreset(presetKey);
         if (typeof preset !== "undefined") {
             let entries = _legacyFixDelFlag(preset);
             await db.transaction("rw", db.delegates, async () => {
@@ -130,7 +131,6 @@
     }
 
     async function clearDelegates() {
-        currentPreset = "custom";
         await db.delegates.clear();
     }
     /**
@@ -144,7 +144,6 @@
         let newAttrs = data.attrs;
         db.transaction("rw", db.delegates, async () => {
             // TODO: reject update if name conflict
-            currentPreset = "custom";
             if (typeof id === "number") {
                 await db.delegates.update(id, newAttrs);
             } else {
@@ -163,7 +162,6 @@
     }
 
     async function deleteDelegate(id: number) {
-        currentPreset = "custom";
         await db.transaction("rw", db.delegates, async () => {
             let del = await db.delegates.get(id);
             await db.delegates.delete(id);
@@ -302,7 +300,8 @@
             <h3 class="h3 text-center">Delegates</h3>
             <label class="flex gap-3 justify-center items-center">
                 <span>Apply Preset</span>
-                <select class="select w-1/2" bind:value={currentPreset} onchange={setPreset}>
+                <select class="select w-1/2" bind:value={inputPreset} onchange={e => setPreset()}>
+                    <option disabled selected value>-- Select preset --</option>
                     {#each Object.entries(PRESETS) as [value, preset]}
                     <option {value} label={preset.label}></option>
                     {/each}
