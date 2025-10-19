@@ -2,7 +2,8 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ['main']
+    branches: ['main', 'dev']
+  workflow_dispatch:
 
 jobs:
   # Builds production site and creates 'build-prod' artifact
