@@ -29,13 +29,6 @@
     let showFlag = $state<boolean>(false);
 
     const attrs = $derived($delegates.find(d => d.nameEquals(labelText)));
-    $effect(() => {
-        if (timer && running) {
-            sessionData.tabTitleExtras = timer.secsRemainingString();
-        } else {
-            sessionData.tabTitleExtras = undefined;
-        }
-    });
 </script>
 
 <div class="flex flex-col h-full items-stretch">
@@ -96,8 +89,13 @@
         <div class="flex flex-col gap-5">
             <Timer
                 bind:duration
-                bind:running
+                {running}
                 bind:this={timer}
+                onRunningChange={r => {
+                    running = r;
+                    sessionData.updateTabTitleExtras(r, timer?.secsRemaining());
+                }}
+                onTimeChange={msElapsed => sessionData.updateTabTitleExtras(running, msElapsed / 1000)}
                 editable
             />
     

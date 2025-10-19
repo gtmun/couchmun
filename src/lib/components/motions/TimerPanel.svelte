@@ -253,15 +253,17 @@
             {@const last = i == timers.length - 1}
             <Timer
                 bind:duration={() => getDuration(i), d => setDuration(i, d)}
-                bind:running={() => getRunState(i), s => setRunState(i, s)}
+                running={getRunState(i)}
                 bind:this={timers[i]}
                 hidePlay={timerInteraction === "sync"}
                 disablePlay={!isTimerPlayable(i)}
                 useKeyHandlers={last}
-                onPause={
-                    last ? t => db.updateDelegate(selectedSpeaker?.key, d => { d.stats.durationSpoken += t; })
-                         : undefined
-                }
+                onRunningChange={(running, t) => {
+                    setRunState(i, running);
+                    if (last && !running) {
+                        db.updateDelegate(selectedSpeaker?.key, d => { d.stats.durationSpoken += t; })
+                    }
+                }}
                 {editable}
             />
         {/each}

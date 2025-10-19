@@ -311,6 +311,13 @@ export type SessionContext = {
      * Extra information to include in the tab title (usually a timer)
      */
     tabTitleExtras: string | undefined,
+
+    /**
+     * Update the tab title extras field with the current time (assuming a timer is running).
+     * @param running The current running status
+     * @param secsRemaining The seconds remaining
+     */
+    updateTabTitleExtras(running: boolean, secsRemaining?: number): void
 };
 
 export type ClockMessage = 

@@ -15,21 +15,18 @@
     const sessionData = getSessionContext();
     let timer: Timer | undefined = $state();
     let running: boolean = $state(false);
-
-    $effect(() => {
-        if (timer && running) {
-            sessionData.tabTitleExtras = timer.secsRemainingString();
-        } else {
-            sessionData.tabTitleExtras = undefined;
-        }
-    });
 </script>
 
 <div class="flex flex-col gap-5">
     <Timer
         duration={motion.totalTime}
         bind:this={timer}
-        bind:running
+        {running}
+        onRunningChange={r => {
+            running = r;
+            sessionData.updateTabTitleExtras(r, timer?.secsRemaining());
+        }}
+        onTimeChange={msElapsed => sessionData.updateTabTitleExtras(running, msElapsed / 1000)}
     />
     <div class="flex flex-row gap-3 justify-center">
         <button class="btn preset-filled-primary-500" onclick={() => running = !running}>
