@@ -1,3 +1,10 @@
+<!-- 
+  @component An input with decrement/input buttons.
+  
+  This replaces a standard `<input type="number">`.
+-->
+
+
 <script lang="ts">
     import MdiMinus from "~icons/mdi/minus";
     import MdiPlus from "~icons/mdi/plus";
