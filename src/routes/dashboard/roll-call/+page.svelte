@@ -3,16 +3,17 @@
     which consists of a long list of delegates and an option to select NP/P/PV.
 -->
 <script lang="ts">
+    import { Segment } from "@skeletonlabs/skeleton-svelte";
+
     import { resolve } from "$app/paths";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import IconLabel from "$lib/components/IconLabel.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
-    import { Segment } from "@skeletonlabs/skeleton-svelte";
-    import MdiAccountOff from "~icons/mdi/account-off";
+    import type { DelegatePresence } from "$lib/types";
     import MdiAccount from "~icons/mdi/account";
     import MdiAccountCheck from "~icons/mdi/account-check";
-    import type { DelegatePresence } from "$lib/types";
+    import MdiAccountOff from "~icons/mdi/account-off";
 
     const { delegates } = getSessionContext();
 

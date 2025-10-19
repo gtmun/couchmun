@@ -2,9 +2,9 @@
  * Miscellaneous helper functions.
  */
 
+import type { Component } from "svelte";
 import { cubicOut } from "svelte/easing";
 import type { SlideParams, TransitionConfig } from "svelte/transition";
-import type { Component } from "svelte";
 
 export type Comparator<K> = (a: K, b: K) => number;
 

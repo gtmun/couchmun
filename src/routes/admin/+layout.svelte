@@ -4,11 +4,11 @@
   This basically initializes the admin app bar (the yellow bar on the top).
 -->
 <script lang="ts">
+    import { AppBar } from '@skeletonlabs/skeleton-svelte';
+
     import { resolve } from "$app/paths";
     import BarHeader from '$lib/components/app-bar/BarHeader.svelte';
     import { db } from '$lib/db/index.svelte';
-    
-    import { AppBar } from '@skeletonlabs/skeleton-svelte';
     import MdiChevronLeft from "~icons/mdi/chevron-left";
 
     let { children } = $props();

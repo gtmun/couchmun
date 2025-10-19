@@ -5,8 +5,8 @@
     - A speakers list that is automatically populated with all delegates
 -->
 <script lang="ts">
-    import SpeakerList from "$lib/components/SpeakerList.svelte";
     import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
+    import SpeakerList from "$lib/components/SpeakerList.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import type { Motion, Speaker } from "$lib/types";

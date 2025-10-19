@@ -17,9 +17,10 @@
  *     This typically does not need to be done since it's done once in `./routes/+layout.svelte`.
  */
 
+import { getContext, hasContext, setContext } from "svelte";
+
 import { db, DEFAULT_SESSION_DATA, DEFAULT_SETTINGS } from "$lib/db/index.svelte";
 import type { SessionContext } from "$lib/types";
-import { getContext, hasContext, setContext } from "svelte";
 
 const CONTEXT_KEY = "session";
 

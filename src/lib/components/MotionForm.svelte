@@ -3,22 +3,21 @@
     to create or edit a motion.
 -->
 <script lang="ts">
+    import { type Snippet } from 'svelte';
+    import { fade } from "svelte/transition";
+    import type { z } from "zod";
+
     import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
     import LabeledSwitch from "$lib/components/controls/LabeledSwitch.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { createMotionSchema, inputifyMotion, MOTION_FIELDS, MOTION_LABELS } from "$lib/motions/definitions";
     import { formatValidationError } from "$lib/motions/form_validation";
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
-    import { parseTime, sanitizeTime, stringifyTime } from "$lib/util/time";
     import type { Motion } from "$lib/types";
-
-    import type { z } from "zod";
-    import { type Snippet } from 'svelte';
-
-    import MdiPlus from "~icons/mdi/plus";
-    import MdiFractionOneHalf from "~icons/mdi/fraction-one-half";
-    import { fade } from "svelte/transition";
     import { lazyslide } from "$lib/util";
+    import { parseTime, sanitizeTime, stringifyTime } from "$lib/util/time";
+    import MdiFractionOneHalf from "~icons/mdi/fraction-one-half";
+    import MdiPlus from "~icons/mdi/plus";
 
     const { selectedMotion, delegates, preferences } = getSessionContext();
     const motionSchema = $derived(createMotionSchema($delegates));

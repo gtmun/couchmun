@@ -77,19 +77,19 @@ export function createDragTr(el?: HTMLElement, origTable?: HTMLTableElement) {
     if (!origTable) return;
 
     // Copies <tr>
-    let tr = document.createElement(el.tagName);
+    const tr = document.createElement(el.tagName);
     tr.replaceChildren(...Array.from(el.children, c => c.cloneNode(true)));
 
     // Copies <thead>, <tbody>, <table>
-    let thead = origTable.querySelector("thead")!.cloneNode(true) as HTMLTableSectionElement;
+    const thead = origTable.querySelector("thead")!.cloneNode(true) as HTMLTableSectionElement;
     thead.id = "";
     thead.classList.add("collapse!");
 
-    let tbody = origTable.querySelector("tbody")!.cloneNode() as HTMLTableSectionElement;
+    const tbody = origTable.querySelector("tbody")!.cloneNode() as HTMLTableSectionElement;
     tbody.id = "";
     tbody.replaceChildren(tr);
 
-    let table = origTable.cloneNode() as HTMLTableElement;
+    const table = origTable.cloneNode() as HTMLTableElement;
     table.id = "";
     table.replaceChildren(thead, tbody);
 

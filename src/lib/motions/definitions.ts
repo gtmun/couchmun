@@ -5,13 +5,14 @@
  * (other files in `$lib/motions` should only define infrastructure for using motions).
  */
 
-import type { Motion, MotionKind, SortOrder } from "$lib/types";
-import { nonEmptyString, presentDelegateSchema, refineSpeakingTime, timeSchema, topicSchema } from "$lib/motions/form_validation";
-import type { MotionInput } from "$lib/motions/types";
 import { z } from "zod";
-import { stringifyTime } from "$lib/util/time";
+
 import { type Delegate, findDelegate } from "$lib/db/delegates";
 import type { SessionDatabase } from "$lib/db/index.svelte";
+import { nonEmptyString, presentDelegateSchema, refineSpeakingTime, timeSchema, topicSchema } from "$lib/motions/form_validation";
+import type { MotionInput } from "$lib/motions/types";
+import type { Motion, MotionKind, SortOrder } from "$lib/types";
+import { stringifyTime } from "$lib/util/time";
 
 /**
  * The label/name given to each motion kind.

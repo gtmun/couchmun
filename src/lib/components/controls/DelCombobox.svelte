@@ -6,9 +6,10 @@
 -->
 
 <script lang="ts">
+    import { Combobox } from "@skeletonlabs/skeleton-svelte";
+
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import { findDelegate, type Delegate } from "$lib/db/delegates";
-    import { Combobox } from "@skeletonlabs/skeleton-svelte";
     import type { DelegateID } from "$lib/types";
 
     interface Props {

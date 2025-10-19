@@ -2,29 +2,29 @@
   @component The admin stats page (used for viewing delegate statistics).
 -->
 <script lang="ts">
-    import MetaTags from "$lib/components/MetaTags.svelte";
+    import { Progress, Pagination, Popover } from "@skeletonlabs/skeleton-svelte";
+
     import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
     import InputPlusMinus from "$lib/components/controls/InputPlusMinus.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
+    import MetaTags from "$lib/components/MetaTags.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
-    import { db, queryStore, SessionDatabase } from "$lib/db/index.svelte";
     import { Delegate, findDelegate } from "$lib/db/delegates";
+    import { db, queryStore, SessionDatabase } from "$lib/db/index.svelte";
     import type { DelegateID, DelSessionData, StatsData } from "$lib/types";
     import { compare, downloadFile, lazyslide } from "$lib/util";
     import { POPUP_CARD_CLASSES } from "$lib/util/popup";
     import { parseTime, sanitizeTime, stringifyTime } from "$lib/util/time";
-    
-    import { Progress, Pagination, Popover } from "@skeletonlabs/skeleton-svelte";
     import MdiArrowUp from "~icons/mdi/arrow-up";
+    import MdiChevronLeft from "~icons/mdi/chevron-left";
+    import MdiChevronRight from "~icons/mdi/chevron-right";
     import MdiDatabaseExportOutline from "~icons/mdi/database-export-outline";
     import MdiDotsHorizontal from "~icons/mdi/dots-horizontal";
-    import MdiChevronRight from "~icons/mdi/chevron-right";
-    import MdiChevronLeft from "~icons/mdi/chevron-left";
     import MdiMinus from "~icons/mdi/minus";
     import MdiPencil from "~icons/mdi/pencil";
     import MdiPlus from "~icons/mdi/plus";
-    import MdiStar from "~icons/mdi/star";
     import MdiRhombusMediumOutline from "~icons/mdi/rhombus-medium-outline";
+    import MdiStar from "~icons/mdi/star";
 
     const { delegates, barTitle } = getSessionContext();
     // Pagination

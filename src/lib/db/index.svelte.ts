@@ -5,14 +5,16 @@
  * This module uses Dexie to interact with the IndexedDB API.
  */
 
+import { Dexie, liveQuery, type EntityTable, type IndexableType, type InsertType } from "dexie";
+import { readonly, writable, type Readable, type Updater, type Writable } from "svelte/store";
+
 import { Delegate } from "./delegates";
 import { KeyValuePair, toKeyValueArray, toObject } from "./keyval";
+
 import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
 import { getFlagCodes, getFlagUrl } from "$lib/flags/flagcdn";
 import { DEFAULT_SORT_PRIORITY } from "$lib/motions/definitions";
 import type { DelegateAttrs, DelegateID, DelSessionData, PrevSessionData, SessionData, Settings } from "$lib/types";
-import { Dexie, liveQuery, type EntityTable, type IndexableType, type InsertType } from "dexie";
-import { readonly, writable, type Readable, type Updater, type Writable } from "svelte/store";
 
 /**
  * The class representing the session database.
@@ -187,10 +189,10 @@ export class SessionDatabase extends Dexie {
      */
     async saveSessionData() {
         return this.transaction("rw", [this.delegates, this.sessionData, this.prevSessions], async () => {
-            let sessionKey = await this.getSessionValue("sessionKey") ?? await this.prevSessions.count();
+            const sessionKey = await this.getSessionValue("sessionKey") ?? await this.prevSessions.count();
 
-            let sessionData = await this.sessionData.toArray();
-            let delegates = await this.delegates.toArray();
+            const sessionData = await this.sessionData.toArray();
+            const delegates = await this.delegates.toArray();
 
             await this.prevSessions.put({ key: sessionKey, val: {
                 common: Object.assign(toObject(sessionData) as SessionData, { sessionKey }),
@@ -204,9 +206,9 @@ export class SessionDatabase extends Dexie {
      */
     async loadSessionData(key: number) {
         return this.transaction("rw", [this.delegates, this.sessionData, this.prevSessions], async () => {
-            let entry = await this.prevSessions.get(key);
+            const entry = await this.prevSessions.get(key);
             if (entry) {
-                let { common, delegates } = entry.val;
+                const { common, delegates } = entry.val;
                 await this.saveSessionData();
                 
                 await this.delegates.bulkUpdate(
@@ -242,7 +244,7 @@ export const db = new SessionDatabase();
 
 getFlagCodes().then(() => {
     db.on("ready", async (tx) => {
-        let txdb = tx as typeof db;
+        const txdb = tx as typeof db;
         if (await txdb.delegates.count() == 0) {
             const dels = _legacyFixDelFlag(DEFAULT_DELEGATES);
             await txdb.addDelegates(dels);
@@ -299,7 +301,7 @@ export const DEFAULT_SETTINGS = {
  * @returns the new object which contains all database attributes for the delegate
  */
 function populateDelegate(attrs: DelegateAttrs, order: number): InsertType<Delegate, "id"> {
-    let { name, aliases, flagURL: mFlagURL } = attrs;
+    const { name, aliases, flagURL: mFlagURL } = attrs;
     return Object.assign({
         // HACK: allows enabled to exist
         name, aliases, order, enabled: (attrs as any).enabled ?? true, flagURL: mFlagURL ?? ""
@@ -318,12 +320,12 @@ export function _legacyFixDelFlag(flagKey: string, attrs: DelegateAttrs): Delega
 export function _legacyFixDelFlag(delegates: Record<string, DelegateAttrs>): DelegateAttrs[];
 export function _legacyFixDelFlag(flagKeyOrDelegates: string | Record<string, DelegateAttrs>, attrs?: DelegateAttrs): DelegateAttrs | DelegateAttrs[] {
     if (typeof flagKeyOrDelegates === "string" && typeof attrs === "object") {
-        let flagKey = flagKeyOrDelegates;
-        let { name, aliases, flagURL: mFlagURL } = attrs;
-        let flagURL = mFlagURL ?? getFlagUrl(flagKey)?.href ?? getFlagUrl("un")!.href;
+        const flagKey = flagKeyOrDelegates;
+        const { name, aliases, flagURL: mFlagURL } = attrs;
+        const flagURL = mFlagURL ?? getFlagUrl(flagKey)?.href ?? getFlagUrl("un")!.href;
         return { name, aliases, flagURL };
     } else if (typeof flagKeyOrDelegates === "object") {
-        let delegates = flagKeyOrDelegates;
+        const delegates = flagKeyOrDelegates;
         return Object.entries(delegates)
             .map(([k, attrs]) => _legacyFixDelFlag(k, attrs));
     } else {

@@ -13,7 +13,7 @@ type Palette = chroma.Color[];
  * @returns the palette
  */
 function fromTailwind(color: string): Palette {
-    let o = (colors as any)[color];
+    const o = (colors as any)[color];
     return SHADES.map(i => o[i]);
 }
 /**
@@ -22,7 +22,7 @@ function fromTailwind(color: string): Palette {
  * @returns a list of tuples, designating the shade value and its color
  */
 function getPalette(...scale: string[]): Palette {
-    let scl = chroma.scale(scale);
+    const scl = chroma.scale(scale);
 
     return SHADES.map(shade => scl(shade / 1000));
 }
@@ -69,7 +69,7 @@ function parsePalette(palId: string): Palette {
 
     if (palId.startsWith("tw:")) {
         if (palId.endsWith("-500")) {
-            let core = (colors as any)[palId.slice(3, -4)][500];
+            const core = (colors as any)[palId.slice(3, -4)][500];
             return parsePalette(core);
         } else {
             return fromTailwind(palId.slice(3));
@@ -84,8 +84,8 @@ function parsePalette(palId: string): Palette {
  * @returns a style rule for overriding the base theme styles.
  */
 export function genStyles(primary?: string, surface?: string) {
-    let surfacePal = parsePalette(surface ?? "#666666");
-    let primaryPal = primary && primary != "default-primary" ? parsePalette(primary) : undefined;
+    const surfacePal = parsePalette(surface ?? "#666666");
+    const primaryPal = primary && primary != "default-primary" ? parsePalette(primary) : undefined;
 
     return `html[data-theme='sofa'] {
         ${setPalette('surface', surfacePal)}

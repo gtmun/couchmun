@@ -2,9 +2,10 @@
  * Implements form validation for motions.
  */
 
+import { z } from "zod";
+
 import type { Delegate } from "$lib/db/delegates";
 import { parseTime } from "$lib/util/time";
-import { z } from "zod";
 
 export function nonEmptyString(label: string) {
     return z.string({
@@ -69,8 +70,8 @@ export function timeSchema(label: string) {
 }
 export function refineSpeakingTime(totalTimeAttr = "totalTime", speakingTimeAttr = "speakingTime") {
     return [(o: any) => {
-        let totalTime: number = o[totalTimeAttr];
-        let speakingTime: number = o[speakingTimeAttr];
+        const totalTime: number = o[totalTimeAttr];
+        const speakingTime: number = o[speakingTimeAttr];
         return totalTime % speakingTime == 0;
     }, {
         message: "Total time cannot be evenly divided among speakers",

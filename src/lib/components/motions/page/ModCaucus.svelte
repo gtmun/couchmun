@@ -5,11 +5,11 @@
     - An editable speakers list
 -->
 <script lang="ts">
+    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import { numSpeakersStr } from "$lib/components/MotionForm.svelte";
+    import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import type Timer from "$lib/components/Timer.svelte";
-    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { findDelegate } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";

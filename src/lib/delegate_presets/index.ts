@@ -5,8 +5,8 @@
  * is a frequently used roster, so it is provided for convenience!
  */
 
-import type { DelegateAttrs } from "$lib/types";
 import DEFAULT_DELEGATES_JSON from "$lib/delegate_presets/preset-un.json";
+import type { DelegateAttrs } from "$lib/types";
 
 type DelProperties = Record<string, DelegateAttrs>;
 /**

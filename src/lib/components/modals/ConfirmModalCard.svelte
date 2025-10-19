@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { Snippet } from "svelte";
+
     import ModalContent from "./ModalContent.svelte";
 
     interface Props {

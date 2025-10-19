@@ -2,21 +2,21 @@
   @component The admin settings page (used for configuring settings).
 -->
 <script lang="ts">
-    import MetaTags from "$lib/components/MetaTags.svelte";
+    import { FileUpload, Modal } from "@skeletonlabs/skeleton-svelte";
+
     import LabeledSwitch from "$lib/components/controls/LabeledSwitch.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
+    import MetaTags from "$lib/components/MetaTags.svelte";
     import ConfirmModalCard from "$lib/components/modals/ConfirmModalCard.svelte";
     import EditDelegateCard from "$lib/components/modals/EditDelegateCard.svelte";
     import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
+    import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
+    import { _legacyFixDelFlag, db, queryStore } from "$lib/db/index.svelte";
+    import { toKeyValueArray, toObject } from "$lib/db/keyval";
     import { DEFAULT_PRESET_KEY, getPreset, PRESETS } from "$lib/delegate_presets";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
     import type { DelegateAttrs, Settings } from "$lib/types";
     import { downloadFile } from "$lib/util";
-
-    import { FileUpload, Modal } from "@skeletonlabs/skeleton-svelte";
-    import { _legacyFixDelFlag, db, queryStore } from "$lib/db/index.svelte";
-    import { toKeyValueArray, toObject } from "$lib/db/keyval";
-    import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
     import MdiArrowDown from "~icons/mdi/arrow-down";
     import MdiCancel from "~icons/mdi/cancel";
     import MdiCircleSmall from "~icons/mdi/circle-small";

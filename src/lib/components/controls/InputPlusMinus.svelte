@@ -1,6 +1,6 @@
 <script lang="ts">
-    import MdiPlus from "~icons/mdi/plus";
     import MdiMinus from "~icons/mdi/minus";
+    import MdiPlus from "~icons/mdi/plus";
 
     interface Props {
         name: string,

@@ -6,6 +6,11 @@
   and rearrange speakers in the speakers list.
  -->
 <script lang="ts">
+    import { Modal } from "@skeletonlabs/skeleton-svelte";
+    import { tick, untrack, type Snippet } from "svelte";
+    import { flip } from "svelte/animate";
+    import { dragHandle, dragHandleZone } from "svelte-dnd-action";
+
     import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import ConfirmModalCard from "$lib/components/modals/ConfirmModalCard.svelte";
@@ -13,13 +18,10 @@
     import { type Delegate, findDelegate } from "$lib/db/delegates";
     import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
     import { isDndShadow } from "$lib/util/dnd";
-    import { tick, untrack, type Snippet } from "svelte";
-    import { flip } from "svelte/animate";
-    import { dragHandle, dragHandleZone } from "svelte-dnd-action";
     import MdiCancel from "~icons/mdi/cancel";
     import MdiDelete from "~icons/mdi/delete";
     import MdiDragVertical from "~icons/mdi/drag-vertical";
-    import { Modal } from "@skeletonlabs/skeleton-svelte";
+
     
     interface Props {
         /**

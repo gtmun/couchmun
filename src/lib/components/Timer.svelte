@@ -7,11 +7,12 @@
   The timer will automatically pause (setting `running` to false) when the full duration elapses.
 -->
 <script lang="ts">
+    import { Progress } from "@skeletonlabs/skeleton-svelte";
+    import { onDestroy, onMount, untrack } from "svelte";
+
     import { clamp, type PropsOf } from "$lib/util";
     import { makeEditable } from "$lib/util/action.svelte";
     import { parseTime, stringifyTime } from "$lib/util/time";
-    import { Progress } from "@skeletonlabs/skeleton-svelte";
-    import { onDestroy, onMount, untrack } from "svelte";
     import MdiPause from "~icons/mdi/pause";
     import MdiPlay from "~icons/mdi/play";
 

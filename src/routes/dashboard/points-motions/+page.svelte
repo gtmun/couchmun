@@ -5,25 +5,26 @@
   and a sortable motion table (which is used to view and rearrange and edit motions).
 -->
 <script lang="ts">
+  import { Modal } from "@skeletonlabs/skeleton-svelte";
+  import { flip } from "svelte/animate";
+  import { dndzone } from "svelte-dnd-action";
+
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
   import DelLabel from "$lib/components/del-label/DelLabel.svelte";
   import IconLabel from "$lib/components/IconLabel.svelte";
-  import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
+  import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
+  import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
   import { createSpeaker } from "$lib/components/SpeakerList.svelte";
   import { getSessionContext } from "$lib/context/index.svelte";
-  import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
-  import { db } from "$lib/db/index.svelte";
   import { findDelegate } from "$lib/db/delegates";
+  import { db } from "$lib/db/index.svelte";
   import { MOTION_LABELS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import type { Motion } from "$lib/types";
   import { createDragTr, isDndShadow } from "$lib/util/dnd";
   import { stringifyTime } from "$lib/util/time";
-  import { Modal } from "@skeletonlabs/skeleton-svelte";
-  import { flip } from "svelte/animate";
-  import { dndzone } from "svelte-dnd-action";
   import MdiAccountClock from "~icons/mdi/account-clock";
   import MdiAccountMultiple from "~icons/mdi/account-multiple";
   import MdiCancel from "~icons/mdi/cancel";

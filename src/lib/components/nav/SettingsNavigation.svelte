@@ -4,22 +4,24 @@
   This drawer allows users to visit different **admin** pages and configure various settings on the site.
  -->
 <script lang="ts">
+    import { Accordion } from "@skeletonlabs/skeleton-svelte";
+    import { getContext } from "svelte";
+
     import { goto } from "$app/navigation";
     import { resolve } from "$app/paths";
     import LightSwitch from "$lib/components/controls/LightSwitch.svelte";
     import PaletteSelector from "$lib/components/controls/PaletteSelector.svelte";
     import { getSessionContext, resetSessionContext } from "$lib/context/index.svelte";
+    import { THEME_DEFAULTS, type Theme } from "$lib/context/theme.svelte";
     import { db, queryStore } from "$lib/db/index.svelte";
-    import { Accordion } from "@skeletonlabs/skeleton-svelte";
-
     import MdiPalette from "~icons/mdi/palette";
     import MdiPlus from "~icons/mdi/plus";
     import MdiReload from "~icons/mdi/reload";
-    import MdiWrench from "~icons/mdi/wrench";
     import MdiSquareRoundedOutline from "~icons/mdi/square-rounded-outline";
     import MdiStarOutline from "~icons/mdi/star-outline";
-    import { getContext } from "svelte";
-    import { THEME_DEFAULTS, type Theme } from "$lib/context/theme.svelte";
+    import MdiWrench from "~icons/mdi/wrench";
+
+
 
     interface Props {
         /**

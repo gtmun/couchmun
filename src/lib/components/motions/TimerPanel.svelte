@@ -11,13 +11,15 @@
   and the speaker list and database stats.
 -->
 <script lang="ts">
-    import SpeakerList from "$lib/components/SpeakerList.svelte";
+    import { untrack, type Snippet } from "svelte";
+
+    import Timer from "../Timer.svelte";
+
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
+    import SpeakerList from "$lib/components/SpeakerList.svelte";
     import { findDelegate, type Delegate } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";
     import { lazyslide } from "$lib/util";
-    import Timer from "../Timer.svelte";
-    import { untrack, type Snippet } from "svelte";
     import MdiChevronDown from "~icons/mdi/chevron-down";
 
     interface Props {

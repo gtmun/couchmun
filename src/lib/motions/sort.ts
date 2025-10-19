@@ -40,7 +40,7 @@ function getSortKind(m: Motion): SortKind | undefined {
     return m.kind;
 }
 function getSortIndex(m: Motion, priority: SortOrder): number {
-    let kind = getSortKind(m);
+    const kind = getSortKind(m);
 
     // Find the index of this motion under the priority, putting it at the end if not in the list.
     const index = priority.findIndex((entry) => (entry.kind as (SortKind | undefined)[]).includes(kind));
@@ -91,17 +91,17 @@ export function compareMotions(priority: SortOrder): Comparator<Motion> {
         let k: number;
 
         // Check indices match:
-        let ai = getSortIndex(a, priority);
-        let bi = getSortIndex(b, priority);
+        const ai = getSortIndex(a, priority);
+        const bi = getSortIndex(b, priority);
 
         if (k = compare(ai, bi)) return k;
         
         // Run through the order until we find a difference:
-        let order = priority[ai ?? bi]?.order;
+        const order = priority[ai ?? bi]?.order;
         if (typeof order !== "undefined") {
-            for (let { property, ascending } of order) {
-                let av = getSortProperty(a, property);
-                let bv = getSortProperty(b, property);
+            for (const { property, ascending } of order) {
+                const av = getSortProperty(a, property);
+                const bv = getSortProperty(b, property);
     
                 if (k = compare(av, bv, !ascending)) return k;
             }

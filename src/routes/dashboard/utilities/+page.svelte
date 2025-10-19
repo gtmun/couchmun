@@ -4,15 +4,15 @@
   Notably, this page includes a timer and title, which can be used quite generically.
 -->
 <script lang="ts">
+    import { Switch } from "@skeletonlabs/skeleton-svelte";
+
+    import DelFlag from "$lib/components/del-label/DelFlag.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { lazyslide } from "$lib/util";
     import { makeEditable } from "$lib/util/action.svelte";
-    import { Switch } from "@skeletonlabs/skeleton-svelte";
-    
     import MdiFlag from "~icons/mdi/flag";
     import MdiFlagOff from "~icons/mdi/flag-off";
-    import DelFlag from "$lib/components/del-label/DelFlag.svelte";
 
     const sessionData = getSessionContext();
     const { delegates } = sessionData;

@@ -2,8 +2,9 @@
   @component The title text in the header.
 -->
 <script lang="ts">
-    import { makeEditable } from "$lib/util/action.svelte";
     import type { ClassValue } from "svelte/elements";
+
+    import { makeEditable } from "$lib/util/action.svelte";
 
     interface Props {
         /** Title text */

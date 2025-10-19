@@ -34,7 +34,7 @@ export class Delegate {
      */
     *names(): Generator<string> {
         yield this.name;
-        for (let alias of this.aliases) yield alias;
+        for (const alias of this.aliases) yield alias;
     }
 
     /**
@@ -43,7 +43,7 @@ export class Delegate {
      * @returns whether this delegate could correctly be referred to by the given name
      */
     nameEquals(name: string): boolean {
-        for (let dName of this.names()) {
+        for (const dName of this.names()) {
             if (eqInsensitive(dName, name)) return true;
         }
         return false;
@@ -55,7 +55,7 @@ export class Delegate {
      * @returns whether the given string is a substring
      */
     nameIncludes(sub: string): boolean {
-        for (let name of this.names()) {
+        for (const name of this.names()) {
             if (includesInsensitive(name, sub)) return true;
         }
         return false;

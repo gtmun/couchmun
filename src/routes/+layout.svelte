@@ -7,10 +7,11 @@
 
 <script lang="ts">
     import "../app.css";
-    import { createSessionContext } from "$lib/context/index.svelte";
-    import { genStyles } from "$lib/util/chroma";
     import { onMount, setContext } from "svelte";
+
+    import { createSessionContext } from "$lib/context/index.svelte";
     import { initThemeState, THEME_DEFAULTS, type Theme } from "$lib/context/theme.svelte";
+    import { genStyles } from "$lib/util/chroma";
 
     let { children } = $props();
 
