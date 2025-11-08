@@ -8,7 +8,7 @@
 
 <script lang="ts">
     import ModalContent, { type ExitProps } from "$lib/components/modals/ModalContent.svelte";
-    import MotionForm from "$lib/components/MotionForm.svelte";
+    import MotionForm from "$lib/components/motions/form/MotionForm.svelte";
     import { db } from "$lib/db/index.svelte";
     import { inputifyMotion } from "$lib/motions/definitions";
     import type { Motion } from "$lib/types";

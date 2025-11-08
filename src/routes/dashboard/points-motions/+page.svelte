@@ -15,7 +15,7 @@
   import IconLabel from "$lib/components/IconLabel.svelte";
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
   import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
-  import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
+  import MotionForm, { numSpeakersStr } from "$lib/components/motions/form/MotionForm.svelte";
   import { createSpeaker } from "$lib/components/SpeakerList.svelte";
   import { getSessionContext } from "$lib/context/index.svelte";
   import { findDelegate } from "$lib/db/delegates";
