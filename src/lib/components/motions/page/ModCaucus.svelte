@@ -68,7 +68,7 @@
         <TimerPanel
             delegates={$delegates}
             {speakersList}
-            duration={[motion.speakingTime, motion.totalTime]}
+            durations={[motion.speakingTime, motion.totalTime]}
             timerInteraction={$preferences.pauseMainTimer ? "sync" : "cascade"}
             onBeforeReset={deductTime}
             bind:this={timerPanel}

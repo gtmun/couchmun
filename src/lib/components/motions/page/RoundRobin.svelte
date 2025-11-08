@@ -51,7 +51,7 @@
         <TimerPanel
             delegates={$delegates}
             {speakersList}
-            duration={motion.speakingTime}
+            durations={[motion.speakingTime]}
             bind:this={timerPanel}
         />
     </div>

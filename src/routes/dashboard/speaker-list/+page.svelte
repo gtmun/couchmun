@@ -55,7 +55,10 @@
         <TimerPanel
             delegates={$delegates}
             {speakersList}
-            bind:duration
+            bind:durations={
+             () => [duration],
+             ([d]) => duration = d
+            }
             bind:this={timerPanel}
             editable
         />
