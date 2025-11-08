@@ -85,50 +85,41 @@
     // Creates a `timers` state with the specific number of timers.
     const numTimers = () => durations.length;
     let timers: (Timer | undefined)[] = $state(Array.from({ length: numTimers() }));
+    let runStates: boolean[] = $state(Array.from({ length: numTimers() }, () => false));
 
     // If only 1 timer, just treat this as sync regardless of setting.
     let timerInteraction = $derived(numTimers() < 2 ? "sync" : _ti);
 
-    const numRunStates = () => timerInteraction == "sync" ? 1 : numTimers();
-    let runStates = $state(Array.from({ length: numRunStates() }, () => false));
-
     $effect(() => {
         let nTimers = numTimers();
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        timerInteraction;
+
         untrack(() => {
             // When number of timers change, update the list of timers,
             // truncating any timer past the number of timers.
             timers.length = nTimers;
+            // When number of runnings change, update the list of runnings,
+            // and pause all timers.
+            runStates.length = nTimers;
+            runStates.fill(false);
         });
     });
+    
+    // If any timer starts, mark the current speaker as complete.
     $effect(() => {
-        let nRunStates = numRunStates();
-        untrack(() => {
-            // When number of runnings change, update the list of runnings,
-            // truncating any run states past the number of run states
-            // and adding new `false`s for newly created run states.
-            let oldLength = runStates.length;
-            runStates.length = nRunStates;
-            if (nRunStates > oldLength) {
-                runStates.fill(false, oldLength);
-            }
+        if (runStates.some(s => s)) untrack(() => {
+            speakersList?.start();
         })
     });
-    
+
     // Getter/setter for run state, since it depends on timer interaction
     export function getRunState(i: number): boolean {
-        if (timerInteraction === "sync") {
-            return runStates[0];
-        } else if (timerInteraction === "cascade") {
-            return runStates[i];
-        } else if (timerInteraction === "none") {
-            return runStates[i];
-        } else {
-            return timerInteraction satisfies never;
-        }
+        return runStates[i];
     }
     function setRunState(i: number, s: boolean) {
         if (timerInteraction === "sync") {
-            runStates[0] = s;
+            runStates.fill(s);
         } else if (timerInteraction === "cascade") {
             if (s) {
                 runStates.fill(s, i);
@@ -162,13 +153,6 @@
         // If no index provided, all timers need to be playable.
         return timers.every(t => timerPlayable(t));
     }
-
-    // If any timer starts, mark the current speaker as complete.
-    $effect(() => {
-        if (runStates.some(s => s)) untrack(() => {
-            speakersList?.start();
-        })
-    });
 
     /**
      * Returns whether any of the timers can be reset.
@@ -238,7 +222,12 @@
             -->
             {@const last = i == timers.length - 1}
             <Timer
-                bind:duration={durations[i]}
+                bind:duration={
+                    // Needed to prevent a warning
+                    // when `durations` is not binded to TimerPanel
+                    () => durations[i],
+                    d => durations[i] = d
+                }
                 running={getRunState(i)}
                 bind:this={timers[i]}
                 hidePlay={timerInteraction === "sync"}
