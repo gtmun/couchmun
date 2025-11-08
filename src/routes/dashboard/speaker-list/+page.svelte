@@ -78,7 +78,7 @@
             <form class="contents" onsubmit={setDuration}>
                 <label class="flex grow items-center">
                     <span>Speaker Time</span>
-                    <input class="input grow" bind:value={durInput} placeholder="mm:ss" />
+                    <input class="input grow" bind:value={durInput} placeholder="mm:ss" disabled={timerPanel?.getRunState(0)} />
                 </label>
             </form>
         </div>
