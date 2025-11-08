@@ -312,7 +312,7 @@
             {stringifyTime(duration)}
         </span>
     </h2>
-    <div class="grid grid-cols-[1fr_auto] gap-1">
+    <div class="grid grid-cols-[1fr_auto] gap-1 items-center">
         <!-- The progress bar -->
         <Progress {...barProps} />
         <!-- A start/pause button -->
