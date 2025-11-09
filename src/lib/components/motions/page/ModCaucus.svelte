@@ -6,7 +6,7 @@
 -->
 <script lang="ts">
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import { numSpeakersStr } from "$lib/components/MotionForm.svelte";
+    import { numSpeakersStr } from "$lib/components/motions/form/MotionForm.svelte";
     import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import type Timer from "$lib/components/Timer.svelte";

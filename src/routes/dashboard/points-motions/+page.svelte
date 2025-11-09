@@ -20,7 +20,7 @@
   import { getSessionContext } from "$lib/context/index.svelte";
   import { findDelegate } from "$lib/db/delegates";
   import { db } from "$lib/db/index.svelte";
-  import { MOTION_LABELS } from "$lib/motions/definitions";
+  import { MOTION_DEFS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import type { Motion } from "$lib/types";
   import { hasKey } from "$lib/util";
@@ -80,7 +80,7 @@
 
 
   function motionName(m: Motion) {
-    const kindLabel = MOTION_LABELS[m.kind] ?? "-";
+    const kindLabel = MOTION_DEFS[m.kind].label ?? "-";
     const extension = hasKey(m, "isExtension") && m.isExtension;
     
     return kindLabel + (extension ? ' (Extension)': '');

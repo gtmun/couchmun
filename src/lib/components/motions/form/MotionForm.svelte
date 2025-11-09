@@ -7,28 +7,25 @@
     import { fade } from "svelte/transition";
     import type { z } from "zod";
 
+    import InputExtension from './InputExtension.svelte';
+    import InputSpeakingTime from './InputSpeakingTime.svelte';
+    import InputString from './InputString.svelte';
+    import InputTotalTime from './InputTotalTime.svelte';
+
     import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
-    import LabeledSwitch from "$lib/components/controls/LabeledSwitch.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
-    import { createMotionSchema, inputifyMotion, MOTION_FIELDS, MOTION_LABELS } from "$lib/motions/definitions";
+    import { createMotionSchema, inputifyMotion, MOTION_BASE_FIELDS, MOTION_DEFS, type InputKind, type InputProperties } from "$lib/motions/definitions";
     import { formatValidationError } from "$lib/motions/form_validation";
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
     import type { Motion } from "$lib/types";
-    import { hasKey, lazyslide } from "$lib/util";
-    import { parseTime, sanitizeTime, stringifyTime } from "$lib/util/time";
-    import MdiFractionOneHalf from "~icons/mdi/fraction-one-half";
+    import { hasKey } from "$lib/util";
+    import { parseTime, sanitizeTime } from "$lib/util/time";
     import MdiPlus from "~icons/mdi/plus";
 
     const { selectedMotion, delegates, preferences } = getSessionContext();
     const motionSchema = $derived(createMotionSchema($delegates));
     const defaultInputMotion = () => ({ id: crypto.randomUUID(), kind: "mod" } satisfies MotionInput);
-    const resetInputErrors = () => { inputError = undefined };
 
-    const speakingTimeButtons = [
-        { time: 30, label: ":30" },
-        { time: 45, label: ":45" },
-        { time: 60, label: "1:00" },
-    ]
     interface Props {
         /**
          * The input data.
@@ -52,9 +49,29 @@
     }: Props = $props();
     
     // Any input validation errors.
-    let inputError = $state<z.ZodIssue>();
+    let inputError = $state<z.core.$ZodIssue>();
     // The form element.
     let formEl = $state<HTMLFormElement>();
+    
+    const motionDef = $derived(MOTION_DEFS[inputMotion.kind]);
+    
+    function getComponent(k: InputKind) {
+        if (k === "totalTime") {
+            return InputTotalTime;
+        } else if (k === "speakingTime") {
+            return InputSpeakingTime;
+        } else if (k === "topic") {
+            return InputString;
+        } else if (k === "extension") {
+            return InputExtension;
+        } else if (k === "none") {
+            return undefined;
+        } else {
+            k satisfies never;
+        }
+    }
+
+    let activeElement = $state<HTMLElement>();
     // Motions that you can input into dropdown (taking into account provided preferences)
     let allowedMotions = $derived.by(() => {
         // A map indicating whether a given motion type should appear.
@@ -64,7 +81,7 @@
             "rr": $preferences.enableMotionRoundRobin
         };
 
-        return Object.entries(MOTION_LABELS)
+        return Object.entries(MOTION_DEFS)
             .filter(([kind]) => filters[kind] ?? true);
     });
     
@@ -99,25 +116,6 @@
         }
     }
 
-    let showTimeGuide = $state<string>();
-    /**
-     * When user unfocuses on a time input, update the input to include colons.
-     */
-    function handleBlurTime<A extends string>(attr: A) {
-        showTimeGuide = undefined;
-        if (hasKey(inputMotion, attr)) {
-            inputMotion[attr] = sanitizeTime(inputMotion[attr] as string) as any;
-        }
-    }
-    /**
-     * Sets total time input to half of the previous motion.
-     */
-    function setTotalTimeToHalf() {
-        if (hasField(inputMotion, ["totalTime"]) && $selectedMotion && hasKey($selectedMotion, "totalTime")) {
-            inputMotion.totalTime = stringifyTime($selectedMotion.totalTime / 2);
-        }
-    }
-
     /**
      * Returns true if the inputMotion's kind has the provided fields.
      * This is useful for conditionally showing a field input only if the motion requires that field.
@@ -126,8 +124,7 @@
      * @param fields the list of fields to check for
      */
     function hasField<F extends string>(m: MotionInput, fields: F[]): m is MotionInputWithFields<F> {
-        const motionFields: readonly string[] = MOTION_FIELDS[m.kind];
-        return fields.every(f => motionFields.includes(f));
+        return fields.every(f => (MOTION_BASE_FIELDS as readonly string[]).includes(f) || hasKey(MOTION_DEFS[m.kind].fields, f));
     }
 
     // Extension handling.
@@ -171,7 +168,13 @@
     }
 </script>
 
-<form onsubmit={submitMotion} oninput={resetInputErrors} class="flex flex-col gap-3 p-3 [&>label>*]:transition-colors" bind:this={formEl}>
+<svelte:document bind:activeElement />
+<form 
+    onsubmit={submitMotion}
+    oninput={() => inputError = undefined}
+    class="flex flex-col gap-3 p-3 [&>label>*]:transition-colors"
+    bind:this={formEl}
+>
     <!-- Delegate input -->
     <label class="label">
         <span>Delegate</span>
@@ -196,109 +199,29 @@
             class={["select", inputError?.path.includes("kind") && "preset-input-error"]}
             bind:value={inputMotion.kind}
             >
-            {#each allowedMotions as [value, label] (value)}
+            {#each allowedMotions as [value, {label}] (value)}
                 <option {value} {label}></option>
             {/each}
         </select>
     </label>
 
-    <!-- Total time input -->
-    {#if hasField(inputMotion, ["totalTime"])}
-    <label class="label">
-        <div class="flex justify-between">
-            <span>
-                Total Time
-                {#if showTimeGuide === "totalTime"}
-                    <!-- Time guide -->
-                    <span class="text-surface-500" transition:fade={{ duration: 150 }}>
-                        &middot; {sanitizeTime(inputMotion.totalTime)}
-                    </span>
-                {/if}
-            </span>
-            {#if hasField(inputMotion, ["isExtension"]) && $selectedMotion?.kind === inputMotion.kind && inputMotion.isExtension}
-                <button
-                    type="button"
-                    class="btn btn-sm preset-filled"
-                    disabled={!!inputMotion.totalTime}
-                    onclick={setTotalTimeToHalf}
-                    aria-label="Set Time to Half"
-                    title="Set Time to Half"
-                    transition:lazyslide
-                >
-                    <MdiFractionOneHalf />
-                </button>
-            {/if}
-        </div>
-        <input 
-            name="total-time"
-            class={["input", inputError?.path.includes("totalTime") && "preset-input-error"]}
-            placeholder="mm:ss" 
-            bind:value={inputMotion.totalTime}
-            onfocus={() => showTimeGuide = "totalTime"}
-            onblur={() => handleBlurTime("totalTime")}
-        >
-    </label>
-    {/if}
+    {#each Object.entries(motionDef.fields as Record<string, InputProperties>) as [name, prop] (name)}
+        {@const type = typeof prop === "string" ? prop : prop.type}
+        {@const args = typeof prop === "string" ? {} : prop}
+        {@const Component = getComponent(type)}
 
-    <!-- Speaking time input -->
-    {#if hasField(inputMotion, ["speakingTime"])}
-    <label class="label">
-        <div class="flex justify-between">
-            <span>
-                Speaking Time
-                {#if showTimeGuide === "speakingTime"}
-                    <!-- Time guide -->
-                    <span class="text-surface-500" transition:fade={{ duration: 150 }}>
-                        &middot; {sanitizeTime(inputMotion.speakingTime)}
-                    </span>
-                {/if}
-            </span>
-            <div class="flex gap-1 items-center">
-                <!-- Items are const and won't change, so key not necessary -->
-                <!-- eslint-disable-next-line svelte/require-each-key -->
-                {#each speakingTimeButtons as btn}
-                    <button
-                        type="button"
-                        class="btn btn-sm preset-filled tabular-nums"
-                        disabled={isExtending(inputMotion) || (typeof inputMotion.speakingTime !== "undefined" && parseTime(inputMotion.speakingTime) == btn.time)}
-                        onclick={() => (inputMotion as any).speakingTime = stringifyTime(btn.time)}
-                        tabindex="-1"
-                    >
-                        {btn.label}
-                    </button>
-                {/each}
-            </div>
-        </div>
-        <input
-            name="speaking-time"
-            class={["input", inputError?.path.includes("speakingTime") && "preset-input-error"]}
-            placeholder="mm:ss" 
-            bind:value={inputMotion.speakingTime}
-            onfocus={() => showTimeGuide = "speakingTime"}
-            onblur={() => handleBlurTime("speakingTime")}
-            disabled={isExtending(inputMotion)}
-        >
-    </label>
-    {/if}
-
-    <!-- Topic input -->
-    {#if hasField(inputMotion, ["topic"])}
-    <label class="label">
-        <span>Topic</span>
-        <input 
-            class={["input", inputError?.path.includes("topic") && "preset-input-error"]}
-            bind:value={inputMotion.topic}
-            disabled={isExtending(inputMotion)}
-        >
-    </label>
-    {/if}
-
-    <!-- Extension toggle -->
-    {#if $preferences.enableMotionExt && hasField(inputMotion, ["isExtension"]) && $selectedMotion?.kind === inputMotion.kind}
-        <LabeledSwitch name="extension-toggle" bind:checked={inputMotion.isExtension}>
-            <span>Extend previous motion?</span>
-        </LabeledSwitch>
-    {/if}
+        {#if Component}
+            <Component
+                {name}
+                error={inputError?.path.includes(name)}
+                focused={(activeElement as any)?.name === name}
+                bind:value={(inputMotion as any)[name]}
+                isExtending={isExtending(inputMotion)}
+                motion={$selectedMotion}
+                {...args}
+            />
+        {/if}
+    {/each}
 
     <!-- Number of speakers display -->
     {#if hasField(inputMotion, ["totalTime", "speakingTime"])}

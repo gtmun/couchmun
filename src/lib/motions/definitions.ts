@@ -14,39 +14,86 @@ import type { MotionInput } from "$lib/motions/types";
 import type { Motion, MotionKind, SortOrder } from "$lib/types";
 import { stringifyTime } from "$lib/util/time";
 
-/**
- * The label/name given to each motion kind.
- */
-export const MOTION_LABELS: Record<MotionKind, string> = {
-    mod: "Moderated Caucus",
-    unmod: "Unmoderated Caucus",
-    rr: "Round Robin",
-    other: "Other"
+export type InputKind =
+    | "totalTime"
+    | "speakingTime"
+    | "topic"
+    | "extension"
+    | "none";
+export type InputProperties = InputKind | {
+    type: InputKind,
+    [prop: string]: unknown
 };
-/**
- * The fields that are defined on this motion kind's form.
- */
-export const MOTION_FIELDS = {
-    mod:   ["id", "delegate", "kind", "totalTime", "speakingTime", "topic", "isExtension"],
-    unmod: ["id", "delegate", "kind", "totalTime", "isExtension"],
-    rr:    ["id", "delegate", "kind", "totalSpeakers", "speakingTime", "topic"],
-    other: ["id", "delegate", "kind", "totalTime", "topic"]
-} as const;
+
+export const MOTION_BASE_FIELDS = ["id", "kind", "delegate"] as const;
+export const MOTION_DEFS = {
+    mod: {
+        label: "Moderated Caucus",
+        fields: {
+            totalTime: "totalTime",
+            speakingTime: "speakingTime",
+            topic: "topic",
+            isExtension: "extension",
+        }
+    },
+    unmod: {
+        label: "Unmoderated Caucus",
+        fields: {
+            totalTime: "totalTime",
+            isExtension: "extension",
+        }
+    },
+    rr: {
+        label: "Round Robin",
+        fields: {
+            speakingTime: "speakingTime",
+            topic: "topic",
+            // FIXME: Remove as form field
+            totalSpeakers: "none"
+        }
+    },
+    other: {
+        label: "Other",
+        fields: {
+            totalTime: {
+                type: "totalTime",
+                required: false
+            },
+            topic: {
+                type: "topic",
+                required: false
+            },
+        }
+    },
+} satisfies Record<Motion["kind"], {
+    label: string,
+    fields: Record<string, InputProperties>
+}>;
+
+export type InputComponentProps<V> = {
+    name: string,
+    error?: boolean,
+    focused?: boolean,
+    value?: V,
+    isExtending?: boolean,
+    motion: Motion | null
+};
 
 // Ok, this is some hacky BS that needs to be explained:
-// MOTION_FIELDS is a const used to access the field names of Motion 
-// (which can't be done normally sometimes cause TypeScript types aren't accessible at runtime).
+// MOTION_DEFS includes a list of form fields for Motion.
 //
-// However, this requires MOTION_FIELDS's fields match EXACTLY to the definition of Motion (provided in types.d.ts).
+// This assert checks if the form fields defined by MOTION_DEFS matches exactly the fields of the Motion type
+// (defined in types.d.ts).
+//
 // In order to do this, the following set of types are used to assert the two types' equalities.
 // - type Is<A, B> is a type that asserts A and B are identical types.
 // - type TypeFields is a type that computes the fields as defined by the type.
-// - type ConstFields is a type that computes the fields as defined by MOTION_FIELDS.
+// - type ConstFields is a type that computes the fields as defined by MOTION_DEFS.
 //
 // If these do not match, _assert will raise an error, indicating that something needs to be fixed.
 type Is<A, B, True = unknown, False = never> = NoInfer<A> extends B ? NoInfer<B> extends A ? True : False : False;
 type TypeFields = { readonly [K in MotionKind]: keyof (Motion & { kind: K }) };
-type ConstFields = { [K in keyof typeof MOTION_FIELDS]: (typeof MOTION_FIELDS)[K][number] };
+type ConstFields = { readonly [K in keyof typeof MOTION_DEFS]: (typeof MOTION_BASE_FIELDS)[number] | keyof (typeof MOTION_DEFS)[K]["fields"] };
 const _assert: Is<TypeFields, ConstFields> = {};
 
 /**
