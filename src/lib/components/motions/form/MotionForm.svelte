@@ -14,7 +14,7 @@
 
     import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
-    import { createMotionSchema, inputifyMotion, MOTION_BASE_FIELDS, MOTION_DEFS, type InputKind, type InputProperties } from "$lib/motions/definitions";
+    import { MOTION_BASE_FIELDS, MOTION_DEFS, type InputKind, type InputProperties, type MotionSchema } from "$lib/motions/definitions";
     import { formatValidationError } from "$lib/motions/form_validation";
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
     import type { Motion } from "$lib/types";
@@ -23,7 +23,6 @@
     import MdiPlus from "~icons/mdi/plus";
 
     const { selectedMotion, delegates, preferences } = getSessionContext();
-    const motionSchema = $derived(createMotionSchema($delegates));
     const defaultInputMotion = () => ({ id: crypto.randomUUID(), kind: "mod" } satisfies MotionInput);
 
     interface Props {
@@ -31,6 +30,10 @@
          * The input data.
          */
         inputMotion?: MotionInput;
+        /**
+         * The motion validation schema.
+         */
+        motionSchema: MotionSchema,
         /**
          * A callback where the motion is submitted 
          * if it is successfully validated and produced.
@@ -44,6 +47,7 @@
     }
     let {
         inputMotion = $bindable(defaultInputMotion()),
+        motionSchema,
         submit,
         buttons
     }: Props = $props();
@@ -135,7 +139,7 @@
     // If extension, disable "topic" and "speakingTime":
     $effect(() => {
         if (isExtending(inputMotion)) {
-            let inputified = inputifyMotion($selectedMotion!);
+            let inputified = motionSchema.encode($selectedMotion!);
             
             if (hasKey(inputified, "topic")) (inputMotion as any).topic = inputified.topic;
             if (hasKey(inputified, "speakingTime")) (inputMotion as any).speakingTime = inputified.speakingTime;

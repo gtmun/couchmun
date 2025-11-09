@@ -20,7 +20,7 @@
   import { getSessionContext } from "$lib/context/index.svelte";
   import { findDelegate } from "$lib/db/delegates";
   import { db } from "$lib/db/index.svelte";
-  import { MOTION_DEFS } from "$lib/motions/definitions";
+  import { createMotionSchema, MOTION_DEFS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import type { Motion } from "$lib/types";
   import { hasKey } from "$lib/util";
@@ -44,6 +44,7 @@
   // A clone of $motions used solely for use:dndzone
   let dndItems = $derived($motions);
 
+  let motionSchema = $derived(createMotionSchema($delegates));
   let motionTable: HTMLTableElement | undefined = $state();
 
   function submitMotion(motion: Motion) {
@@ -149,7 +150,7 @@
 
 <div class="grid gap-5 min-h-full md:grid-cols-[1fr_2fr] md:h-full">
   <div class="card-filled motion-form">
-    <MotionForm submit={submitMotion} />
+    <MotionForm submit={submitMotion} {motionSchema} />
   </div>
   
   <div class="flex flex-col gap-2 overflow-x-auto">
@@ -255,6 +256,7 @@
                     {#snippet content()}
                       <EditMotionCard
                         {motion}
+                        {motionSchema}
                         bind:open={
                           () => openModals.editMotion == i,
                           open => openModals.editMotion = open ? i : -1
