@@ -35,7 +35,7 @@
 
 <ModalContent title="Editing Motion" bind:open {onSubmit}>
     {#snippet main({ submit, close })}
-        <MotionForm {submit} {motionSchema} bind:inputMotion>
+        <MotionForm {submit} {motionSchema} initialInput={inputMotion}>
             {#snippet buttons()}
                 <div class="flex justify-end gap-3">
                     <button class="btn preset-filled-error-500" type="button" onclick={close}>Cancel</button>

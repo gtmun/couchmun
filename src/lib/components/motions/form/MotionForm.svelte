@@ -27,9 +27,9 @@
 
     interface Props {
         /**
-         * The input data.
+         * Any prefilled input data.
          */
-        inputMotion?: MotionInput;
+        initialInput?: MotionInput;
         /**
          * The motion validation schema.
          */
@@ -46,12 +46,13 @@
         buttons?: Snippet;
     }
     let {
-        inputMotion = $bindable(defaultInputMotion()),
+        initialInput = undefined,
         motionSchema,
         submit,
         buttons
     }: Props = $props();
     
+    let inputMotion = $state<MotionInput>(initialInput ?? defaultInputMotion());
     // Any input validation errors.
     let inputError = $state<z.core.$ZodIssue>();
     // The form element.
