@@ -404,12 +404,18 @@
 
 <style>
     @reference "$lib/../app.css";
+    
     /* Styling for dragged element */
     :global(#dnd-action-dragged-el).dnd-list-item {
         background-color: var(--color-surface-50) !important;
         opacity: 90% !important;
         @apply border-2! border-surface-950-50!;
-        @apply grid! grid-cols-[auto_auto_1fr_auto] items-center gap-3 p-1;
+
+        display: grid !important;
+        grid-template-columns: auto auto 1fr auto;
+        align-items: center;
+        gap: calc(var(--spacing) * 3);
+        padding: calc(var(--spacing) * 1);
 
         @variant dark {
             background-color: var(--color-surface-950) !important;
