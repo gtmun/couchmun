@@ -3,7 +3,7 @@
     which consists of a long list of delegates and an option to select NP/P/PV.
 -->
 <script lang="ts">
-    import { Segment } from "@skeletonlabs/skeleton-svelte";
+    import { SegmentedControl } from "@skeletonlabs/skeleton-svelte";
 
     import { resolve } from "$app/paths";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
@@ -38,7 +38,7 @@
                 <DelLabel {attrs} inline />
             </div>
             <div class="flex justify-end p-2">
-                <Segment
+                <SegmentedControl
                     name="presence-{attrs.id}"
                     value={$delegates[i].presence}
                     onValueChange={e => db.updateDelegate(attrs.id, { presence: asPresence(e.value) })}
@@ -49,7 +49,7 @@
                             <IconLabel {icon} {label} />
                         </Segment.Item>
                     {/each}
-                </Segment>
+                </SegmentedControl>
             </div>
         </div>
     {/each}

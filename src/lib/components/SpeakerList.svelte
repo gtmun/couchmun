@@ -6,7 +6,7 @@
   and rearrange speakers in the speakers list.
  -->
 <script lang="ts">
-    import { Modal } from "@skeletonlabs/skeleton-svelte";
+    import { Dialog } from "@skeletonlabs/skeleton-svelte";
     import { tick, untrack, type Snippet } from "svelte";
     import { flip } from "svelte/animate";
     import { dragHandle, dragHandleZone } from "svelte-dnd-action";
@@ -380,7 +380,7 @@
                 />
                 <!-- Clear order -->
                 <!-- TODO: disabled={order.length === 0 } -->
-                <Modal
+                <Dialog
                     open={openModals.clearSpeakers}
                     onOpenChange={e => openModals.clearSpeakers = e.open}
                     triggerBase="btn-icon-std preset-filled-primary-500"
@@ -396,7 +396,7 @@
                             Are you sure you want to clear the Speakers List?
                         </ConfirmModalCard>
                     {/snippet}
-                </Modal>
+                </Dialog>
             </div>
         </div>
     {/if}

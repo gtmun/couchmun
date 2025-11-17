@@ -5,7 +5,7 @@
   and a sortable motion table (which is used to view and rearrange and edit motions).
 -->
 <script lang="ts">
-  import { Modal } from "@skeletonlabs/skeleton-svelte";
+  import { Dialog } from "@skeletonlabs/skeleton-svelte";
   import { flip } from "svelte/animate";
   import { dndzone } from "svelte-dnd-action";
 
@@ -244,7 +244,7 @@
                   >
                     <MdiCheck class="text-success-700" />
                   </button>
-                  <Modal
+                  <Dialog
                     open={openModals.editMotion == i}
                     onOpenChange={e => openModals.editMotion = e.open ? i : -1}
                     triggerBase="btn-icon-std p-1"
@@ -264,7 +264,7 @@
                         onSubmit={m => editMotion(i, m)}
                       />
                     {/snippet}
-                  </Modal>
+                  </Dialog>
                 </div>
               </td>
             </tr>

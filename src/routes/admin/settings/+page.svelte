@@ -2,7 +2,7 @@
   @component The admin settings page (used for configuring settings).
 -->
 <script lang="ts">
-    import { FileUpload, Modal } from "@skeletonlabs/skeleton-svelte";
+    import { FileUpload, Dialog } from "@skeletonlabs/skeleton-svelte";
 
     import LabeledSwitch from "$lib/components/controls/LabeledSwitch.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
@@ -197,7 +197,7 @@
             >
                 Export to file...
             </button>
-            <Modal
+            <Dialog
                 open={openModals.resetAllSettings}
                 onOpenChange={e => openModals.resetAllSettings = e.open}
                 triggerBase="btn preset-filled-error-500"
@@ -211,7 +211,7 @@
                         Are you sure you want to reset all settings? This will also wipe all sessions.
                     </ConfirmModalCard>
                 {/snippet}
-            </Modal>
+            </Dialog>
         </div>
     </div>
     <hr class="hr" />
@@ -314,7 +314,7 @@
                 </select>
             </label>
             <div class="flex gap-3 justify-center">
-                <Modal
+                <Dialog
                     open={openModals.addDelegate}
                     onOpenChange={e => openModals.addDelegate = e.open}
                     triggerBase="btn preset-filled-primary-500"
@@ -326,8 +326,8 @@
                     {#snippet content()}
                         <EditDelegateCard bind:open={openModals.addDelegate} onSubmit={d => editDelegate(undefined, d)} />
                     {/snippet}
-                </Modal>
-                <Modal
+                </Dialog>
+                <Dialog
                     open={openModals.configureEnableDelegates}
                     onOpenChange={e => openModals.configureEnableDelegates = e.open}
                     triggerBase="btn preset-filled-primary-500"
@@ -339,8 +339,8 @@
                     {#snippet content()}
                         <EnableDelegatesCard attrs={$delegates} bind:open={openModals.configureEnableDelegates} onSubmit={configureEnableDelegates} />
                     {/snippet}
-                </Modal>
-                <Modal 
+                </Dialog>
+                <Dialog 
                     open={openModals.clearDelegates}
                     onOpenChange={e => openModals.clearDelegates = e.open}
                     triggerBase="btn preset-filled-error-500"
@@ -354,7 +354,7 @@
                             Are you sure you want to remove all delegates?
                         </ConfirmModalCard>
                     {/snippet}
-                </Modal>
+                </Dialog>
             </div>
         </div>
         <!-- Delegate Table -->
@@ -379,7 +379,7 @@
                                 }>
                         </td>
                         <td class="text-right">
-                            <Modal
+                            <Dialog
                                 open={openModals.editDelegate[attrs.id]}
                                 onOpenChange={e => openModals.editDelegate[attrs.id] = e.open}
                                 triggerBase=""
@@ -394,7 +394,7 @@
                                         <EditDelegateCard attrs={del?.getAttributes()} bind:open={openModals.editDelegate[attrs.id]} onSubmit={d => editDelegate(attrs.id, d)} />
                                     {/await}
                                 {/snippet}
-                            </Modal>
+                            </Dialog>
                             <button
                                 onclick={() => deleteDelegate(attrs.id)}
                                 aria-label="Delete {attrs.name}"

@@ -5,7 +5,7 @@
 -->
 
 <script lang="ts">
-    import { AppBar, Modal } from '@skeletonlabs/skeleton-svelte';
+    import { AppBar, Dialog } from '@skeletonlabs/skeleton-svelte';
 
     import { navigating, page } from '$app/state';
     import type { RouteId } from '$app/types';
@@ -63,7 +63,7 @@
         >
             {#snippet lead()}
                 <!-- Hamburger menu button -->
-                <Modal
+                <Dialog
                     open={openDrawer === "nav"}
                     onOpenChange={e => openDrawer = e.open ? "nav" : null}
                     triggerBase="btn-icon-std"
@@ -82,7 +82,7 @@
                     {#snippet content()}
                         <Navigation close={() => openDrawer = null} {links} />
                     {/snippet}
-                </Modal>
+                </Dialog>
             {/snippet}
             <!--
                 Committee & topic title
@@ -104,7 +104,7 @@
             </div>
             {#snippet trail()}
                 <!-- Settings -->
-                <Modal
+                <Dialog
                     open={openDrawer === "settings"}
                     onOpenChange={e => openDrawer = e.open ? "settings" : null}
                     triggerBase="btn-icon-std"
@@ -126,7 +126,7 @@
                             onAccordionOpenChange={open => settingsBackdrop = !open}
                         />
                     {/snippet}
-                </Modal>
+                </Dialog>
             {/snippet}
         </AppBar>
     </header>
