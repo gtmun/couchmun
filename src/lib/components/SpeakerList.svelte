@@ -56,7 +56,7 @@
         /**
          * If this prop is defined, the function callback is activated right before a speaker changes.
          */
-        onBeforeSpeakerUpdate?: ((oldSpeaker: Speaker | undefined, newSpeaker: Speaker | undefined) => unknown);
+        onBeforeSpeakerUpdate?: ((oldSpeaker: Speaker | undefined, newSpeaker: Speaker | undefined) => void);
         /**
          * If this prop is defined, the function callback is activated when a speaker is marked as completed.
          */
@@ -82,7 +82,7 @@
     // A mapping from IDs to Speakers:
     let orderMap = $derived(new Map(
         order.filter(s => typeof s.id === "string" && s.id)
-            .map((speaker, i) => [speaker.id, { speaker, i }])
+            .map((speaker) => [speaker.id, speaker])
     ));
     // Point to insert speakers (by number of elements from the end).
     let insertPoint = $state(0);
@@ -140,7 +140,7 @@
      */
     function findSpeaker(speakerId: SpeakerEntryID | undefined): Speaker | undefined {
         if (typeof speakerId === "undefined") return;
-        return orderMap.get(speakerId)?.speaker;
+        return orderMap.get(speakerId);
     }
     /**
      * Marks the speaker as completed (and activates any listeners bound to "onMarkComplete").
@@ -168,7 +168,9 @@
         markComplete(selectedSpeakerId);
 
         // Find first element in the order that has not been completed yet.
-        setSelectedSpeaker(order.find(({ completed }) => !completed));
+        setSelectedSpeaker(order.find(({ completed }) => !completed))
+            .then(tick)
+            .then(() => jumpToSpeaker(selectedSpeakerId)); // Scroll new speaker to view
     }
 
     /**
@@ -249,29 +251,16 @@
      * 
      * @param speaker the speaker object (or undefined to clear speaker)
      */
-    function setSelectedSpeaker(speaker: Speaker | undefined) {
+    async function setSelectedSpeaker(speaker: Speaker | undefined) {
         if (selectedSpeakerId !== speaker?.id) {
+            let currentSpeaker = findSpeaker(selectedSpeakerId);
+            let nextSpeaker = findSpeaker(speaker?.id);
+
             // Call beforeSpeakerUpdate (and let it run to completion if is Promise) before setting speaker.
-            (async () => {
-                let selectedSpeaker = findSpeaker(selectedSpeakerId);
-                await onBeforeSpeakerUpdate?.(selectedSpeaker, speaker);
-                await tick();
-                selectedSpeakerId = speaker?.id;
-            })()
+            return Promise.resolve(onBeforeSpeakerUpdate?.(currentSpeaker, nextSpeaker))
+                .finally(() => selectedSpeakerId = nextSpeaker?.id);
         }
     }
-
-    // If order updates and selectedSpeaker isn't in there, then clear selectedSpeaker.
-    // Scroll to speaker if it is out of view.
-    $effect(() => {
-        if (typeof selectedSpeakerId !== "undefined") {
-            if (!orderMap.has(selectedSpeakerId)) {
-                setSelectedSpeaker(undefined);
-            } else {
-                jumpToSpeaker(selectedSpeakerId);
-            }
-        }
-    })
 </script>
 <script module lang="ts">
     /**
