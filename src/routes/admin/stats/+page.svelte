@@ -422,13 +422,11 @@
                         <div class="flex items-center justify-end gap-3">
                             {stringifyTime(del.stats.durationSpoken / 1000, "round")}
                             <div class="flex w-[33vw]">
-                                <Progress
-                                    height="h-8"
-                                    trackBg="bg-surface-100-900"
-                                    meterBg="bg-primary-500"
-                                    meterTransition="duration-500 transition-width"
-                                    value={maxDurationSpoken ? del.stats.durationSpoken * 100 / maxDurationSpoken : 0}
-                                />
+                                <Progress value={maxDurationSpoken ? del.stats.durationSpoken * 100 / maxDurationSpoken : 0}>
+                                    <Progress.Track class="bg-surface-100-900 h-8">
+                                        <Progress.Range class="bg-primary-500 duration-500 transition-width" />
+                                    </Progress.Track>
+                                </Progress>
                             </div>
                         </div>
                     </td>
