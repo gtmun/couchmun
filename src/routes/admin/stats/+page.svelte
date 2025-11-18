@@ -193,30 +193,43 @@
     <div class="flex items-center justify-between gap-2">
         <div class="flex items-center">
             <Pagination
-                data={Array.from({ length: $nSessions })}
+                count={$nSessions + 1}
+                pageSize={1}
                 page={displayPage + 1}
                 onPageChange={e => selectedPage = e.page - 1}
-                pageSize={1}
-                background=""
-                border=""
-                gap="gap-0.5"
-                buttonInactive="preset-ui-depressed"
             >
-                {#snippet labelEllipsis()}<MdiDotsHorizontal />{/snippet}
-                {#snippet labelNext()}<MdiChevronRight />{/snippet}
-                {#snippet labelPrevious()}<MdiChevronLeft />{/snippet}
+                <Pagination.PrevTrigger>
+                    <MdiChevronLeft />
+                </Pagination.PrevTrigger>
+                <Pagination.Context>
+                    {#snippet children(pagination)}
+                        {#each pagination().pages as page, index (page)}
+                            {#if page.type === 'page'}
+                                <Pagination.Item
+                                    class="tabular-nums"
+                                    {...page}
+                                >
+                                    {#if index == $nSessions}
+                                        <!-- All sessions page -->
+                                        <MdiStar /> 
+                                    {:else}
+                                        <div class="flex justify-center w-[1.5em]">
+                                            {page.value}
+                                        </div>
+                                    {/if}
+                                </Pagination.Item>
+                            {:else}
+                                <Pagination.Ellipsis {index}>
+                                    <MdiDotsHorizontal />
+                                </Pagination.Ellipsis>
+                            {/if}
+                        {/each}
+                    {/snippet}
+                </Pagination.Context>
+                <Pagination.NextTrigger>
+                    <MdiChevronRight />
+                </Pagination.NextTrigger>
             </Pagination>
-            <button
-                class={[
-                    "btn-icon-std",
-                    isAllSessions ? "preset-filled" : "preset-ui-depressed hover:preset-filled"
-                ]}
-                title="All Sessions"
-                aria-label="All Sessions"
-                onclick={() => selectedPage = $nSessions}
-            >
-                <MdiStar />
-            </button>
         </div>
         <div class="flex items-center gap-1">
             <Popover
