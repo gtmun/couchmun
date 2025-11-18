@@ -5,7 +5,7 @@
 -->
 
 <script lang="ts">
-    import { AppBar, Dialog } from '@skeletonlabs/skeleton-svelte';
+    import { AppBar, Dialog, Portal } from '@skeletonlabs/skeleton-svelte';
 
     import { navigating, page } from '$app/state';
     import type { RouteId } from '$app/types';
@@ -15,6 +15,7 @@
     import Navigation from '$lib/components/nav/Navigation.svelte';
     import SettingsNavigation from '$lib/components/nav/SettingsNavigation.svelte';
     import { getSessionContext } from '$lib/context/index.svelte';
+    import MdiClose from "~icons/mdi/close";
     import MdiGear from "~icons/mdi/gear";
     import MdiMenu from "~icons/mdi/menu";
 
@@ -43,6 +44,15 @@
             sessionData.tabTitleExtras = undefined;
         }
     })
+
+    const backdropBase = "fixed inset-0 z-50";
+    const backdropColor = "bg-surface-500/50";
+    const backdropAnim = "transition transition-discrete opacity-0 starting:data-[state=open]:opacity-0 data-[state=open]:opacity-100";
+    const positionerBase = "fixed inset-0 z-50 flex justify-start";
+    const cardBase = "h-screen card bg-surface-50-950 w-sm p-4 space-y-4 shadow-xl";
+    const cardAnim = "transition transition-discrete opacity-0 starting:data-[state=open]:opacity-0 data-[state=open]:opacity-100";
+    const cardLeft = "-translate-x-full starting:data-[state=open]:-translate-x-full data-[state=open]:translate-x-0 rounded-l-none";
+    const cardRight = "translate-x-[100vw] starting:data-[state=open]:translate-x-[100vw] data-[state=open]:translate-x-[calc(100vw_-_100%)] rounded-r-none";
 </script>
 
 {#if typeof thisLink !== "undefined"}
@@ -57,31 +67,28 @@
         <AppBar class="preset-ui-header">   
             <AppBar.Toolbar class="grid-cols-[auto_1fr_auto]">
                 <AppBar.Lead>
-                    <button class="btn-icon-std">
-                        <MdiMenu />
-                    </button>
-                    <!-- TODO reimplement dialog! -->
-                    <!-- Hamburger menu button -->
-                    <!-- <Dialog
+                     <Dialog
                         open={openDrawer === "nav"}
                         onOpenChange={e => openDrawer = e.open ? "nav" : null}
-                        triggerBase="btn-icon-std"
-                        contentBase="bg-surface-50-950 p-4 space-y-4 shadow-xl w-[280px] md:w-[480px] h-screen"
-                        backdropBackground="bg-surface-500/50"
-                        positionerJustify="justify-start"
-                        positionerAlign=""
-                        positionerPadding=""
-                        transitionsPositionerIn={{ x: -480, duration: 200 }}
-                        transitionsPositionerOut={{ x: -480, duration: 200 }}
-                        aria-label="Pages"
-                    >
-                        {#snippet trigger()}
+                     >
+                        <Dialog.Trigger class="btn-icon-std">
                             <MdiMenu />
-                        {/snippet}
-                        {#snippet content()}
-                            <Navigation close={() => openDrawer = null} {links} />
-                        {/snippet}
-                    </Dialog> -->
+                        </Dialog.Trigger>
+                        <Portal>
+                            <Dialog.Backdrop class={[backdropBase, backdropColor, backdropAnim]} />
+                            <Dialog.Positioner class={positionerBase}>
+                                <Dialog.Content class={[cardBase, cardAnim, cardLeft]}>
+                                    <header class="flex justify-between items-center">
+                                        <Dialog.Title class="text-2xl font-bold">Dashboard</Dialog.Title>
+                                        <Dialog.CloseTrigger class="btn-icon preset-tonal">
+                                            <MdiClose />
+                                        </Dialog.CloseTrigger>
+                                    </header>
+                                    <Navigation close={() => openDrawer = null} {links} />
+                                </Dialog.Content>
+                            </Dialog.Positioner>
+                        </Portal>
+                    </Dialog>
                 </AppBar.Lead>
                 <AppBar.Headline>
                     <!--
@@ -104,34 +111,32 @@
                     </div>
                 </AppBar.Headline>
                 <AppBar.Trail>
-                    <button class="btn-icon-std">
-                        <MdiGear />
-                    </button>
                     <!-- Settings -->
-                     <!-- TODO: reimplement dialog -->
-                    <!-- <Dialog
+                    <Dialog
                         open={openDrawer === "settings"}
                         onOpenChange={e => openDrawer = e.open ? "settings" : null}
-                        triggerBase="btn-icon-std"
-                        contentBase="bg-surface-50-950 p-4 space-y-4 shadow-xl w-[280px] md:w-[480px] h-screen"
-                        backdropBackground="transition-colors {settingsBackdrop ? "bg-surface-500/50" : ''}"
-                        positionerJustify="justify-end"
-                        positionerAlign=""
-                        positionerPadding=""
-                        transitionsPositionerIn={{ x: 480, duration: 200 }}
-                        transitionsPositionerOut={{ x: 480, duration: 200 }}
-                        aria-label="Settings"
-                    >
-                        {#snippet trigger()}
+                     >
+                        <Dialog.Trigger class="btn-icon-std">
                             <MdiGear />
-                        {/snippet}
-                        {#snippet content()}
-                            <SettingsNavigation
-                                close={() => openDrawer = null}
-                                onAccordionOpenChange={open => settingsBackdrop = !open}
-                            />
-                        {/snippet}
-                    </Dialog> -->
+                        </Dialog.Trigger>
+                        <Portal>
+                            <Dialog.Backdrop class={[backdropBase, settingsBackdrop && backdropColor, backdropAnim]} />
+                            <Dialog.Positioner class={positionerBase}>
+                                <Dialog.Content class={[cardBase, cardAnim, cardRight]}>
+                                    <header class="flex justify-between items-center">
+                                        <Dialog.Title class="text-2xl font-bold">Settings</Dialog.Title>
+                                        <Dialog.CloseTrigger class="btn-icon preset-tonal">
+                                            <MdiClose />
+                                        </Dialog.CloseTrigger>
+                                    </header>
+                                    <SettingsNavigation
+                                        close={() => openDrawer = null}
+                                        onAccordionOpenChange={open => settingsBackdrop = !open}
+                                    />
+                                </Dialog.Content>
+                            </Dialog.Positioner>
+                        </Portal>
+                    </Dialog>
                 </AppBar.Trail>
             </AppBar.Toolbar>
         </AppBar>
