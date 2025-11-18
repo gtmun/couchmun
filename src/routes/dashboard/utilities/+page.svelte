@@ -4,8 +4,7 @@
   Notably, this page includes a timer and title, which can be used quite generically.
 -->
 <script lang="ts">
-    import { Switch } from "@skeletonlabs/skeleton-svelte";
-
+    import ToggleButton from "$lib/components/controls/ToggleButton.svelte";
     import DelFlag from "$lib/components/del-label/DelFlag.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
@@ -51,25 +50,18 @@
                     </h2>
                     <!-- "Show flag" switch, which should appear if not running -->
                     {#if !running}
-                        <!-- The a11y options appear to be missing from Switch, so I've added them here -->
-                        <div 
+                        <div
                             class="pl-3"
                             transition:lazyslide={{ axis: "x" }}
-                            aria-label={showFlag ? "Hide Flag" : "Show Flag"}
-                            role="switch"
-                            aria-checked={showFlag}
                         >
-                            <Switch
+                            <ToggleButton
                                 name="utils-flag-toggle"
-                                controlActive="preset-filled-primary-500"
-                                checked={showFlag}
-                                onCheckedChange={e => showFlag = e.checked}
-                                compact
                                 label={showFlag ? "Hide Flag" : "Show Flag"}
+                                bind:checked={showFlag}
                             >
                                 {#snippet inactiveChild()}<MdiFlagOff />{/snippet}
                                 {#snippet activeChild()}<MdiFlag />{/snippet}
-                            </Switch>
+                            </ToggleButton>
                         </div>
                     {/if}
                 </div>

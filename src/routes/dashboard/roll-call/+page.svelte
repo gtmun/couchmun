@@ -42,13 +42,18 @@
                     name="presence-{attrs.id}"
                     value={$delegates[i].presence}
                     onValueChange={e => db.updateDelegate(attrs.id, { presence: asPresence(e.value) })}
-                    
                 >
-                    {#each radio as { presence, label, icon } (presence)}
-                        <Segment.Item value={presence} classes="hover:preset-tonal">
-                            <IconLabel {icon} {label} />
-                        </Segment.Item>
-                    {/each}
+                    <SegmentedControl.Control>
+                        <SegmentedControl.Indicator />
+                        {#each radio as { presence, label, icon } (presence)}
+                            <SegmentedControl.Item value={presence}>
+                                <SegmentedControl.ItemText>
+                                    <IconLabel {icon} {label} />
+                                </SegmentedControl.ItemText>
+                                <SegmentedControl.ItemHiddenInput />
+                            </SegmentedControl.Item>
+                        {/each}
+                    </SegmentedControl.Control>
                 </SegmentedControl>
             </div>
         </div>

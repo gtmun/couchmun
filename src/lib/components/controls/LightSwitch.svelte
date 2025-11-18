@@ -15,14 +15,22 @@
 </script>
 
 <Switch
-    name="color-scheme"
-    checked={colorScheme !== "dark"}
-    {onCheckedChange}
-    controlInactive="bg-indigo-500"
-    thumbInactive="bg-indigo-900"
-    controlActive="bg-yellow-500"
-    thumbActive="bg-yellow-100"
+  name="color-scheme"
+  checked={colorScheme !== "dark"}
+  {onCheckedChange}
 >
-    {#snippet inactiveChild()}<MdiWeatherNight width="14" height="14" />{/snippet}
-    {#snippet activeChild()}<MdiWeatherSunny width="14" height="14" />{/snippet}
+  <Switch.Control class="bg-indigo-500 data-[state=checked]:bg-yellow-500">
+    <Switch.Thumb class="bg-indigo-900 data-[state=checked]:bg-yellow-100">
+      <Switch.Context>
+          {#snippet children(switch_)}
+            {#if switch_().checked}
+              <MdiWeatherSunny width="14" height="14" class="text-black" />
+            {:else}
+              <MdiWeatherNight width="14" height="14" class="text-white" />
+            {/if}
+          {/snippet}
+      </Switch.Context>
+    </Switch.Thumb>
+  </Switch.Control>
+  <Switch.HiddenInput />
 </Switch>

@@ -7,9 +7,10 @@
 <script lang="ts">
     import { Switch } from "@skeletonlabs/skeleton-svelte";
     import { type Snippet } from "svelte";
-    import type { ClassValue } from "svelte/elements";
 
-    interface Props {
+    import type { PropsOf } from "$lib/util";
+
+    interface Props extends PropsOf<typeof Switch> {
         /**
          * HTML for the label.
          */
@@ -27,31 +28,34 @@
         /**
          * Whether this slide toggle is disabled.
          */
-        disabled?: boolean,
-        /**
-         * The Tailwind CSS classes applied on the label.
-         */
-        labelClass?: ClassValue,
-        [key: string]: any
+        disabled?: boolean
     }
     let {
         children,
         name,
-        checked = $bindable(undefined),
-        disabled = undefined,
-        labelClass = "flex items-center justify-between gap-3 label",
+        checked = $bindable(),
+        disabled = false,
+        class: extraClasses,
         ...rest
     }: Props = $props();
 </script>
 
-<label class={labelClass}>
-    {@render children()}
-    <Switch 
-        {name}
-        {checked}
-        onCheckedChange={e => checked = e.checked}
-        {disabled}
-        controlActive="bg-primary-500"
-        {...rest}
-    />
-</label>
+<Switch
+    {name}
+    {checked}
+    onCheckedChange={e => checked = e.checked}
+    {disabled}
+    {...rest}
+    class={[
+        "flex items-center justify-between gap-3 label",
+        extraClasses
+    ]}
+>
+    <Switch.Label>
+        {@render children()}
+    </Switch.Label>
+    <Switch.Control class="data-[state=checked]:preset-filled-primary-500">
+        <Switch.Thumb />
+    </Switch.Control>
+    <Switch.HiddenInput />
+</Switch>
