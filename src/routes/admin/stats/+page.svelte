@@ -39,17 +39,24 @@
         return nPrevSessions + +(typeof currentSessionKey === "undefined");
     }, 0);
 
-    let page = $state(-1);
-    $effect(() => {
-        // When either cSK or nSessions update, it'll force page to not be -1.
-        if (page === -1) page = $currentSessionKey ?? ($nSessions - 1);
-    });
+    // The page to use for stats.
+    // - selectedPage is the page manually set by clicking the pagination buttons.
+    //    If undefined, this falls back to the current session key or the last session.
+    //    If selectedPage == nSessions, then a summary page for all sessions is displayed.
+    // - displayPage is the true page to display on stats.
+    //    This will be selectedPage if manually selected, otherwise it will be based on the other types.
+    let selectedPage = $state<number>();
+    let displayPage = $derived(
+        selectedPage ?? $currentSessionKey ?? ($nSessions - 1)
+    );
     
+    let isAllSessions = $derived(displayPage === $nSessions);
+    let isCurrentSession = $derived(displayPage === $currentSessionKey);
+    let selectedSession = $derived($prevSessions[displayPage] ?? $delegates ?? []);
+
     const presentDelegateIds: Set<DelegateID> = $derived(new Set($delegates.map(d => d.id)));
     const sessionDelegates: Delegate[] = $derived.by(() => {
-        let session = $prevSessions[page] ?? [];
-
-        if (page === $nSessions) {
+        if (isAllSessions) {
             // All sessions
 
             // Not a map that will be exposed.
@@ -74,13 +81,16 @@
             }
 
             return Array.from($delegates, d => Object.assign(new Delegate(), d, delStats.get(d.id)));
-        } else if (page === $currentSessionKey || !session) {
+        } else if (isCurrentSession) {
             // Current session:
             return $delegates;
         } else {
             // Past session:
-            let sessionMap = new Map(session.map(d => [d.id, d.session]));
-            return Array.from($delegates, d => Object.assign(new Delegate(), d, sessionMap.get(d.id)));
+            let sessionMap = new Map(selectedSession.map(d => [d.id, d.session]));
+            return Array.from(
+                $delegates,
+                d => Object.assign(new Delegate(), d, sessionMap.get(d.id))
+            );
         }
     });
 
@@ -160,7 +170,7 @@
         let data = {
             committee: $barTitle,
             delegates: $delegates.map(d => Object.assign(d.getAttributes(), { id: d.id })),
-            session: ($prevSessions[page] ?? []).filter(d => presentDelegateIds.has(d.id))
+            session: selectedSession.filter(d => presentDelegateIds.has(d.id))
         };
         downloadFile("couchmun-del-stats.json", JSON.stringify(data), "application/json");
     }
@@ -184,8 +194,8 @@
         <div class="flex items-center">
             <Pagination
                 data={Array.from({ length: $nSessions })}
-                page={page + 1}
-                onPageChange={e => page = e.page - 1}
+                page={displayPage + 1}
+                onPageChange={e => selectedPage = e.page - 1}
                 pageSize={1}
                 background=""
                 border=""
@@ -199,11 +209,11 @@
             <button
                 class={[
                     "btn-icon-std",
-                    page == $nSessions ? "preset-filled" : "preset-ui-depressed hover:preset-filled"
+                    isAllSessions ? "preset-filled" : "preset-ui-depressed hover:preset-filled"
                 ]}
                 title="All Sessions"
                 aria-label="All Sessions"
-                onclick={() => page = $nSessions}
+                onclick={() => selectedPage = $nSessions}
             >
                 <MdiStar />
             </button>
@@ -231,7 +241,15 @@
                     <form class="flex flex-col gap-2 overflow-hidden" onsubmit={e => e.preventDefault()}>
                         <label>
                             Session
-                            <input class="input" type="number" min="1" max={$nSessions} value={Math.max(1, Math.min(page + 1, $nSessions))}>
+                            <input 
+                                class="input"
+                                type="number"
+                                min="1" max={$nSessions}
+                                bind:value={
+                                    () => Math.max(0, Math.min(displayPage, $nSessions - 1)) + 1,
+                                    p => selectedPage =  Math.max(0, Math.min(p - 1, $nSessions - 1))
+                                }
+                            >
                         </label>
                         <label>
                             Delegate
@@ -351,8 +369,8 @@
                     <div class="flex flex-col gap-2 overflow-hidden">
                         <h4 class="h4">Export Statistics</h4>
                         <button class="btn preset-filled-primary-500" onclick={exportAllStats}>Export All Sessions</button>
-                        {#if page < $nSessions}
-                            <button class="btn preset-filled-primary-500" onclick={exportStats}>Export Session {page + 1}</button>
+                        {#if !isAllSessions}
+                            <button class="btn preset-filled-primary-500" onclick={exportStats}>Export Session {displayPage + 1}</button>
                         {/if}
                     </div>
                 {/snippet}
