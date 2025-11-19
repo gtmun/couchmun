@@ -2,7 +2,7 @@
   @component The admin stats page (used for viewing delegate statistics).
 -->
 <script lang="ts">
-    import { Progress, Pagination, Popover } from "@skeletonlabs/skeleton-svelte";
+    import { Progress, Pagination, Popover, Portal } from "@skeletonlabs/skeleton-svelte";
 
     import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
     import InputPlusMinus from "$lib/components/controls/InputPlusMinus.svelte";
@@ -239,154 +239,160 @@
                     popupsOpen.editStats = e.open;
                 }}
                 positioning={{ placement: 'bottom' }}
-                triggerBase={popupsOpen.editStats ? "preset-filled" : "preset-ui-depressed hover:preset-filled"}
-                triggerClasses="btn-icon-std"
-                triggerAriaLabel="Edit Stats"
-                contentBase={POPUP_CARD_CLASSES}
-                arrow
-                arrowBackground="var(--color-surface-100-900)"
             >
-                {#snippet trigger()}
+                <Popover.Trigger
+                    class={["btn-icon-std", popupsOpen.editStats ? "preset-filled" : "preset-ui-depressed hover:preset-filled"]}
+                    aria-label="Edit Stats"
+                >
                     <MdiPencil />
-                {/snippet}
-                {#snippet content()}
-                    {@const selectedDel = typeof editStatsDel !== "undefined" ? findDelegate($delegates, editStatsDel) : undefined}
-                    <form class="flex flex-col gap-2 overflow-hidden" onsubmit={e => e.preventDefault()}>
-                        <label>
-                            Session
-                            <input 
-                                class="input"
-                                type="number"
-                                min="1" max={$nSessions}
-                                bind:value={
-                                    () => Math.max(0, Math.min(displayPage, $nSessions - 1)) + 1,
-                                    p => selectedPage =  Math.max(0, Math.min(p - 1, $nSessions - 1))
-                                }
-                            >
-                        </label>
-                        <label>
-                            Delegate
-                            <DelCombobox delegates={$delegates} bind:value={editStatsDel} />
-                        </label>
-                        {#if typeof selectedDel !== "undefined"}
-                            <div class="flex flex-col gap-2" transition:lazyslide>
+                </Popover.Trigger>
+                <Portal>
+                    <Popover.Positioner>
+                        <Popover.Content class={POPUP_CARD_CLASSES}>
+                            {@const selectedDel = typeof editStatsDel !== "undefined" ? findDelegate($delegates, editStatsDel) : undefined}
+                            <form class="flex flex-col gap-2 overflow-hidden" onsubmit={e => e.preventDefault()}>
                                 <label>
-                                    Motions Proposed
-                                    <InputPlusMinus 
-                                        name="stats-motions-proposed"
-                                        ariaLabelName="Motions Proposed"
+                                    Session
+                                    <input 
+                                        class="input"
+                                        type="number"
+                                        min="1" max={$nSessions}
                                         bind:value={
-                                            () => selectedDel.stats.motionsProposed,
-                                            v => db.updateDelegate(editStatsDel, d => { d.stats.motionsProposed = v; })
+                                            () => Math.max(0, Math.min(displayPage, $nSessions - 1)) + 1,
+                                            p => selectedPage =  Math.max(0, Math.min(p - 1, $nSessions - 1))
                                         }
-                                    />
+                                    >
                                 </label>
                                 <label>
-                                    Motions Accepted
-                                    <InputPlusMinus
-                                        name="stats-motions-accepted"
-                                        ariaLabelName="Motions Accepted"
-                                        bind:value={
-                                            () => selectedDel.stats.motionsAccepted,
-                                            v => db.updateDelegate(editStatsDel, d => { d.stats.motionsAccepted = v; })
-                                        }
-                                    />
+                                    Delegate
+                                    <DelCombobox delegates={$delegates} bind:value={editStatsDel} />
                                 </label>
-                                <label>
-                                    Times Spoken
-                                    <InputPlusMinus
-                                        name="stats-times-spoken"
-                                        ariaLabelName="Times Spoken"
-                                        bind:value={
-                                            () => selectedDel.stats.timesSpoken,
-                                            v => db.updateDelegate(editStatsDel, d => { d.stats.timesSpoken = v; })
-                                        }
-                                    />
-                                </label>
-                                <div class="flex flex-col gap-1">
-                                    <label class="tabular-nums" for="stats-duration-spoken">
-                                        Duration Spoken &middot; {stringifyTime(selectedDel.stats.durationSpoken / 1000, "round")}
-                                    </label>
-                                    {#if editStatsTimeGuide}
-                                        <!-- Time guide
-                                        <span class="text-surface-500" transition:fade={{ duration: 150 }}>
-                                            &middot; {sanitizeTime(editStatsTimeInput)}
-                                        </span> -->
-                                    {/if}
-                                    <div class="flex gap-1">
-                                        <!-- durationButtons is const, so this will not update -->
-                                        <!-- eslint-disable-next-line svelte/require-each-key -->
-                                        {#each durationButtons as item}
-                                            {#if item.type === "sep"}
-                                                <span><MdiRhombusMediumOutline /></span>
-                                            {:else if item.type === "btn"}
-                                                <button 
-                                                    type="button"
-                                                    class={["btn btn-sm tabular-nums", item.time < 0 ? "preset-filled-error-800-200" : "preset-filled-success-800-200"]}
-                                                    onclick={() => addToDuration(editStatsDel, item.time)}
-                                                >
-                                                    {item.label}
-                                                </button>
+                                {#if typeof selectedDel !== "undefined"}
+                                    <div class="flex flex-col gap-2" transition:lazyslide>
+                                        <label>
+                                            Motions Proposed
+                                            <InputPlusMinus 
+                                                name="stats-motions-proposed"
+                                                ariaLabelName="Motions Proposed"
+                                                bind:value={
+                                                    () => selectedDel.stats.motionsProposed,
+                                                    v => db.updateDelegate(editStatsDel, d => { d.stats.motionsProposed = v; })
+                                                }
+                                            />
+                                        </label>
+                                        <label>
+                                            Motions Accepted
+                                            <InputPlusMinus
+                                                name="stats-motions-accepted"
+                                                ariaLabelName="Motions Accepted"
+                                                bind:value={
+                                                    () => selectedDel.stats.motionsAccepted,
+                                                    v => db.updateDelegate(editStatsDel, d => { d.stats.motionsAccepted = v; })
+                                                }
+                                            />
+                                        </label>
+                                        <label>
+                                            Times Spoken
+                                            <InputPlusMinus
+                                                name="stats-times-spoken"
+                                                ariaLabelName="Times Spoken"
+                                                bind:value={
+                                                    () => selectedDel.stats.timesSpoken,
+                                                    v => db.updateDelegate(editStatsDel, d => { d.stats.timesSpoken = v; })
+                                                }
+                                            />
+                                        </label>
+                                        <div class="flex flex-col gap-1">
+                                            <label class="tabular-nums" for="stats-duration-spoken">
+                                                Duration Spoken &middot; {stringifyTime(selectedDel.stats.durationSpoken / 1000, "round")}
+                                            </label>
+                                            {#if editStatsTimeGuide}
+                                                <!-- Time guide
+                                                <span class="text-surface-500" transition:fade={{ duration: 150 }}>
+                                                    &middot; {sanitizeTime(editStatsTimeInput)}
+                                                </span> -->
                                             {/if}
-                                        {/each}
+                                            <div class="flex gap-1">
+                                                <!-- durationButtons is const, so this will not update -->
+                                                <!-- eslint-disable-next-line svelte/require-each-key -->
+                                                {#each durationButtons as item}
+                                                    {#if item.type === "sep"}
+                                                        <span><MdiRhombusMediumOutline /></span>
+                                                    {:else if item.type === "btn"}
+                                                        <button 
+                                                            type="button"
+                                                            class={["btn btn-sm tabular-nums", item.time < 0 ? "preset-filled-error-800-200" : "preset-filled-success-800-200"]}
+                                                            onclick={() => addToDuration(editStatsDel, item.time)}
+                                                        >
+                                                            {item.label}
+                                                        </button>
+                                                    {/if}
+                                                {/each}
+                                            </div>
+                                            <div class="flex gap-1 items-center">
+                                                <input 
+                                                    name="stats-duration-spoken"
+                                                    class="input"
+                                                    placeholder="mm:ss"
+                                                    bind:value={editStatsTimeInput}
+                                                    onfocus={() => editStatsTimeGuide = true}
+                                                    onblur={() => { editStatsTimeGuide = false; editStatsTimeInput = sanitizeTime(editStatsTimeInput); }}
+                                                >
+                                                <button
+                                                    type="button"
+                                                    class="btn-icon preset-filled"
+                                                    onclick={() => addToDuration(editStatsDel, -parseTime(editStatsTimeInput)!)}
+                                                    aria-label="Remove from Duration Spoken"
+                                                    title="Remove from Duration Spoken"
+                                                >
+                                                    <MdiMinus />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="btn-icon preset-filled"
+                                                    onclick={() => addToDuration(editStatsDel, +parseTime(editStatsTimeInput)!)}
+                                                    aria-label="Add to Duration Spoken"
+                                                    title="Add to Duration Spoken"
+                                                >
+                                                    <MdiPlus />
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="flex gap-1 items-center">
-                                        <input 
-                                            name="stats-duration-spoken"
-                                            class="input"
-                                            placeholder="mm:ss"
-                                            bind:value={editStatsTimeInput}
-                                            onfocus={() => editStatsTimeGuide = true}
-                                            onblur={() => { editStatsTimeGuide = false; editStatsTimeInput = sanitizeTime(editStatsTimeInput); }}
-                                        >
-                                        <button
-                                            type="button"
-                                            class="btn-icon preset-filled"
-                                            onclick={() => addToDuration(editStatsDel, -parseTime(editStatsTimeInput)!)}
-                                            aria-label="Remove from Duration Spoken"
-                                            title="Remove from Duration Spoken"
-                                        >
-                                            <MdiMinus />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn-icon preset-filled"
-                                            onclick={() => addToDuration(editStatsDel, +parseTime(editStatsTimeInput)!)}
-                                            aria-label="Add to Duration Spoken"
-                                            title="Add to Duration Spoken"
-                                        >
-                                            <MdiPlus />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        {/if}
-                    </form>
-                {/snippet}
+                                {/if}
+                            </form>
+                        </Popover.Content>
+                    </Popover.Positioner>
+                </Portal>
             </Popover>
             <Popover
                 open={popupsOpen.exportStats}
                 onOpenChange={e => popupsOpen.exportStats = e.open}
                 positioning={{ placement: 'bottom' }}
-                triggerBase="preset-filled-warning-500"
-                triggerClasses="btn-icon-std"
-                triggerAriaLabel="Export Stats"
-                contentBase={POPUP_CARD_CLASSES}
-                arrow
-                arrowBackground="var(--color-surface-100-900)"
             >
-                {#snippet trigger()}
+                <Popover.Trigger
+                    class="btn-icon-std preset-filled-warning-500"
+                    aria-label="Export Stats"
+                >
                     <MdiDatabaseExportOutline />
-                {/snippet}
-                {#snippet content()}
-                    <div class="flex flex-col gap-2 overflow-hidden">
-                        <h4 class="h4">Export Statistics</h4>
-                        <button class="btn preset-filled-primary-500" onclick={exportAllStats}>Export All Sessions</button>
-                        {#if !isAllSessions}
-                            <button class="btn preset-filled-primary-500" onclick={exportStats}>Export Session {displayPage + 1}</button>
-                        {/if}
-                    </div>
-                {/snippet}
+                </Popover.Trigger>
+                <Portal>
+                    <Popover.Positioner>
+                        <Popover.Content class={POPUP_CARD_CLASSES}>
+                            <Popover.Title class="flex justify-center text-lg font-bold">
+                                Export Statistics
+                            </Popover.Title>
+                            <Popover.Description>
+                                <div class="flex flex-col gap-2 overflow-hidden">
+                                    <button class="btn preset-filled-primary-500" onclick={exportAllStats}>Export All Sessions</button>
+                                    {#if !isAllSessions}
+                                        <button class="btn preset-filled-primary-500" onclick={exportStats}>Export Session {displayPage + 1}</button>
+                                    {/if}
+                                </div>
+                            </Popover.Description>
+                        </Popover.Content>
+                    </Popover.Positioner>
+                </Portal>
             </Popover>
         </div>
     </div>
