@@ -6,6 +6,7 @@
 <script lang="ts">
     import { Accordion } from "@skeletonlabs/skeleton-svelte";
     import { getContext } from "svelte";
+    import type { Writable } from "svelte/store";
     import { slide } from "svelte/transition";
 
     import { goto } from "$app/navigation";
@@ -49,7 +50,7 @@
     const sessionData = getSessionContext();
     
     let accordion = $state<string[]>([]);
-    let theme = getContext<Theme>("theme");
+    let theme = getContext<Writable<Theme>>("theme");
 
     /**
      * This implements the functionality of the "Add Session" button.
@@ -101,7 +102,7 @@
         <MdiPalette />
     </div>
     <div class="flex justify-between">
-        Color Scheme <LightSwitch bind:colorScheme={theme.colorScheme} />
+        Color Scheme <LightSwitch bind:colorScheme={$theme.colorScheme} />
     </div>
     <Accordion value={accordion} multiple onValueChange={e => accordionChange(e.value)}>
         <Accordion.Item value="primary" class="text-primary-500">
@@ -120,7 +121,7 @@
                 {#snippet element(attributes)}
                     {#if !attributes.hidden}
                         <div {...attributes} transition:slide={{ duration: 150 }}>
-                            <PaletteSelector bind:selectedColor={theme.primaryShade} colors={[
+                            <PaletteSelector bind:selectedColor={$theme.primaryShade} colors={[
                                 {id: "tw:red",          label: "Red",     displayShade: "var(--color-red-500)"},
                                 {id: "tw:orange",       label: "Orange",  displayShade: "var(--color-orange-500)"},
                                 {id: "tw:amber",        label: "Amber",   displayShade: "var(--color-amber-500)"},
@@ -166,7 +167,7 @@
                 {#snippet element(attributes)}
                     {#if !attributes.hidden}
                         <div {...attributes} transition:slide={{ duration: 150 }}>
-                            <PaletteSelector bind:selectedColor={theme.surfaceShade} colors={[
+                            <PaletteSelector bind:selectedColor={$theme.surfaceShade} colors={[
                                 {id: "default-surface", label: "Default", displayShade: "#666666"},
                                 {id: "tw:slate-500",    label: "Slate",   displayShade: "var(--color-slate-500)"},
                                 {id: "tw:gray-500",     label: "Gray",    displayShade: "var(--color-gray-500)"},
@@ -183,7 +184,7 @@
     <div class="flex">
         <button
             class="btn preset-tonal-surface border border-surface-500 grow"
-            onclick={() => Object.assign(theme, THEME_DEFAULTS)}
+            onclick={() => $theme = structuredClone(THEME_DEFAULTS)}
         >
             <MdiReload />
             Reset Theme

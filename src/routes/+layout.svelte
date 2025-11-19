@@ -7,10 +7,10 @@
 
 <script lang="ts">
     import "../app.css";
-    import { onMount, setContext } from "svelte";
+    import { setContext } from "svelte";
 
     import { createSessionContext } from "$lib/context/index.svelte";
-    import { initThemeState, THEME_DEFAULTS, type Theme } from "$lib/context/theme.svelte";
+    import { initThemeState } from "$lib/context/theme.svelte";
     import { genStyles } from "$lib/util/chroma";
 
     let { children } = $props();
@@ -23,24 +23,14 @@
             (document.activeElement as HTMLElement)?.blur?.();
         }
     }
-    function onstorage(e: StorageEvent) {
-        if (e.key?.startsWith("theme.")) {
-            let key = e.key.slice(6);
-            let val = e.newValue ?? (THEME_DEFAULTS as any)[key];
-            (theme as any)[key] = val;
-        }
-    }
 
-    let theme = $state<Theme>(THEME_DEFAULTS);
+    let theme = initThemeState();
     setContext("theme", theme);
-    onMount(() => {
-        initThemeState(theme);
-    })
     $effect(() => {
-        if (theme.colorScheme === "dark") {
+        if ($theme.colorScheme === "dark") {
             document.documentElement.classList.add("dark");
         } else {
-            if (theme.colorScheme !== "light") theme.colorScheme = "light";
+            if ($theme.colorScheme !== "light") $theme.colorScheme = "light";
             document.documentElement.classList.remove("dark");
         }
     });
@@ -48,7 +38,7 @@
 
 {@render children()}
 
-<svelte:window onkeydown={keydown} onstorage={onstorage} />
+<svelte:window onkeydown={keydown} onstorage={theme.onstorage} />
 <svelte:head>
     <script>
         {
@@ -61,5 +51,5 @@
         }
     </script>
     <!-- HACK: Adding styles programmatically and without FOUC. -->
-    {@html `<style>${genStyles(theme.primaryShade, theme.surfaceShade)}</style>`}
+    {@html `<style>${genStyles($theme.primaryShade, $theme.surfaceShade)}</style>`}
 </svelte:head>
