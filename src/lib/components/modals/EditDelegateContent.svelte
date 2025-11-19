@@ -4,18 +4,24 @@
   This modal consists of a simple form to specify the delegate's attributes.
 -->
 <script lang="ts">
-    import ModalContent, { type ExitProps } from "$lib/components/modals/ModalContent.svelte";
+    import UniModalContent, { type ExitState } from "./UniModalContent.svelte";
+
     import type { DelegateAttrs } from "$lib/types";
 
     type SubmitData = { attrs: DelegateAttrs };
-    interface Props extends ExitProps<SubmitData> {
+    interface Props {
         /**
          * Original properties of the delegate.
          * 
          * If `undefined`, this form will be used to "create" a delegate
          * (rather than "edit" a delegate).
          */
-        attrs?: DelegateAttrs
+        attrs?: DelegateAttrs,
+
+        /**
+         * Callers to pass to content.
+         */
+        exitState: ExitState<SubmitData>,
     }
 
     let { 
@@ -23,8 +29,7 @@
             name: "",
             aliases: []
         },
-        open = $bindable(),
-        onSubmit,
+        exitState
     }: Props = $props();
 
     let newAttrs = $state(attrs);
@@ -44,7 +49,7 @@
     }
 </script>
 
-<ModalContent title="Editing {newAttrs.name}" bind:open {onSubmit}>
+<UniModalContent title="Editing {newAttrs.name}" {exitState}>
     {#snippet main({ submit, close })}
         <form class="flex flex-col gap-3" onsubmit={(e) => submitValue(e, submit)}>
             <label>
@@ -65,4 +70,4 @@
             </div>
         </form>
     {/snippet}
-</ModalContent>
+</UniModalContent>

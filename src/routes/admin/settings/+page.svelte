@@ -7,10 +7,10 @@
     import LabeledSwitch from "$lib/components/controls/LabeledSwitch.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import MetaTags from "$lib/components/MetaTags.svelte";
-    import ConfirmModalCard from "$lib/components/modals/ConfirmModalCard.svelte";
-    import EditDelegateCard from "$lib/components/modals/EditDelegateCard.svelte";
-    import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
-    import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
+    import ConfirmModal from "$lib/components/modals/ConfirmModal.svelte";
+    import EditDelegateContent from "$lib/components/modals/EditDelegateContent.svelte";
+    import EnableDelegatesContent from "$lib/components/modals/EnableDelegatesContent.svelte";
+    import UniModal from "$lib/components/modals/UniModal.svelte";
     import { _legacyFixDelFlag, db, queryStore } from "$lib/db/index.svelte";
     import { toKeyValueArray, toObject } from "$lib/db/keyval";
     import { DEFAULT_PRESET_KEY, getPreset, PRESETS } from "$lib/delegate_presets";
@@ -197,21 +197,19 @@
             >
                 Export to file...
             </button>
-            <Dialog
-                open={openModals.resetAllSettings}
-                onOpenChange={e => openModals.resetAllSettings = e.open}
-                triggerBase="btn preset-filled-error-500"
-                {...defaultModalClasses}
+            <ConfirmModal
+                bind:open={openModals.resetAllSettings}
+                success={resetAllSettings}
             >
                 {#snippet trigger()}
-                    Reset all settings
+                    <Dialog.Trigger class="btn preset-filled-error-500">
+                        Reset all settings
+                    </Dialog.Trigger>
                 {/snippet}
                 {#snippet content()}
-                    <ConfirmModalCard bind:open={openModals.resetAllSettings} success={resetAllSettings}>
-                        Are you sure you want to reset all settings? This will also wipe all sessions.
-                    </ConfirmModalCard>
+                    Are you sure you want to reset all settings? This will also wipe all sessions.
                 {/snippet}
-            </Dialog>
+            </ConfirmModal>
         </div>
     </div>
     <hr class="hr" />
@@ -314,47 +312,45 @@
                 </select>
             </label>
             <div class="flex gap-3 justify-center">
-                <Dialog
-                    open={openModals.addDelegate}
-                    onOpenChange={e => openModals.addDelegate = e.open}
-                    triggerBase="btn preset-filled-primary-500"
-                    {...defaultModalClasses}
+                <UniModal
+                    bind:open={openModals.addDelegate}
+                    onSubmit={(d: { attrs: DelegateAttrs }) => editDelegate(undefined, d)}
                 >
                     {#snippet trigger()}
-                        Add Delegate
+                        <Dialog.Trigger class="btn preset-filled-primary-500">
+                            Add Delegate
+                        </Dialog.Trigger>
                     {/snippet}
-                    {#snippet content()}
-                        <EditDelegateCard bind:open={openModals.addDelegate} onSubmit={d => editDelegate(undefined, d)} />
+                    {#snippet content(exitState)}
+                        <EditDelegateContent {exitState} />
                     {/snippet}
-                </Dialog>
-                <Dialog
-                    open={openModals.configureEnableDelegates}
-                    onOpenChange={e => openModals.configureEnableDelegates = e.open}
-                    triggerBase="btn preset-filled-primary-500"
-                    {...defaultModalClasses}
+                </UniModal>
+                <UniModal
+                    bind:open={openModals.configureEnableDelegates}
+                    onSubmit={configureEnableDelegates}
                 >
                     {#snippet trigger()}
-                        Enable/Disable Delegates
+                        <Dialog.Trigger class="btn preset-filled-primary-500">
+                            Enable/Disable Delegates
+                        </Dialog.Trigger>
                     {/snippet}
-                    {#snippet content()}
-                        <EnableDelegatesCard attrs={$delegates} bind:open={openModals.configureEnableDelegates} onSubmit={configureEnableDelegates} />
+                    {#snippet content(exitState)}
+                        <EnableDelegatesContent attrs={$delegates} {exitState} />
                     {/snippet}
-                </Dialog>
-                <Dialog 
-                    open={openModals.clearDelegates}
-                    onOpenChange={e => openModals.clearDelegates = e.open}
-                    triggerBase="btn preset-filled-error-500"
-                    {...defaultModalClasses}
+                </UniModal>
+                <ConfirmModal
+                    bind:open={openModals.clearDelegates}
+                    success={clearDelegates}
                 >
                     {#snippet trigger()}
-                        Clear Delegates
+                        <Dialog.Trigger class="btn preset-filled-error-500">
+                            Clear Delegates
+                        </Dialog.Trigger>
                     {/snippet}
                     {#snippet content()}
-                        <ConfirmModalCard bind:open={openModals.clearDelegates} success={clearDelegates}>
-                            Are you sure you want to remove all delegates?
-                        </ConfirmModalCard>
+                        Are you sure you want to remove all delegates?
                     {/snippet}
-                </Dialog>
+                </ConfirmModal>
             </div>
         </div>
         <!-- Delegate Table -->
@@ -379,22 +375,19 @@
                                 }>
                         </td>
                         <td class="text-right">
-                            <Dialog
-                                open={openModals.editDelegate[attrs.id]}
-                                onOpenChange={e => openModals.editDelegate[attrs.id] = e.open}
-                                triggerBase=""
-                                aria-label="Edit {attrs.name}"
-                                {...defaultModalClasses}
+                            <UniModal
+                                bind:open={openModals.editDelegate[attrs.id]}
+                                onSubmit={(d: { attrs: DelegateAttrs }) => editDelegate(attrs.id, d)}
                             >
                                 {#snippet trigger()}
-                                    <MdiPencil />
+                                    <Dialog.Trigger aria-label="Edit {attrs.name}">
+                                        <MdiPencil />
+                                    </Dialog.Trigger>
                                 {/snippet}
-                                {#snippet content()}
-                                    {#await db.delegates.get(attrs.id) then del}
-                                        <EditDelegateCard attrs={del?.getAttributes()} bind:open={openModals.editDelegate[attrs.id]} onSubmit={d => editDelegate(attrs.id, d)} />
-                                    {/await}
+                                {#snippet content(exitState)}
+                                    <EditDelegateContent attrs={attrs.getAttributes()} {exitState} />
                                 {/snippet}
-                            </Dialog>
+                            </UniModal>
                             <button
                                 onclick={() => deleteDelegate(attrs.id)}
                                 aria-label="Delete {attrs.name}"

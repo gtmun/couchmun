@@ -5,17 +5,17 @@
 -->
 
 <script lang="ts">
-    import { AppBar, Dialog, Portal } from '@skeletonlabs/skeleton-svelte';
+    import { AppBar, Dialog } from '@skeletonlabs/skeleton-svelte';
 
     import { navigating, page } from '$app/state';
     import type { RouteId } from '$app/types';
     import BarHeader from '$lib/components/app-bar/BarHeader.svelte';
     import BarStats from '$lib/components/app-bar/BarStats.svelte';
     import MetaTags from '$lib/components/MetaTags.svelte';
+    import UniModal, { modalCls } from '$lib/components/modals/UniModal.svelte';
     import Navigation from '$lib/components/nav/Navigation.svelte';
     import SettingsNavigation from '$lib/components/nav/SettingsNavigation.svelte';
     import { getSessionContext } from '$lib/context/index.svelte';
-    import MdiClose from "~icons/mdi/close";
     import MdiGear from "~icons/mdi/gear";
     import MdiMenu from "~icons/mdi/menu";
 
@@ -44,15 +44,6 @@
             sessionData.tabTitleExtras = undefined;
         }
     })
-
-    const backdropBase = "fixed inset-0 z-50";
-    const backdropColor = "bg-surface-500/50";
-    const backdropAnim = "transition transition-discrete opacity-0 starting:data-[state=open]:opacity-0 data-[state=open]:opacity-100";
-    const positionerBase = "fixed inset-0 z-50 flex justify-start";
-    const cardBase = "h-screen card bg-surface-50-950 w-sm p-4 space-y-4 shadow-xl";
-    const cardAnim = "transition transition-discrete opacity-0 starting:data-[state=open]:opacity-0 data-[state=open]:opacity-100";
-    const cardLeft = "-translate-x-full starting:data-[state=open]:-translate-x-full data-[state=open]:translate-x-0 rounded-l-none";
-    const cardRight = "translate-x-[100vw] starting:data-[state=open]:translate-x-[100vw] data-[state=open]:translate-x-[calc(100vw_-_100%)] rounded-r-none";
 </script>
 
 {#if typeof thisLink !== "undefined"}
@@ -67,28 +58,23 @@
         <AppBar class="preset-ui-header">   
             <AppBar.Toolbar class="grid-cols-[auto_1fr_auto]">
                 <AppBar.Lead>
-                     <Dialog
-                        open={openDrawer === "nav"}
-                        onOpenChange={e => openDrawer = e.open ? "nav" : null}
-                     >
-                        <Dialog.Trigger class="btn-icon-std">
-                            <MdiMenu />
-                        </Dialog.Trigger>
-                        <Portal>
-                            <Dialog.Backdrop class={[backdropBase, backdropColor, backdropAnim]} />
-                            <Dialog.Positioner class={positionerBase}>
-                                <Dialog.Content class={[cardBase, cardAnim, cardLeft]}>
-                                    <header class="flex justify-between items-center">
-                                        <Dialog.Title class="text-2xl font-bold">Dashboard</Dialog.Title>
-                                        <Dialog.CloseTrigger class="btn-icon preset-tonal">
-                                            <MdiClose />
-                                        </Dialog.CloseTrigger>
-                                    </header>
-                                    <Navigation close={() => openDrawer = null} {links} />
-                                </Dialog.Content>
-                            </Dialog.Positioner>
-                        </Portal>
-                    </Dialog>
+                    <UniModal
+                        title="Dashboard"
+                        type="drawerLeft"
+                        bind:open={
+                            () => openDrawer === "nav",
+                            open => openDrawer = open ? "nav" : null
+                        }
+                    >
+                        {#snippet trigger()}
+                            <Dialog.Trigger class="btn-icon-std">
+                                <MdiMenu />
+                            </Dialog.Trigger>
+                        {/snippet}
+                        {#snippet main({ close })}
+                            <Navigation {close} {links} />
+                        {/snippet}
+                    </UniModal>
                 </AppBar.Lead>
                 <AppBar.Headline>
                     <!--
@@ -112,31 +98,27 @@
                 </AppBar.Headline>
                 <AppBar.Trail>
                     <!-- Settings -->
-                    <Dialog
-                        open={openDrawer === "settings"}
-                        onOpenChange={e => openDrawer = e.open ? "settings" : null}
-                     >
-                        <Dialog.Trigger class="btn-icon-std">
-                            <MdiGear />
-                        </Dialog.Trigger>
-                        <Portal>
-                            <Dialog.Backdrop class={[backdropBase, settingsBackdrop && backdropColor, backdropAnim]} />
-                            <Dialog.Positioner class={positionerBase}>
-                                <Dialog.Content class={[cardBase, cardAnim, cardRight]}>
-                                    <header class="flex justify-between items-center">
-                                        <Dialog.Title class="text-2xl font-bold">Settings</Dialog.Title>
-                                        <Dialog.CloseTrigger class="btn-icon preset-tonal">
-                                            <MdiClose />
-                                        </Dialog.CloseTrigger>
-                                    </header>
-                                    <SettingsNavigation
-                                        close={() => openDrawer = null}
-                                        onAccordionOpenChange={open => settingsBackdrop = !open}
-                                    />
-                                </Dialog.Content>
-                            </Dialog.Positioner>
-                        </Portal>
-                    </Dialog>
+                    <UniModal
+                        title="Settings"
+                        type="drawerRight"
+                        backdropColor={[settingsBackdrop && modalCls.backdrop.color]}
+                        bind:open={
+                            () => openDrawer === "settings",
+                            open => openDrawer = open ? "settings" : null
+                        }
+                    >
+                        {#snippet trigger()}
+                            <Dialog.Trigger class="btn-icon-std">
+                                <MdiGear />
+                            </Dialog.Trigger>
+                        {/snippet}
+                        {#snippet main({ close })}
+                            <SettingsNavigation
+                                {close}
+                                onAccordionOpenChange={open => settingsBackdrop = !open}
+                            />
+                        {/snippet}
+                    </UniModal>
                 </AppBar.Trail>
             </AppBar.Toolbar>
         </AppBar>

@@ -11,10 +11,10 @@
     import { flip } from "svelte/animate";
     import { dragHandle, dragHandleZone } from "svelte-dnd-action";
 
+
     import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import ConfirmModalCard from "$lib/components/modals/ConfirmModalCard.svelte";
-    import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
+    import ConfirmModal from "$lib/components/modals/ConfirmModal.svelte";
     import { type Delegate, findDelegate } from "$lib/db/delegates";
     import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
     import { isDndShadow } from "$lib/util/dnd";
@@ -379,24 +379,23 @@
                     onSelect={addSpeaker}
                 />
                 <!-- Clear order -->
-                <!-- TODO: disabled={order.length === 0 } -->
-                <Dialog
-                    open={openModals.clearSpeakers}
-                    onOpenChange={e => openModals.clearSpeakers = e.open}
-                    triggerBase="btn-icon-std preset-filled-primary-500"
-                    aria-label="Clear Speakers List"
-                    classes="flex items-center"
-                    {...defaultModalClasses}
+                <ConfirmModal
+                    bind:open={openModals.clearSpeakers}
+                    success={() => order = []}
                 >
                     {#snippet trigger()}
-                        <MdiDelete />
+                        <Dialog.Trigger
+                            class="btn-icon-std preset-filled-primary-500"
+                            disabled={order.length === 0}
+                            aria-label="Clear Speakers List"
+                        >
+                            <MdiDelete />
+                        </Dialog.Trigger>
                     {/snippet}
                     {#snippet content()}
-                        <ConfirmModalCard bind:open={openModals.clearSpeakers} success={() => order = []}>
-                            Are you sure you want to clear the Speakers List?
-                        </ConfirmModalCard>
+                        Are you sure you want to clear the Speakers List?
                     {/snippet}
-                </Dialog>
+                </ConfirmModal>
             </div>
         </div>
     {/if}
