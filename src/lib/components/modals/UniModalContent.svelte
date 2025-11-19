@@ -44,11 +44,11 @@
          * The footer content of the modal
          */
         footer?: Snippet<[ExitState<T>]>;
-    }
+    };
 </script>
 
 <header class="flex justify-between items-center">
-    <Dialog.Title class="text-lg font-bold">
+    <Dialog.Title class="text-xl font-bold">
         {#if typeof title === "string"}
             {title}
         {:else}

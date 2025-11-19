@@ -75,7 +75,7 @@
 <!-- External link to admin pages -->
 <nav>
     <div class="flex p-2 gap-3 items-center">
-        <h1 class="text-xl font-bold">Configure</h1>
+        <h2 class="text-lg font-bold">Configure</h2>
         <MdiWrench />
     </div>
     <ul class="flex flex-col gap-1">
@@ -97,7 +97,7 @@
 <!-- Theming -->
 <div class="flex flex-col p-2 gap-3">
     <div class="flex gap-3 items-center">
-        <h1 class="text-xl font-bold">Theme</h1>
+        <h2 class="text-lg font-bold">Theme</h2>
         <MdiPalette />
     </div>
     <div class="flex justify-between">
