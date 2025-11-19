@@ -51,7 +51,7 @@
         extraClasses
     ]}
 >
-    <Switch.Label>
+    <Switch.Label class="text-base base-font-weight">
         {@render children()}
     </Switch.Label>
     <Switch.Control class="data-[state=checked]:preset-filled-primary-500">

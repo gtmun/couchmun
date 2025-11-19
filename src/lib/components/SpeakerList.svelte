@@ -274,7 +274,7 @@
     }
 </script>
 
-<div class="card-filled p-4 overflow-y-hidden grow flex flex-col items-stretch gap-4">
+<div class="card-filled p-4 overflow-y-hidden grow flex flex-col items-stretch gap-4 min-w-90">
     <h4 class="h4 flex justify-center" id="sl-header-{sid}">
         {#if typeof title === "string"}
             {title}

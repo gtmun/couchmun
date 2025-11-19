@@ -182,14 +182,16 @@
     <div class="panel">
         <h3 class="h3 text-center">Control Panel</h3>
         <div class="flex gap-3 justify-center">
-            <FileUpload 
+            <FileUpload
                 name="import"
                 accept="application/json"
                 onFileAccept={e => importFile(e.files)}
+                class="w-fit"
             >
-                <button class="btn preset-filled-primary-500">
+                <FileUpload.Trigger class="btn preset-filled-primary-500">
                     Import from file...
-                </button>
+                </FileUpload.Trigger>
+                <FileUpload.HiddenInput />
             </FileUpload>
             <button
                 class="btn preset-filled-primary-500"
