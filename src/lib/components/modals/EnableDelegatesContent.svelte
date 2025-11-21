@@ -13,17 +13,23 @@
 <script lang="ts">
     import { SvelteSet } from "svelte/reactivity";
 
-    import ModalContent, { type ExitProps } from "$lib/components/modals/ModalContent.svelte";
+    import UniModalContent, { type ExitState } from "./UniModalContent.svelte";
+
     import type { Delegate } from "$lib/db/delegates";
 
-    interface Props extends ExitProps<Set<number>> {
+    interface Props {
         /**
          * List of delegates.
          */
         attrs: Delegate[];
+
+        /**
+         * Callers to pass to content.
+         */
+        exitState: ExitState<Set<number>>,
     }
 
-    let { attrs, open = $bindable(), onSubmit }: Props = $props();
+    let { attrs, exitState }: Props = $props();
     let enabled = new SvelteSet<number>();
     let inputText: string = $state("");
 
@@ -52,7 +58,8 @@
             .join("\n")
     );
 </script>
-<ModalContent title="Enable/Disable Delegates" bind:open {onSubmit}>
+
+<UniModalContent title="Enable/Disable Delegates" {exitState}>
     {#snippet main()}
         <div class="flex flex-col gap-3">
             Enter all delegates to enable:
@@ -68,4 +75,4 @@
             <button class="btn preset-filled-primary-500" type="button" onclick={() => submit(enabled)}>Done</button>
         </div>
     {/snippet}
-</ModalContent>
+</UniModalContent>

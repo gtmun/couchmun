@@ -5,13 +5,14 @@
 -->
 
 <script lang="ts">
-    import { AppBar, Modal } from '@skeletonlabs/skeleton-svelte';
+    import { AppBar, Dialog } from '@skeletonlabs/skeleton-svelte';
 
     import { navigating, page } from '$app/state';
     import type { RouteId } from '$app/types';
     import BarHeader from '$lib/components/app-bar/BarHeader.svelte';
     import BarStats from '$lib/components/app-bar/BarStats.svelte';
     import MetaTags from '$lib/components/MetaTags.svelte';
+    import UniModal, { modalCls } from '$lib/components/modals/UniModal.svelte';
     import Navigation from '$lib/components/nav/Navigation.svelte';
     import SettingsNavigation from '$lib/components/nav/SettingsNavigation.svelte';
     import { getSessionContext } from '$lib/context/index.svelte';
@@ -54,80 +55,72 @@
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">
     <!-- Header -->
     <header>
-        <AppBar 
-            background="preset-ui-header" 
-            toolbarGridCols="grid-cols-[auto_1fr_auto]" 
-            leadClasses="items-center"
-            headlineClasses="place-self-center"
-            trailClasses="items-center place-content-end"
-        >
-            {#snippet lead()}
-                <!-- Hamburger menu button -->
-                <Modal
-                    open={openDrawer === "nav"}
-                    onOpenChange={e => openDrawer = e.open ? "nav" : null}
-                    triggerBase="btn-icon-std"
-                    contentBase="bg-surface-50-950 p-4 space-y-4 shadow-xl w-[280px] md:w-[480px] h-screen"
-                    backdropBackground="bg-surface-500/50"
-                    positionerJustify="justify-start"
-                    positionerAlign=""
-                    positionerPadding=""
-                    transitionsPositionerIn={{ x: -480, duration: 200 }}
-                    transitionsPositionerOut={{ x: -480, duration: 200 }}
-                    aria-label="Pages"
-                >
-                    {#snippet trigger()}
-                        <MdiMenu />
-                    {/snippet}
-                    {#snippet content()}
-                        <Navigation close={() => openDrawer = null} {links} />
-                    {/snippet}
-                </Modal>
-            {/snippet}
-            <!--
-                Committee & topic title
-                if committeeMain == true: the committee title are front and center
-                if commiteeMain == false: the committee title are relegated for something else
-            -->
-            {@const committeeMain = !sessionData.barTopic}
-            <div class="flex flex-col items-center gap-2">
-                <div class={["flex max-sm:flex-col gap-1 items-stretch", committeeMain && "flex-col"]}>
-                    <BarHeader bind:title={$barTitle} size={committeeMain ? "md" : "sm"} />
-                    <div class={["border-2 rounded border-primary-900-100", committeeMain ? "m-1 mt-0" : "mx-4"]} role="separator"></div>
-                    <div class="flex items-center justify-center">
-                        <BarStats total={delegateCount} />
+        <AppBar class="preset-ui-header">   
+            <AppBar.Toolbar class="grid-cols-[auto_1fr_auto]">
+                <AppBar.Lead>
+                    <UniModal
+                        title="Dashboard"
+                        type="drawerLeft"
+                        bind:open={
+                            () => openDrawer === "nav",
+                            open => openDrawer = open ? "nav" : null
+                        }
+                    >
+                        {#snippet trigger()}
+                            <Dialog.Trigger class="btn-icon-std">
+                                <MdiMenu />
+                            </Dialog.Trigger>
+                        {/snippet}
+                        {#snippet main({ close })}
+                            <Navigation {close} {links} />
+                        {/snippet}
+                    </UniModal>
+                </AppBar.Lead>
+                <AppBar.Headline>
+                    <!--
+                        Committee & topic title
+                        if committeeMain == true: the committee title are front and center
+                        if commiteeMain == false: the committee title are relegated for something else
+                    -->
+                    {@const committeeMain = !sessionData.barTopic}
+                    <div class="flex flex-col items-center gap-2">
+                        <div class={["flex max-sm:flex-col gap-1 items-stretch", committeeMain && "flex-col"]}>
+                            <BarHeader bind:title={$barTitle} size={committeeMain ? "md" : "sm"} />
+                            <div class={["border-2 rounded border-primary-900-100", committeeMain ? "m-1 mt-0" : "mx-4"]} role="separator"></div>
+                            <div class="flex items-center justify-center">
+                                <BarStats total={delegateCount} />
+                            </div>
+                        </div>
+                        {#if sessionData.barTopic}
+                            <BarHeader bind:title={sessionData.barTopic} styles="italic capitalize" />
+                        {/if}
                     </div>
-                </div>
-                {#if sessionData.barTopic}
-                    <BarHeader bind:title={sessionData.barTopic} styles="italic capitalize" />
-                {/if}
-            </div>
-            {#snippet trail()}
-                <!-- Settings -->
-                <Modal
-                    open={openDrawer === "settings"}
-                    onOpenChange={e => openDrawer = e.open ? "settings" : null}
-                    triggerBase="btn-icon-std"
-                    contentBase="bg-surface-50-950 p-4 space-y-4 shadow-xl w-[280px] md:w-[480px] h-screen"
-                    backdropBackground="transition-colors {settingsBackdrop ? "bg-surface-500/50" : ''}"
-                    positionerJustify="justify-end"
-                    positionerAlign=""
-                    positionerPadding=""
-                    transitionsPositionerIn={{ x: 480, duration: 200 }}
-                    transitionsPositionerOut={{ x: 480, duration: 200 }}
-                    aria-label="Settings"
-                >
-                    {#snippet trigger()}
-                        <MdiGear />
-                    {/snippet}
-                    {#snippet content()}
-                        <SettingsNavigation
-                            close={() => openDrawer = null}
-                            onAccordionOpenChange={open => settingsBackdrop = !open}
-                        />
-                    {/snippet}
-                </Modal>
-            {/snippet}
+                </AppBar.Headline>
+                <AppBar.Trail>
+                    <!-- Settings -->
+                    <UniModal
+                        title="Settings"
+                        type="drawerRight"
+                        backdropColor={[settingsBackdrop && modalCls.backdrop.color]}
+                        bind:open={
+                            () => openDrawer === "settings",
+                            open => openDrawer = open ? "settings" : null
+                        }
+                    >
+                        {#snippet trigger()}
+                            <Dialog.Trigger class="btn-icon-std">
+                                <MdiGear />
+                            </Dialog.Trigger>
+                        {/snippet}
+                        {#snippet main({ close })}
+                            <SettingsNavigation
+                                {close}
+                                onAccordionOpenChange={open => settingsBackdrop = !open}
+                            />
+                        {/snippet}
+                    </UniModal>
+                </AppBar.Trail>
+            </AppBar.Toolbar>
         </AppBar>
     </header>
     <!-- Main -->

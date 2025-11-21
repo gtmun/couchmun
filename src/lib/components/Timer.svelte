@@ -10,7 +10,7 @@
     import { Progress } from "@skeletonlabs/skeleton-svelte";
     import { onDestroy, onMount, untrack } from "svelte";
 
-    import { clamp, type PropsOf } from "$lib/util";
+    import { clamp } from "$lib/util";
     import { makeEditable } from "$lib/util/action.svelte";
     import { parseTime, stringifyTime } from "$lib/util/time";
     import MdiPause from "~icons/mdi/pause";
@@ -134,7 +134,7 @@
         meterTransition: `duration-1000 ${running ? 'transition-[background-color]' : 'transition-[background-color,width]'}`,
         meterBg: color,
         trackBg: "preset-ui-depressed"
-    } satisfies PropsOf<typeof Progress>);
+    });
 
     // Timer related handlers
     let lastStart: number | undefined = undefined;
@@ -314,7 +314,11 @@
     </h2>
     <div class="grid grid-cols-[1fr_auto] gap-1 items-center">
         <!-- The progress bar -->
-        <Progress {...barProps} />
+        <Progress value={barProps.value}>
+            <Progress.Track class={[barProps.trackBg, barProps.height]}>
+                <Progress.Range class={[barProps.meterBg, barProps.meterTransition]} />
+            </Progress.Track>
+        </Progress>
         <!-- A start/pause button -->
         {#if !hidePlay}
             <button 

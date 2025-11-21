@@ -7,12 +7,13 @@
 -->
 
 <script lang="ts">
-    import ModalContent, { type ExitProps } from "$lib/components/modals/ModalContent.svelte";
+    import UniModalContent, { type ExitState } from "./UniModalContent.svelte";
+
     import MotionForm from "$lib/components/motions/form/MotionForm.svelte";
     import { type MotionSchema } from "$lib/motions/definitions";
     import type { Motion } from "$lib/types";
     
-    interface Props extends ExitProps<Motion> {
+    interface Props {
         /**
          * The motion data to edit.
          */
@@ -21,19 +22,23 @@
          * The motion validation schema.
          */
         motionSchema: MotionSchema;
+
+        /**
+         * Callers to pass to content.
+         */
+        exitState: ExitState<Motion>;
     }
     let {
         motion,
         motionSchema,
-        open = $bindable(),
-        onSubmit
+        exitState
     }: Props = $props();
 
 
     let inputMotion = $state(motionSchema.encode(motion));
 </script>
 
-<ModalContent title="Editing Motion" bind:open {onSubmit}>
+<UniModalContent title="Editing Motion" {exitState}>
     {#snippet main({ submit, close })}
         <MotionForm {submit} {motionSchema} initialInput={inputMotion}>
             {#snippet buttons()}
@@ -44,4 +49,4 @@
             {/snippet}
         </MotionForm>
     {/snippet}
-</ModalContent>
+</UniModalContent>

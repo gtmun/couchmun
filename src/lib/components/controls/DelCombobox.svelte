@@ -6,7 +6,7 @@
 -->
 
 <script lang="ts">
-    import { Combobox } from "@skeletonlabs/skeleton-svelte";
+    import { Combobox, Portal, useListCollection } from "@skeletonlabs/skeleton-svelte";
 
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import { findDelegate, type Delegate } from "$lib/db/delegates";
@@ -80,22 +80,19 @@
         onSelect
     }: Props = $props();
     
-    let options = $derived(
-        delegates
-            .filter(d => d.isPresent())
-            .map(d => ({
-                value: String(d.id),
-                label: d.name,
-                delegate: d,
-            }))
-    );
-    let data = $derived(options);
+    let presentDelegates = $derived(delegates.filter(d => d.isPresent()));
+    let filteredDelegates = $derived(presentDelegates);
+    const collection = $derived(useListCollection({
+        items: filteredDelegates,
+        itemToString: it => it.name,
+        itemToValue: it => String(it.id)
+    }))
 
     function onInputValueChange(e: { inputValue: string }) {
         input = e.inputValue;
-        data = options.filter(o => o.delegate.nameIncludes(e.inputValue))
+        filteredDelegates = presentDelegates.filter(d => d.nameIncludes(e.inputValue));
     }
-    let delsEmpty = $derived(options.length == 0);
+    let delsEmpty = $derived(presentDelegates.length == 0);
     let comboboxValue = $derived(typeof value !== "undefined" ? [String(value)] : []);
 
     let highlightedValue = $state<string | null>(null);
@@ -109,9 +106,11 @@
 </script>
 
 <Combobox
-    {data}
+    {collection}
+
     inputValue={input ?? ""}
     {onInputValueChange}
+    
     value={comboboxValue}
     onValueChange={e => {
         let newValue = +e.value[0];
@@ -120,20 +119,38 @@
         }
         onSelect?.(newValue);
     }}
+
+    placeholder={!delsEmpty ? "Select..." : "No delegates present"}
     disabled={delsEmpty}
+
     {highlightedValue}
     onHighlightChange={e => highlightedValue = e.highlightedValue}
+
     onInteractOutside={onBlur}
-    placeholder={!delsEmpty ? "Select..." : "No delegates present"}
-    optionHover='hover:preset-tonal hover:brightness-100!'
-    inputGroupClasses="{error ? 'preset-input-error' : ''} transition-colors"
-    {classes}
-    contentClasses="max-h-48 overflow-auto"
-    positionerClasses="z-1!"
+
     {inputBehavior}
     {selectionBehavior}
+
+    class={classes}
 >
-    {#snippet item(item)}
-        <DelLabel attrs={item.delegate.getAttributes()} inline />
-    {/snippet}
+    <Combobox.Control>
+        <Combobox.Input class={[error && "preset-input-error", "transition-colors"]} />
+        <Combobox.Trigger />
+    </Combobox.Control>
+    <Portal>
+        <Combobox.Positioner class="z-1!">
+            <Combobox.Content>
+                {#each collection.group() as [type, items] (type)}
+                    <Combobox.ItemGroup>
+                        <Combobox.ItemGroupLabel>{type}</Combobox.ItemGroupLabel>
+                        {#each items as item (item.id)}
+                            <Combobox.Item {item}>
+                                <DelLabel attrs={item.getAttributes()} inline />
+                            </Combobox.Item>
+                        {/each}
+                    </Combobox.ItemGroup>
+                {/each}
+            </Combobox.Content>
+        </Combobox.Positioner>
+    </Portal>
 </Combobox>

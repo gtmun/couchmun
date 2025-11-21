@@ -1,25 +1,37 @@
 <script lang="ts">
     import type { Snippet } from "svelte";
 
-    import ModalContent from "./ModalContent.svelte";
+    import UniModal from "./UniModal.svelte";
 
     interface Props {
         open: boolean,
         success: () => void,
         failure?: () => void,
-        children?: Snippet<[]>,
+        trigger?: Snippet<[]>,
+        content?: Snippet<[]>,
     }
     let {
         open = $bindable(),
         success,
         failure = undefined,
-        children = undefined
+        trigger = undefined,
+        content = undefined
     }: Props = $props();
 </script>
 
-<ModalContent title="Confirm" bind:open onSubmit={(r: boolean) => r ? success() : failure?.()}>
+<UniModal
+    title="Confirm"
+    type="modal"
+    bind:open
+    onSubmit={(r: boolean) => r ? success() : failure?.()}
+    {trigger}
+>
     {#snippet main()}
-        {@render children?.()}
+        {#if content}
+            <article class="flex-col items-stretch">
+                {@render content?.()}
+            </article>
+        {/if}
     {/snippet}
     {#snippet footer({ submit })}
         <div>
@@ -27,4 +39,4 @@
             <button type="button" class="btn preset-filled-success-500" onclick={() => submit(true)}>Confirm</button>
         </div>
     {/snippet}
-</ModalContent>
+</UniModal>

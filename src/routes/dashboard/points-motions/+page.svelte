@@ -5,7 +5,7 @@
   and a sortable motion table (which is used to view and rearrange and edit motions).
 -->
 <script lang="ts">
-  import { Modal } from "@skeletonlabs/skeleton-svelte";
+  import { Dialog } from "@skeletonlabs/skeleton-svelte";
   import { flip } from "svelte/animate";
   import { dndzone } from "svelte-dnd-action";
 
@@ -13,8 +13,8 @@
   import { resolve } from "$app/paths";
   import DelLabel from "$lib/components/del-label/DelLabel.svelte";
   import IconLabel from "$lib/components/IconLabel.svelte";
-  import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
-  import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
+  import EditMotionContent from "$lib/components/modals/EditMotionContent.svelte";
+  import UniModal from "$lib/components/modals/UniModal.svelte";
   import MotionForm, { numSpeakersStr } from "$lib/components/motions/form/MotionForm.svelte";
   import { createSpeaker } from "$lib/components/SpeakerList.svelte";
   import { getSessionContext } from "$lib/context/index.svelte";
@@ -244,27 +244,22 @@
                   >
                     <MdiCheck class="text-success-700" />
                   </button>
-                  <Modal
-                    open={openModals.editMotion == i}
-                    onOpenChange={e => openModals.editMotion = e.open ? i : -1}
-                    triggerBase="btn-icon-std p-1"
-                    {...defaultModalClasses}
+                  <UniModal
+                    bind:open={
+                      () => openModals.editMotion === i,
+                      open => openModals.editMotion = open ? i : -1
+                    }
+                    onSubmit={(m: Motion) => editMotion(i, m)}
                   >
                     {#snippet trigger()}
-                      <MdiPencil />
+                      <Dialog.Trigger class="btn-icon-std p-1">
+                        <MdiPencil />
+                      </Dialog.Trigger>
                     {/snippet}
-                    {#snippet content()}
-                      <EditMotionCard
-                        {motion}
-                        {motionSchema}
-                        bind:open={
-                          () => openModals.editMotion == i,
-                          open => openModals.editMotion = open ? i : -1
-                        }
-                        onSubmit={m => editMotion(i, m)}
-                      />
+                    {#snippet content(exitState)}
+                      <EditMotionContent {motion} {motionSchema} {exitState} />
                     {/snippet}
-                  </Modal>
+                  </UniModal>
                 </div>
               </td>
             </tr>

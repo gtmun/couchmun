@@ -6,15 +6,15 @@
   and rearrange speakers in the speakers list.
  -->
 <script lang="ts">
-    import { Modal } from "@skeletonlabs/skeleton-svelte";
+    import { Dialog } from "@skeletonlabs/skeleton-svelte";
     import { tick, untrack, type Snippet } from "svelte";
     import { flip } from "svelte/animate";
     import { dragHandle, dragHandleZone } from "svelte-dnd-action";
 
+
     import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import ConfirmModalCard from "$lib/components/modals/ConfirmModalCard.svelte";
-    import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
+    import ConfirmModal from "$lib/components/modals/ConfirmModal.svelte";
     import { type Delegate, findDelegate } from "$lib/db/delegates";
     import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
     import { isDndShadow } from "$lib/util/dnd";
@@ -274,7 +274,7 @@
     }
 </script>
 
-<div class="card-filled p-4 overflow-y-hidden grow flex flex-col items-stretch gap-4">
+<div class="card-filled p-4 overflow-y-hidden grow flex flex-col items-stretch gap-4 min-w-90">
     <h4 class="h4 flex justify-center" id="sl-header-{sid}">
         {#if typeof title === "string"}
             {title}
@@ -379,24 +379,23 @@
                     onSelect={addSpeaker}
                 />
                 <!-- Clear order -->
-                <!-- TODO: disabled={order.length === 0 } -->
-                <Modal
-                    open={openModals.clearSpeakers}
-                    onOpenChange={e => openModals.clearSpeakers = e.open}
-                    triggerBase="btn-icon-std preset-filled-primary-500"
-                    aria-label="Clear Speakers List"
-                    classes="flex items-center"
-                    {...defaultModalClasses}
+                <ConfirmModal
+                    bind:open={openModals.clearSpeakers}
+                    success={() => order = []}
                 >
                     {#snippet trigger()}
-                        <MdiDelete />
+                        <Dialog.Trigger
+                            class="btn-icon-std preset-filled-primary-500"
+                            disabled={order.length === 0}
+                            aria-label="Clear Speakers List"
+                        >
+                            <MdiDelete />
+                        </Dialog.Trigger>
                     {/snippet}
                     {#snippet content()}
-                        <ConfirmModalCard bind:open={openModals.clearSpeakers} success={() => order = []}>
-                            Are you sure you want to clear the Speakers List?
-                        </ConfirmModalCard>
+                        Are you sure you want to clear the Speakers List?
                     {/snippet}
-                </Modal>
+                </ConfirmModal>
             </div>
         </div>
     {/if}
