@@ -5,25 +5,27 @@
   and a sortable motion table (which is used to view and rearrange and edit motions).
 -->
 <script lang="ts">
+  import { Modal } from "@skeletonlabs/skeleton-svelte";
+  import { flip } from "svelte/animate";
+  import { dndzone } from "svelte-dnd-action";
+
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
   import DelLabel from "$lib/components/del-label/DelLabel.svelte";
   import IconLabel from "$lib/components/IconLabel.svelte";
-  import MotionForm, { numSpeakersStr } from "$lib/components/MotionForm.svelte";
   import EditMotionCard from "$lib/components/modals/EditMotionCard.svelte";
+  import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
+  import MotionForm, { numSpeakersStr } from "$lib/components/motions/form/MotionForm.svelte";
   import { createSpeaker } from "$lib/components/SpeakerList.svelte";
   import { getSessionContext } from "$lib/context/index.svelte";
-  import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
-  import { db } from "$lib/db/index.svelte";
   import { findDelegate } from "$lib/db/delegates";
-  import { MOTION_LABELS } from "$lib/motions/definitions";
+  import { db } from "$lib/db/index.svelte";
+  import { createMotionSchema, MOTION_DEFS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import type { Motion } from "$lib/types";
+  import { hasKey } from "$lib/util";
   import { createDragTr, isDndShadow } from "$lib/util/dnd";
   import { stringifyTime } from "$lib/util/time";
-  import { Modal } from "@skeletonlabs/skeleton-svelte";
-  import { flip } from "svelte/animate";
-  import { dndzone } from "svelte-dnd-action";
   import MdiAccountClock from "~icons/mdi/account-clock";
   import MdiAccountMultiple from "~icons/mdi/account-multiple";
   import MdiCancel from "~icons/mdi/cancel";
@@ -42,6 +44,7 @@
   // A clone of $motions used solely for use:dndzone
   let dndItems = $derived($motions);
 
+  let motionSchema = $derived(createMotionSchema($delegates));
   let motionTable: HTMLTableElement | undefined = $state();
 
   function submitMotion(motion: Motion) {
@@ -64,20 +67,22 @@
    * @param cb the callback to produce a value (if the motion has the required fields)
    * @param dflt the default value (if the motion does not have the required fields)
    */
-  function apply<M extends {}, F extends string, R>(
+  function apply<M extends object, F extends string, R>(
     m: M, 
     fields: F[], 
     cb: (m: WithFields<M, F>) => R | undefined, 
     dflt: R
   ): R {
-    if (fields.every(f => f in m)) return cb(m as any) ?? dflt;
+    if (fields.every(f => hasKey(m, f))) {
+      return cb(m as any) ?? dflt;
+    }
     return dflt;
   }
 
 
   function motionName(m: Motion) {
-    const kindLabel = MOTION_LABELS[m.kind] ?? "-";
-    const extension = "isExtension" in m && m.isExtension;
+    const kindLabel = MOTION_DEFS[m.kind].label ?? "-";
+    const extension = hasKey(m, "isExtension") && m.isExtension;
     
     return kindLabel + (extension ? ' (Extension)': '');
   }
@@ -145,7 +150,7 @@
 
 <div class="grid gap-5 min-h-full md:grid-cols-[1fr_2fr] md:h-full">
   <div class="card-filled motion-form">
-    <MotionForm submit={submitMotion} />
+    <MotionForm submit={submitMotion} {motionSchema} />
   </div>
   
   <div class="flex flex-col gap-2 overflow-x-auto">
@@ -218,9 +223,9 @@
                 <DelLabel attrs={delAttrs} fallbackName={delName} inline />
               </td>
               <td>{apply(motion, ["topic"], m => m.topic, "-")}</td>
-              <td>{'totalSpeakers' in motion ? stringifyTime(motion.totalSpeakers * motion.speakingTime) : apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
+              <td>{hasKey(motion, 'totalSpeakers') ? stringifyTime(motion.totalSpeakers * motion.speakingTime) : apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
               <td>{apply(motion, ["speakingTime"], m => stringifyTime(m.speakingTime), "-")}</td>
-              <td>{'totalSpeakers' in motion ? motion.totalSpeakers : apply(motion, ["totalTime", "speakingTime"], m => numSpeakersStr(m.totalTime, m.speakingTime), "-")}</td>
+              <td>{hasKey(motion, 'totalSpeakers') ? motion.totalSpeakers : apply(motion, ["totalTime", "speakingTime"], m => numSpeakersStr(m.totalTime, m.speakingTime), "-")}</td>
               <td>
                 <div class="flex flex-row justify-end">
                   <button
@@ -251,6 +256,7 @@
                     {#snippet content()}
                       <EditMotionCard
                         {motion}
+                        {motionSchema}
                         bind:open={
                           () => openModals.editMotion == i,
                           open => openModals.editMotion = open ? i : -1

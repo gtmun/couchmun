@@ -4,8 +4,8 @@
   This modal consists of a simple form to specify the delegate's attributes.
 -->
 <script lang="ts">
-    import type { DelegateAttrs } from "$lib/types";
     import ModalContent, { type ExitProps } from "$lib/components/modals/ModalContent.svelte";
+    import type { DelegateAttrs } from "$lib/types";
 
     type SubmitData = { attrs: DelegateAttrs };
     interface Props extends ExitProps<SubmitData> {

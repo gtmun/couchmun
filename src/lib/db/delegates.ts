@@ -3,11 +3,9 @@
  */
 
 import type { DelegateAttrs, DelegateID, DelegatePresence, DelSessionData, StatsData } from "$lib/types";
-import { Entity } from "dexie";
-import type { SessionDatabase } from "./index.svelte";
 import { eqInsensitive, includesInsensitive } from "$lib/util";
 
-export class Delegate extends Entity<SessionDatabase> {
+export class Delegate {
     // Indexes:
     id!: DelegateID;
     name!: string;
@@ -36,7 +34,7 @@ export class Delegate extends Entity<SessionDatabase> {
      */
     *names(): Generator<string> {
         yield this.name;
-        for (let alias of this.aliases) yield alias;
+        for (const alias of this.aliases) yield alias;
     }
 
     /**
@@ -45,7 +43,7 @@ export class Delegate extends Entity<SessionDatabase> {
      * @returns whether this delegate could correctly be referred to by the given name
      */
     nameEquals(name: string): boolean {
-        for (let dName of this.names()) {
+        for (const dName of this.names()) {
             if (eqInsensitive(dName, name)) return true;
         }
         return false;
@@ -57,7 +55,7 @@ export class Delegate extends Entity<SessionDatabase> {
      * @returns whether the given string is a substring
      */
     nameIncludes(sub: string): boolean {
-        for (let name of this.names()) {
+        for (const name of this.names()) {
             if (includesInsensitive(name, sub)) return true;
         }
         return false;

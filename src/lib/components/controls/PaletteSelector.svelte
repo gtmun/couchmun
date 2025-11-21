@@ -12,7 +12,7 @@
 </script>
 
 <div class="flex flex-wrap gap-2">
-    {#each colors as color}
+    {#each colors as color (color.id)}
         <button 
             class={[
                 "selector-btn rounded-full size-6 p-4",

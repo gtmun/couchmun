@@ -4,8 +4,8 @@
     - An editable speakers list
 -->
 <script lang="ts">
-    import SpeakerList from "$lib/components/SpeakerList.svelte";
     import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
+    import SpeakerList from "$lib/components/SpeakerList.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import { parseTime, stringifyTime } from "$lib/util/time";
@@ -55,7 +55,10 @@
         <TimerPanel
             delegates={$delegates}
             {speakersList}
-            bind:duration
+            bind:durations={
+             () => [duration],
+             ([d]) => duration = d
+            }
             bind:this={timerPanel}
             editable
         />
@@ -75,7 +78,7 @@
             <form class="contents" onsubmit={setDuration}>
                 <label class="flex grow items-center">
                     <span>Speaker Time</span>
-                    <input class="input grow" bind:value={durInput} placeholder="mm:ss" />
+                    <input class="input grow" bind:value={durInput} placeholder="mm:ss" disabled={timerPanel?.getRunState(0)} />
                 </label>
             </form>
         </div>

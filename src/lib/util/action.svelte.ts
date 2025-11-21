@@ -43,7 +43,7 @@ export const makeEditable = ((el: HTMLElement, options?: EditableParameter) => {
     }
     
     $effect(() => {
-        let editable = options?.when ?? true;
+        const editable = options?.when ?? true;
         el.contentEditable = editable ? "plaintext-only" : "inherit";
         setHandlers(editable);
 

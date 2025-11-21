@@ -5,18 +5,18 @@
 -->
 
 <script lang="ts">
+    import { AppBar, Modal } from '@skeletonlabs/skeleton-svelte';
+
     import { navigating, page } from '$app/state';
-    import MetaTags from '$lib/components/MetaTags.svelte';
+    import type { RouteId } from '$app/types';
     import BarHeader from '$lib/components/app-bar/BarHeader.svelte';
     import BarStats from '$lib/components/app-bar/BarStats.svelte';
+    import MetaTags from '$lib/components/MetaTags.svelte';
     import Navigation from '$lib/components/nav/Navigation.svelte';
     import SettingsNavigation from '$lib/components/nav/SettingsNavigation.svelte';
     import { getSessionContext } from '$lib/context/index.svelte';
-    
-    import { AppBar, Modal } from '@skeletonlabs/skeleton-svelte';
-    import MdiMenu from "~icons/mdi/menu";
     import MdiGear from "~icons/mdi/gear";
-    import type { RouteId } from '$app/types';
+    import MdiMenu from "~icons/mdi/menu";
 
     let { children } = $props();
     type DrawerState = "nav" | "settings" | null;
@@ -24,7 +24,7 @@
 
     const sessionData = getSessionContext();
     const { delegates, barTitle } = sessionData;
-    let delegateCount = $derived($delegates.reduce((acc, d) => acc + d.isPresent(), 0));
+    let delegateCount = $derived($delegates.reduce((acc, d) => acc + +d.isPresent(), 0));
 
     const links: Partial<Record<RouteId, { label: string }>> = {
         "/dashboard/roll-call":      { label: "Roll Call" },
@@ -123,7 +123,7 @@
                     {#snippet content()}
                         <SettingsNavigation
                             close={() => openDrawer = null}
-                            bind:showBackdrop={settingsBackdrop}
+                            onAccordionOpenChange={open => settingsBackdrop = !open}
                         />
                     {/snippet}
                 </Modal>

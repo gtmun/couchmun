@@ -2,8 +2,9 @@
   @component The title text in the header.
 -->
 <script lang="ts">
-    import { makeEditable } from "$lib/util/action.svelte";
     import type { ClassValue } from "svelte/elements";
+
+    import { makeEditable } from "$lib/util/action.svelte";
 
     interface Props {
         /** Title text */
@@ -19,21 +20,22 @@
     let { title = $bindable(), size = "md", styles = "", editable = true }: Props = $props();
 </script>
 
-
-<h1
-    class={[
-        styles,
-        "text-center break-all",
-        "contenteditable:editable-std",
-        (size == "lg") && "h1",
-        (size == "md") && "h2",
-        (size == "sm") && "h3",
-    ]}
-    use:makeEditable={{
-        when: editable,
-        get value() { return title },
-        set value(text) { title = text }
-    }}
->
-    {title}
-</h1>
+{#key title}
+    <h1
+        class={[
+            styles,
+            "text-center break-all",
+            "contenteditable:editable-std",
+            (size == "lg") && "h1",
+            (size == "md") && "h2",
+            (size == "sm") && "h3",
+        ]}
+        use:makeEditable={{
+            when: editable,
+            get value() { return title },
+            set value(text) { title = text }
+        }}
+    >
+        {title}
+    </h1>
+{/key}

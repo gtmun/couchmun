@@ -4,11 +4,12 @@
   This drawer allows users to visit different pages on the site.
 -->
 <script lang="ts">
+    import { tick } from "svelte";
+    import type { Action } from "svelte/action";
+
     import { resolve } from "$app/paths";
     import { page } from "$app/state";
     import type { RouteId } from "$app/types";
-    import { tick } from "svelte";
-    import type { Action } from "svelte/action";
 
     interface Props {
         /**
@@ -32,7 +33,7 @@
 <nav>
     <h1 class="p-2 text-xl font-bold">Dashboard</h1>
     <ul class="flex flex-col gap-1">
-        {#each Object.entries(links) as [id, { label }]}
+        {#each Object.entries(links) as [id, { label }] (id)}
             <!-- base does not end with /, whereas id starts with / -->
             {@const href = resolve(id as RouteId)}
             {@const selected = page.url.pathname === href}

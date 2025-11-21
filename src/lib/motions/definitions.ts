@@ -5,47 +5,93 @@
  * (other files in `$lib/motions` should only define infrastructure for using motions).
  */
 
-import type { Motion, MotionKind, SortOrder } from "$lib/types";
-import { nonEmptyString, presentDelegateSchema, refineSpeakingTime, timeSchema, topicSchema } from "$lib/motions/form_validation";
-import type { MotionInput } from "$lib/motions/types";
 import { z } from "zod";
-import { stringifyTime } from "$lib/util/time";
-import { type Delegate, findDelegate } from "$lib/db/delegates";
-import type { SessionDatabase } from "$lib/db/index.svelte";
 
-/**
- * The label/name given to each motion kind.
- */
-export const MOTION_LABELS: Record<MotionKind, string> = {
-    mod: "Moderated Caucus",
-    unmod: "Unmoderated Caucus",
-    rr: "Round Robin",
-    other: "Other"
+import { type Delegate } from "$lib/db/delegates";
+import { nonEmptyString, presentDelegateSchema, refineSpeakingTime, stringToIntSchema, timeSchema, topicSchema } from "$lib/motions/form_validation";
+import type { MotionInput } from "$lib/motions/types";
+import type { Motion, MotionKind, SortOrder } from "$lib/types";
+
+export type InputKind =
+    | "totalTime"
+    | "speakingTime"
+    | "topic"
+    | "extension"
+    | "none";
+export type InputProperties = InputKind | {
+    type: InputKind,
+    [prop: string]: unknown
 };
-/**
- * The fields that are defined on this motion kind's form.
- */
-export const MOTION_FIELDS = {
-    mod:   ["id", "delegate", "kind", "totalTime", "speakingTime", "topic", "isExtension"],
-    unmod: ["id", "delegate", "kind", "totalTime", "isExtension"],
-    rr:    ["id", "delegate", "kind", "totalSpeakers", "speakingTime", "topic"],
-    other: ["id", "delegate", "kind", "totalTime", "topic"]
-} as const;
+
+export const MOTION_BASE_FIELDS = ["id", "kind", "delegate"] as const;
+export const MOTION_DEFS = {
+    mod: {
+        label: "Moderated Caucus",
+        fields: {
+            totalTime: "totalTime",
+            speakingTime: "speakingTime",
+            topic: "topic",
+            isExtension: "extension",
+        }
+    },
+    unmod: {
+        label: "Unmoderated Caucus",
+        fields: {
+            totalTime: "totalTime",
+            isExtension: "extension",
+        }
+    },
+    rr: {
+        label: "Round Robin",
+        fields: {
+            speakingTime: "speakingTime",
+            topic: "topic",
+            // FIXME: Remove as form field
+            totalSpeakers: "none"
+        }
+    },
+    other: {
+        label: "Other",
+        fields: {
+            totalTime: {
+                type: "totalTime",
+                required: false
+            },
+            topic: {
+                type: "topic",
+                required: false
+            },
+        }
+    },
+} satisfies Record<Motion["kind"], {
+    label: string,
+    fields: Record<string, InputProperties>
+}>;
+
+export type InputComponentProps<V> = {
+    name: string,
+    error?: boolean,
+    focused?: boolean,
+    value?: V,
+    isExtending?: boolean,
+    motion: Motion | null
+};
 
 // Ok, this is some hacky BS that needs to be explained:
-// MOTION_FIELDS is a const used to access the field names of Motion 
-// (which can't be done normally sometimes cause TypeScript types aren't accessible at runtime).
+// MOTION_DEFS includes a list of form fields for Motion.
 //
-// However, this requires MOTION_FIELDS's fields match EXACTLY to the definition of Motion (provided in types.d.ts).
+// This assert checks if the form fields defined by MOTION_DEFS matches exactly the fields of the Motion type
+// (defined in types.d.ts).
+//
 // In order to do this, the following set of types are used to assert the two types' equalities.
 // - type Is<A, B> is a type that asserts A and B are identical types.
 // - type TypeFields is a type that computes the fields as defined by the type.
-// - type ConstFields is a type that computes the fields as defined by MOTION_FIELDS.
+// - type ConstFields is a type that computes the fields as defined by MOTION_DEFS.
 //
 // If these do not match, _assert will raise an error, indicating that something needs to be fixed.
 type Is<A, B, True = unknown, False = never> = NoInfer<A> extends B ? NoInfer<B> extends A ? True : False : False;
 type TypeFields = { readonly [K in MotionKind]: keyof (Motion & { kind: K }) };
-type ConstFields = { [K in keyof typeof MOTION_FIELDS]: (typeof MOTION_FIELDS)[K][number] };
+type ConstFields = { readonly [K in keyof typeof MOTION_DEFS]: (typeof MOTION_BASE_FIELDS)[number] | keyof (typeof MOTION_DEFS)[K]["fields"] };
 const _assert: Is<TypeFields, ConstFields> = {};
 
 /**
@@ -91,7 +137,7 @@ export function createMotionSchema(delegates: Delegate[]) {
             kind: z.literal("rr"),
             speakingTime: timeSchema("Speaking time"),
             topic: topicSchema(),
-            totalSpeakers: z.string().transform((s) => parseInt(s))
+            totalSpeakers: stringToIntSchema(),
         }),
         z.object({
             ...base,
@@ -99,98 +145,8 @@ export function createMotionSchema(delegates: Delegate[]) {
             totalTime: timeSchema("Total time"),
             topic: topicSchema()
         })
-    ]) satisfies z.ZodType<Motion, any, any>;
+    ]) satisfies z.ZodType<Motion, MotionInput, any>;
 }
 
-function partialInputifyMotion(m: Motion): MotionInput {
-    if (m.kind === "mod") {
-        return {
-            id: m.id,
-            delegate: "",
-            kind: m.kind,
-            totalTime: stringifyTime(m.totalTime),
-            speakingTime: stringifyTime(m.speakingTime),
-            topic: m.topic,
-            isExtension: m.isExtension
-        }
-    } else if (m.kind === "unmod") {
-        return {
-            id: m.id,
-            delegate: "",
-            kind: m.kind,
-            totalTime: stringifyTime(m.totalTime),
-            isExtension: m.isExtension
-        }
-    } else if (m.kind === "rr") {
-        return {
-            id: m.id,
-            delegate: "",
-            kind: m.kind,
-            speakingTime: stringifyTime(m.speakingTime),
-            topic: m.topic,
-        }
-    } else if (m.kind === "other") {
-        return {
-            id: m.id,
-            delegate: "",
-            kind: m.kind,
-            totalTime: stringifyTime(m.totalTime),
-            topic: m.topic,
-        }
-    } else {
-        return m satisfies never;
-    }
-}
-
-/**
- * Defines how to convert a motion back into a motion input
- * (e.g., the text to submit in a motion form to get back this motion).
- * 
- * When no delegate parameter is provided, the `delegates` field of this input is empty.
- * 
- * @param m the motion
- * @returns the motion as input
- */
-export function inputifyMotion(m: Motion): MotionInput;
-/**
- * Defines how to convert a motion back into a motion input
- * (e.g., the text to submit in a motion form to get back this motion).
- * 
- * When a delegate array is provided, the `delegates` field of this input is set to the name
- * of an element of the array with the same ID (if it exists).
- * 
- * @param m the motion
- * @param delegates an array of delegates
- * @returns the motion as input
- */
-export function inputifyMotion(m: Motion, delegates: Delegate[]): MotionInput;
-/**
- * Defines how to convert a motion back into a motion input
- * (e.g., the text to submit in a motion form to get back this motion).
- * 
- * When a database table is provided, the `delegates` field of this input is set to the name
- * of an entry in the database with the same ID.
- * 
- * @param m the motion
- * @param delegates a database table holding delegate information
- * @returns the motion as input
- */
-export function inputifyMotion(m: Motion, delegates: SessionDatabase["delegates"]): Promise<MotionInput>;
-export function inputifyMotion(m: Motion, delegates?: any): any {
-    const im = partialInputifyMotion(m);
-
-    // If session database:
-    if (typeof delegates === "object") {
-        return (delegates as SessionDatabase["delegates"]).get(m.delegate).then(d => {
-            if (d) im.delegate = d.name;
-            return im;
-        });
-    }
-
-    // If array:
-    if (delegates instanceof Array) {
-        im.delegate = findDelegate(delegates, m.delegate)?.name ?? "";
-    }
-    // If undefined:
-    return im;
-}
+/** Type of motion schema verification. */
+export type MotionSchema = ReturnType<typeof createMotionSchema>;

@@ -12,6 +12,7 @@
 
 <script lang="ts">
     import { SvelteSet } from "svelte/reactivity";
+
     import ModalContent, { type ExitProps } from "$lib/components/modals/ModalContent.svelte";
     import type { Delegate } from "$lib/db/delegates";
 

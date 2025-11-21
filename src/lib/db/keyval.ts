@@ -3,6 +3,7 @@
  */
 
 import { Entity } from "dexie";
+
 import type { SessionDatabase } from "./index.svelte";
 
 export class KeyValuePair<K = string, V = any> extends Entity<SessionDatabase> implements IKeyValue<K, V> {

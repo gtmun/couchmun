@@ -7,11 +7,12 @@
   The timer will automatically pause (setting `running` to false) when the full duration elapses.
 -->
 <script lang="ts">
+    import { Progress } from "@skeletonlabs/skeleton-svelte";
+    import { onDestroy, onMount, untrack } from "svelte";
+
     import { clamp, type PropsOf } from "$lib/util";
     import { makeEditable } from "$lib/util/action.svelte";
     import { parseTime, stringifyTime } from "$lib/util/time";
-    import { Progress } from "@skeletonlabs/skeleton-svelte";
-    import { onDestroy, onMount, untrack } from "svelte";
     import MdiPause from "~icons/mdi/pause";
     import MdiPlay from "~icons/mdi/play";
 
@@ -75,25 +76,35 @@
          * If `disablePlay` is true, this prop is overrided and does nothing.
          */
         useKeyHandlers?: boolean;
+
         /**
-         * This property can be bound to add an event handler for every time the timer is paused.
+         * This property can be bound to add an event handler for every time the timer's run state is changed.
          * 
-         * The listener can accept a number representing the number of milliseconds since the last
-         * pause.
+         * @param running The updated running status of the timer
+         * @param elapsedSinceLastPause The time (in milliseconds) elapsed the last running period.
          */
-        onPause?: (elapsed: number) => void;
+        onRunningChange?: (running: boolean, elapsedSinceLastPause: number) => void;
+
+        /**
+         * This property can be bound to an event handler when the total time elapsed changes
+         * (so, every tick, essentially).
+         * 
+         * @param msRemaining The new time remaining (in milliseconds)
+         */
+        onTimeChange?: (msRemaining: number) => void;
     }
 
     let {
         duration = $bindable(),
-        running = $bindable(false),
+        running = false,
         height = "h-10",
         hideText = false,
         hidePlay = true,
         editable = false,
         disablePlay = false,
         useKeyHandlers = true,
-        onPause = undefined,
+        onRunningChange = undefined,
+        onTimeChange = undefined,
     }: Props = $props();
     
     const COLOR_THRESHOLDS = [
@@ -108,6 +119,7 @@
     let DURATION_MS = $derived(duration * 1000);
     // reset timer on duration update:
     $effect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         duration;
         untrack(reset);
     });
@@ -145,7 +157,7 @@
             // Update msRemaining:
             lastStart ??= data.ts;
             lastEnd = data.ts;
-            msRemaining = Math.max(0, msRemainingAtStart - Math.floor(lastEnd - lastStart));
+            setMsRemaining(msRemainingAtStart - Math.floor(lastEnd - lastStart), 0);
         } else if (data.kind === "endTick") {
             // After all timers have been updated, update running:
             running = running && msRemaining > 0;
@@ -157,6 +169,25 @@
     // Trigger state update on running change:
     $effect(() => updateRunningEffects(running));
 
+    /**
+     * Set the milliseconds remaining.
+     * @param newMsRemaining the milliseconds remaining
+     * @param min a minimum time which the time cannot be under (optional)
+     * @param max a maximum time which the time cannot exceed (optional)
+     */
+    function setMsRemaining(newMsRemaining: number, min?: number, max?: number) {
+        // If minimum provided, clamp to minimum
+        if (typeof min === "number" && Number.isFinite(min)) {
+            newMsRemaining = Math.max(newMsRemaining, min);
+        }
+        // If maximum provided, clamp to maximum
+        if (typeof max === "number" && Number.isFinite(max)) {
+            newMsRemaining = Math.min(newMsRemaining, max);
+        }
+
+        msRemaining = newMsRemaining;
+        onTimeChange?.(newMsRemaining);
+    }
     // Exported methods:
     /**
      * Whether the timer can be reset at the moment.
@@ -172,7 +203,7 @@
      */
     export function reset() {
         running = false;
-        msRemaining = DURATION_MS;
+        setMsRemaining(DURATION_MS);
     }
 
     /**
@@ -184,10 +215,7 @@
      * @param clampToMax If true, the new time will be capped to the maximum duration.
      */
     export function offsetDuration(ts: number, clampToMax = false) {
-        msRemaining = Math.max(0, msRemaining + 1000 * ts);
-        if (clampToMax) {
-            msRemaining = Math.min(DURATION_MS, msRemaining);
-        }
+        return setMsRemaining(msRemaining + 1000 * ts, 0, clampToMax ? DURATION_MS : undefined);
     }
 
     /**
@@ -195,12 +223,6 @@
      */
     export function secsRemaining() {
         return msRemaining / 1000;
-    }
-    /**
-     * @returns the number of seconds remaining in the timer as a time string.
-     */
-    export function secsRemainingString() {
-        return stringifyTime(secsRemaining());
     }
 
     /**
@@ -225,11 +247,11 @@
         // Make sure that running does not depend on msRemaining 
         // (since that updates while running)
         untrack(() => {
+            onRunningChange?.(running, getElapsedTime());
+
             if (running) {
                 lastStart = undefined;
                 msRemainingAtStart = msRemaining;
-            } else {
-                onPause?.(getElapsedTime());
             }
         })
     }
@@ -290,7 +312,7 @@
             {stringifyTime(duration)}
         </span>
     </h2>
-    <div class="grid grid-cols-[1fr_auto] gap-1">
+    <div class="grid grid-cols-[1fr_auto] gap-1 items-center">
         <!-- The progress bar -->
         <Progress {...barProps} />
         <!-- A start/pause button -->

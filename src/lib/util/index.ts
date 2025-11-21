@@ -2,9 +2,9 @@
  * Miscellaneous helper functions.
  */
 
+import type { Component } from "svelte";
 import { cubicOut } from "svelte/easing";
 import type { SlideParams, TransitionConfig } from "svelte/transition";
-import type { Component } from "svelte";
 
 export type Comparator<K> = (a: K, b: K) => number;
 
@@ -93,14 +93,6 @@ export function clamp(value: number, min: number, max: number) {
     return value;
 }
 
-async function waitNextFrame() {
-    return new Promise<number>(resolve => {
-        requestAnimationFrame(() => {
-            requestAnimationFrame(resolve)
-        });
-    });
-}
-
 /**
  * Checks if two strings are equal, case insensitive.
  */
@@ -121,3 +113,17 @@ export function includesInsensitive(full: string, sub: string) {
  * Gets the props type of this Svelte component.
  */
 export type PropsOf<C extends Component<any, any, any>> = C extends Component<infer P, any, any> ? P : never;
+
+/**
+ * Checks if object has a specified key.
+ * 
+ * This is the same as `Object.hasOwn`, but the additional typechecking properties
+ * you would see with the `in` operator.
+ * 
+ * @param obj The object to check the key for
+ * @param key The key to check for
+ * @returns whether the object has the key
+ */
+export function hasKey<P extends PropertyKey>(obj: object, key: P): obj is Record<P, unknown> {
+    return Object.hasOwn(obj, key);
+}

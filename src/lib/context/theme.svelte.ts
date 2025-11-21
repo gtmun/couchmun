@@ -13,8 +13,8 @@ export const THEME_DEFAULTS = {
 } satisfies Theme;
 
 export function initThemeState(theme: Theme) {
-    for (let key of Object.keys(THEME_DEFAULTS)) {
-        let store = localStorage.getItem(`theme.${key}`);
+    for (const key of Object.keys(THEME_DEFAULTS)) {
+        const store = localStorage.getItem(`theme.${key}`);
         if (store) {
             (theme as any)[key] = store;
         }

@@ -11,13 +11,15 @@
   and the speaker list and database stats.
 -->
 <script lang="ts">
-    import SpeakerList from "$lib/components/SpeakerList.svelte";
+    import { untrack, type Snippet } from "svelte";
+
+    import Timer from "../Timer.svelte";
+
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
+    import SpeakerList from "$lib/components/SpeakerList.svelte";
     import { findDelegate, type Delegate } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";
     import { lazyslide } from "$lib/util";
-    import Timer from "../Timer.svelte";
-    import { untrack, type Snippet } from "svelte";
     import MdiChevronDown from "~icons/mdi/chevron-down";
 
     interface Props {
@@ -33,14 +35,13 @@
 
         /**
          * The duration (in seconds) for the timers.
-         * This prop also determines how many timers exist in this timer panel:
-         * - If `duration` is a number, this creates 1 timer with the given value as the duration
-         * - If `duration` is an array, then each element represents a timer with the element as the duration
+         * This prop also determines how many timers exist in this timer panel.
+         * The length of this array indicates how many timers exist in the array.
          * 
          * If this timer panel is `editable`, then this is a **bindable** prop, 
          * in which case the duration is updated when the respective timer is edited.
          */
-        duration: number | number[],
+        durations: number[],
 
         /**
          * Same as Timer's `editable` prop: If enabled, the maximum duration for all timers is editable.
@@ -74,7 +75,7 @@
     let {
         delegates,
         speakersList,
-        duration = $bindable(),
+        durations = $bindable(),
         editable = false,
         timerInteraction: _ti = "sync",
         resetButtons = undefined,
@@ -82,65 +83,43 @@
     }: Props = $props();
 
     // Creates a `timers` state with the specific number of timers.
-    // This section is a bit jank because it has to handle the two formats for `duration`.
-    const numTimers = () => duration instanceof Array ? duration.length : 1;
+    const numTimers = () => durations.length;
     let timers: (Timer | undefined)[] = $state(Array.from({ length: numTimers() }));
+    let runStates: boolean[] = $state(Array.from({ length: numTimers() }, () => false));
 
     // If only 1 timer, just treat this as sync regardless of setting.
     let timerInteraction = $derived(numTimers() < 2 ? "sync" : _ti);
 
-    const numRunStates = () => timerInteraction == "sync" ? 1 : numTimers();
-    let runStates = $state(Array.from({ length: numRunStates() }, () => false));
-
     $effect(() => {
         let nTimers = numTimers();
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        timerInteraction;
+
         untrack(() => {
             // When number of timers change, update the list of timers,
             // truncating any timer past the number of timers.
             timers.length = nTimers;
+            // When number of runnings change, update the list of runnings,
+            // and pause all timers.
+            runStates.length = nTimers;
+            runStates.fill(false);
         });
     });
+    
+    // If any timer starts, mark the current speaker as complete.
     $effect(() => {
-        let nRunStates = numRunStates();
-        untrack(() => {
-            // When number of runnings change, update the list of runnings,
-            // truncating any run states past the number of run states
-            // and adding new `false`s for newly created run states.
-            let oldLength = runStates.length;
-            runStates.length = nRunStates;
-            if (nRunStates > oldLength) {
-                runStates.fill(false, oldLength);
-            }
+        if (runStates.some(s => s)) untrack(() => {
+            speakersList?.start();
         })
     });
 
-    // Getter/setter for duration, because there are two different formats for it.
-    function getDuration(i: number): number {
-        return typeof duration === "number" ? duration : duration[i];
-    }
-    function setDuration(i: number, d: number) {
-        if (typeof duration === "number") {
-            duration = d;
-        } else {
-            duration[i] = d;
-        } 
-    }
-    
     // Getter/setter for run state, since it depends on timer interaction
     export function getRunState(i: number): boolean {
-        if (timerInteraction === "sync") {
-            return runStates[0];
-        } else if (timerInteraction === "cascade") {
-            return runStates[i];
-        } else if (timerInteraction === "none") {
-            return runStates[i];
-        } else {
-            return timerInteraction satisfies never;
-        }
+        return runStates[i];
     }
     function setRunState(i: number, s: boolean) {
         if (timerInteraction === "sync") {
-            runStates[0] = s;
+            runStates.fill(s);
         } else if (timerInteraction === "cascade") {
             if (s) {
                 runStates.fill(s, i);
@@ -174,13 +153,6 @@
         // If no index provided, all timers need to be playable.
         return timers.every(t => timerPlayable(t));
     }
-
-    // If any timer starts, mark the current speaker as complete.
-    $effect(() => {
-        if (runStates.some(s => s)) untrack(() => {
-            speakersList?.start();
-        })
-    });
 
     /**
      * Returns whether any of the timers can be reset.
@@ -239,6 +211,8 @@
         </div>
     {/key}
     <div class="flex flex-col gap-5">
+        <!-- HACK: Each timer depends on its index, so key isn't required -->
+        <!-- eslint-disable-next-line svelte/require-each-key -->
         {#each timers as _, i}
             <!-- 
                 This const is needed because the event handlers should 
@@ -248,16 +222,23 @@
             -->
             {@const last = i == timers.length - 1}
             <Timer
-                bind:duration={() => getDuration(i), d => setDuration(i, d)}
-                bind:running={() => getRunState(i), s => setRunState(i, s)}
+                bind:duration={
+                    // Needed to prevent a warning
+                    // when `durations` is not binded to TimerPanel
+                    () => durations[i],
+                    d => durations[i] = d
+                }
+                running={getRunState(i)}
                 bind:this={timers[i]}
                 hidePlay={timerInteraction === "sync"}
                 disablePlay={!isTimerPlayable(i)}
                 useKeyHandlers={last}
-                onPause={
-                    last ? t => db.updateDelegate(selectedSpeaker?.key, d => { d.stats.durationSpoken += t; })
-                         : undefined
-                }
+                onRunningChange={(running, t) => {
+                    setRunState(i, running);
+                    if (last && !running) {
+                        db.updateDelegate(selectedSpeaker?.key, d => { d.stats.durationSpoken += t; })
+                    }
+                }}
                 {editable}
             />
         {/each}

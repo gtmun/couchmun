@@ -21,12 +21,12 @@ function _safeInteger(n: number): number | undefined {
  * @returns the number of seconds, or undefined if invalid
  */
 export function parseTime(timeStr: string): number | undefined {
-    let segments = timeStr.split(":").reverse();
+    const segments = timeStr.split(":").reverse();
     
     // Handling seconds:
     if (segments.length === 1) {
-        let [secs] = segments;
-        let colonized = addColons(secs, false);
+        const [secs] = segments;
+        const colonized = addColons(secs, false);
         
         return colonized.includes(":") ? parseTime(colonized) : _safeInteger(+colonized);
     }
@@ -64,22 +64,20 @@ export function parseTime(timeStr: string): number | undefined {
  * @returns the time string, or undefined if negative or non-finite or non-integral
  */
 export function stringifyTime(secs: number, roundingMode: "floor" | "round" | "ceil" = "ceil"): string | undefined {
-    switch (roundingMode) {
-        case "floor":
-            secs = Math.floor(secs);
-        case "round":
-            secs = Math.round(secs);
-        case "ceil":
-        default:
-            secs = Math.ceil(secs);
+    if (roundingMode === "floor") {
+        secs = Math.floor(secs);
+    } else if (roundingMode === "round") {
+        secs = Math.round(secs);
+    } else {
+        secs = Math.ceil(secs);
     }
 
     if (secs < 0) return;
     if (!Number.isSafeInteger(secs)) return;
 
-    let segments = [];
+    const segments = [];
     let n = secs;
-    for (let unitCt of UNITS) {
+    for (const unitCt of UNITS) {
         segments.push(n % unitCt);
         n = Math.floor(n / unitCt);
         if (n <= 0) break;
@@ -114,7 +112,7 @@ function addColons(numStr: string, requireMinSegments: boolean = true): string {
     // Segment string
     let time = [];
     for (let u = 0, s = numStr.length; u < PADDING.length, s > 0; u++) {
-        let length = typeof PADDING[u] === "number" ? Math.min(s, PADDING[u] as number) : s;
+        const length = typeof PADDING[u] === "number" ? Math.min(s, PADDING[u] as number) : s;
 
         time.push(numStr.slice(s - length, s));
         s -= length;
@@ -123,7 +121,7 @@ function addColons(numStr: string, requireMinSegments: boolean = true): string {
     // Parse + apply carry
     time = time.map(s => +s);
     for (let u = 0; u < UNITS.length - 1 && u < time.length; u++) {
-        let [d, m] = [Math.floor(time[u] / UNITS[u]), time[u] % UNITS[u]];
+        const [d, m] = [Math.floor(time[u] / UNITS[u]), time[u] % UNITS[u]];
         time[u] = m;
         
         if (d == 0 && u == time.length - 1) break;

@@ -2,21 +2,21 @@
   @component The admin settings page (used for configuring settings).
 -->
 <script lang="ts">
-    import LabeledSwitch from "$lib/components/LabeledSwitch.svelte";
-    import MetaTags from "$lib/components/MetaTags.svelte";
+    import { FileUpload, Modal } from "@skeletonlabs/skeleton-svelte";
+
+    import LabeledSwitch from "$lib/components/controls/LabeledSwitch.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
+    import MetaTags from "$lib/components/MetaTags.svelte";
     import ConfirmModalCard from "$lib/components/modals/ConfirmModalCard.svelte";
     import EditDelegateCard from "$lib/components/modals/EditDelegateCard.svelte";
     import EnableDelegatesCard from "$lib/components/modals/EnableDelegatesCard.svelte";
+    import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
+    import { _legacyFixDelFlag, db, queryStore } from "$lib/db/index.svelte";
+    import { toKeyValueArray, toObject } from "$lib/db/keyval";
     import { DEFAULT_PRESET_KEY, getPreset, PRESETS } from "$lib/delegate_presets";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
     import type { DelegateAttrs, Settings } from "$lib/types";
     import { downloadFile } from "$lib/util";
-
-    import { FileUpload, Modal } from "@skeletonlabs/skeleton-svelte";
-    import { _legacyFixDelFlag, db, queryStore } from "$lib/db/index.svelte";
-    import { toKeyValueArray, toObject } from "$lib/db/keyval";
-    import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
     import MdiArrowDown from "~icons/mdi/arrow-down";
     import MdiCancel from "~icons/mdi/cancel";
     import MdiCircleSmall from "~icons/mdi/circle-small";
@@ -76,11 +76,9 @@
         downloadFile("couchmun-config.json", JSON.stringify(exportSettings), "application/json");
     }
     async function resetAllSettings() {
-        // Reset preset state cause it's not bound to settings
-        currentPreset = DEFAULT_PRESET_KEY;
         // Reset settings
         await db.resetSettings();
-        await setPreset();
+        await setPreset(DEFAULT_PRESET_KEY);
 
         // Remove session data + previous sessions.
         await db.resetSessionData();
@@ -112,9 +110,12 @@
         });
     }
     // DELEGATES
-    let currentPreset: keyof typeof PRESETS = $state(DEFAULT_PRESET_KEY);
-    async function setPreset() {
-        const preset = await getPreset(currentPreset);
+    let inputPreset = $state("");
+    async function setPreset(presetKey?: keyof typeof PRESETS) {
+        presetKey ??= inputPreset as keyof typeof PRESETS;
+        inputPreset = "";
+        
+        const preset = await getPreset(presetKey);
         if (typeof preset !== "undefined") {
             let entries = _legacyFixDelFlag(preset);
             await db.transaction("rw", db.delegates, async () => {
@@ -130,7 +131,6 @@
     }
 
     async function clearDelegates() {
-        currentPreset = "custom";
         await db.delegates.clear();
     }
     /**
@@ -144,7 +144,6 @@
         let newAttrs = data.attrs;
         db.transaction("rw", db.delegates, async () => {
             // TODO: reject update if name conflict
-            currentPreset = "custom";
             if (typeof id === "number") {
                 await db.delegates.update(id, newAttrs);
             } else {
@@ -163,7 +162,6 @@
     }
 
     async function deleteDelegate(id: number) {
-        currentPreset = "custom";
         await db.transaction("rw", db.delegates, async () => {
             let del = await db.delegates.get(id);
             await db.delegates.delete(id);
@@ -220,7 +218,7 @@
     <div class="panel">
         <h3 class="h3 text-center">Preferences</h3>
         <div class="flex flex-col gap-3">
-            {#each PREFERENCES_LABELS as { key, label }}
+            {#each PREFERENCES_LABELS as { key, label } (key)}
                 <LabeledSwitch 
                     name="prefs-{key}"
                     bind:checked={
@@ -247,9 +245,13 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <!-- No key exists -->
+                        <!-- eslint-disable-next-line svelte/require-each-key -->
                         {#each $settings.sortOrder as entry, ei}
                         <tr>
                             <td>
+                                <!-- No key exists -->
+                                <!-- eslint-disable-next-line svelte/require-each-key -->
                                 {#each entry.kind as k, ki}
                                     <div class="flex items-center">
                                         <button 
@@ -271,6 +273,8 @@
                             </td>
                             <td>
                                 <div class="flex gap-3 items-center">
+                                    <!-- No key exists -->
+                                    <!-- eslint-disable-next-line svelte/require-each-key -->
                                     {#each entry.order as key, oi}
                                     <div class="card-filled p-1 flex items-center">
                                         <span>{SORT_PROPERTY_NAMES[key.property]}</span>
@@ -302,9 +306,10 @@
             <h3 class="h3 text-center">Delegates</h3>
             <label class="flex gap-3 justify-center items-center">
                 <span>Apply Preset</span>
-                <select class="select w-1/2" bind:value={currentPreset} onchange={setPreset}>
-                    {#each Object.entries(PRESETS) as [value, preset]}
-                    <option {value} label={preset.label}></option>
+                <select class="select w-1/2" bind:value={inputPreset} onchange={() => setPreset()}>
+                    <option disabled selected value>-- Select preset --</option>
+                    {#each Object.entries(PRESETS) as [value, preset] (value)}
+                        <option {value} label={preset.label}></option>
                     {/each}
                 </select>
             </label>

@@ -17,9 +17,11 @@
  *     This typically does not need to be done since it's done once in `./routes/+layout.svelte`.
  */
 
+import { getContext, hasContext, setContext } from "svelte";
+
 import { db, DEFAULT_SESSION_DATA, DEFAULT_SETTINGS } from "$lib/db/index.svelte";
 import type { SessionContext } from "$lib/types";
-import { getContext, hasContext, setContext } from "svelte";
+import { stringifyTime } from "$lib/util/time";
 
 const CONTEXT_KEY = "session";
 
@@ -38,6 +40,14 @@ class SessionImpl implements SessionContext {
 
     barTopic = $state<string>();
     tabTitleExtras = $state<string>();
+
+    updateTabTitleExtras(running: boolean, secsRemaining?: number) {
+        if (running && secsRemaining) {
+            this.tabTitleExtras = stringifyTime(secsRemaining);
+        } else {
+            this.tabTitleExtras = undefined;
+        }
+    }
 }
 
 /**

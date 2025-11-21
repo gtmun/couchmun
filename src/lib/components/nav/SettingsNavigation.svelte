@@ -4,22 +4,24 @@
   This drawer allows users to visit different **admin** pages and configure various settings on the site.
  -->
 <script lang="ts">
+    import { Accordion } from "@skeletonlabs/skeleton-svelte";
+    import { getContext } from "svelte";
+
     import { goto } from "$app/navigation";
     import { resolve } from "$app/paths";
-    import LightSwitch from "$lib/components/LightSwitch.svelte";
+    import LightSwitch from "$lib/components/controls/LightSwitch.svelte";
+    import PaletteSelector from "$lib/components/controls/PaletteSelector.svelte";
     import { getSessionContext, resetSessionContext } from "$lib/context/index.svelte";
+    import { THEME_DEFAULTS, type Theme } from "$lib/context/theme.svelte";
     import { db, queryStore } from "$lib/db/index.svelte";
-    import { Accordion } from "@skeletonlabs/skeleton-svelte";
-
     import MdiPalette from "~icons/mdi/palette";
     import MdiPlus from "~icons/mdi/plus";
     import MdiReload from "~icons/mdi/reload";
-    import MdiWrench from "~icons/mdi/wrench";
     import MdiSquareRoundedOutline from "~icons/mdi/square-rounded-outline";
     import MdiStarOutline from "~icons/mdi/star-outline";
-    import PaletteSelector from "../PaletteSelector.svelte";
-    import { getContext } from "svelte";
-    import { THEME_DEFAULTS, type Theme } from "$lib/context/theme.svelte";
+    import MdiWrench from "~icons/mdi/wrench";
+
+
 
     interface Props {
         /**
@@ -29,12 +31,16 @@
         close: () => void;
 
         /**
-         * A bindable designating whether the backdrop for the modal
-         * should be shown.
+         * A callable which triggers when switching from
+         * "all accordions are closed" to "any accordion is open"
+         * (and vice versa).
+         * 
+         * The input is true if any accordion is open
+         * and false if all are closed.
          */
-        showBackdrop: boolean;
+        onAccordionOpenChange?: (e: boolean) => void
     }
-    let { close, showBackdrop = $bindable() }: Props = $props();
+    let { close, onAccordionOpenChange = undefined }: Props = $props();
 
     const prevSessions = queryStore(() => db.prevSessions.toCollection().keys(), []);
     const selectedSession = queryStore(() => db.getSessionValue("sessionKey"));
@@ -53,10 +59,15 @@
         goto(resolve("/dashboard/roll-call"));
     }
 
-    // Hide backdrop when accordions are all closed.
-    $effect(() => {
-        showBackdrop = accordion.length == 0;
-    });
+    function accordionChange(newAcc: string[]) {
+        let oldStatus = accordion.length != 0;
+        let newStatus = newAcc.length != 0;
+        accordion = newAcc;
+
+        if (oldStatus != newStatus) {
+            onAccordionOpenChange?.(newStatus);
+        }
+    }
 </script>
 
 <!-- External link to admin pages -->
@@ -90,7 +101,7 @@
     <div class="flex justify-between">
         Color Scheme <LightSwitch bind:colorScheme={theme.colorScheme} />
     </div>
-    <Accordion value={accordion} multiple onValueChange={e => accordion = e.value}>
+    <Accordion value={accordion} multiple onValueChange={e => accordionChange(e.value)}>
         <Accordion.Item value="primary" classes="text-primary-500">
             {#snippet lead()}<MdiStarOutline />{/snippet}
             {#snippet control()}Primary{/snippet}
@@ -167,7 +178,7 @@
 <div class="p-2 flex flex-col gap-3">
     <div class="grid grid-cols-1 gap-1">
         <!-- All sessions -->
-        {#each $prevSessions as sessionKey}
+        {#each $prevSessions as sessionKey (sessionKey)}
             {@render sessionRow(+sessionKey)}
         {/each}
         {#if typeof $selectedSession === "undefined"}

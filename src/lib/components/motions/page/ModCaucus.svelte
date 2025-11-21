@@ -5,11 +5,11 @@
     - An editable speakers list
 -->
 <script lang="ts">
-    import { numSpeakersStr } from "$lib/components/MotionForm.svelte";
+    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
+    import { numSpeakersStr } from "$lib/components/motions/form/MotionForm.svelte";
+    import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import type Timer from "$lib/components/Timer.svelte";
-    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { findDelegate } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";
@@ -45,13 +45,6 @@
         totalTimer.offsetDuration(-delTimer.secsRemaining());
     }
 
-    function addFirst() {
-        speakersList?.addSpeaker(motion.delegate);
-    }
-    function addLast() {
-        speakersList?.addSpeaker(motion.delegate);
-    }
-
     $effect(() => {
         if (timerPanel?.getRunState(0)) {
             let secs = timerPanel.secsRemaining(0);
@@ -75,7 +68,7 @@
         <TimerPanel
             delegates={$delegates}
             {speakersList}
-            duration={[motion.speakingTime, motion.totalTime]}
+            durations={[motion.speakingTime, motion.totalTime]}
             timerInteraction={$preferences.pauseMainTimer ? "sync" : "cascade"}
             onBeforeReset={deductTime}
             bind:this={timerPanel}
@@ -107,8 +100,8 @@
                     >
                         <DelLabel attrs={findDelegate($delegates, motion.delegate)} inline />
                         <div>
-                            <button class="btn preset-filled-primary-500" onclick={e => speakersList?.addSpeakerFirst(motion.delegate)}>First</button>
-                            <button class="btn preset-filled-primary-500" onclick={e => speakersList?.addSpeakerLast(motion.delegate)}>Last</button>
+                            <button class="btn preset-filled-primary-500" onclick={() => speakersList?.addSpeakerFirst(motion.delegate)}>First</button>
+                            <button class="btn preset-filled-primary-500" onclick={() => speakersList?.addSpeakerLast(motion.delegate)}>Last</button>
                         </div>
                     </div>
                 {/if}

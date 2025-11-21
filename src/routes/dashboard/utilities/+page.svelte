@@ -4,15 +4,15 @@
   Notably, this page includes a timer and title, which can be used quite generically.
 -->
 <script lang="ts">
+    import { Switch } from "@skeletonlabs/skeleton-svelte";
+
+    import DelFlag from "$lib/components/del-label/DelFlag.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { lazyslide } from "$lib/util";
     import { makeEditable } from "$lib/util/action.svelte";
-    import { Switch } from "@skeletonlabs/skeleton-svelte";
-    
     import MdiFlag from "~icons/mdi/flag";
     import MdiFlagOff from "~icons/mdi/flag-off";
-    import DelFlag from "$lib/components/del-label/DelFlag.svelte";
 
     const sessionData = getSessionContext();
     const { delegates } = sessionData;
@@ -29,13 +29,6 @@
     let showFlag = $state<boolean>(false);
 
     const attrs = $derived($delegates.find(d => d.nameEquals(labelText)));
-    $effect(() => {
-        if (timer && running) {
-            sessionData.tabTitleExtras = timer.secsRemainingString();
-        } else {
-            sessionData.tabTitleExtras = undefined;
-        }
-    });
 </script>
 
 <div class="flex flex-col h-full items-stretch">
@@ -96,8 +89,13 @@
         <div class="flex flex-col gap-5">
             <Timer
                 bind:duration
-                bind:running
+                {running}
                 bind:this={timer}
+                onRunningChange={r => {
+                    running = r;
+                    sessionData.updateTabTitleExtras(r, timer?.secsRemaining());
+                }}
+                onTimeChange={msElapsed => sessionData.updateTabTitleExtras(running, msElapsed / 1000)}
                 editable
             />
     

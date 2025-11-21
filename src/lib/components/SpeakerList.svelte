@@ -6,20 +6,22 @@
   and rearrange speakers in the speakers list.
  -->
 <script lang="ts">
-    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import ConfirmModalCard from "$lib/components/modals/ConfirmModalCard.svelte";
-    import { type Delegate, findDelegate } from "$lib/db/delegates";
-    import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
-    import { isDndShadow } from "$lib/util/dnd";
+    import { Modal } from "@skeletonlabs/skeleton-svelte";
     import { tick, untrack, type Snippet } from "svelte";
     import { flip } from "svelte/animate";
     import { dragHandle, dragHandleZone } from "svelte-dnd-action";
+
+    import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
+    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
+    import ConfirmModalCard from "$lib/components/modals/ConfirmModalCard.svelte";
+    import { defaultModalClasses } from "$lib/components/modals/ModalContent.svelte";
+    import { type Delegate, findDelegate } from "$lib/db/delegates";
+    import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
+    import { isDndShadow } from "$lib/util/dnd";
     import MdiCancel from "~icons/mdi/cancel";
     import MdiDelete from "~icons/mdi/delete";
     import MdiDragVertical from "~icons/mdi/drag-vertical";
-    import { Modal } from "@skeletonlabs/skeleton-svelte";
-    import DelCombobox from "./DelCombobox.svelte";
-    import { defaultModalClasses } from "./modals/ModalContent.svelte";
+
     
     interface Props {
         /**
@@ -54,7 +56,7 @@
         /**
          * If this prop is defined, the function callback is activated right before a speaker changes.
          */
-        onBeforeSpeakerUpdate?: ((oldSpeaker: Speaker | undefined, newSpeaker: Speaker | undefined) => unknown);
+        onBeforeSpeakerUpdate?: ((oldSpeaker: Speaker | undefined, newSpeaker: Speaker | undefined) => void);
         /**
          * If this prop is defined, the function callback is activated when a speaker is marked as completed.
          */
@@ -78,9 +80,9 @@
     // The UUID of the currently selected speaker object:
     let selectedSpeakerId = $state<SpeakerEntryID>();
     // A mapping from IDs to Speakers:
-    let orderMap = $derived(Object.fromEntries(
+    let orderMap = $derived(new Map(
         order.filter(s => typeof s.id === "string" && s.id)
-            .map((speaker, i) => [speaker.id, { speaker, i }])
+            .map((speaker) => [speaker.id, speaker])
     ));
     // Point to insert speakers (by number of elements from the end).
     let insertPoint = $state(0);
@@ -138,7 +140,7 @@
      */
     function findSpeaker(speakerId: SpeakerEntryID | undefined): Speaker | undefined {
         if (typeof speakerId === "undefined") return;
-        return orderMap[speakerId]?.speaker;
+        return orderMap.get(speakerId);
     }
     /**
      * Marks the speaker as completed (and activates any listeners bound to "onMarkComplete").
@@ -166,7 +168,9 @@
         markComplete(selectedSpeakerId);
 
         // Find first element in the order that has not been completed yet.
-        setSelectedSpeaker(order.find(({ completed }) => !completed));
+        setSelectedSpeaker(order.find(({ completed }) => !completed))
+            .then(tick)
+            .then(() => jumpToSpeaker(selectedSpeakerId)); // Scroll new speaker to view
     }
 
     /**
@@ -247,29 +251,16 @@
      * 
      * @param speaker the speaker object (or undefined to clear speaker)
      */
-    function setSelectedSpeaker(speaker: Speaker | undefined) {
+    async function setSelectedSpeaker(speaker: Speaker | undefined) {
         if (selectedSpeakerId !== speaker?.id) {
+            let currentSpeaker = findSpeaker(selectedSpeakerId);
+            let nextSpeaker = findSpeaker(speaker?.id);
+
             // Call beforeSpeakerUpdate (and let it run to completion if is Promise) before setting speaker.
-            (async () => {
-                let selectedSpeaker = findSpeaker(selectedSpeakerId);
-                await onBeforeSpeakerUpdate?.(selectedSpeaker, speaker);
-                await tick();
-                selectedSpeakerId = speaker?.id;
-            })()
+            return Promise.resolve(onBeforeSpeakerUpdate?.(currentSpeaker, nextSpeaker))
+                .finally(() => selectedSpeakerId = nextSpeaker?.id);
         }
     }
-
-    // If order updates and selectedSpeaker isn't in there, then clear selectedSpeaker.
-    // Scroll to speaker if it is out of view.
-    $effect(() => {
-        if (typeof selectedSpeakerId !== "undefined") {
-            if (!(selectedSpeakerId in orderMap)) {
-                setSelectedSpeaker(undefined);
-            } else {
-                jumpToSpeaker(selectedSpeakerId);
-            }
-        }
-    })
 </script>
 <script module lang="ts">
     /**
@@ -413,12 +404,18 @@
 
 <style>
     @reference "$lib/../app.css";
+    
     /* Styling for dragged element */
     :global(#dnd-action-dragged-el).dnd-list-item {
         background-color: var(--color-surface-50) !important;
         opacity: 90% !important;
         @apply border-2! border-surface-950-50!;
-        @apply grid! grid-cols-[auto_auto_1fr_auto] items-center gap-3 p-1;
+
+        display: grid !important;
+        grid-template-columns: auto auto 1fr auto;
+        align-items: center;
+        gap: calc(var(--spacing) * 3);
+        padding: calc(var(--spacing) * 1);
 
         @variant dark {
             background-color: var(--color-surface-950) !important;

@@ -1,5 +1,6 @@
 <script lang="ts">
     import { Switch } from '@skeletonlabs/skeleton-svelte';
+
     import MdiWeatherNight from "~icons/mdi/weather-night";
     import MdiWeatherSunny from "~icons/mdi/weather-sunny";
 

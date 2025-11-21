@@ -5,9 +5,10 @@
   This is used with `DelLabel` to handle the display of delegates.
 -->
 <script lang="ts">
-    import { getFlagCodes, getFlagUrl } from "$lib/flags/flagcdn";
     import { onMount } from "svelte";
     import type { ClassValue } from "svelte/elements";
+
+    import { getFlagCodes, getFlagUrl } from "$lib/flags/flagcdn";
     import MdiFlagOff from "~icons/mdi/flag-off";
 
     interface Props {
