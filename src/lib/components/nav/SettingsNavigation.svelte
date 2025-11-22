@@ -16,15 +16,12 @@
     import { getSessionContext, resetSessionContext } from "$lib/context/index.svelte";
     import { THEME_DEFAULTS, type Theme } from "$lib/context/theme.svelte";
     import { db, queryStore } from "$lib/db/index.svelte";
+    import type { PropsOf } from "$lib/util";
     import MdiChevronDown from "~icons/mdi/chevron-down";
-    import MdiPalette from "~icons/mdi/palette";
     import MdiPlus from "~icons/mdi/plus";
     import MdiReload from "~icons/mdi/reload";
     import MdiSquareRoundedOutline from "~icons/mdi/square-rounded-outline";
     import MdiStarOutline from "~icons/mdi/star-outline";
-    import MdiWrench from "~icons/mdi/wrench";
-
-
 
     interface Props {
         /**
@@ -52,6 +49,40 @@
     let accordion = $state<string[]>([]);
     let theme = getContext<Writable<Theme>>("theme");
 
+    const primaryColors = [
+        {id: "tw:red",          label: "Red",     displayShade: "var(--color-red-500)"},
+        {id: "tw:orange",       label: "Orange",  displayShade: "var(--color-orange-500)"},
+        {id: "tw:amber",        label: "Amber",   displayShade: "var(--color-amber-500)"},
+        {id: "tw:yellow",       label: "Yellow",  displayShade: "var(--color-yellow-500)"},
+        {id: "tw:lime",         label: "Lime",    displayShade: "var(--color-lime-500)"},
+        {id: "tw:green",        label: "Green",   displayShade: "var(--color-green-500)"},
+        {id: "tw:emerald",      label: "Emerald", displayShade: "var(--color-emerald-500)"},
+        {id: "tw:teal",         label: "Teal",    displayShade: "var(--color-teal-500)"},
+        {id: "tw:cyan",         label: "Cyan",    displayShade: "var(--color-cyan-500)"},
+        {id: "tw:sky",          label: "Sky",     displayShade: "var(--color-sky-500)"},
+        {id: "default-primary", label: "Blue",    displayShade: "var(--color-blue-500)"},
+        {id: "tw:indigo",       label: "Indigo",  displayShade: "var(--color-indigo-500)"},
+        {id: "tw:violet",       label: "Violet",  displayShade: "var(--color-violet-500)"},
+        {id: "tw:purple",       label: "Purple",  displayShade: "var(--color-purple-500)"},
+        {id: "tw:fuchsia",      label: "Fuchsia", displayShade: "var(--color-fuchsia-500)"},
+        {id: "tw:pink",         label: "Pink",    displayShade: "var(--color-pink-500)"},
+        {id: "tw:rose",         label: "Rose",    displayShade: "var(--color-rose-500)"},
+        {id: "tw:slate",        label: "Slate",   displayShade: "var(--color-slate-500)"},
+        {id: "tw:gray",         label: "Gray",    displayShade: "var(--color-gray-500)"},
+        {id: "tw:zinc",         label: "Zinc",    displayShade: "var(--color-zinc-500)"},
+        {id: "tw:neutral",      label: "Neutral", displayShade: "var(--color-neutral-500)"},
+        {id: "tw:stone",        label: "Stone",   displayShade: "var(--color-stone-500)"},
+    ] satisfies PropsOf<typeof PaletteSelector>["colors"];
+    
+    const surfaceColors = [
+        {id: "default-surface", label: "Default", displayShade: "#666666"},
+        {id: "tw:slate-500",    label: "Slate",   displayShade: "var(--color-slate-500)"},
+        {id: "tw:gray-500",     label: "Gray",    displayShade: "var(--color-gray-500)"},
+        {id: "tw:zinc-500",     label: "Zinc",    displayShade: "var(--color-zinc-500)"},
+        {id: "tw:neutral-500",  label: "Neutral", displayShade: "var(--color-neutral-500)"},
+        {id: "tw:stone-500",    label: "Stone",   displayShade: "var(--color-stone-500)"},
+    ] satisfies PropsOf<typeof PaletteSelector>["colors"];
+
     /**
      * This implements the functionality of the "Add Session" button.
      * Saves the current session and creates a new session.
@@ -73,13 +104,14 @@
     }
 </script>
 
+<hr class="hr" />
+
 <!-- External link to admin pages -->
 <nav>
-    <div class="flex p-2 gap-3 items-center">
-        <h2 class="text-lg font-bold">Configure</h2>
-        <MdiWrench />
-    </div>
-    <ul class="flex flex-col gap-1">
+    <h2 class="nav-header p-2">
+        Admin
+    </h2>
+    <ul class="flex flex-col">
         <li class="flex">
             <a class="grow hover:preset-tonal p-2 rounded" onclick={close} href="{resolve("/admin/settings")}" tabindex="0">
                 Settings
@@ -97,54 +129,33 @@
 
 <!-- Theming -->
 <div class="flex flex-col p-2 gap-3">
-    <div class="flex gap-3 items-center">
-        <h2 class="text-lg font-bold">Theme</h2>
-        <MdiPalette />
-    </div>
+    <h2 class="nav-header">
+        Theme
+    </h2>
     <div class="flex justify-between">
         Color Scheme <LightSwitch bind:colorScheme={$theme.colorScheme} />
     </div>
-    <Accordion value={accordion} multiple onValueChange={e => accordionChange(e.value)}>
+    <Accordion
+        value={accordion}
+        multiple
+        onValueChange={e => accordionChange(e.value)}
+        class="card-filled p-1"
+    >
         <Accordion.Item value="primary" class="text-primary-500">
-            <h3>
-                <Accordion.ItemTrigger class="flex items-center justify-between gap-2">
-                    <div class="flex gap-5">
-                        <MdiStarOutline />
-                        Primary
-                    </div>
-                    <Accordion.ItemIndicator class="group">
-                        <MdiChevronDown class="transition group-data-[state=open]:rotate-180" />
-                    </Accordion.ItemIndicator>
-                </Accordion.ItemTrigger>
-            </h3>
+            <Accordion.ItemTrigger class="flex items-center justify-between gap-2">
+                <div class="flex gap-5">
+                    <MdiStarOutline />
+                    Primary
+                </div>
+                <Accordion.ItemIndicator class="group">
+                    <MdiChevronDown class="transition group-data-[state=open]:rotate-180" />
+                </Accordion.ItemIndicator>
+            </Accordion.ItemTrigger>
             <Accordion.ItemContent>
                 {#snippet element(attributes)}
                     {#if !attributes.hidden}
                         <div {...attributes} transition:slide={{ duration: 150 }}>
-                            <PaletteSelector bind:selectedColor={$theme.primaryShade} colors={[
-                                {id: "tw:red",          label: "Red",     displayShade: "var(--color-red-500)"},
-                                {id: "tw:orange",       label: "Orange",  displayShade: "var(--color-orange-500)"},
-                                {id: "tw:amber",        label: "Amber",   displayShade: "var(--color-amber-500)"},
-                                {id: "tw:yellow",       label: "Yellow",  displayShade: "var(--color-yellow-500)"},
-                                {id: "tw:lime",         label: "Lime",    displayShade: "var(--color-lime-500)"},
-                                {id: "tw:green",        label: "Green",   displayShade: "var(--color-green-500)"},
-                                {id: "tw:emerald",      label: "Emerald", displayShade: "var(--color-emerald-500)"},
-                                {id: "tw:teal",         label: "Teal",    displayShade: "var(--color-teal-500)"},
-                                {id: "tw:cyan",         label: "Cyan",    displayShade: "var(--color-cyan-500)"},
-                                {id: "tw:sky",          label: "Sky",     displayShade: "var(--color-sky-500)"},
-                                {id: "default-primary", label: "Blue",    displayShade: "var(--color-blue-500)"},
-                                {id: "tw:indigo",       label: "Indigo",  displayShade: "var(--color-indigo-500)"},
-                                {id: "tw:violet",       label: "Violet",  displayShade: "var(--color-violet-500)"},
-                                {id: "tw:purple",       label: "Purple",  displayShade: "var(--color-purple-500)"},
-                                {id: "tw:fuchsia",      label: "Fuchsia", displayShade: "var(--color-fuchsia-500)"},
-                                {id: "tw:pink",         label: "Pink",    displayShade: "var(--color-pink-500)"},
-                                {id: "tw:rose",         label: "Rose",    displayShade: "var(--color-rose-500)"},
-                                {id: "tw:slate",        label: "Slate",   displayShade: "var(--color-slate-500)"},
-                                {id: "tw:gray",         label: "Gray",    displayShade: "var(--color-gray-500)"},
-                                {id: "tw:zinc",         label: "Zinc",    displayShade: "var(--color-zinc-500)"},
-                                {id: "tw:neutral",      label: "Neutral", displayShade: "var(--color-neutral-500)"},
-                                {id: "tw:stone",        label: "Stone",   displayShade: "var(--color-stone-500)"},
-                            ]} withCustom />
+                            <PaletteSelector bind:selectedColor={$theme.primaryShade} colors={primaryColors} withCustom />
                         </div>
                     {/if}
                 {/snippet}
@@ -152,29 +163,20 @@
         </Accordion.Item>
         <hr class="hr" />
         <Accordion.Item value="surface" class="text-surface-500">
-            <h3>
-                <Accordion.ItemTrigger class="flex items-center justify-between gap-2">
-                    <div class="flex gap-5">
-                        <MdiSquareRoundedOutline />
-                        Surface
-                    </div>
-                    <Accordion.ItemIndicator class="group">
-                        <MdiChevronDown class="transition group-data-[state=open]:rotate-180" />
-                    </Accordion.ItemIndicator>
-                </Accordion.ItemTrigger>
-            </h3>
+            <Accordion.ItemTrigger class="flex items-center justify-between gap-2">
+                <div class="flex gap-5">
+                    <MdiSquareRoundedOutline />
+                    Surface
+                </div>
+                <Accordion.ItemIndicator class="group">
+                    <MdiChevronDown class="transition group-data-[state=open]:rotate-180" />
+                </Accordion.ItemIndicator>
+            </Accordion.ItemTrigger>
             <Accordion.ItemContent>
                 {#snippet element(attributes)}
                     {#if !attributes.hidden}
                         <div {...attributes} transition:slide={{ duration: 150 }}>
-                            <PaletteSelector bind:selectedColor={$theme.surfaceShade} colors={[
-                                {id: "default-surface", label: "Default", displayShade: "#666666"},
-                                {id: "tw:slate-500",    label: "Slate",   displayShade: "var(--color-slate-500)"},
-                                {id: "tw:gray-500",     label: "Gray",    displayShade: "var(--color-gray-500)"},
-                                {id: "tw:zinc-500",     label: "Zinc",    displayShade: "var(--color-zinc-500)"},
-                                {id: "tw:neutral-500",  label: "Neutral", displayShade: "var(--color-neutral-500)"},
-                                {id: "tw:stone-500",    label: "Stone",   displayShade: "var(--color-stone-500)"},
-                            ]} withCustom />
+                            <PaletteSelector bind:selectedColor={$theme.surfaceShade} colors={surfaceColors} withCustom />
                         </div>
                     {/if}
                 {/snippet}

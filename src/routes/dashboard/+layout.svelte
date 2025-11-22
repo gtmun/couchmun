@@ -33,6 +33,7 @@
         "/dashboard/points-motions": { label: "Points and Motions" },
         "/dashboard/current-motion": { label: "Current Motion" },
         "/dashboard/utilities":      { label: "Utilities" },
+        "/dashboard/for-against":    { label: "For and Against Speeches" },
     };
     let thisLink = $derived(typeof page.route.id == "string" ? links[page.route.id] : undefined);
 

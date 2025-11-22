@@ -66,3 +66,7 @@
     }
   }
 }
+
+@utility nav-header {
+  @apply text-xs text-surface-600-400 font-bold uppercase;
+}

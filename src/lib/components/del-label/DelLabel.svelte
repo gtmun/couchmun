@@ -5,6 +5,8 @@
 -->
 
 <script lang="ts">
+    import type { Snippet } from "svelte";
+
     import DelFlag from "$lib/components/del-label/DelFlag.svelte";
     import type { DelegateAttrs } from "$lib/types";
 
@@ -31,6 +33,8 @@
          * The name to use if the delegate's name could not be found.
          */
         fallbackName?: string | undefined;
+
+        label?: Snippet<[string]>,
     }
 
     let {
@@ -38,7 +42,8 @@
         flagHeight: height = undefined,
         inline = false,
         fallbackFlag = undefined,
-        fallbackName = undefined
+        fallbackName = undefined,
+        label: labelSnippet
     }: Props = $props();
 
     let label = $derived(attrs?.name ?? fallbackName ?? "");
@@ -51,7 +56,11 @@
 </div>
 {:else}
 <div class="flex flex-col items-center gap-3">
-    <h2 class="h2">{label}</h2>
+    {#if labelSnippet}
+        {@render labelSnippet(label)}
+    {:else}
+        <h2 class="h2">{label}</h2>
+    {/if}
     <DelFlag {label} url={attrs?.flagURL} height={height ?? "h-[25dvh]"} fallback={fallbackFlag ?? "un"} />
 </div>
 {/if}
