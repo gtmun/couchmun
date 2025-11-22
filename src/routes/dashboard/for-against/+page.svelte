@@ -1,0 +1,86 @@
+<!--
+    @component The page for standard speakers list, consisting of:
+    - A timer panel with a timer (delegate speaking time)
+    - An editable speakers list
+-->
+<script lang="ts">
+    import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
+    import SpeakerList from "$lib/components/SpeakerList.svelte";
+    import { getSessionContext } from "$lib/context/index.svelte";
+    import { db } from "$lib/db/index.svelte";
+    import { parseTime, stringifyTime } from "$lib/util/time";
+
+    const sessionData = getSessionContext();
+    const { speakersList: order, delegates } = sessionData;
+
+    let duration: number = $state(60);
+    let timerPanel = $state<TimerPanel>();
+    let speakersList = $state<SpeakerList>();
+    let durInput: string = $state("");
+
+    function reset() {
+        timerPanel?.reset();
+    }
+    function setDuration(e: SubmitEvent) {
+        e.preventDefault();
+
+        let secs = parseTime(durInput);
+        if (typeof secs !== "undefined") {
+            duration = secs;
+            reset();
+        }
+        durInput = "";
+    }
+
+    $effect(() => {
+        if (timerPanel?.getRunState(0)) {
+            let secs = timerPanel.secsRemaining(0);
+            sessionData.tabTitleExtras = typeof secs !== "undefined" ? stringifyTime(secs) : undefined;
+        } else {
+            sessionData.tabTitleExtras = undefined;
+        }
+    });
+</script>
+
+<div class="flex flex-col lg:flex-row h-full gap-8 items-stretch">
+    <!--
+        Under mobile, the timer encompasses the whole page 
+        and the speakers list can be accessed by scrolling down.
+
+        Under desktop, both are on the same screen,
+        with the left side being the timer and the right side being the speakers list.
+    -->
+    <!-- Left/Top -->
+    <div class="flex flex-col grow shrink-0 basis-full lg:basis-auto">
+        <TimerPanel
+            delegates={$delegates}
+            {speakersList}
+            bind:durations={
+             () => [duration],
+             ([d]) => duration = d
+            }
+            bind:this={timerPanel}
+            editable
+        />
+    </div>
+    <!-- Right/Bottom -->
+    <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-100 lg:max-w-[33%]">
+        <!-- List -->
+        <SpeakerList
+            delegates={$delegates}
+            bind:order={$order}
+            bind:this={speakersList}
+            onBeforeSpeakerUpdate={reset}
+            onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
+        />
+        <!-- Timer config -->
+        <div class="flex flex-row gap-5">
+            <form class="contents" onsubmit={setDuration}>
+                <label class="flex grow items-center">
+                    <span>Speaker Time</span>
+                    <input class="input grow" bind:value={durInput} placeholder="mm:ss" disabled={timerPanel?.getRunState(0)} />
+                </label>
+            </form>
+        </div>
+    </div>
+</div>
