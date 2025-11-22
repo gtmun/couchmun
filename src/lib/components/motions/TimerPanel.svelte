@@ -72,6 +72,12 @@
         }[],
 
         /**
+         * Listener when duration updates.
+         * This can only trigger if `editable` is true.
+        */
+        onDurationUpdate?: (durations: number[]) => void,
+
+        /**
          * Listener to reset events. Called when reset is called.
          */
         onBeforeReset?: (timers: (Timer | undefined)[]) => void,
@@ -84,15 +90,17 @@
     let {
         delegates,
         speakersList,
-        durations = $bindable(),
+        durations: dur,
         editable = false,
         timerInteraction: _ti = "sync",
         resetButtons = [{ label: "Reset" }],
+        onDurationUpdate,
         onBeforeReset = undefined,
         label
     }: Props = $props();
 
     // Creates a `timers` state with the specific number of timers.
+    let durations = $derived(dur);
     const numTimers = () => durations.length;
     let timers: (Timer | undefined)[] = $state(Array.from({ length: numTimers() }));
     let runStates: boolean[] = $state(Array.from({ length: numTimers() }, () => false));
@@ -233,10 +241,8 @@
             {@const last = i == timers.length - 1}
             <Timer
                 bind:duration={
-                    // Needed to prevent a warning
-                    // when `durations` is not binded to TimerPanel
                     () => durations[i],
-                    d => durations[i] = d
+                    d => {durations[i] = d; onDurationUpdate?.(durations)}
                 }
                 running={getRunState(i)}
                 bind:this={timers[i]}
