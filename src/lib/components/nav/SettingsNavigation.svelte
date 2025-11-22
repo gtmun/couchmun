@@ -18,12 +18,10 @@
     import { db, queryStore } from "$lib/db/index.svelte";
     import type { PropsOf } from "$lib/util";
     import MdiChevronDown from "~icons/mdi/chevron-down";
-    import MdiPalette from "~icons/mdi/palette";
     import MdiPlus from "~icons/mdi/plus";
     import MdiReload from "~icons/mdi/reload";
     import MdiSquareRoundedOutline from "~icons/mdi/square-rounded-outline";
     import MdiStarOutline from "~icons/mdi/star-outline";
-    import MdiWrench from "~icons/mdi/wrench";
 
     interface Props {
         /**
@@ -106,13 +104,14 @@
     }
 </script>
 
+<hr class="hr" />
+
 <!-- External link to admin pages -->
 <nav>
-    <div class="flex p-2 gap-3 items-center">
-        <h2 class="text-lg font-bold">Configure</h2>
-        <MdiWrench />
-    </div>
-    <ul class="flex flex-col gap-1">
+    <h2 class="nav-header p-2">
+        Admin
+    </h2>
+    <ul class="flex flex-col">
         <li class="flex">
             <a class="grow hover:preset-tonal p-2 rounded" onclick={close} href="{resolve("/admin/settings")}" tabindex="0">
                 Settings
@@ -130,14 +129,18 @@
 
 <!-- Theming -->
 <div class="flex flex-col p-2 gap-3">
-    <div class="flex gap-3 items-center">
-        <h2 class="text-lg font-bold">Theme</h2>
-        <MdiPalette />
-    </div>
+    <h2 class="nav-header">
+        Theme
+    </h2>
     <div class="flex justify-between">
         Color Scheme <LightSwitch bind:colorScheme={$theme.colorScheme} />
     </div>
-    <Accordion value={accordion} multiple onValueChange={e => accordionChange(e.value)}>
+    <Accordion
+        value={accordion}
+        multiple
+        onValueChange={e => accordionChange(e.value)}
+        class="card-filled p-1"
+    >
         <Accordion.Item value="primary" class="text-primary-500">
             <Accordion.ItemTrigger class="flex items-center justify-between gap-2">
                 <div class="flex gap-5">
