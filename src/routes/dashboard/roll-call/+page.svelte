@@ -46,7 +46,7 @@
                     <SegmentedControl.Control>
                         <SegmentedControl.Indicator />
                         {#each radio as { presence, label, icon } (presence)}
-                            <SegmentedControl.Item value={presence}>
+                            <SegmentedControl.Item value={presence} class="hover:preset-tonal">
                                 <SegmentedControl.ItemText>
                                     <IconLabel {icon} {label} />
                                 </SegmentedControl.ItemText>
