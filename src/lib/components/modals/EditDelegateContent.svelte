@@ -25,16 +25,16 @@
     }
 
     let { 
-        attrs = {
-            name: "",
-            aliases: []
-        },
+        attrs = emptyAttrs(),
         exitState
     }: Props = $props();
 
     let newAttrs = $state(attrs);
     let aliasesInput = $state(attrs.aliases.join(", "));
 
+    function emptyAttrs(): DelegateAttrs {
+        return { name: "", aliases: [] }
+    }
     function splitAliasInput(inp: string) {
         inp = inp.trim();
         
@@ -42,10 +42,12 @@
             .map(s => s.trim())
             .filter(s => s.length !== 0);
     }
+
     function submitValue(e: SubmitEvent, submit: (t: SubmitData) => void) {
         e.preventDefault();
         newAttrs.aliases = splitAliasInput(aliasesInput);
         submit({ attrs: $state.snapshot(newAttrs) });
+        newAttrs = emptyAttrs();
     }
 </script>
 
