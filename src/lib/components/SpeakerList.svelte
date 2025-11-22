@@ -7,7 +7,7 @@
  -->
 <script lang="ts">
     import { Dialog } from "@skeletonlabs/skeleton-svelte";
-    import { tick, untrack, type Snippet } from "svelte";
+    import { tick, type Snippet } from "svelte";
     import { flip } from "svelte/animate";
     import { dragHandle, dragHandleZone } from "svelte-dnd-action";
 
@@ -53,6 +53,13 @@
          * By default, this "Speakers List"
          */
         title?: Snippet | string;
+
+        /**
+         * If specified, this includes an element between the delegate label and remove button.
+         * This must be a singular element.
+         */
+        extra?: Snippet<[Speaker]>;
+
         /**
          * If this prop is defined, the function callback is activated right before a speaker changes.
          */
@@ -69,6 +76,7 @@
         controls = undefined,
         subcontrols = undefined,
         title = "Speakers List",
+        extra,
         onBeforeSpeakerUpdate = undefined,
         onMarkComplete = undefined
     }: Props = $props();
@@ -113,6 +121,9 @@
         clearSpeakers: false
     });
 
+    let list_grid_layout = $derived(extra ? "grid-cols-[auto_auto_1fr_auto_auto]" : "grid-cols-[auto_auto_1fr_auto]");
+    let row_grid_layout = $derived(extra ? "col-span-5" : "col-span-4");
+
     /**
      * Whether the speakers list is complete (there are no other speakers left in the list).
      */
@@ -124,14 +135,7 @@
      * Gets the data for the current selected speaker.
      */
     export function selectedSpeaker() {
-        let speaker = findSpeaker(selectedSpeakerId);
-
-        // This only updates when ID updates, not when the speaker's properties update:
-        return untrack(() => {
-            if (typeof speaker !== "undefined") {
-                return { key: speaker.key, completed: speaker.completed };
-            }
-        });
+        return $state.snapshot(findSpeaker(selectedSpeakerId));
         
     }
     /**
@@ -283,7 +287,7 @@
         {/if}
     </h4>
 
-    <ol class="p-2 overflow-y-auto grid grid-cols-[auto_auto_1fr_auto] auto-rows-min grow"
+    <ol class={["p-2 overflow-y-auto grid auto-rows-min grow", list_grid_layout]}
         bind:this={listEl}
         use:dragHandleZone={{
             items: dndItems,
@@ -321,7 +325,7 @@
 
             <li
                 class={[
-                    "grid! grid-cols-subgrid col-span-4 dnd-list-item items-center gap-3 p-1",
+                    "grid! grid-cols-subgrid dnd-list-item items-center gap-1 p-1", row_grid_layout,
                     shadow && "visible! bg-surface-100-900! rounded",
                     insertPoint > 0 && (i == order.length - insertPoint) && "border-t-2 border-surface-500"
                 ]}
@@ -331,7 +335,7 @@
                 <div use:dragHandle>
                     <MdiDragVertical />
                 </div>
-                <span class="enumerated-index tabular-nums">{i + 1}.</span>
+                <span class="enumerated-index tabular-nums pr-1">{i + 1}.</span>
                 <button 
                     class={[
                         "btn text-wrap! justify-start overflow-hidden",
@@ -348,6 +352,7 @@
                 >
                     <DelLabel attrs={delAttrs} fallbackName={speakerLabel} inline />
                 </button>
+                {@render extra?.(speaker)}
                 <button 
                     class={[
                         "btn-icon-std transition",

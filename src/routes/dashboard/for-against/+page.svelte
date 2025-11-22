@@ -7,12 +7,21 @@
     import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
+    import { findDelegate } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";
+    import type { Speaker } from "$lib/types";
     import { parseTime, stringifyTime } from "$lib/util/time";
+    import MdiMinus from "~icons/mdi/minus";
+    import MdiThumbDown from "~icons/mdi/thumb-down";
+    import MdiThumbUp from "~icons/mdi/thumb-up";
 
     const sessionData = getSessionContext();
-    const { speakersList: order, delegates } = sessionData;
+    const { delegates } = sessionData;
 
+    interface SpeakerFA extends Speaker {
+        stance?: "for" | "against";
+    }
+    let order: SpeakerFA[] = $state([]);
     let duration: number = $state(60);
     let timerPanel = $state<TimerPanel>();
     let speakersList = $state<SpeakerList>();
@@ -30,6 +39,17 @@
             reset();
         }
         durInput = "";
+    }
+
+    function invertFavor(s: SpeakerFA["stance"]) {
+        return s !== "for" ? "for" : "against";
+    }
+    function presetCls(s: SpeakerFA) {
+        if (s.completed) return "preset-ui-depressed";
+
+        if (s.stance === "for") return "preset-filled-success-200-800 hover:preset-filled-success-500";
+        if (s.stance === "against") return "preset-filled-error-200-800 hover:preset-filled-error-500";
+        return "preset-filled-surface-200-800 hover:preset-filled-surface-500";
     }
 
     $effect(() => {
@@ -61,18 +81,53 @@
             }
             bind:this={timerPanel}
             editable
-        />
+        >
+            {#snippet label(name)}
+                {@const speaker: SpeakerFA | undefined = speakersList?.selectedSpeaker()}
+                {#if speaker}
+                    <div class="flex items-center gap-3">
+                        <h2 class="h2">{name}</h2>
+                        {#if speaker?.stance === "for"}
+                            <MdiThumbUp class="size-8" />
+                        {:else if speaker?.stance === "against"}
+                            <MdiThumbDown class="size-8" />
+                        {/if}
+                    </div>
+                {/if}
+            {/snippet}
+        </TimerPanel>
     </div>
     <!-- Right/Bottom -->
     <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-100 lg:max-w-[33%]">
         <!-- List -->
         <SpeakerList
             delegates={$delegates}
-            bind:order={$order}
+            bind:order
             bind:this={speakersList}
             onBeforeSpeakerUpdate={reset}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
-        />
+        >
+            {#snippet extra(speaker: SpeakerFA)}
+                {@const speakerLabel = findDelegate($delegates, speaker.key)?.name ?? "unknown"}
+                {@const invertedFavor = invertFavor(speaker.stance)}
+
+                <button 
+                    class={["btn-icon-std transition", presetCls(speaker)]}
+                    onclick={() => speaker.stance = invertedFavor}
+                    title="Set {speakerLabel} to {invertedFavor}"
+                    aria-label="Set {speakerLabel} to {invertedFavor}"
+                    disabled={speaker.completed}
+                >
+                    {#if speaker.stance === "for"}
+                        <MdiThumbUp />
+                    {:else if speaker.stance === "against"}
+                        <MdiThumbDown />
+                    {:else}
+                        <MdiMinus />
+                    {/if}
+                </button>
+            {/snippet}
+        </SpeakerList>
         <!-- Timer config -->
         <div class="flex flex-row gap-5">
             <form class="contents" onsubmit={setDuration}>

@@ -11,7 +11,7 @@
   and the speaker list and database stats.
 -->
 <script lang="ts">
-    import { untrack } from "svelte";
+    import { untrack, type Snippet } from "svelte";
 
     import Timer from "../Timer.svelte";
 
@@ -74,7 +74,12 @@
         /**
          * Listener to reset events. Called when reset is called.
          */
-        onBeforeReset?: (timers: (Timer | undefined)[]) => void
+        onBeforeReset?: (timers: (Timer | undefined)[]) => void,
+
+        /**
+         * Property to format the delegate label.
+         */
+        label?: Snippet<[string]>
     }
     let {
         delegates,
@@ -83,7 +88,8 @@
         editable = false,
         timerInteraction: _ti = "sync",
         resetButtons = [{ label: "Reset" }],
-        onBeforeReset = undefined
+        onBeforeReset = undefined,
+        label
     }: Props = $props();
 
     // Creates a `timers` state with the specific number of timers.
@@ -209,7 +215,7 @@
         <div transition:lazyslide>
             {#if typeof selectedSpeaker !== "undefined"}
                 <div class="pb-5">
-                    <DelLabel attrs={findDelegate(delegates, selectedSpeaker.key)} />
+                    <DelLabel attrs={findDelegate(delegates, selectedSpeaker.key)} {label} />
                 </div>
             {/if}
         </div>
