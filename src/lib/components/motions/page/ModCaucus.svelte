@@ -72,12 +72,11 @@
             timerInteraction={$preferences.pauseMainTimer ? "sync" : "cascade"}
             onBeforeReset={deductTime}
             bind:this={timerPanel}
-        >
-        {#snippet resetButtons(btn, reset, canReset)}
-            {@render btn(reset, canReset, "Reset", [0])}
-            {@render btn(reset, canReset, "Reset All")}
-        {/snippet}
-        </TimerPanel>
+            resetButtons={[
+                { label: "Reset", indices: [0] },
+                { label: "Reset All" }
+            ]}
+        />
     </div>
     <!-- Right/Bottom -->
     <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-100 lg:max-w-[33%]">

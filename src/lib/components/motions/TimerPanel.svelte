@@ -11,7 +11,7 @@
   and the speaker list and database stats.
 -->
 <script lang="ts">
-    import { untrack, type Snippet } from "svelte";
+    import { untrack } from "svelte";
 
     import Timer from "../Timer.svelte";
 
@@ -61,11 +61,15 @@
         timerInteraction?: "sync" | "cascade" | "none",
 
         /**
-         * An optionally definable snippet. 
-         * If defined, this replaces the default "Reset" button (which resets all timers)
-         * with HTML content of your choice.
+         * Configurable reset buttons.
+         * 
+         * Each element indicates a reset button, with the specified string label
+         * and which indices to reset. If `indices` is empty or undefined, then this resets all.
          */
-        resetButtons?: Snippet<[typeof resetButton, typeof reset, typeof canReset]>,
+        resetButtons?: {
+            label: string,
+            indices?: number[]
+        }[],
 
         /**
          * Listener to reset events. Called when reset is called.
@@ -78,7 +82,7 @@
         durations = $bindable(),
         editable = false,
         timerInteraction: _ti = "sync",
-        resetButtons = undefined,
+        resetButtons = [{ label: "Reset" }],
         onBeforeReset = undefined
     }: Props = $props();
 
@@ -258,12 +262,17 @@
             {/if}
             <!-- Next -->
             <button class="btn preset-filled-primary-500" disabled={speakersList?.isAllDone() ?? true} onclick={next}>Next</button>
-            <!-- Reset (or the custom defined buttons) -->
-            {#if resetButtons}
-                {@render resetButtons(resetButton, reset, canReset)}
-            {:else}
-                {@render resetButton(reset, canReset)}
-            {/if}
+            <!-- Reset Buttons -->
+            <!-- eslint-disable-next-line svelte/require-each-key -->
+            {#each resetButtons as { indices, label }}
+                <button
+                    class="btn preset-filled-primary-500"
+                    disabled={!canReset(...(indices ?? []))}
+                    onclick={() => reset(...(indices ?? []))}
+                >
+                    {label}
+                </button>
+            {/each}
         </div>
     </div>
 </div>
@@ -271,25 +280,3 @@
 <div class="flex justify-center lg:hidden">
     <MdiChevronDown />
 </div>
-
-<!-- 
-  A basic reset button.
-  @param reset The timer panel's reset callback (provided by the `resetButtons` snippet)
-  @param canReset The timer panel's canReset callback (provided by the `resetButtons` snippet)
-  @param label The text to write on this button
-  @param indices Which indices to reset (or nothing, if we wish to apply to all timers)
--->
-{#snippet resetButton(
-    reset: (...indices: number[]) => void,
-    canReset: (...indices: number[]) => boolean,
-    label: string = "Reset",
-    indices?: number[]
-)}
-    <button
-        class="btn preset-filled-primary-500"
-        disabled={!canReset(...(indices ?? []))}
-        onclick={() => reset(...(indices ?? []))}
-    >
-        {label}
-    </button>
-{/snippet}
