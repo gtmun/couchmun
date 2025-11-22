@@ -68,7 +68,10 @@
         } else if (k === "topic") {
             return InputString;
         } else if (k === "extension") {
-            return InputExtension;
+            // Only allow if motion is the same
+            if (inputMotion.kind === $selectedMotion?.kind) {
+                return InputExtension;
+            }
         } else if (k === "none") {
             return undefined;
         } else {
