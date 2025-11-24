@@ -23,7 +23,6 @@
 		"@tailwindcss/vite": "^4.1.17",
 		"@types/chroma-js": "^3.1.2",
 		"@types/node": "^24.10.1",
-		"@types/sortablejs": "^1.15.9",
 		"eslint": "^9.39.1",
 		"eslint-import-resolver-typescript": "^4.4.4",
 		"eslint-plugin-import": "^2.32.0",
