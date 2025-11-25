@@ -49,4 +49,7 @@ export const makeEditable = ((el: HTMLElement, options?: EditableParameter) => {
 
         return () => setHandlers(false);
     });
+    $effect(() => {
+        el.textContent = options?.value ?? "";
+    });
 }) satisfies Action<HTMLElement, EditableParameter>;

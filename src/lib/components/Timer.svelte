@@ -300,19 +300,17 @@
         class={["h2", "text-center", "tabular-nums", hideText && "hidden"]}
         role="timer"
     >
-        {#key duration}
-            {stringifyTime(secsRemaining())}/<span
-                class="contenteditable:editable-std"
-                use:makeEditable={{
-                    get when() { return editable && !running; },
-                    get value() { return stringifyTime(duration) },
-                    set value(time) { setDuration(time) }
-                }}
-                role="none"
-            >
-                {stringifyTime(duration)}
-            </span>
-        {/key}
+        {stringifyTime(secsRemaining())}/<span
+            class="contenteditable:editable-std"
+            use:makeEditable={{
+                get when() { return editable && !running; },
+                get value() { return stringifyTime(duration) },
+                set value(time) { setDuration(time) }
+            }}
+            role="none"
+        >
+            {stringifyTime(duration)}
+        </span>
     </h2>
     <div class="grid grid-cols-[1fr_auto] gap-1 items-center">
         <!-- The progress bar -->
