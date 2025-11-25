@@ -274,6 +274,7 @@
                                             <InputPlusMinus 
                                                 name="stats-motions-proposed"
                                                 ariaLabelName="Motions Proposed"
+                                                min={0}
                                                 bind:value={
                                                     () => selectedDel.stats.motionsProposed,
                                                     v => db.updateDelegate(editStatsDel, d => { d.stats.motionsProposed = v; })
@@ -285,6 +286,7 @@
                                             <InputPlusMinus
                                                 name="stats-motions-accepted"
                                                 ariaLabelName="Motions Accepted"
+                                                min={0}
                                                 bind:value={
                                                     () => selectedDel.stats.motionsAccepted,
                                                     v => db.updateDelegate(editStatsDel, d => { d.stats.motionsAccepted = v; })
@@ -296,6 +298,7 @@
                                             <InputPlusMinus
                                                 name="stats-times-spoken"
                                                 ariaLabelName="Times Spoken"
+                                                min={0}
                                                 bind:value={
                                                     () => selectedDel.stats.timesSpoken,
                                                     v => db.updateDelegate(editStatsDel, d => { d.stats.timesSpoken = v; })
