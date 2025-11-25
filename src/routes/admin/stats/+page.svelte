@@ -265,7 +265,7 @@
                                 </label>
                                 <label>
                                     Delegate
-                                    <DelCombobox delegates={$delegates} bind:value={editStatsDel} />
+                                    <DelCombobox delegates={$delegates} bind:value={editStatsDel} selectOnBlur />
                                 </label>
                                 {#if typeof selectedDel !== "undefined"}
                                     <div class="flex flex-col gap-2" transition:lazyslide>

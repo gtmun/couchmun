@@ -17,7 +17,7 @@
     import { MOTION_BASE_FIELDS, MOTION_DEFS, type InputKind, type InputProperties, type MotionSchema } from "$lib/motions/definitions";
     import { formatValidationError } from "$lib/motions/form_validation";
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
-    import type { Motion } from "$lib/types";
+    import type { DelegateID, Motion } from "$lib/types";
     import { hasKey } from "$lib/util";
     import { parseTime, sanitizeTime } from "$lib/util/time";
     import MdiPlus from "~icons/mdi/plus";
@@ -54,6 +54,7 @@
     }: Props = $props();
     
     let inputMotion = $state<MotionInput>(initialInput ?? defaultInputMotion());
+    let inputDel = $state<DelegateID>();
     // Any input validation errors.
     let inputError = $state<z.core.$ZodIssue>();
     // The form element.
@@ -117,6 +118,7 @@
         const result = motionSchema.safeParse(inputMotion);
         if (result.success) {
             inputMotion = defaultInputMotion();
+            inputDel = undefined;
             inputError = undefined;
 
             submit?.(result.data);
@@ -189,6 +191,7 @@
         <span>Delegate</span>
         <DelCombobox
             bind:input={inputMotion.delegate}
+            bind:value={inputDel}
             delegates={$delegates}
             onSelect={() => {
                 // Once selected, move to next item in form
