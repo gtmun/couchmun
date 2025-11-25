@@ -81,16 +81,18 @@
     }: Props = $props();
     
     let presentDelegates = $derived(delegates.filter(d => d.isPresent()));
-    let filteredDelegates = $derived(presentDelegates);
+    let filteredDelegates = $derived(presentDelegates.filter(d => !input || d.nameIncludes(input)));
     const collection = $derived(useListCollection({
         items: filteredDelegates,
         itemToString: it => it.name,
         itemToValue: it => String(it.id)
     }))
 
-    function onInputValueChange(e: { inputValue: string }) {
-        input = e.inputValue;
-        filteredDelegates = presentDelegates.filter(d => d.nameIncludes(e.inputValue));
+    function onInputValueChange(e: { inputValue: string, reason?: string }) {
+        if (e.reason) {
+            if (selectOnBlur && e.reason === "interact-outside") return; // handled by onBlur
+            input = e.inputValue;
+        }
     }
     let delsEmpty = $derived(presentDelegates.length == 0);
     let comboboxValue = $derived(typeof value !== "undefined" ? [String(value)] : []);
