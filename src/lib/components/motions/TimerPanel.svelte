@@ -192,7 +192,7 @@
      * @returns the seconds remaining for the timer of the given index
      */
     export function secsRemaining(timerIndex: number) {
-        return timers[timerIndex]?.secsRemaining();
+        return timers[timerIndex]?.secsRemaining?.();
     }
 
     /**

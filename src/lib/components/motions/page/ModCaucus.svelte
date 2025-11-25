@@ -41,7 +41,7 @@
     function deductTime([delTimer, totalTimer]: (Timer | undefined)[]) {
         if ($preferences.yieldMainTimer) return;
         if (!delTimer || !totalTimer) return;
-        totalTimer.offsetDuration(-delTimer.secsRemaining());
+        totalTimer.offsetDuration(-delTimer.secsRemaining?.());
     }
 
     $effect(() => {
