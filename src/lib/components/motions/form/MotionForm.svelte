@@ -4,7 +4,7 @@
 -->
 <script lang="ts">
     import { type Snippet } from 'svelte';
-    import { fade } from "svelte/transition";
+    import { slide } from 'svelte/transition';
     import type { z } from "zod";
 
     import InputExtension from './InputExtension.svelte';
@@ -21,6 +21,7 @@
     import { hasKey } from "$lib/util";
     import { parseTime, sanitizeTime } from "$lib/util/time";
     import MdiPlus from "~icons/mdi/plus";
+
 
     const { selectedMotion, delegates, preferences } = getSessionContext();
     const defaultInputMotion = () => ({ id: crypto.randomUUID(), kind: "mod" } satisfies MotionInput);
@@ -255,7 +256,7 @@
         <div 
             class="text-error-500 text-center"
             role="alert"
-            transition:fade={{ duration: 150 }}
+            transition:slide={{ duration: 150 }}
         >
             {inputError.message}
         </div>
