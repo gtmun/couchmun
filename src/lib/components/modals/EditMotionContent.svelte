@@ -35,18 +35,20 @@
     }: Props = $props();
 
 
-    let inputMotion = $state(motionSchema.encode(motion));
+    let inputMotion = $derived(motionSchema.safeEncode(motion)?.data);
 </script>
 
 <UniModalContent title="Editing Motion" {exitState}>
     {#snippet main({ submit, close })}
-        <MotionForm {submit} {motionSchema} initialInput={inputMotion}>
-            {#snippet buttons()}
-                <div class="flex justify-end gap-3">
-                    <button class="btn preset-filled-error-500" type="button" onclick={close}>Cancel</button>
-                    <button class="btn preset-filled-primary-500" type="submit">Submit</button>
-                </div>
-            {/snippet}
-        </MotionForm>
+        {#key inputMotion}
+            <MotionForm {submit} {motionSchema} initialInput={inputMotion}>
+                {#snippet buttons()}
+                    <div class="flex justify-end gap-3">
+                        <button class="btn preset-filled-error-500" type="button" onclick={close}>Cancel</button>
+                        <button class="btn preset-filled-primary-500" type="submit">Submit</button>
+                    </div>
+                {/snippet}
+            </MotionForm>
+        {/key}
     {/snippet}
 </UniModalContent>
