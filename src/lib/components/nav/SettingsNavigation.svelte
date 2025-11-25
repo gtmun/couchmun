@@ -197,6 +197,9 @@
 <hr class="hr" />
 
 <!-- Session management -->
+<h2 class="nav-header">
+    Sessions
+</h2>
 
 <!-- A session row, which currently just consists of the "switch to this session" button -->
 {#snippet sessionRow(key?: number)}

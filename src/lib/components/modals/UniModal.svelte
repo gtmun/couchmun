@@ -73,9 +73,9 @@
         modalCls.card.base,
         modalCls.card.anim,
         ...(
-              type === "modal" ? [modalCls.card.modal.size, modalCls.card.modal.anim]
-            : type === "drawerLeft" ? [modalCls.card.drawer.size, modalCls.card.drawer.left]
-            : type === "drawerRight" ? [modalCls.card.drawer.size, modalCls.card.drawer.right]
+              type === "modal" ? [modalCls.card.modal.base, modalCls.card.modal.anim]
+            : type === "drawerLeft" ? [modalCls.card.drawer.base, modalCls.card.drawer.left]
+            : type === "drawerRight" ? [modalCls.card.drawer.base, modalCls.card.drawer.right]
             : type satisfies never
         )
     ]);
@@ -100,12 +100,12 @@
             base: "card bg-surface-50-950 p-4 space-y-4 shadow-xl",
             anim: "transition transition-discrete opacity-0 starting:data-[state=open]:opacity-0 data-[state=open]:opacity-100",
             drawer: {
-                size: "h-screen w-md",
+                base: "h-screen w-md overflow-auto",
                 left: "-translate-x-full starting:data-[state=open]:-translate-x-full data-[state=open]:translate-x-0 rounded-l-none",
                 right: "translate-x-[100vw] starting:data-[state=open]:translate-x-[100vw] data-[state=open]:translate-x-[calc(100vw_-_100%)] rounded-r-none"
             },
             modal: {
-                size: "w-full max-w-xl",
+                base: "w-full max-w-xl",
                 anim: "translate-y-[100px] starting:data-[state=open]:translate-y-[100px] data-[state=open]:translate-y-0"
             }
         }
