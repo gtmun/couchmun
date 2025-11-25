@@ -12,7 +12,7 @@
     import { findDelegate } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";
     import type { Speaker } from "$lib/types";
-    import { parseTime, stringifyTime } from "$lib/util/time";
+    import { parseTime } from "$lib/util/time";
     import MdiMinus from "~icons/mdi/minus";
     import MdiThumbUp from "~icons/mdi/thumb-up";
 
@@ -57,12 +57,10 @@
     }
 
     $effect(() => {
-        if (timerPanel?.getRunState(0)) {
-            let secs = timerPanel.secsRemaining(0);
-            sessionData.tabTitleExtras = typeof secs !== "undefined" ? stringifyTime(secs) : undefined;
-        } else {
-            sessionData.tabTitleExtras = undefined;
-        }
+        sessionData.updateTabTitleExtras(
+            timerPanel?.getRunState(0) ?? false,
+            timerPanel?.secsRemaining(0)
+        );
     });
 </script>
 
