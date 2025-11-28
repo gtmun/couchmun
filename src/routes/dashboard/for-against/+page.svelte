@@ -37,7 +37,6 @@
         let secs = parseTime(durInput);
         if (typeof secs !== "undefined") {
             duration = secs;
-            reset();
         }
         durInput = "";
     }

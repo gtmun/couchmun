@@ -11,7 +11,7 @@
 
     import UniModalContent, { type ContentProps, type ExitState } from "./UniModalContent.svelte";
 
-    import { watch } from "$lib/util/sv.svelte";
+    import { watchEffect } from "$lib/util/sv.svelte";
 
     interface Props extends ContentProps<T> {
         /**
@@ -75,7 +75,7 @@
     }
 
     let openCount = $state(0);
-    watch(() => open, o => { if (o) openCount++; });
+    watchEffect(() => open, o => { if (o) openCount++; });
 
     let positionerCls: ClassValue = $derived([
         modalCls.positioner.base,

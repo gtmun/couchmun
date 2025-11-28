@@ -8,10 +8,11 @@
 -->
 <script lang="ts">
     import { Progress } from "@skeletonlabs/skeleton-svelte";
-    import { onDestroy, onMount, untrack } from "svelte";
+    import { onDestroy, onMount } from "svelte";
 
     import { clamp } from "$lib/util";
     import { makeEditable } from "$lib/util/action.svelte";
+    import { watchEffect } from "$lib/util/sv.svelte";
     import { parseTime, stringifyTime } from "$lib/util/time";
     import MdiPause from "~icons/mdi/pause";
     import MdiPlay from "~icons/mdi/play";
@@ -118,11 +119,7 @@
 
     let DURATION_MS = $derived(duration * 1000);
     // reset timer on duration update:
-    $effect(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        duration;
-        untrack(reset);
-    });
+    watchEffect(() => duration, () => reset());
 
     // Progress & display values
     let msRemaining = $state(duration * 1000);
@@ -167,7 +164,7 @@
     }
 
     // Trigger state update on running change:
-    $effect(() => updateRunningEffects(running));
+    watchEffect(() => running, r => updateRunningEffects(r));
 
     /**
      * Set the milliseconds remaining.
@@ -246,14 +243,12 @@
     function updateRunningEffects(running: boolean) {
         // Make sure that running does not depend on msRemaining 
         // (since that updates while running)
-        untrack(() => {
-            onRunningChange?.(running, getElapsedTime());
+        onRunningChange?.(running, getElapsedTime());
 
-            if (running) {
-                lastStart = undefined;
-                msRemainingAtStart = msRemaining;
-            }
-        })
+        if (running) {
+            lastStart = undefined;
+            msRemainingAtStart = msRemaining;
+        }
     }
 
     // Keyboard events

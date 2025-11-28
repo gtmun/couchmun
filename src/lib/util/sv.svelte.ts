@@ -7,7 +7,7 @@ import { untrack } from "svelte";
  * @param signals The signals.
  * @param effect The side effects.
  */
-export function watch<T>(signals: () => T, effect: (t: T) => void) {
+export function watchEffect<T>(signals: () => T, effect: (t: T) => void) {
     $effect(() => {
         const s = signals();
         untrack(() => effect(s));
