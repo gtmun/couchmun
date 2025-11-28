@@ -18,8 +18,10 @@
         { time: 45, label: ":45" },
         { time: 60, label: "1:00" },
     ];
+
+    const inpId = $props.id();
 </script>
-<label class="label">
+<label class="label" for="input-stime-{inpId}">
     <div class="flex justify-between">
         <span>
             Speaking Time
@@ -48,6 +50,7 @@
     </div>
     <input
         {name}
+        id="input-stime-{inpId}"
         class={["input", error && "preset-input-error"]}
         placeholder="mm:ss" 
         bind:value
