@@ -261,6 +261,7 @@
     open => { if (!open) openModals.editMotion = -1}
   }
   onSubmit={(m: Motion) => editMotion(openModals.editMotion, m)}
+  reconstructBetweenOpens
 >
   {#snippet content(exitState)}
     <EditMotionContent motion={$motions[openModals.editMotion]} {motionSchema} {exitState} />
