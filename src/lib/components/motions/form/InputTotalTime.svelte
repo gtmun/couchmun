@@ -56,6 +56,6 @@
         class={["input", error && "preset-input-error"]}
         placeholder="mm:ss" 
         bind:value
-        onblur={() => value = sanitizeTime(value)}
+        onchange={() => value = sanitizeTime(value)}
     >
 </label>

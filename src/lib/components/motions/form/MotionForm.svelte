@@ -19,7 +19,7 @@
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
     import type { DelegateID, Motion } from "$lib/types";
     import { hasKey } from "$lib/util";
-    import { parseTime, sanitizeTime } from "$lib/util/time";
+    import { parseTime } from "$lib/util/time";
     import MdiPlus from "~icons/mdi/plus";
 
 
@@ -163,8 +163,8 @@
      */
     export function numSpeakersStr(totalTime: number | string | undefined, speakingTime: number | string | undefined): string | undefined {
         // Parse arguments as either seconds or time string.
-        if (typeof totalTime === "string") totalTime = parseTime(sanitizeTime(totalTime));
-        if (typeof speakingTime === "string") speakingTime = parseTime(sanitizeTime(speakingTime));
+        if (typeof totalTime === "string") totalTime = parseTime(totalTime);
+        if (typeof speakingTime === "string") speakingTime = parseTime(speakingTime);
 
         // Handle undefined cases
         if (typeof totalTime === "undefined") return;

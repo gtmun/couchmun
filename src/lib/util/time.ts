@@ -21,16 +21,8 @@ function _safeInteger(n: number): number | undefined {
  * @returns the number of seconds, or undefined if invalid
  */
 export function parseTime(timeStr: string): number | undefined {
-    const segments = timeStr.split(":").reverse();
+    const segments = sanitizeTime(timeStr).split(":").reverse();
     
-    // Handling seconds:
-    if (segments.length === 1) {
-        const [secs] = segments;
-        const colonized = addColons(secs, false);
-        
-        return colonized.includes(":") ? parseTime(colonized) : _safeInteger(+colonized);
-    }
-
     // Handling formats -- mm:ss to yy:dd:hh:mm:ss
     if (segments.length <= UNITS.length + 1) {
         // Assert every segment (except the last) is a positive integer that falls under the unit range,
