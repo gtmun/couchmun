@@ -15,7 +15,7 @@
     import { toKeyValueArray, toObject } from "$lib/db/keyval";
     import { DEFAULT_PRESET_KEY, getPreset, PRESETS } from "$lib/delegate_presets";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
-    import type { DelegateAttrs, Settings } from "$lib/types";
+    import type { DelegateAttrs, DelegateID, Settings } from "$lib/types";
     import { downloadFile } from "$lib/util";
     import MdiArrowDown from "~icons/mdi/arrow-down";
     import MdiCancel from "~icons/mdi/cancel";
@@ -41,9 +41,12 @@
     let openModals = $state({
         resetAllSettings: false,
         clearDelegates: false,
-        addDelegate: false,
         configureEnableDelegates: false,
-        editDelegate: {} as Record<number, boolean>
+        editDelegate: {
+            state: false,
+            id: undefined,
+            attrs: emptyAttrs(),
+        } as { state: boolean, id?: DelegateID, attrs: DelegateAttrs }
     });
 
     // IMPORT & EXPORT
@@ -132,6 +135,9 @@
 
     async function clearDelegates() {
         await db.delegates.clear();
+    }
+    function emptyAttrs(): DelegateAttrs {
+        return { name: "", aliases: [] }
     }
     /**
      * Updates delegate with delegate modal data.
@@ -314,19 +320,12 @@
                 </select>
             </label>
             <div class="flex gap-3 justify-center">
-                <UniModal
-                    bind:open={openModals.addDelegate}
-                    onSubmit={(d: { attrs: DelegateAttrs }) => editDelegate(undefined, d)}
+                <button
+                    class="btn preset-filled-primary-500"
+                    onclick={() => openModals.editDelegate = { state: true, attrs: emptyAttrs() }}
                 >
-                    {#snippet trigger()}
-                        <Dialog.Trigger class="btn preset-filled-primary-500">
-                            Add Delegate
-                        </Dialog.Trigger>
-                    {/snippet}
-                    {#snippet content(exitState)}
-                        <EditDelegateContent {exitState} />
-                    {/snippet}
-                </UniModal>
+                    Add Delegate
+                </button>
                 <UniModal
                     bind:open={openModals.configureEnableDelegates}
                     onSubmit={configureEnableDelegates}
@@ -377,19 +376,16 @@
                                 }>
                         </td>
                         <td class="text-right">
-                            <UniModal
-                                bind:open={openModals.editDelegate[attrs.id]}
-                                onSubmit={(d: { attrs: DelegateAttrs }) => editDelegate(attrs.id, d)}
+                            <button
+                                aria-label="Edit {attrs.name}"
+                                onclick={() => openModals.editDelegate = {
+                                    state: true,
+                                    id: attrs.id,
+                                    attrs: attrs.getAttributes()
+                                }}
                             >
-                                {#snippet trigger()}
-                                    <Dialog.Trigger aria-label="Edit {attrs.name}">
-                                        <MdiPencil />
-                                    </Dialog.Trigger>
-                                {/snippet}
-                                {#snippet content(exitState)}
-                                    <EditDelegateContent attrs={attrs.getAttributes()} {exitState} />
-                                {/snippet}
-                            </UniModal>
+                                <MdiPencil />
+                            </button>
                             <button
                                 onclick={() => deleteDelegate(attrs.id)}
                                 aria-label="Delete {attrs.name}"
@@ -406,6 +402,15 @@
     </div>
     <hr class="hr" />
 </div>
+
+<UniModal
+    bind:open={openModals.editDelegate.state}
+    onSubmit={(d: { attrs: DelegateAttrs }) => editDelegate(openModals.editDelegate.id, d)}
+>
+    {#snippet content(exitState)}
+        <EditDelegateContent attrs={openModals.editDelegate.attrs} {exitState} />
+    {/snippet}
+</UniModal>
 {/if}
 
 <style>
