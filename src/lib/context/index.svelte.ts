@@ -17,13 +17,11 @@
  *     This typically does not need to be done since it's done once in `./routes/+layout.svelte`.
  */
 
-import { getContext, hasContext, setContext } from "svelte";
+import { createContext } from "svelte";
 
 import { db, DEFAULT_SESSION_DATA, DEFAULT_SETTINGS } from "$lib/db/index.svelte";
 import type { SessionContext } from "$lib/types";
 import { stringifyTime } from "$lib/util/time";
-
-const CONTEXT_KEY = "session";
 
 // A wrapper class so Svelte is willing to make barTopic $state real.
 class SessionImpl implements SessionContext {
@@ -50,19 +48,20 @@ class SessionImpl implements SessionContext {
     }
 }
 
-/**
- * Gets the session context object.
- * 
- * This is an object which holds all properties of the session,
- * including those accessed via the session database.
- * 
- * This context is useful in that it allows for data to persist between page changes.
- * 
- * @returns the context object
- */
-export function getSessionContext() {
-    return getContext<SessionContext>(CONTEXT_KEY);
-}
+const [getSessionContext, setSessionContext] = createContext<SessionContext>();
+export {
+    /**
+     * Gets the session context object.
+     * 
+     * This is an object which holds all properties of the session,
+     * including those accessed via the session database.
+     * 
+     * This context is useful in that it allows for data to persist between page changes.
+     * 
+     * @returns the context object
+     */
+    getSessionContext
+};
 
 /**
  * Creates the session context object (if it hasn't been created).
@@ -70,8 +69,7 @@ export function getSessionContext() {
  * @returns the context object
  */
 export function createSessionContext() {
-    if (hasContext(CONTEXT_KEY)) return getSessionContext();
-    return setContext<SessionContext>(CONTEXT_KEY, new SessionImpl());
+    setSessionContext(new SessionImpl());
 }
 /**
  * Resets properties of the session.

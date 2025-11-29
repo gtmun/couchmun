@@ -7,10 +7,9 @@
 
 <script lang="ts">
     import "../app.css";
-    import { setContext } from "svelte";
-
+    
     import { createSessionContext } from "$lib/context/index.svelte";
-    import { initThemeState } from "$lib/context/theme.svelte";
+    import { createThemeContext } from "$lib/context/theme.svelte";
     import { genStyles } from "$lib/util/chroma";
 
     let { children } = $props();
@@ -24,8 +23,7 @@
         }
     }
 
-    let theme = initThemeState();
-    setContext("theme", theme);
+    let theme = createThemeContext();
     $effect(() => {
         if ($theme.colorScheme === "dark") {
             document.documentElement.classList.add("dark");
