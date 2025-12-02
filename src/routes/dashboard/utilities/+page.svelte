@@ -9,7 +9,7 @@
     import Timer from "$lib/components/Timer.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { lazyslide } from "$lib/util";
-    import { makeEditable } from "$lib/util/action.svelte";
+    import { makeEditable } from "$lib/util/attach.svelte";
     import MdiFlag from "~icons/mdi/flag";
     import MdiFlagOff from "~icons/mdi/flag-off";
 
@@ -38,12 +38,12 @@
                 <div class={["flex justify-center items-center", showFlag && "pb-3"]} transition:lazyslide>
                     <h2 
                         class="h2 text-center contenteditable:editable-std"
-                        use:makeEditable={{
-                            get when() { return !running; },
+                        {@attach makeEditable({
+                            when: !running,
                             get value() { return labelText; },
                             set value(text) { labelText = text; },
                             allowEmpty: true
-                        }}
+                        })}
                         placeholder="Add a title..."
                     >
                         {labelText}

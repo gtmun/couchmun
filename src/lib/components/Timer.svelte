@@ -11,7 +11,7 @@
     import { onDestroy, onMount } from "svelte";
 
     import { clamp } from "$lib/util";
-    import { makeEditable } from "$lib/util/action.svelte";
+    import { makeEditable } from "$lib/util/attach.svelte";
     import { watchEffect } from "$lib/util/sv.svelte";
     import { parseTime, stringifyTime } from "$lib/util/time";
     import MdiPause from "~icons/mdi/pause";
@@ -297,11 +297,11 @@
     >
         {stringifyTime(secsRemaining())}/<span
             class="contenteditable:editable-std"
-            use:makeEditable={{
-                get when() { return editable && !running; },
+            {@attach makeEditable({
+                when: editable && !running,
                 get value() { return stringifyTime(duration) },
                 set value(time) { setDuration(time) }
-            }}
+            })}
             role="none"
         >
             {stringifyTime(duration)}

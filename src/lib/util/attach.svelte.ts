@@ -1,4 +1,4 @@
-import type { Action } from "svelte/action";
+import type { Attachment } from "svelte/attachments";
 
 type EditableParameter = {
     when?: boolean,
@@ -6,7 +6,7 @@ type EditableParameter = {
     allowEmpty?: boolean,
 }
 /**
- * Action to make an element editable (when `when` is true).
+ * Attachment to make an element editable (when `when` is true).
  * 
  * This applies the standard styling for editable elements as well as adds listeners on content update.
  * On content update, the `options.value` parameter is updated. This can be replaced with a get/set pair
@@ -14,7 +14,7 @@ type EditableParameter = {
  * 
  * To properly style an editable element, the element should also have the `contenteditable:editable-std` class.
  */
-export const makeEditable = ((el: HTMLElement, options?: EditableParameter) => {
+export const makeEditable = (options?: EditableParameter) => ((el: HTMLElement) => {
     // Event handlers.
     // Editable element should exit when defocused or enter is pressed:
     function onKeyDown(e: KeyboardEvent) {
@@ -52,4 +52,4 @@ export const makeEditable = ((el: HTMLElement, options?: EditableParameter) => {
     $effect(() => {
         el.textContent = options?.value ?? "";
     });
-}) satisfies Action<HTMLElement, EditableParameter>;
+}) satisfies Attachment<HTMLElement>;
