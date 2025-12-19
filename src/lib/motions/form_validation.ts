@@ -12,14 +12,10 @@ export function formatValidationError(error: z.ZodError) {
     return error.issues[0];
 }
 export function nonEmptyString(label: string) {
-    return z.string({
-        error(issue) {
-            if (typeof issue.input === "undefined" || (issue.input as string).trim().length == 0) {
-                return `${label} is a required field`;
-            }
-        }
-    })
-        .trim();
+    const error = `${label} is a required field`;
+    return z.string({ error })
+        .trim()
+        .min(1, { error });
 }
 
 /**
