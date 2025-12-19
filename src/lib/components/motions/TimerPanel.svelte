@@ -76,7 +76,7 @@
          * Listener when duration updates.
          * This can only trigger if `editable` is true.
         */
-        onDurationUpdate?: (durations: number[]) => void,
+        onDurationUpdate?: (i: number, duration: number) => void,
 
         /**
          * Listener to reset events. Called when reset is called.
@@ -233,7 +233,7 @@
             <Timer
                 bind:duration={
                     () => durations[i],
-                    d => {durations[i] = d; onDurationUpdate?.(durations)}
+                    d => {durations[i] = d; onDurationUpdate?.(i, d)}
                 }
                 running={getRunState(i)}
                 bind:this={timers[i]}

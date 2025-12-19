@@ -77,7 +77,7 @@
             delegates={$delegates}
             {speakersList}
             durations={[duration]}
-            onDurationUpdate={([d]) => duration = d}
+            onDurationUpdate={(_, d) => duration = d}
             bind:this={timerPanel}
             editable
         >
