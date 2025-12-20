@@ -265,6 +265,10 @@
         </div>
         <hr class="hr" />
         <div class="panel">
+            <h3 class="h3 text-center" id="motions">Motions (WIP)</h3>
+        </div>
+        <hr class="hr" />
+        <div class="panel">
             <h3 class="h3 text-center" id="sort-order">Sort Order (WIP)</h3>
             <div class="flex gap-3">
                 <!-- Sort Order Table -->
