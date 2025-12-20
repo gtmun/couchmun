@@ -16,6 +16,27 @@ export function formatValidationError(error: z.ZodError) {
     return error.issues[0];
 }
 
+/**
+ * Similar to `z.optional`, but also maps empty strings to `undefined`.
+ * @param schema Any schema which accepts strings.
+ * @returns A schema which ignores `undefined` and blanks, passing them as `undefined`s.
+ */
+export function optional<T extends z.ZodType<unknown, string>>(schema: T) {
+    const filter_non_empty = (s?: string): (z.input<T> | undefined) => {
+        if (typeof s === "string" && s.trim().length > 0) {
+            // @ts-expect-error Cannot assert z.input<T> is string
+            return s;
+        }
+    };
+    return z.codec(
+        z.optional(z.string()),
+        z.optional(schema),
+        {
+            decode: filter_non_empty,
+            encode: filter_non_empty
+        }
+    );
+}
 export function stringSchema(label: string) {
     const error = `${label} is a required field`;
     return z.string({ error })

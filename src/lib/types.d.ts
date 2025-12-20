@@ -198,8 +198,8 @@ export type Motion = {
     id: MotionID,
     delegate: DelegateID,
     kind: "other",
-    totalTime: number,
-    topic: string
+    totalTime?: number,
+    topic?: string
 };
 export type MotionKind = Motion["kind"];
 

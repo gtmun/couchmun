@@ -8,7 +8,7 @@
 import { z } from "zod";
 
 import { type Delegate } from "$lib/db/delegates";
-import { presentDelegateSchema, refineSpeakingTime, stringSchema, stringToIntSchema, timeSchema, type SchemaOutput } from "$lib/motions/form_validation";
+import { optional, presentDelegateSchema, refineSpeakingTime, stringSchema, stringToIntSchema, timeSchema, type SchemaOutput } from "$lib/motions/form_validation";
 import type { Is } from "$lib/motions/types";
 import type { Motion, MotionKind, SortOrder } from "$lib/types";
 
@@ -141,8 +141,8 @@ export function createMotionSchema(delegates: Delegate[]) {
         z.object({
             ...base,
             kind: z.literal("other"),
-            totalTime: timeSchema("Total time"),
-            topic: stringSchema("Topic")
+            totalTime: optional(timeSchema("Total time")),
+            topic: optional(stringSchema("Topic"))
         })
     ]);
 }
