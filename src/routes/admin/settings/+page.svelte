@@ -2,26 +2,32 @@
   @component The admin settings page (used for configuring settings).
 -->
 <script lang="ts">
-    import { FileUpload, Dialog, Navigation } from "@skeletonlabs/skeleton-svelte";
+    import { FileUpload, Dialog, Navigation, Accordion } from "@skeletonlabs/skeleton-svelte";
+    import * as csv from 'csv/browser/esm/sync';
+    import { slide } from "svelte/transition";
 
     import LabeledSwitch from "$lib/components/controls/LabeledSwitch.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import MetaTags from "$lib/components/MetaTags.svelte";
     import ConfirmModal from "$lib/components/modals/ConfirmModal.svelte";
     import EditDelegateContent from "$lib/components/modals/EditDelegateContent.svelte";
-    import EnableDelegatesContent from "$lib/components/modals/EnableDelegatesContent.svelte";
     import UniModal from "$lib/components/modals/UniModal.svelte";
     import { _legacyFixDelFlag, db, queryStore } from "$lib/db/index.svelte";
     import { toKeyValueArray, toObject } from "$lib/db/keyval";
     import { DEFAULT_PRESET_KEY, getPreset, PRESETS } from "$lib/delegate_presets";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
     import type { DelegateAttrs, DelegateID, Settings } from "$lib/types";
-    import { a11yLabel, downloadFile } from "$lib/util";
+    import { a11yLabel, downloadFile, hasKey } from "$lib/util";
     import MdiArrowDown from "~icons/mdi/arrow-down";
     import MdiCancel from "~icons/mdi/cancel";
+    import MdiChevronDown from "~icons/mdi/chevron-down";
     import MdiCircleSmall from "~icons/mdi/circle-small";
+    import MdiDelete from "~icons/mdi/delete";
+    import MdiExport from "~icons/mdi/export";
+    import MdiImport from "~icons/mdi/import";
     import MdiMerge from "~icons/mdi/merge";
     import MdiPencil from "~icons/mdi/pencil";
+    import MdiPlus from "~icons/mdi/plus";
 
     const settings = queryStore(async () => toObject(await db.settings.toArray()) as Settings);
 
@@ -41,7 +47,6 @@
     let openModals = $state({
         resetAllSettings: false,
         clearDelegates: false,
-        configureEnableDelegates: false,
         editDelegate: {
             state: false,
             id: undefined,
@@ -49,8 +54,17 @@
         } as { state: boolean, id?: DelegateID, attrs: DelegateAttrs }
     });
 
+    // NAVIGATION
+    let mainContent = $state<HTMLElement>();
+    function getHeaders(): [string, string][] {
+        return Array.from(
+            mainContent?.querySelectorAll("h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]") ?? [],
+            e => [e.id, e.textContent!]
+        );
+    }
+
     // IMPORT & EXPORT
-    async function importFile(files: File[]) {
+    async function importSettingsFile(files: File[]) {
         const [file] = files;
         if (file) {
             const text = await file.text();
@@ -68,7 +82,7 @@
             })
         }
     }
-    function exportFile() {
+    function exportSettingsFile() {
         if (!$settings || !$delegates) return;
         let exportSettings = {
             settings: $settings,
@@ -127,15 +141,128 @@
             });
         }
     }
+
+    let importRosterStatus = $state.raw<{ type: "success" } | { type: "error", error: string }>();
+    const headers = ["name", "aliases", "flag_url"];
+    async function importRosterFile(files: File[]) {
+        const [file] = files;
+        if (file) {
+            const text = await file.text();
+            
+            importRosterStatus = { type: "success" };
+            setTimeout(() => importRosterStatus = undefined, 3000);
+
+            let data: unknown[];
+            try {
+                data = csv.parse(text, { columns: true });
+
+                if (data.length > 0) {
+                    const first = data[0];
+                    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+                    let enableMap = new Map<string, boolean>();
+
+                    // Assert headers are correct + specially handle "enabled" column
+                    if (typeof first === "object" && first) {
+                        const missingHeader = headers.find(h => !hasKey(first, h));
+                        if (missingHeader) {
+                            throw new Error(`Missing header: ${missingHeader}. The parsed headers were: ${JSON.stringify(Object.keys(first))}`)
+                        }
+                        if (hasKey(first, "enabled")) {
+                            for (let d of data) {
+                                enableMap.set((d as any).name as string, Boolean(+(d as any).enabled));
+                            }
+                        }
+                    }
+    
+                    /// Wipe & reload delegates
+                    return db.transaction("rw", db.delegates, async () => {
+                        await db.delegates.clear();
+                        await db.addDelegates(data.map<DelegateAttrs>((d: any) => ({
+                            name: d.name as string,
+                            aliases: (d.aliases as string).split(",").map(m => m.trim()),
+                            flagURL: (d.flag_url as string)
+                        })));
+
+                        if (enableMap.size > 0) {
+                            await db.delegates.toCollection().modify(d => {
+                                const result = enableMap.get(d.name);
+                                if (typeof result === "boolean") {
+                                    d.enabled = result;
+                                }
+                            });
+                        }
+                    });
+                }
+            } catch (e) {
+                importRosterStatus = { type: "error", error: String(e) };
+                return;
+            }
+        }
+    }
+    function exportRosterFile() {
+        const text = csv.stringify([
+            headers,
+            ...$delegates.map(d => [d.name, d.aliases.join(','), d.flagURL ?? ""])
+        ]);
+        downloadFile("roster.csv", text, "text/csv");
+    }
+    async function clearDelegates() {
+        await db.delegates.clear();
+    }
+
+    let visDisabled = $state("");
+    let visEnabled = $state("");
+    async function importVisFile(files: File[], enabledStatus: boolean) {
+        const [file] = files;
+        if (file) {
+            const text = await file.text();
+            updateVis(enabledStatus, text);
+        }
+    }
+    function processVis(text: string): [ids: Set<DelegateID>, remainder: string] {
+        // eslint-disable-next-line svelte/prefer-svelte-reactivity
+        let ids = new Set<DelegateID>();
+        let remainder: string[] = [];
+
+        for (let line of text.split("\n")) {
+            line = line.trim();
+            let item = $delegates.find(d => d.nameEquals(line));
+            if (item) {
+                ids.add(item.id);
+            } else {
+                remainder.push(line);
+            }
+        }
+
+        return [ids, remainder.join("\n")]
+    }
+    async function applyVis(ids: Set<DelegateID>, enabledStatus: boolean) {
+        return db.transaction("rw", db.delegates, async () => {
+            return db.delegates.toCollection().modify(d => {
+                if (ids.has(d.id)) {
+                    d.enabled = enabledStatus;
+                }
+            })
+        });
+    }
+    async function updateVis(enabledStatus: boolean, text?: string) {
+        if (enabledStatus) {
+            const [ids, remainder] = processVis(text ?? visEnabled);
+            visEnabled = remainder;
+            await applyVis(ids, enabledStatus);
+        } else {
+            const [ids, remainder] = processVis(text ?? visDisabled);
+            visDisabled = remainder;
+            await applyVis(ids, enabledStatus);
+        }
+    }
+
     async function setAllEnableStatuses(enabled: boolean) {
         db.transaction("rw", db.delegates, async () => {
             await db.delegates.toCollection().modify({ enabled });
         })
     }
 
-    async function clearDelegates() {
-        await db.delegates.clear();
-    }
     function emptyAttrs(): DelegateAttrs {
         return { name: "", aliases: [] }
     }
@@ -157,15 +284,6 @@
             }
         });
     }
-    function configureEnableDelegates(data?: Set<number>) {
-        if (!data) return;
-
-        db.transaction("rw", db.delegates, async () => {
-            await db.delegates.toCollection().modify((del) => {
-                del.enabled = data.has(del.id);
-            })
-        });
-    }
 
     async function deleteDelegate(id: number) {
         await db.transaction("rw", db.delegates, async () => {
@@ -179,15 +297,6 @@
                     .modify(d => { d.order--; });
             }
         })
-    }
-
-    // Headers for navigation:
-    let mainContent = $state<HTMLElement>();
-    function getHeaders(): [string, string][] {
-        return Array.from(
-            mainContent?.querySelectorAll("h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]") ?? [],
-            e => [e.id, e.textContent!]
-        );
     }
 </script>
 
@@ -215,9 +324,9 @@
             <h3 class="h3 text-center" id="control-panel">Control Panel</h3>
             <div class="flex gap-3 justify-center">
                 <FileUpload
-                    name="import"
+                    name="settings-import"
                     accept="application/json"
-                    onFileAccept={e => importFile(e.files)}
+                    onFileAccept={e => importSettingsFile(e.files)}
                     class="w-fit"
                 >
                     <FileUpload.Trigger class="btn preset-filled-primary-500">
@@ -227,7 +336,7 @@
                 </FileUpload>
                 <button
                     class="btn preset-filled-primary-500"
-                    onclick={exportFile}
+                    onclick={exportSettingsFile}
                 >
                     Export to file...
                 </button>
@@ -337,51 +446,180 @@
         <hr class="hr" />
         <div class="panel">
             <!-- Delegate Main Settings -->
-            <div class="card-filled p-4 flex flex-col gap-3">
-                <h3 class="h3 text-center" id="delegates">Delegates</h3>
-                <label class="flex gap-3 justify-center items-center">
-                    <span>Apply Preset</span>
-                    <select class="select w-1/2" bind:value={inputPreset} onchange={() => setPreset()}>
-                        <option disabled selected value>-- Select preset --</option>
-                        {#each Object.entries(PRESETS) as [value, preset] (value)}
-                            <option {value} label={preset.label}></option>
-                        {/each}
-                    </select>
-                </label>
-                <div class="flex gap-3 justify-center">
-                    <button
-                        class="btn preset-filled-primary-500"
-                        onclick={() => openModals.editDelegate = { state: true, attrs: emptyAttrs() }}
-                    >
-                        Add Delegate
-                    </button>
-                    <UniModal
-                        bind:open={openModals.configureEnableDelegates}
-                        onSubmit={configureEnableDelegates}
-                    >
-                        {#snippet trigger()}
-                            <Dialog.Trigger class="btn preset-filled-primary-500">
-                                Enable/Disable Delegates
-                            </Dialog.Trigger>
+            <h3 class="h3 text-center" id="delegates">
+                Delegates
+            </h3>
+            <Accordion collapsible multiple>
+                <hr class="hr" />
+                <!-- Roster accordion -->
+                <Accordion.Item value="delegate-edit-roster">
+                    <h3>
+                        <Accordion.ItemTrigger class="nav-header flex items-center justify-between gap-2">
+                            Roster
+                            <Accordion.ItemIndicator class="group">
+                                <MdiChevronDown class="h-5 w-5 transition group-data-[state=open]:rotate-180" />
+                            </Accordion.ItemIndicator>
+                        </Accordion.ItemTrigger>
+                    </h3>
+                    <Accordion.ItemContent>
+                        {#snippet element(attributes)}
+                            {#if !attributes.hidden}
+                                <div {...attributes} transition:slide={{ duration: 150 }}>
+                                    <div class="flex flex-col gap-3">
+                                        <div class="italic text-center">
+                                            Bulk configure the list of delegations to include for this committee. <br>
+                                            If the list of expected delegations is a subset of a larger preset,
+                                            consider using the <span class="font-bold">Visibility</span> configuration
+                                            instead.
+                                        </div>
+                                        <label class="flex gap-3 justify-center items-center">
+                                            <span>Apply Preset</span>
+                                            <select class="select w-1/2" bind:value={inputPreset} onchange={() => setPreset()}>
+                                                <option disabled selected value>-- Select preset --</option>
+                                                {#each Object.entries(PRESETS) as [value, preset] (value)}
+                                                    <option {value} label={preset.label}></option>
+                                                {/each}
+                                            </select>
+                                            <ConfirmModal
+                                                bind:open={openModals.clearDelegates}
+                                                success={clearDelegates}
+                                            >
+                                                {#snippet trigger()}
+                                                    <Dialog.Trigger
+                                                        class="btn-icon-std preset-filled-error-500"
+                                                        title="Remove All Delegates"
+                                                        aria-label="Remove All Delegates"
+                                                    >
+                                                        <MdiDelete />
+                                                    </Dialog.Trigger>
+                                                {/snippet}
+                                                {#snippet content()}
+                                                    Are you sure you want to remove all delegates?
+                                                {/snippet}
+                                            </ConfirmModal>
+                                        </label>
+                                        <FileUpload
+                                            name="roster-import"
+                                            accept="text/csv"
+                                            onFileAccept={(e) => importRosterFile(e.files)}
+                                        >
+                                            <FileUpload.Label>Upload a CSV (headers: {headers.join(', ')})</FileUpload.Label>
+                                            <FileUpload.Dropzone
+                                                class={[
+                                                    "transition-colors duration-150",
+                                                    importRosterStatus?.type === "success" && "preset-filled-success-100-900",
+                                                    importRosterStatus?.type === "error" && "preset-filled-error-100-900",
+                                                ]}
+                                            >
+                                                <span>Select file or drag here.</span>
+                                                <FileUpload.Trigger>Browse Files</FileUpload.Trigger>
+                                                <FileUpload.HiddenInput />
+                                            </FileUpload.Dropzone>
+                                            {#if importRosterStatus?.type === "error"}
+                                            <div class="text-center text-error-500" transition:slide={{ duration: 150 }}>
+                                                { importRosterStatus.error }
+                                            </div>
+                                            {/if}
+                                        </FileUpload>
+                                        <div class="flex justify-end">
+                                            <button class="btn preset-filled" onclick={exportRosterFile}>
+                                                <MdiExport />
+                                                Export Roster
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {/if}
                         {/snippet}
-                        {#snippet content(exitState)}
-                            <EnableDelegatesContent attrs={$delegates} {exitState} />
+                    </Accordion.ItemContent>
+                </Accordion.Item>
+                <hr class="hr" />
+                <!-- Visibility accordion -->
+                <Accordion.Item value="delegate-toggle-visibility">
+                    <h3>
+                        <Accordion.ItemTrigger class="nav-header flex items-center justify-between gap-2">
+                            Visibility
+                            <Accordion.ItemIndicator class="group">
+                                <MdiChevronDown class="h-5 w-5 transition group-data-[state=open]:rotate-180" />
+                            </Accordion.ItemIndicator>
+                        </Accordion.ItemTrigger>
+                    </h3>
+                    <Accordion.ItemContent>
+                        {#snippet element(attributes)}
+                            {#if !attributes.hidden}
+                                <div {...attributes} transition:slide={{ duration: 150 }}>
+                                    <div class="flex flex-col gap-3">
+                                        <div class="italic text-center">
+                                            Bulk set the visibility of all delegations. <br>
+                                            If a delegation is set to not visible, then it will not appear in roll call or in committee.
+                                            This acts as a "soft deletion." The delegation effectively does not exist,
+                                            but can be easily reinstated without having to manually reenter all of their information.
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <div class="flex text-sm font-bold justify-between items-center">
+                                                    <div>Type delegates to enable (sep. by new lines):</div>
+                                                        <FileUpload
+                                                            name="visibility-enable-import"
+                                                            accept="text/*"
+                                                            onFileAccept={e => importVisFile(e.files, true)}
+                                                            class="w-fit"
+                                                        >
+                                                            <FileUpload.Trigger
+                                                                class="btn-icon"
+                                                                title="Import Delegates to Enable"
+                                                                aria-label="Import Delegates to Enable"
+                                                            >
+                                                                <MdiImport />
+                                                            </FileUpload.Trigger>
+                                                            <FileUpload.HiddenInput />
+                                                        </FileUpload>
+                                                </div>
+                                                <textarea class="textarea" rows={10} bind:value={visEnabled} onkeydown={() => updateVis(true)}></textarea>
+                                            </div>
+                                            <div>
+                                                <div class="flex text-sm font-bold justify-between items-center">
+                                                    <div>Type delegates to disable (sep. by new lines):</div>
+                                                        <FileUpload
+                                                            name="visibility-disable-import"
+                                                            accept="text/*"
+                                                            onFileAccept={e => importVisFile(e.files, false)}
+                                                            class="w-fit"
+                                                        >
+                                                            <FileUpload.Trigger
+                                                                class="btn-icon"
+                                                                title="Import Delegates to Disable"
+                                                                aria-label="Import Delegates to Disable"
+                                                            >
+                                                                <MdiImport />
+                                                            </FileUpload.Trigger>
+                                                            <FileUpload.HiddenInput />
+                                                        </FileUpload>
+                                                </div>
+                                                <textarea class="textarea" rows={10} bind:value={visDisabled} onkeydown={() => updateVis(false)}></textarea>
+                                            </div>
+                                        </div>
+
+                                        <div class="italic font-bold text-center">
+                                            If a name persists, then it could not be resolved into a delegate.
+                                        </div>
+                                    </div>
+                                </div>
+                            {/if}
                         {/snippet}
-                    </UniModal>
-                    <ConfirmModal
-                        bind:open={openModals.clearDelegates}
-                        success={clearDelegates}
-                    >
-                        {#snippet trigger()}
-                            <Dialog.Trigger class="btn preset-filled-error-500">
-                                Clear Delegates
-                            </Dialog.Trigger>
-                        {/snippet}
-                        {#snippet content()}
-                            Are you sure you want to remove all delegates?
-                        {/snippet}
-                    </ConfirmModal>
-                </div>
+                    </Accordion.ItemContent>
+                </Accordion.Item>
+                <hr class="hr" />
+            </Accordion>
+            <div class="flex gap-3 justify-end">
+                <button
+                    class="btn preset-filled-primary-500"
+                    onclick={() => openModals.editDelegate = { state: true, attrs: emptyAttrs() }}
+                >
+                    <MdiPlus />
+                    Add Delegate
+                </button>
             </div>
             <!-- Delegate Table -->
             <div class="table-wrap rounded border border-surface-200-800">
@@ -395,8 +633,10 @@
                     </thead>
                     <tbody>
                         {#each $delegates as attrs (attrs.id)}
-                        <tr>
-                            <td class="w-full"><DelLabel {attrs} inline fallbackFlag="icon" /></td>
+                        <tr class={["transition-colors", !attrs.enabled && "bg-surface-100-900"]}>
+                            <td class="w-full">
+                                <DelLabel {attrs} inline fallbackFlag="icon" />
+                            </td>
                             <td class="text-center">
                                 <input class="checkbox" type="checkbox" 
                                     bind:checked={

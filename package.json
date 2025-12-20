@@ -40,6 +40,7 @@
 	"type": "module",
 	"dependencies": {
 		"chroma-js": "^3.2.0",
+		"csv": "^6.4.1",
 		"dexie": "^4.2.1",
 		"svelte-dnd-action": "^0.9.68",
 		"zod": "^4.2.1"
