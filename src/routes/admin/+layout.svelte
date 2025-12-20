@@ -44,7 +44,5 @@
         </AppBar>
     </header>
     <!-- Main -->
-    <main class="space-y-4 p-4 overflow-auto">
-        {@render children()}
-    </main>
+    {@render children()}
 </div>
