@@ -11,7 +11,7 @@
   and the speaker list and database stats.
 -->
 <script lang="ts">
-    import { untrack, type Snippet } from "svelte";
+    import { type Snippet } from "svelte";
 
     import Timer from "../Timer.svelte";
 
@@ -20,6 +20,7 @@
     import { findDelegate, type Delegate } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";
     import { lazyslide } from "$lib/util";
+    import { watchEffect } from "$lib/util/sv.svelte";
     import MdiChevronDown from "~icons/mdi/chevron-down";
 
     interface Props {
@@ -75,7 +76,7 @@
          * Listener when duration updates.
          * This can only trigger if `editable` is true.
         */
-        onDurationUpdate?: (durations: number[]) => void,
+        onDurationUpdate?: (i: number, duration: number) => void,
 
         /**
          * Listener to reset events. Called when reset is called.
@@ -108,28 +109,18 @@
     // If only 1 timer, just treat this as sync regardless of setting.
     let timerInteraction = $derived(numTimers() < 2 ? "sync" : _ti);
 
-    $effect(() => {
-        let nTimers = numTimers();
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        timerInteraction;
-
-        untrack(() => {
-            // When number of timers change, update the list of timers,
-            // truncating any timer past the number of timers.
-            timers.length = nTimers;
-            // When number of runnings change, update the list of runnings,
-            // and pause all timers.
-            runStates.length = nTimers;
-            runStates.fill(false);
-        });
-    });
+    watchEffect(() => [numTimers(), timerInteraction] as const, ([nTimers]) => {
+        // When number of timers change, update the list of timers,
+        // truncating any timer past the number of timers.
+        timers.length = nTimers;
+        // When number of runnings change, update the list of runnings,
+        // and pause all timers.
+        runStates.length = nTimers;
+        runStates.fill(false);
+    })
     
     // If any timer starts, mark the current speaker as complete.
-    $effect(() => {
-        if (runStates.some(s => s)) untrack(() => {
-            speakersList?.start();
-        })
-    });
+    watchEffect(() => runStates.some(s => s), st => {if (st) speakersList?.start(); });
 
     // Getter/setter for run state, since it depends on timer interaction
     export function getRunState(i: number): boolean {
@@ -192,7 +183,7 @@
      * @returns the seconds remaining for the timer of the given index
      */
     export function secsRemaining(timerIndex: number) {
-        return timers[timerIndex]?.secsRemaining();
+        return timers[timerIndex]?.secsRemaining?.();
     }
 
     /**
@@ -242,7 +233,7 @@
             <Timer
                 bind:duration={
                     () => durations[i],
-                    d => {durations[i] = d; onDurationUpdate?.(durations)}
+                    d => {durations[i] = d; onDurationUpdate?.(i, d)}
                 }
                 running={getRunState(i)}
                 bind:this={timers[i]}

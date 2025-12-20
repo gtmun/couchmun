@@ -4,9 +4,6 @@
   This drawer allows users to visit different pages on the site.
 -->
 <script lang="ts">
-    import { tick } from "svelte";
-    import type { Action } from "svelte/action";
-
     import { resolve } from "$app/paths";
     import { page } from "$app/state";
     import type { RouteId } from "$app/types";
@@ -23,10 +20,6 @@
         close: () => void;
     }
     let { links, close }: Props = $props();
-
-    const focusIfSelected = ((e: HTMLElement, selected: boolean) => {
-        if (selected) tick().then(() => e.focus());
-    }) satisfies Action<HTMLElement, boolean>;
 </script>
 
 <!-- Nav links -->
@@ -42,7 +35,6 @@
                     onclick={close} 
                     {href}
                     tabindex="0"
-                    use:focusIfSelected={selected}
                 >
                     {label}
                 </a>

@@ -5,8 +5,6 @@
  -->
 <script lang="ts">
     import { Accordion } from "@skeletonlabs/skeleton-svelte";
-    import { getContext } from "svelte";
-    import type { Writable } from "svelte/store";
     import { slide } from "svelte/transition";
 
     import { goto } from "$app/navigation";
@@ -14,7 +12,7 @@
     import LightSwitch from "$lib/components/controls/LightSwitch.svelte";
     import PaletteSelector from "$lib/components/controls/PaletteSelector.svelte";
     import { getSessionContext, resetSessionContext } from "$lib/context/index.svelte";
-    import { THEME_DEFAULTS, type Theme } from "$lib/context/theme.svelte";
+    import { getThemeContext, THEME_DEFAULTS } from "$lib/context/theme.svelte";
     import { db, queryStore } from "$lib/db/index.svelte";
     import type { PropsOf } from "$lib/util";
     import MdiChevronDown from "~icons/mdi/chevron-down";
@@ -47,7 +45,7 @@
     const sessionData = getSessionContext();
     
     let accordion = $state<string[]>([]);
-    let theme = getContext<Writable<Theme>>("theme");
+    let theme = getThemeContext();
 
     const primaryColors = [
         {id: "tw:red",          label: "Red",     displayShade: "var(--color-red-500)"},
@@ -197,6 +195,9 @@
 <hr class="hr" />
 
 <!-- Session management -->
+<h2 class="nav-header">
+    Sessions
+</h2>
 
 <!-- A session row, which currently just consists of the "switch to this session" button -->
 {#snippet sessionRow(key?: number)}

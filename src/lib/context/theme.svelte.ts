@@ -1,6 +1,6 @@
 // TODO: Integrate with Dexie in a way that doesn't cause FOUC
 
-import { onMount } from "svelte";
+import { createContext, onMount } from "svelte";
 import { readonly, writable, type Writable } from "svelte/store";
 
 export interface Theme {
@@ -20,7 +20,8 @@ function saveToStorage(storage: Storage, theme: Theme) {
         storage.setItem(`theme.${key}`, val);
     }
 }
-export function initThemeState(): Writable<Theme> & { onstorage: (e: StorageEvent) => void } {
+type ThemeState = Writable<Theme> & { onstorage: (e: StorageEvent) => void };
+function initThemeState(): ThemeState {
     const theme = writable(structuredClone(THEME_DEFAULTS));
     onMount(() => {
         theme.update(($t: any) => {
@@ -58,4 +59,11 @@ export function initThemeState(): Writable<Theme> & { onstorage: (e: StorageEven
     };
 
     return Object.assign(readonly(theme), { set, update, onstorage });
+}
+
+const [getThemeContext, setThemeContext] = createContext<ThemeState>();
+export { getThemeContext };
+export function createThemeContext() {
+    const theme = initThemeState();
+    return setThemeContext(theme);
 }

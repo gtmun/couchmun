@@ -12,11 +12,8 @@
     interface Props {
         /**
          * Original properties of the delegate.
-         * 
-         * If `undefined`, this form will be used to "create" a delegate
-         * (rather than "edit" a delegate).
          */
-        attrs?: DelegateAttrs,
+        attrs: DelegateAttrs,
 
         /**
          * Callers to pass to content.
@@ -25,26 +22,23 @@
     }
 
     let { 
-        attrs = {
-            name: "",
-            aliases: []
-        },
+        attrs,
         exitState
     }: Props = $props();
 
-    let newAttrs = $state(attrs);
-    let aliasesInput = $state(attrs.aliases.join(", "));
+    let newAttrs = $derived(attrs);
 
+    function joinAliasInput(aliases: string[]) {
+        return aliases.join(", ");
+    }
     function splitAliasInput(inp: string) {
-        inp = inp.trim();
-        
-        return inp.split(", ")
+        return inp.split(",")
             .map(s => s.trim())
             .filter(s => s.length !== 0);
     }
+
     function submitValue(e: SubmitEvent, submit: (t: SubmitData) => void) {
         e.preventDefault();
-        newAttrs.aliases = splitAliasInput(aliasesInput);
         submit({ attrs: $state.snapshot(newAttrs) });
     }
 </script>
@@ -58,7 +52,10 @@
             </label>
             <label>
                 <span>Aliases (optional)</span>
-                <input class="input" bind:value={aliasesInput} placeholder="Republic of Modelunia, Modelunic Republic">
+                <input class="input" bind:value={
+                    () => joinAliasInput(newAttrs.aliases),
+                    v => newAttrs.aliases = splitAliasInput(v)
+                } placeholder="Republic of Modelunia, Modelunic Republic">
             </label>
             <label>
                 <span>Flag URL (optional)</span>

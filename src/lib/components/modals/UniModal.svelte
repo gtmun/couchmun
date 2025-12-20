@@ -11,6 +11,8 @@
 
     import UniModalContent, { type ContentProps, type ExitState } from "./UniModalContent.svelte";
 
+    import { watchEffect } from "$lib/util/sv.svelte";
+
     interface Props extends ContentProps<T> {
         /**
          * Modal's open state.
@@ -43,6 +45,12 @@
          * If this is set, then `title`, `main`, `footer` have no effect.
          */
         content?: Snippet<[ExitState<T>]>;
+
+        /**
+         * If true, modal content state persists between opens.
+         * Otherwise, modal content is rerendered every open.
+         */
+        reconstructBetweenOpens?: boolean;
     }
 
     let {
@@ -55,6 +63,7 @@
         footer,
         backdropColor = modalCls.backdrop.color,
         type = "modal",
+        reconstructBetweenOpens = false
     }: Props = $props();
 
     function submit(value: T) {
@@ -65,6 +74,9 @@
         open = false;
     }
 
+    let openCount = $state(0);
+    watchEffect(() => open, o => { if (o) openCount++; });
+
     let positionerCls: ClassValue = $derived([
         modalCls.positioner.base,
         type === "modal" ? modalCls.positioner.modal : modalCls.positioner.drawer
@@ -73,9 +85,9 @@
         modalCls.card.base,
         modalCls.card.anim,
         ...(
-              type === "modal" ? [modalCls.card.modal.size, modalCls.card.modal.anim]
-            : type === "drawerLeft" ? [modalCls.card.drawer.size, modalCls.card.drawer.left]
-            : type === "drawerRight" ? [modalCls.card.drawer.size, modalCls.card.drawer.right]
+              type === "modal" ? [modalCls.card.modal.base, modalCls.card.modal.anim]
+            : type === "drawerLeft" ? [modalCls.card.drawer.base, modalCls.card.drawer.left]
+            : type === "drawerRight" ? [modalCls.card.drawer.base, modalCls.card.drawer.right]
             : type satisfies never
         )
     ]);
@@ -100,12 +112,12 @@
             base: "card bg-surface-50-950 p-4 space-y-4 shadow-xl",
             anim: "transition transition-discrete opacity-0 starting:data-[state=open]:opacity-0 data-[state=open]:opacity-100",
             drawer: {
-                size: "h-screen w-md",
+                base: "h-screen w-md overflow-auto",
                 left: "-translate-x-full starting:data-[state=open]:-translate-x-full data-[state=open]:translate-x-0 rounded-l-none",
                 right: "translate-x-[100vw] starting:data-[state=open]:translate-x-[100vw] data-[state=open]:translate-x-[calc(100vw_-_100%)] rounded-r-none"
             },
             modal: {
-                size: "w-full max-w-xl",
+                base: "w-full max-w-xl",
                 anim: "translate-y-[100px] starting:data-[state=open]:translate-y-[100px] data-[state=open]:translate-y-0"
             }
         }
@@ -118,11 +130,13 @@
         <Dialog.Backdrop class={[modalCls.backdrop.base, backdropColor, modalCls.backdrop.anim]} />
         <Dialog.Positioner class={positionerCls}>
             <Dialog.Content class={cardCls}>
-                {#if content}
-                    {@render content({ submit, close })}
-                {:else}
-                    <UniModalContent {title} {main} {footer} exitState={{ submit, close }} />
-                {/if}
+                {#key !reconstructBetweenOpens || openCount}
+                    {#if content}
+                        {@render content({ submit, close })}
+                    {:else}
+                        <UniModalContent {title} {main} {footer} exitState={{ submit, close }} />
+                    {/if}
+                {/key}
             </Dialog.Content>
         </Dialog.Positioner>
     </Portal>

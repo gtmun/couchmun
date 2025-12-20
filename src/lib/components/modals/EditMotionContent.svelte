@@ -35,7 +35,7 @@
     }: Props = $props();
 
 
-    let inputMotion = $state(motionSchema.encode(motion));
+    let inputMotion = $derived(motionSchema.safeEncode(motion)?.data);
 </script>
 
 <UniModalContent title="Editing Motion" {exitState}>

@@ -15,7 +15,6 @@
     import { db } from "$lib/db/index.svelte";
     import type { Motion, Speaker } from "$lib/types";
     import { lazyslide } from "$lib/util";
-    import { stringifyTime } from "$lib/util/time";
 
     interface Props {
         motion: Motion & { kind: "mod" };
@@ -42,16 +41,14 @@
     function deductTime([delTimer, totalTimer]: (Timer | undefined)[]) {
         if ($preferences.yieldMainTimer) return;
         if (!delTimer || !totalTimer) return;
-        totalTimer.offsetDuration(-delTimer.secsRemaining());
+        totalTimer.offsetDuration(-delTimer.secsRemaining?.());
     }
 
     $effect(() => {
-        if (timerPanel?.getRunState(0)) {
-            let secs = timerPanel.secsRemaining(0);
-            sessionData.tabTitleExtras = typeof secs !== "undefined" ? stringifyTime(secs) : undefined;
-        } else {
-            sessionData.tabTitleExtras = undefined;
-        }
+        sessionData.updateTabTitleExtras(
+            timerPanel?.getRunState(0) ?? false,
+            timerPanel?.secsRemaining(0)
+        );
     });
 </script>
 

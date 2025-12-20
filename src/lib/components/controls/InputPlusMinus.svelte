@@ -22,18 +22,26 @@
     <button
         type="button"
         class="btn-icon preset-filled"
-        aria-label="Increment {ariaLabelName}"
-        title="Increment {ariaLabelName}"
-        onclick={() => value = (value ?? 0) - 1}
+        aria-label="Decrement {ariaLabelName}"
+        title="Decrement {ariaLabelName}"
+        onclick={() => {
+            if (typeof rest.min !== "number" || value > rest.min) {
+                value = (value ?? 0) - 1;
+            }
+        }}
     >
         <MdiMinus />
     </button>
     <button
         type="button"
         class="btn-icon preset-filled"
-        aria-label="Decrement {ariaLabelName}"
-        title="Decrement {ariaLabelName}"
-        onclick={() => value = (value ?? 0) + 1}
+        aria-label="Increment {ariaLabelName}"
+        title="Increment {ariaLabelName}"
+        onclick={() => {
+            if (typeof rest.max !== "number" || value < rest.max) {
+                value = (value ?? 0) + 1;
+            }
+        }}
     >
         <MdiPlus />
     </button>

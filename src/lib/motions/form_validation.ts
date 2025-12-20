@@ -5,21 +5,43 @@
 import { z } from "zod";
 
 import { findDelegate, type Delegate } from "$lib/db/delegates";
+import type { Is } from "$lib/motions/types";
 import type { DelegateID } from "$lib/types";
 import { parseTime, stringifyTime } from "$lib/util/time";
+
+export type SchemaInput<F extends (...args: any) => any> = z.input<ReturnType<F>>;
+export type SchemaOutput<F extends (...args: any) => any> = z.output<ReturnType<F>>;
 
 export function formatValidationError(error: z.ZodError) {
     return error.issues[0];
 }
-export function nonEmptyString(label: string) {
-    return z.string({
-        error(issue) {
-            if (typeof issue.input === "undefined" || (issue.input as string).trim().length == 0) {
-                return `${label} is a required field`;
-            }
+
+/**
+ * Similar to `z.optional`, but also maps empty strings to `undefined`.
+ * @param schema Any schema which accepts strings.
+ * @returns A schema which ignores `undefined` and blanks, passing them as `undefined`s.
+ */
+export function optional<T extends z.ZodType<unknown, string>>(schema: T) {
+    const filter_non_empty = (s?: string): (z.input<T> | undefined) => {
+        if (typeof s === "string" && s.trim().length > 0) {
+            // @ts-expect-error Cannot assert z.input<T> is string
+            return s;
         }
-    })
-        .trim();
+    };
+    return z.codec(
+        z.optional(z.string()),
+        z.optional(schema),
+        {
+            decode: filter_non_empty,
+            encode: filter_non_empty
+        }
+    );
+}
+export function stringSchema(label: string) {
+    const error = `${label} is a required field`;
+    return z.string({ error })
+        .trim()
+        .min(1, { error });
 }
 
 /**
@@ -34,8 +56,10 @@ export function stringToIntSchema() {
             decode: (str) => Number.parseInt(str, 10),
             encode: (num) => num.toString(),
         }
-    ) satisfies z.ZodType<string, number, any>;
+    );
 }
+const _assert_i0: Is<SchemaInput<typeof stringToIntSchema>, string> = {};
+const _assert_o0: Is<SchemaOutput<typeof stringToIntSchema>, number> = {};
 
 /**
  * Creates a schema that requires the input is the name of a present delegate.
@@ -46,7 +70,7 @@ export function stringToIntSchema() {
  */
 export function presentDelegateSchema(delegates: Delegate[]) {
     return z.codec(
-        nonEmptyString("Delegate name"),
+        stringSchema("Delegate name"),
         z.number(),
         {
             decode: (name, ctx) => {
@@ -86,12 +110,14 @@ export function presentDelegateSchema(delegates: Delegate[]) {
                 return del.name;
             }
         }
-    ) satisfies z.ZodType<string, DelegateID, any>;
+    );
 }
+const _assert_i1: Is<SchemaInput<typeof presentDelegateSchema>, string> = {};
+const _assert_o1: Is<SchemaOutput<typeof presentDelegateSchema>, DelegateID> = {};
 
 export function timeSchema(label: string) {
     return z.codec(
-        nonEmptyString(label),
+        stringSchema(label),
         z.number(),
         {
             decode: (input, ctx) => {
@@ -109,8 +135,11 @@ export function timeSchema(label: string) {
             },
             encode: out => stringifyTime(out) ?? ""
         }
-    ) satisfies z.ZodType<string, number, any>;
+    );
 }
+const _assert_i2: Is<SchemaInput<typeof timeSchema>, string> = {};
+const _assert_o2: Is<SchemaOutput<typeof timeSchema>, number> = {};
+
 export function refineSpeakingTime(totalTimeAttr = "totalTime", speakingTimeAttr = "speakingTime") {
     return [(o: any) => {
         const totalTime: number = o[totalTimeAttr];
@@ -120,7 +149,4 @@ export function refineSpeakingTime(totalTimeAttr = "totalTime", speakingTimeAttr
         message: "Total time cannot be evenly divided among speakers",
         path: [speakingTimeAttr]
     } satisfies z.core.$ZodCustomParams] as const;
-}
-export function topicSchema() {
-    return nonEmptyString("Topic");
 }

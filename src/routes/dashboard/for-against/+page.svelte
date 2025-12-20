@@ -4,15 +4,16 @@
     - An editable speakers list
 -->
 <script lang="ts">
+    import { slide } from "svelte/transition";
+
     import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { findDelegate } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";
     import type { Speaker } from "$lib/types";
-    import { parseTime, stringifyTime } from "$lib/util/time";
+    import { parseTime } from "$lib/util/time";
     import MdiMinus from "~icons/mdi/minus";
-    import MdiThumbDown from "~icons/mdi/thumb-down";
     import MdiThumbUp from "~icons/mdi/thumb-up";
 
     const sessionData = getSessionContext();
@@ -36,7 +37,6 @@
         let secs = parseTime(durInput);
         if (typeof secs !== "undefined") {
             duration = secs;
-            reset();
         }
         durInput = "";
     }
@@ -51,14 +51,15 @@
         if (s.stance === "against") return "preset-filled-error-200-800 hover:preset-filled-error-500";
         return "preset-filled-surface-200-800 hover:preset-filled-surface-500";
     }
+    function rotateCls(stance: SpeakerFA["stance"]) {
+        return ["transition-transform", stance !== "for" && "rotate-180"];
+    }
 
     $effect(() => {
-        if (timerPanel?.getRunState(0)) {
-            let secs = timerPanel.secsRemaining(0);
-            sessionData.tabTitleExtras = typeof secs !== "undefined" ? stringifyTime(secs) : undefined;
-        } else {
-            sessionData.tabTitleExtras = undefined;
-        }
+        sessionData.updateTabTitleExtras(
+            timerPanel?.getRunState(0) ?? false,
+            timerPanel?.secsRemaining(0)
+        );
     });
 </script>
 
@@ -76,19 +77,19 @@
             delegates={$delegates}
             {speakersList}
             durations={[duration]}
-            onDurationUpdate={([d]) => duration = d}
+            onDurationUpdate={(_, d) => duration = d}
             bind:this={timerPanel}
             editable
         >
             {#snippet label(name)}
                 {@const speaker: SpeakerFA | undefined = speakersList?.selectedSpeaker()}
                 {#if speaker}
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center">
                         <h2 class="h2">{name}</h2>
-                        {#if speaker?.stance === "for"}
-                            <MdiThumbUp class="size-8" />
-                        {:else if speaker?.stance === "against"}
-                            <MdiThumbDown class="size-8" />
+                        {#if speaker?.stance}
+                            <div transition:slide={{ duration: 150, axis: "x" }}>
+                                <MdiThumbUp class={["size-8 ml-3", rotateCls(speaker.stance)]} />
+                            </div>
                         {/if}
                     </div>
                 {/if}
@@ -116,10 +117,8 @@
                     aria-label="Set {speakerLabel} to {invertedFavor}"
                     disabled={speaker.completed}
                 >
-                    {#if speaker.stance === "for"}
-                        <MdiThumbUp />
-                    {:else if speaker.stance === "against"}
-                        <MdiThumbDown />
+                    {#if speaker.stance}
+                        <MdiThumbUp class={rotateCls(speaker.stance)} />
                     {:else}
                         <MdiMinus />
                     {/if}

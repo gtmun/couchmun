@@ -5,7 +5,6 @@
   and a sortable motion table (which is used to view and rearrange and edit motions).
 -->
 <script lang="ts">
-  import { Dialog } from "@skeletonlabs/skeleton-svelte";
   import { flip } from "svelte/animate";
   import { dndzone } from "svelte-dnd-action";
 
@@ -212,7 +211,7 @@
             {@const shadow = isDndShadow(motion)}
             <tr
               class={[
-                "dnd-list-item hover:preset-tonal-primary",
+                "dnd-list-item hover:preset-tonal-primary [&_td]:tabular-nums",
                 shadow && "visible! bg-surface-200-800!"
               ]}
               animate:flip={{ duration: 150 }}
@@ -244,22 +243,9 @@
                   >
                     <MdiCheck class="text-success-700" />
                   </button>
-                  <UniModal
-                    bind:open={
-                      () => openModals.editMotion === i,
-                      open => openModals.editMotion = open ? i : -1
-                    }
-                    onSubmit={(m: Motion) => editMotion(i, m)}
-                  >
-                    {#snippet trigger()}
-                      <Dialog.Trigger class="btn-icon-std p-1">
-                        <MdiPencil />
-                      </Dialog.Trigger>
-                    {/snippet}
-                    {#snippet content(exitState)}
-                      <EditMotionContent {motion} {motionSchema} {exitState} />
-                    {/snippet}
-                  </UniModal>
+                  <button class="btn-icon-std p-1" onclick={() => openModals.editMotion = i}>
+                    <MdiPencil />
+                  </button>
                 </div>
               </td>
             </tr>
@@ -269,6 +255,18 @@
     </div>
   </div>
 </div>
+<UniModal
+  bind:open={
+    () => openModals.editMotion >= 0,
+    open => { if (!open) openModals.editMotion = -1}
+  }
+  onSubmit={(m: Motion) => editMotion(openModals.editMotion, m)}
+  reconstructBetweenOpens
+>
+  {#snippet content(exitState)}
+    <EditMotionContent motion={$motions[openModals.editMotion]} {motionSchema} {exitState} />
+  {/snippet}
+</UniModal>
 
 <style>
   /* Styling for dragged element */

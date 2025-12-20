@@ -278,14 +278,14 @@
     }
 </script>
 
-<div class="card-filled p-4 overflow-y-hidden grow flex flex-col items-stretch gap-4 min-w-90">
-    <h4 class="h4 flex justify-center" id="sl-header-{sid}">
+<div class="card-filled p-4 overflow-y-hidden grow flex flex-col items-stretch gap-2 min-w-90">
+    <h5 class="h5 flex justify-center" id="sl-header-{sid}">
         {#if typeof title === "string"}
             {title}
         {:else}
             {@render title?.()}
         {/if}
-    </h4>
+    </h5>
 
     <ol class={["p-2 overflow-y-auto grid auto-rows-min grow", list_grid_layout]}
         bind:this={listEl}

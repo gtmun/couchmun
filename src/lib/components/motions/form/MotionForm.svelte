@@ -4,7 +4,7 @@
 -->
 <script lang="ts">
     import { type Snippet } from 'svelte';
-    import { fade } from "svelte/transition";
+    import { slide } from 'svelte/transition';
     import type { z } from "zod";
 
     import InputExtension from './InputExtension.svelte';
@@ -17,10 +17,11 @@
     import { MOTION_BASE_FIELDS, MOTION_DEFS, type InputKind, type InputProperties, type MotionSchema } from "$lib/motions/definitions";
     import { formatValidationError } from "$lib/motions/form_validation";
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
-    import type { Motion } from "$lib/types";
+    import type { DelegateID, Motion } from "$lib/types";
     import { hasKey } from "$lib/util";
-    import { parseTime, sanitizeTime } from "$lib/util/time";
+    import { parseTime } from "$lib/util/time";
     import MdiPlus from "~icons/mdi/plus";
+
 
     const { selectedMotion, delegates, preferences } = getSessionContext();
     const defaultInputMotion = () => ({ id: crypto.randomUUID(), kind: "mod" } satisfies MotionInput);
@@ -53,6 +54,7 @@
     }: Props = $props();
     
     let inputMotion = $state<MotionInput>(initialInput ?? defaultInputMotion());
+    let inputDel = $state<DelegateID>();
     // Any input validation errors.
     let inputError = $state<z.core.$ZodIssue>();
     // The form element.
@@ -116,6 +118,7 @@
         const result = motionSchema.safeParse(inputMotion);
         if (result.success) {
             inputMotion = defaultInputMotion();
+            inputDel = undefined;
             inputError = undefined;
 
             submit?.(result.data);
@@ -160,8 +163,8 @@
      */
     export function numSpeakersStr(totalTime: number | string | undefined, speakingTime: number | string | undefined): string | undefined {
         // Parse arguments as either seconds or time string.
-        if (typeof totalTime === "string") totalTime = parseTime(sanitizeTime(totalTime));
-        if (typeof speakingTime === "string") speakingTime = parseTime(sanitizeTime(speakingTime));
+        if (typeof totalTime === "string") totalTime = parseTime(totalTime);
+        if (typeof speakingTime === "string") speakingTime = parseTime(speakingTime);
 
         // Handle undefined cases
         if (typeof totalTime === "undefined") return;
@@ -188,6 +191,7 @@
         <span>Delegate</span>
         <DelCombobox
             bind:input={inputMotion.delegate}
+            bind:value={inputDel}
             delegates={$delegates}
             onSelect={() => {
                 // Once selected, move to next item in form
@@ -255,7 +259,7 @@
         <div 
             class="text-error-500 text-center"
             role="alert"
-            transition:fade={{ duration: 150 }}
+            transition:slide={{ duration: 150 }}
         >
             {inputError.message}
         </div>

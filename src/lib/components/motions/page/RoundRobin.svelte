@@ -10,7 +10,6 @@
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import type { Motion, Speaker } from "$lib/types";
-    import { stringifyTime } from "$lib/util/time";
 
     interface Props {
         motion: Motion & { kind: "rr" };
@@ -29,12 +28,10 @@
     }
 
     $effect(() => {
-        if (timerPanel?.getRunState(0)) {
-            let secs = timerPanel.secsRemaining(0);
-            sessionData.tabTitleExtras = typeof secs !== "undefined" ? stringifyTime(secs) : undefined;
-        } else {
-            sessionData.tabTitleExtras = undefined;
-        }
+        sessionData.updateTabTitleExtras(
+            timerPanel?.getRunState(0) ?? false,
+            timerPanel?.secsRemaining(0)
+        );
     });
 </script>
 

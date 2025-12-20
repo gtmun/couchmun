@@ -8,7 +8,7 @@
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
-    import { parseTime, stringifyTime } from "$lib/util/time";
+    import { parseTime } from "$lib/util/time";
 
     const sessionData = getSessionContext();
     const { speakersList: order, delegates } = sessionData;
@@ -27,18 +27,15 @@
         let secs = parseTime(durInput);
         if (typeof secs !== "undefined") {
             duration = secs;
-            reset();
         }
         durInput = "";
     }
 
     $effect(() => {
-        if (timerPanel?.getRunState(0)) {
-            let secs = timerPanel.secsRemaining(0);
-            sessionData.tabTitleExtras = typeof secs !== "undefined" ? stringifyTime(secs) : undefined;
-        } else {
-            sessionData.tabTitleExtras = undefined;
-        }
+        sessionData.updateTabTitleExtras(
+            timerPanel?.getRunState(0) ?? false,
+            timerPanel?.secsRemaining(0)
+        );
     });
 </script>
 
@@ -56,7 +53,7 @@
             delegates={$delegates}
             {speakersList}
             durations={[duration]}
-            onDurationUpdate={([d]) => duration = d}
+            onDurationUpdate={(_, d) => duration = d}
             bind:this={timerPanel}
             editable
         />

@@ -24,7 +24,7 @@
         {running}
         onRunningChange={r => {
             running = r;
-            sessionData.updateTabTitleExtras(r, timer?.secsRemaining());
+            sessionData.updateTabTitleExtras(r, timer?.secsRemaining?.());
         }}
         onTimeChange={msElapsed => sessionData.updateTabTitleExtras(running, msElapsed / 1000)}
     />
