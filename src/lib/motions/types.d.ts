@@ -24,3 +24,8 @@ export type MotionInput = Form<Motion, "id" | "kind">;
  * Type of motion input object, filtering only the motions with the given fields.
  */
 export type MotionInputWithFields<F extends string> = Form<WithFields<Motion, F>, "id" | "kind">;
+
+/**
+ * Checks that type A and B are identical types.
+ */
+export type Is<A, B, True = unknown, False = never> = NoInfer<A> extends B ? NoInfer<B> extends A ? True : False : False;

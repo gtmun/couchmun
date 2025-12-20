@@ -8,8 +8,8 @@
 import { z } from "zod";
 
 import { type Delegate } from "$lib/db/delegates";
-import { nonEmptyString, presentDelegateSchema, refineSpeakingTime, stringToIntSchema, timeSchema, topicSchema } from "$lib/motions/form_validation";
-import type { MotionInput } from "$lib/motions/types";
+import { presentDelegateSchema, refineSpeakingTime, stringSchema, stringToIntSchema, timeSchema, type SchemaOutput } from "$lib/motions/form_validation";
+import type { Is } from "$lib/motions/types";
 import type { Motion, MotionKind, SortOrder } from "$lib/types";
 
 export type InputKind =
@@ -89,7 +89,6 @@ export type InputComponentProps<V> = {
 // - type ConstFields is a type that computes the fields as defined by MOTION_DEFS.
 //
 // If these do not match, _assert will raise an error, indicating that something needs to be fixed.
-type Is<A, B, True = unknown, False = never> = NoInfer<A> extends B ? NoInfer<B> extends A ? True : False : False;
 type TypeFields = { readonly [K in MotionKind]: keyof (Motion & { kind: K }) };
 type ConstFields = { readonly [K in keyof typeof MOTION_DEFS]: (typeof MOTION_BASE_FIELDS)[number] | keyof (typeof MOTION_DEFS)[K]["fields"] };
 const _assert: Is<TypeFields, ConstFields> = {};
@@ -113,7 +112,7 @@ export const DEFAULT_SORT_PRIORITY: SortOrder = [
  */
 export function createMotionSchema(delegates: Delegate[]) {
     const base = {
-        id: nonEmptyString("ID"),
+        id: stringSchema("ID"),
         delegate: presentDelegateSchema(delegates),
     };
 
@@ -123,7 +122,7 @@ export function createMotionSchema(delegates: Delegate[]) {
             kind: z.literal("mod"),
             totalTime: timeSchema("Total time"),
             speakingTime: timeSchema("Speaking time"),
-            topic: topicSchema(),
+            topic: stringSchema("Topic"),
             isExtension: z.boolean().default(false)
         }).refine(...refineSpeakingTime()),
         z.object({
@@ -136,17 +135,18 @@ export function createMotionSchema(delegates: Delegate[]) {
             ...base,
             kind: z.literal("rr"),
             speakingTime: timeSchema("Speaking time"),
-            topic: topicSchema(),
+            topic: stringSchema("Topic"),
             totalSpeakers: stringToIntSchema(),
         }),
         z.object({
             ...base,
             kind: z.literal("other"),
             totalTime: timeSchema("Total time"),
-            topic: topicSchema()
+            topic: stringSchema("Topic")
         })
-    ]) satisfies z.ZodType<Motion, MotionInput, any>;
+    ]);
 }
+const _assert_o: Is<SchemaOutput<typeof createMotionSchema>, Motion> = {};
 
 /** Type of motion schema verification. */
 export type MotionSchema = ReturnType<typeof createMotionSchema>;
