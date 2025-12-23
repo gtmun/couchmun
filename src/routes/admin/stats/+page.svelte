@@ -197,6 +197,7 @@
                 pageSize={1}
                 page={displayPage + 1}
                 onPageChange={e => selectedPage = e.page - 1}
+                boundaryCount={2}
             >
                 <Pagination.PrevTrigger>
                     <MdiChevronLeft />
@@ -209,7 +210,7 @@
                                     class="tabular-nums"
                                     {...page}
                                 >
-                                    {#if index == $nSessions}
+                                    {#if page.value == $nSessions + 1}
                                         <!-- All sessions page -->
                                         <MdiStar /> 
                                     {:else}
