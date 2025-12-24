@@ -51,9 +51,8 @@
 
 <button
     {name}
-    role="switch"
     type="button"
-    aria-checked={checked}
+    aria-pressed={checked}
     onclick={() => checked = !checked}
     title={label}
     aria-label={label}

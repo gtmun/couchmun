@@ -12,11 +12,7 @@
     interface Props {
         getValue?: (del: Delegate) => string | null,
         setValue?: (s: string | null, del: Delegate) => void,
-        entries: readonly {
-            readonly value: string,
-            readonly label: string, 
-            readonly icon: PropsOf<typeof IconLabel>["icon"]
-        }[],
+        entries: readonly RollCallEntry[],
         delegates: Delegate[] & { pending?: true },
         emptyPlaceholder?: Snippet<[]>,
         pendingPlaceholder?: Snippet<[]>,
@@ -47,6 +43,14 @@
     export function notPendingThen<T extends object>(t: T & { pending?: true }, cb: (t: T) => T): T & { pending?: true} {
         return t.pending ? t : cb(t);
     }
+
+    export type RollCallEntry = {
+        readonly value: string,
+        readonly label: string, 
+        readonly icon: PropsOf<typeof IconLabel>["icon"],
+        readonly indicatorCls?: ClassValue,
+        readonly disabled?: (del: Delegate) => boolean,
+    };
 </script>
 
 {#if dels.pending}
@@ -87,15 +91,21 @@
                         onValueChange={e => setValue?.(e.value, attrs)}
                     >
                         <SegmentedControl.Control>
-                            <SegmentedControl.Indicator />
-                            {#each entries as { value, label, icon } (value)}
-                                <SegmentedControl.Item {value} class="hover:preset-tonal">
-                                    <SegmentedControl.ItemText>
-                                        <IconLabel {icon} {label} />
-                                    </SegmentedControl.ItemText>
-                                    <SegmentedControl.ItemHiddenInput />
-                                </SegmentedControl.Item>
-                            {/each}
+                            <SegmentedControl.Context>
+                                {#snippet children(segment)}
+                                    {@const selected = segment().value}
+                                    {@const indicatorCls = entries.find(k => k.value === selected)?.indicatorCls}
+                                    <SegmentedControl.Indicator class={indicatorCls} />
+                                    {#each entries as { value, label, icon, disabled } (value)}
+                                        <SegmentedControl.Item {value} class="hover:preset-tonal" disabled={disabled?.(attrs)}>
+                                            <SegmentedControl.ItemText>
+                                                <IconLabel {icon} {label} />
+                                            </SegmentedControl.ItemText>
+                                            <SegmentedControl.ItemHiddenInput />
+                                        </SegmentedControl.Item>
+                                    {/each}
+                                {/snippet}
+                            </SegmentedControl.Context>
                         </SegmentedControl.Control>
                     </SegmentedControl>
                 </div>
