@@ -3,11 +3,8 @@
     which consists of a long list of delegates and an option to select NP/P/PV.
 -->
 <script lang="ts">
-    import { SegmentedControl } from "@skeletonlabs/skeleton-svelte";
-
     import { resolve } from "$app/paths";
-    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import IconLabel from "$lib/components/IconLabel.svelte";
+    import RollCall from "$lib/components/RollCall.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import type { DelegatePresence } from "$lib/types";
@@ -17,12 +14,6 @@
 
     const { delegates } = getSessionContext();
 
-    const radio = [
-        { presence: "NP", label: "Absent", icon: MdiAccountOff },
-        { presence: "P",  label: "Present", icon: MdiAccount },
-        { presence: "PV", label: "Present & Voting", icon: MdiAccountCheck },
-    ] as const;
-
     function asPresence(s?: string | null): DelegatePresence {
         if (s === "P" || s === "PV") return s;
         return "NP";
@@ -30,65 +21,30 @@
 </script>
 
 <!-- Render a table to display participants and their statuses -->
-{#if $delegates.pending}
-    <div class="grid border border-surface-200-800">
-        <!-- eslint-disable-next-line svelte/require-each-key -->
-        {#each Array.from({ length: 20 }) as _}
-            <div class="grid grid-cols-[2fr_1fr] even:bg-surface-50-950 odd:bg-surface-100-900">
-                <div class="flex items-center gap-1 p-4">
-                    <div class="placeholder-circle size-6 animate-pulse"></div>
-                    <div class="placeholder w-36 animate-pulse"></div>
-                </div>
-                <div class="grid grid-cols-3 gap-4 p-4">
-                    <div class="placeholder animate-pulse"></div>
-                    <div class="placeholder animate-pulse"></div>
-                    <div class="placeholder animate-pulse"></div>
-                </div>
-            </div>
-        {/each}
-    </div>
-{:else if $delegates.length}
-    <div class="grid border border-surface-200-800">
-        {#each $delegates as attrs, i (attrs.id)}
-            <div class="grid grid-cols-2 even:bg-surface-50-950 odd:bg-surface-100-900">
-                <div class="flex items-center p-4">
-                    <DelLabel {attrs} inline />
-                </div>
-                <div class="flex justify-end p-2">
-                    <SegmentedControl
-                        name="presence-{attrs.id}"
-                        value={$delegates[i].presence}
-                        onValueChange={e => db.updateDelegate(attrs.id, { presence: asPresence(e.value) })}
+<RollCall
+    getValue={(d) => d.presence}
+    setValue={(value, d) => db.updateDelegate(d.id, { presence: asPresence(value) })}
+    delegates={$delegates}
+    entries={[
+        { value: "NP", label: "Absent", icon: MdiAccountOff },
+        { value: "P",  label: "Present", icon: MdiAccount },
+        { value: "PV", label: "Present & Voting", icon: MdiAccountCheck },
+    ]}
+>
+    {#snippet emptyPlaceholder()}
+        <div class="h-full w-full flex flex-col items-stretch justify-center">
+            <div class="text-center">
+                <h3 class="h3">No delegates enabled.</h3>
+                    Visit 
+                    <a
+                        class="btn btn-sm preset-tonal-warning"
+                        href="{resolve("/admin/settings")}"
+                        tabindex="0"
                     >
-                        <SegmentedControl.Control>
-                            <SegmentedControl.Indicator />
-                            {#each radio as { presence, label, icon } (presence)}
-                                <SegmentedControl.Item value={presence} class="hover:preset-tonal">
-                                    <SegmentedControl.ItemText>
-                                        <IconLabel {icon} {label} />
-                                    </SegmentedControl.ItemText>
-                                    <SegmentedControl.ItemHiddenInput />
-                                </SegmentedControl.Item>
-                            {/each}
-                        </SegmentedControl.Control>
-                    </SegmentedControl>
-                </div>
+                        Settings
+                    </a>
+                to configure delegates.
             </div>
-        {/each}
-    </div>
-{:else}
-    <div class="h-full w-full flex flex-col items-stretch justify-center">
-        <div class="text-center">
-            <h3 class="h3">No delegates enabled.</h3>
-                Visit 
-                <a
-                    class="btn btn-sm preset-tonal-warning"
-                    href="{resolve("/admin/settings")}"
-                    tabindex="0"
-                >
-                    Settings
-                </a>
-            to configure delegates.
         </div>
-    </div>
-{/if}
+    {/snippet}
+</RollCall>
