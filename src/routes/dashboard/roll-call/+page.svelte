@@ -30,48 +30,65 @@
 </script>
 
 <!-- Render a table to display participants and their statuses -->
-{#if $delegates.length}
-<div class="grid border border-surface-200-800">
-    {#each $delegates as attrs, i (attrs.id)}
-        <div class="grid grid-cols-subgrid col-span-2 even:bg-surface-50-950 odd:bg-surface-100-900">
-            <div class="flex items-center p-4">
-                <DelLabel {attrs} inline />
+{#if $delegates.pending}
+    <div class="grid border border-surface-200-800">
+        <!-- eslint-disable-next-line svelte/require-each-key -->
+        {#each Array.from({ length: 20 }) as _}
+            <div class="grid grid-cols-[2fr_1fr] even:bg-surface-50-950 odd:bg-surface-100-900">
+                <div class="flex items-center gap-1 p-4">
+                    <div class="placeholder-circle size-6 animate-pulse"></div>
+                    <div class="placeholder w-36 animate-pulse"></div>
+                </div>
+                <div class="grid grid-cols-3 gap-4 p-4">
+                    <div class="placeholder animate-pulse"></div>
+                    <div class="placeholder animate-pulse"></div>
+                    <div class="placeholder animate-pulse"></div>
+                </div>
             </div>
-            <div class="flex justify-end p-2">
-                <SegmentedControl
-                    name="presence-{attrs.id}"
-                    value={$delegates[i].presence}
-                    onValueChange={e => db.updateDelegate(attrs.id, { presence: asPresence(e.value) })}
-                >
-                    <SegmentedControl.Control>
-                        <SegmentedControl.Indicator />
-                        {#each radio as { presence, label, icon } (presence)}
-                            <SegmentedControl.Item value={presence} class="hover:preset-tonal">
-                                <SegmentedControl.ItemText>
-                                    <IconLabel {icon} {label} />
-                                </SegmentedControl.ItemText>
-                                <SegmentedControl.ItemHiddenInput />
-                            </SegmentedControl.Item>
-                        {/each}
-                    </SegmentedControl.Control>
-                </SegmentedControl>
-            </div>
-        </div>
-    {/each}
-</div>
-{:else}
-<div class="h-full w-full flex flex-col items-stretch justify-center">
-    <div class="text-center">
-        <h3 class="h3">No delegates enabled.</h3>
-            Visit 
-            <a
-                class="btn btn-sm preset-filled-warning-100-900"
-                href="{resolve("/admin/settings")}"
-                tabindex="0"
-            >
-                Settings
-            </a>
-        to configure delegates.
+        {/each}
     </div>
-</div>
+{:else if $delegates.length}
+    <div class="grid border border-surface-200-800">
+        {#each $delegates as attrs, i (attrs.id)}
+            <div class="grid grid-cols-2 even:bg-surface-50-950 odd:bg-surface-100-900">
+                <div class="flex items-center p-4">
+                    <DelLabel {attrs} inline />
+                </div>
+                <div class="flex justify-end p-2">
+                    <SegmentedControl
+                        name="presence-{attrs.id}"
+                        value={$delegates[i].presence}
+                        onValueChange={e => db.updateDelegate(attrs.id, { presence: asPresence(e.value) })}
+                    >
+                        <SegmentedControl.Control>
+                            <SegmentedControl.Indicator />
+                            {#each radio as { presence, label, icon } (presence)}
+                                <SegmentedControl.Item value={presence} class="hover:preset-tonal">
+                                    <SegmentedControl.ItemText>
+                                        <IconLabel {icon} {label} />
+                                    </SegmentedControl.ItemText>
+                                    <SegmentedControl.ItemHiddenInput />
+                                </SegmentedControl.Item>
+                            {/each}
+                        </SegmentedControl.Control>
+                    </SegmentedControl>
+                </div>
+            </div>
+        {/each}
+    </div>
+{:else}
+    <div class="h-full w-full flex flex-col items-stretch justify-center">
+        <div class="text-center">
+            <h3 class="h3">No delegates enabled.</h3>
+                Visit 
+                <a
+                    class="btn btn-sm preset-filled-warning-100-900"
+                    href="{resolve("/admin/settings")}"
+                    tabindex="0"
+                >
+                    Settings
+                </a>
+            to configure delegates.
+        </div>
+    </div>
 {/if}

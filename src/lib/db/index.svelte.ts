@@ -111,12 +111,12 @@ export class SessionDatabase extends Dexie {
      * 
      * @returns the store
      */
-    enabledDelegatesStore(): Readable<Delegate[]> {
+    enabledDelegatesStore(): Readable<Delegate[] & { pending?: true }> {
         return queryStore(() => {
             return db.delegates.orderBy("order")
                 .filter(e => e.enabled)
                 .toArray();
-        }, []);
+        }, Object.assign([], { pending: true }));
     }
     /**
      * Gets the setting from the settings database.

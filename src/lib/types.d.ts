@@ -272,7 +272,7 @@ export type SessionContext = {
     /**
      * Array of enabled delegates.
      */
-    delegates: Readable<Delegate[]>,
+    delegates: Readable<Delegate[] & { pending?: true }>,
     
     /**
      * All specified motions (from the points & motions page).
