@@ -82,7 +82,7 @@
             <h3 class="h3">No delegates enabled.</h3>
                 Visit 
                 <a
-                    class="btn btn-sm preset-filled-warning-100-900"
+                    class="btn btn-sm preset-tonal-warning"
                     href="{resolve("/admin/settings")}"
                     tabindex="0"
                 >
