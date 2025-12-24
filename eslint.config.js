@@ -56,6 +56,9 @@ export default defineConfig(
 				"import/no-named-as-default-member": "off",
 				// Too many false positives
 				"import/no-unresolved": "off",
+				// import/no-duplicates causes some bugs
+				"import/no-duplicates": "off",
+				"no-duplicate-imports": "warn",
 		},
 		settings: {
 			"import/resolver": {
