@@ -32,11 +32,25 @@
         "/dashboard/speaker-list":   { label: "Speakers List" },
         "/dashboard/points-motions": { label: "Points and Motions" },
         "/dashboard/current-motion": { label: "Current Motion" },
-        "/dashboard/utilities":      { label: "Utilities" },
+        "/dashboard/generic-timer":  { label: "Generic Timer" },
         "/dashboard/for-against":    { label: "For and Against Speeches" },
         "/dashboard/vp-roll-call":   { label: "Voting Procedure (Roll Call)" }
     };
-    let thisLink = $derived(typeof page.route.id == "string" ? links[page.route.id] : undefined);
+
+    const header = (label: string) => ({ type: "header" as const, label });
+    const link = (href: RouteId) => ({ type: "link" as const, href, label: links[href]?.label });
+    const navMenu = [
+        header("Main"),
+        link("/dashboard/roll-call"),
+        link("/dashboard/speaker-list"),
+        link("/dashboard/points-motions"),
+        link("/dashboard/current-motion"),
+        header("Utilities"),
+        link("/dashboard/generic-timer"),
+        link("/dashboard/for-against"),
+        link("/dashboard/vp-roll-call"),
+    ] as const;
+    let thisLinkTitle = $derived(typeof page.route.id == "string" ? links[page.route.id]?.label : undefined);
 
     let settingsBackdrop = $state(true);
     // When navigating to a different page, reset topic:
@@ -48,8 +62,8 @@
     })
 </script>
 
-{#if typeof thisLink !== "undefined"}
-    <MetaTags title="{thisLink.label} · CouchMUN" />
+{#if typeof thisLinkTitle !== "undefined"}
+    <MetaTags title="{thisLinkTitle} · CouchMUN" />
     {:else}
     <MetaTags title="CouchMUN" />
 {/if}
@@ -74,7 +88,7 @@
                             </Dialog.Trigger>
                         {/snippet}
                         {#snippet main({ close })}
-                            <Navigation {close} {links} />
+                            <Navigation {close} menu={navMenu} />
                         {/snippet}
                     </UniModal>
                 </AppBar.Lead>
