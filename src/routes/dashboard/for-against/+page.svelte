@@ -12,6 +12,7 @@
     import { findDelegate } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";
     import type { Speaker } from "$lib/types";
+    import { a11yLabel } from "$lib/util";
     import { parseTime } from "$lib/util/time";
     import MdiMinus from "~icons/mdi/minus";
     import MdiThumbUp from "~icons/mdi/thumb-up";
@@ -113,8 +114,7 @@
                 <button 
                     class={["btn-icon-std transition", presetCls(speaker)]}
                     onclick={() => speaker.stance = invertedFavor}
-                    title="Set {speakerLabel} to {invertedFavor}"
-                    aria-label="Set {speakerLabel} to {invertedFavor}"
+                    {...a11yLabel(`Set ${speakerLabel} to ${invertedFavor}`)}
                     disabled={speaker.completed}
                 >
                     {#if speaker.stance}

@@ -10,7 +10,7 @@
     import { Progress } from "@skeletonlabs/skeleton-svelte";
     import { onDestroy, onMount } from "svelte";
 
-    import { clamp } from "$lib/util";
+    import { a11yLabel, clamp } from "$lib/util";
     import { makeEditable } from "$lib/util/attach.svelte";
     import { watchEffect } from "$lib/util/sv.svelte";
     import { parseTime, stringifyTime } from "$lib/util/time";
@@ -320,8 +320,7 @@
                 class="btn-icon-std preset-filled-primary-500" 
                 onclick={() => running = !running}
                 disabled={disablePlay || isElapsed()}
-                aria-label={running ? "Pause Timer" : "Start Timer"}
-                title={running ? "Pause Timer" : "Start Timer"}
+                {...a11yLabel(running ? "Pause Timer" : "Start Timer")}
             >
                 {#if running}
                     <MdiPause />

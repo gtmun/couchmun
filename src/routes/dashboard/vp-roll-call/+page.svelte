@@ -10,6 +10,7 @@
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import type { DelegateID, Speaker } from "$lib/types";
+    import { a11yLabel } from "$lib/util";
     import { watchEffect } from "$lib/util/sv.svelte";
     import { parseTime } from "$lib/util/time";
     import MdiAccountCancel from "~icons/mdi/account-cancel";
@@ -166,24 +167,21 @@
                 <div class="flex items-center gap-3" transition:slide={{ axis: "x" }}>
                     <div 
                         class="flex text-success-800-200"
-                        aria-label="Yes: {showVotes ? voteCounts.Y : 'Hidden'}"
-                        title="Yes: {showVotes ? voteCounts.Y : 'Hidden'}"
+                        {...a11yLabel(`Yes: ${showVotes ? voteCounts.Y : 'Hidden'}`)}
                     >
                         <ENTRIES_MAP.Y.icon />
                         <div class="tabular-nums">{showVotes ? voteCounts.Y : '-'}</div>
                     </div>
                     <div 
                         class="flex text-error-800-200"
-                        aria-label="No: {showVotes ? voteCounts.N : 'Hidden'}"
-                        title="No: {showVotes ? voteCounts.N : 'Hidden'}"
+                        {...a11yLabel(`No: ${showVotes ? voteCounts.N : 'Hidden'}`)}
                     >
                         <ENTRIES_MAP.N.icon />
                         <div class="tabular-nums">{showVotes ? voteCounts.N : '-'}</div>
                     </div>
                     <div 
                         class="flex"
-                        aria-label="Abstain: {showVotes ? voteCounts.A : 'Hidden'}"
-                        title="Abstain: {showVotes ? voteCounts.A : 'Hidden'}"
+                        {...a11yLabel(`Abstain: ${showVotes ? voteCounts.A : 'Hidden'}`)}
                     >
                         <ENTRIES_MAP.A.icon />
                         <div class="tabular-nums">{showVotes ? voteCounts.A : '-'}</div>
@@ -306,24 +304,21 @@
                     <div class="text-3xl">
                         <div 
                             class="flex gap-2 items-center text-success-800-200"
-                            aria-label="Yes: {showVotes ? voteCounts.Y : 'Hidden'}"
-                            title="Yes: {showVotes ? voteCounts.Y : 'Hidden'}"
+                            {...a11yLabel(`Yes: ${showVotes ? voteCounts.Y : 'Hidden'}`)}
                         >
                             <ENTRIES_MAP.Y.icon />
                             <div class="tabular-nums">{showVotes ? voteCounts.Y : '-'}</div>
                         </div>
                         <div 
                             class="flex gap-2 items-center text-error-800-200"
-                            aria-label="No: {showVotes ? voteCounts.N : 'Hidden'}"
-                            title="No: {showVotes ? voteCounts.N : 'Hidden'}"
+                            {...a11yLabel(`No: ${showVotes ? voteCounts.N : 'Hidden'}`)}
                         >
                             <ENTRIES_MAP.N.icon />
                             <div class="tabular-nums">{showVotes ? voteCounts.N : '-'}</div>
                         </div>
                         <div 
                             class="flex gap-2 items-center"
-                            aria-label="Abstain: {showVotes ? voteCounts.A : 'Hidden'}"
-                            title="Abstain: {showVotes ? voteCounts.A : 'Hidden'}"
+                            {...a11yLabel(`Abstain: ${showVotes ? voteCounts.A : 'Hidden'}`)}
                         >
                             <ENTRIES_MAP.A.icon />
                             <div class="tabular-nums">{showVotes ? voteCounts.A : '-'}</div>

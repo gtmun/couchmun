@@ -22,7 +22,7 @@
   import { createMotionSchema, MOTION_DEFS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import type { Motion } from "$lib/types";
-  import { hasKey } from "$lib/util";
+  import { a11yLabel, hasKey } from "$lib/util";
   import { createDragTr, isDndShadow } from "$lib/util/dnd";
   import { stringifyTime } from "$lib/util/time";
   import MdiAccountClock from "~icons/mdi/account-clock";
@@ -157,8 +157,7 @@
       <button
         class="btn-icon-std transition-colors preset-filled-primary-500"
         onclick={undo}
-        aria-label="Undo Deleted Motion"
-        title="Undo Deleted Motion"
+        {...a11yLabel("Undo Deleted Motion")}
         disabled={deletedMotions.length == 0}
       >
         <MdiUndo />
@@ -167,8 +166,7 @@
       <button
         class={["btn-icon-std transition-colors", motionsSorted ? "preset-ui-depressed" : "preset-ui-activated"]}
         onclick={sortMotions}
-        aria-label="Sort Motions"
-        title="Sort Motions"
+        {...a11yLabel("Sort Motions")}
         disabled={motionsSorted}
       >
         <MdiSort />
@@ -215,7 +213,7 @@
                 shadow && "visible! bg-surface-200-800!"
               ]}
               animate:flip={{ duration: 150 }}
-              aria-label="{delName}'s Motion"
+              {...a11yLabel(`${delName}'s Motion`)}
             >
               <td>{motionName(motion)}</td>
               <td>
@@ -230,16 +228,14 @@
                   <button
                     class="btn-icon-std p-1"
                     onclick={() => removeMotion(i)}
-                    data-label="Reject {delName}'s Motion"
-                    title="Reject {delName}'s Motion"
+                    {...a11yLabel(`Reject ${delName}'s Motion`)}
                   >
                     <MdiCancel class="text-error-500" />
                   </button>
                   <button
                     class="btn-icon-std p-1"
                     onclick={() => acceptMotionAndGoto(motion)}
-                    data-label="Accept {delName}'s Motion"
-                    title="Accept {delName}'s Motion"
+                    {...a11yLabel(`Accept ${delName}'s Motion`)}
                   >
                     <MdiCheck class="text-success-700" />
                   </button>

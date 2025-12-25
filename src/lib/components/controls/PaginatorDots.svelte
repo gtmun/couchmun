@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { a11yLabel } from "$lib/util";
     import MdiChevronLeft from "~icons/mdi/chevron-left";
     import MdiChevronRight from "~icons/mdi/chevron-right";
 
@@ -53,8 +54,7 @@
                 disabled && "cursor-not-allowed"
             ]}
             onclick={() => {if (!disabled) page = i}}
-            aria-label="Go to Page {i}"
-            title="Go to Page {i}"
+            {...a11yLabel(`Go to Page ${i}`)}
             aria-pressed={pressed}
             {disabled}
         ></button>

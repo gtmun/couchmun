@@ -8,6 +8,8 @@
     import type { Snippet } from "svelte";
     import type { HTMLAttributes } from "svelte/elements";
 
+    import { a11yLabel } from "$lib/util";
+
     interface Props extends HTMLAttributes<HTMLButtonElement> {
         /**
          * The name (as required by Skeleton's `SlideToggle`
@@ -54,8 +56,7 @@
     type="button"
     aria-pressed={checked}
     onclick={() => checked = !checked}
-    title={label}
-    aria-label={label}
+    {...a11yLabel(label)}
     class={[
         // Base
         "btn-icon-std aspect-square rounded-full cursor-pointer",
