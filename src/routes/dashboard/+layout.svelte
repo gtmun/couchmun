@@ -7,7 +7,8 @@
 <script lang="ts">
     import { AppBar, Dialog } from '@skeletonlabs/skeleton-svelte';
 
-    import { navigating, page } from '$app/state';
+    import { onNavigate } from '$app/navigation';
+    import { page } from '$app/state';
     import type { RouteId } from '$app/types';
     import BarHeader from '$lib/components/app-bar/BarHeader.svelte';
     import BarStats from '$lib/components/app-bar/BarStats.svelte';
@@ -54,12 +55,10 @@
 
     let settingsBackdrop = $state(true);
     // When navigating to a different page, reset topic:
-    $effect(() => {
-        if (navigating.type != null) {
-            sessionData.barTopic = undefined;
-            sessionData.tabTitleExtras = undefined;
-        }
-    })
+    onNavigate(() => {
+        sessionData.barTopic = undefined;
+        sessionData.tabTitleExtras = undefined;
+    });
 </script>
 
 {#if typeof thisLinkTitle !== "undefined"}
