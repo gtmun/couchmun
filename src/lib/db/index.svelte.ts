@@ -277,7 +277,8 @@ export const DEFAULT_SESSION_DATA = {
     selectedMotionState: {
         speakersList: []
     },
-    speakersList: []
+    speakersList: [],
+    faSpeakersList: []
 } as const satisfies SessionData;
 
 /**
