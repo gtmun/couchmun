@@ -7,6 +7,7 @@
     import UniModalContent, { type ExitState } from "./UniModalContent.svelte";
 
     import type { DelegateAttrs } from "$lib/types";
+    import { proxify } from "$lib/util/sv.svelte";
 
     type SubmitData = { attrs: DelegateAttrs };
     interface Props {
@@ -26,7 +27,7 @@
         exitState
     }: Props = $props();
 
-    let newAttrs = $derived(attrs);
+    let newAttrs = $derived(proxify(attrs));
 
     function joinAliasInput(aliases: string[]) {
         return aliases.join(", ");
