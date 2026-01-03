@@ -11,8 +11,6 @@
 
     import UniModalContent, { type ContentProps, type ExitState } from "./UniModalContent.svelte";
 
-    import { watchEffect } from "$lib/util/sv.svelte";
-
     interface Props extends ContentProps<T> {
         /**
          * Modal's open state.
@@ -45,12 +43,6 @@
          * If this is set, then `title`, `main`, `footer` have no effect.
          */
         content?: Snippet<[ExitState<T>]>;
-
-        /**
-         * If true, modal content state persists between opens.
-         * Otherwise, modal content is rerendered every open.
-         */
-        reconstructBetweenOpens?: boolean;
     }
 
     let {
@@ -62,8 +54,7 @@
         main,
         footer,
         backdropColor = modalCls.backdrop.color,
-        type = "modal",
-        reconstructBetweenOpens = false
+        type = "modal"
     }: Props = $props();
 
     function submit(value: T) {
@@ -73,9 +64,6 @@
     function close() {
         open = false;
     }
-
-    let openCount = $state(0);
-    watchEffect(() => open, o => { if (o) openCount++; });
 
     let positionerCls: ClassValue = $derived([
         modalCls.positioner.base,
@@ -130,13 +118,11 @@
         <Dialog.Backdrop class={[modalCls.backdrop.base, backdropColor, modalCls.backdrop.anim]} />
         <Dialog.Positioner class={positionerCls}>
             <Dialog.Content class={cardCls}>
-                {#key !reconstructBetweenOpens || openCount}
-                    {#if content}
-                        {@render content({ submit, close })}
-                    {:else}
-                        <UniModalContent {title} {main} {footer} exitState={{ submit, close }} />
-                    {/if}
-                {/key}
+                {#if content}
+                    {@render content({ submit, close })}
+                {:else}
+                    <UniModalContent {title} {main} {footer} exitState={{ submit, close }} />
+                {/if}
             </Dialog.Content>
         </Dialog.Positioner>
     </Portal>
