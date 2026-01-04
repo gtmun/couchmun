@@ -12,7 +12,7 @@
     import { Delegate, findDelegate } from "$lib/db/delegates";
     import { db, queryStore, SessionDatabase } from "$lib/db/index.svelte";
     import type { DelegateID, DelSessionData, StatsData } from "$lib/types";
-    import { compare, downloadFile, hasKey, lazyslide } from "$lib/util";
+    import { a11yLabel, compare, downloadFile, hasKey, lazyslide } from "$lib/util";
     import { POPUP_CARD_CLASSES } from "$lib/util/popup";
     import { parseTime, sanitizeTime, stringifyTime } from "$lib/util/time";
     import MdiArrowUp from "~icons/mdi/arrow-up";
@@ -197,6 +197,7 @@
                 pageSize={1}
                 page={displayPage + 1}
                 onPageChange={e => selectedPage = e.page - 1}
+                boundaryCount={2}
             >
                 <Pagination.PrevTrigger>
                     <MdiChevronLeft />
@@ -209,7 +210,7 @@
                                     class="tabular-nums"
                                     {...page}
                                 >
-                                    {#if index == $nSessions}
+                                    {#if page.value == $nSessions + 1}
                                         <!-- All sessions page -->
                                         <MdiStar /> 
                                     {:else}
@@ -242,7 +243,7 @@
             >
                 <Popover.Trigger
                     class={["btn-icon-std", popupsOpen.editStats ? "preset-filled" : "preset-ui-depressed hover:preset-filled"]}
-                    aria-label="Edit Stats"
+                    {...a11yLabel("Edit Stats")}
                 >
                     <MdiPencil />
                 </Popover.Trigger>
@@ -345,8 +346,7 @@
                                                     type="button"
                                                     class="btn-icon preset-filled"
                                                     onclick={() => addToDuration(editStatsDel, -parseTime(editStatsTimeInput)!)}
-                                                    aria-label="Remove from Duration Spoken"
-                                                    title="Remove from Duration Spoken"
+                                                    {...a11yLabel("Remove from Duration Spoken")}
                                                 >
                                                     <MdiMinus />
                                                 </button>
@@ -354,8 +354,7 @@
                                                     type="button"
                                                     class="btn-icon preset-filled"
                                                     onclick={() => addToDuration(editStatsDel, +parseTime(editStatsTimeInput)!)}
-                                                    aria-label="Add to Duration Spoken"
-                                                    title="Add to Duration Spoken"
+                                                    {...a11yLabel("Add to Duration Spoken")}
                                                 >
                                                     <MdiPlus />
                                                 </button>
@@ -375,7 +374,7 @@
             >
                 <Popover.Trigger
                     class="btn-icon-std preset-filled-warning-500"
-                    aria-label="Export Stats"
+                    {...a11yLabel("Export Stats")}
                 >
                     <MdiDatabaseExportOutline />
                 </Popover.Trigger>

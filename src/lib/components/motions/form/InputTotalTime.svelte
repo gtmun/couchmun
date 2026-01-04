@@ -2,7 +2,7 @@
     import { fade } from "svelte/transition";
 
     import type { InputComponentProps } from "$lib/motions/definitions";
-    import { hasKey, lazyslide } from "$lib/util";
+    import { a11yLabel, hasKey, lazyslide } from "$lib/util";
     import { sanitizeTime, stringifyTime } from "$lib/util/time";
     import MdiFractionOneHalf from "~icons/mdi/fraction-one-half";
 
@@ -43,8 +43,7 @@
                 class="btn btn-sm preset-filled"
                 disabled={!!value}
                 onclick={extendByHalf}
-                aria-label="Set Time to Half"
-                title="Set Time to Half"
+                {...a11yLabel("Set Time to Half")}
                 transition:lazyslide
             >
                 <MdiFractionOneHalf />

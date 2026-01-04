@@ -17,6 +17,7 @@
     import ConfirmModal from "$lib/components/modals/ConfirmModal.svelte";
     import { type Delegate, findDelegate } from "$lib/db/delegates";
     import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
+    import { a11yLabel } from "$lib/util";
     import { isDndShadow } from "$lib/util/dnd";
     import MdiCancel from "~icons/mdi/cancel";
     import MdiDelete from "~icons/mdi/delete";
@@ -330,7 +331,7 @@
                     insertPoint > 0 && (i == order.length - insertPoint) && "border-t-2 border-surface-500"
                 ]}
                 animate:flip={{ duration: 150 }}
-                aria-label={speakerLabel}
+                {...a11yLabel(speakerLabel)}
             >
                 <div use:dragHandle>
                     <MdiDragVertical />
@@ -346,8 +347,7 @@
                                 : 'preset-ui-ready'
                     ]}
                     onclick={() => setSelectedSpeaker(speaker)}
-                    title="Select {speakerLabel}"
-                    aria-label="Select {speakerLabel}"
+                    {...a11yLabel(`Select ${speakerLabel}`)}
                     aria-pressed={selected}
                 >
                     <DelLabel attrs={delAttrs} fallbackName={speakerLabel} inline />
@@ -359,8 +359,7 @@
                         speaker.completed ? "preset-ui-depressed" : "preset-filled-error-100-900 hover:preset-filled-error-500"
                     ]}
                     onclick={() => deleteSpeaker(i)}
-                    title="Delete {speakerLabel}"
-                    aria-label="Delete {speakerLabel}"
+                    {...a11yLabel(`Delete ${speakerLabel}`)}
                     disabled={speaker.completed}
                 >
                     <MdiCancel />
@@ -392,7 +391,7 @@
                         <Dialog.Trigger
                             class="btn-icon-std preset-filled-primary-500"
                             disabled={order.length === 0}
-                            aria-label="Clear Speakers List"
+                            {...a11yLabel("Clear Speakers List")}
                         >
                             <MdiDelete />
                         </Dialog.Trigger>

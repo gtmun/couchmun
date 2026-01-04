@@ -9,6 +9,7 @@
     import { resolve } from "$app/paths";
     import BarHeader from '$lib/components/app-bar/BarHeader.svelte';
     import { db } from '$lib/db/index.svelte';
+    import { a11yLabel } from '$lib/util';
     import MdiChevronLeft from "~icons/mdi/chevron-left";
 
     let { children } = $props();
@@ -24,8 +25,7 @@
                     <a
                         href="{resolve("/dashboard")}"
                         class="btn-icon-std"
-                        aria-label="Return to Dashboard"
-                        title="Return to Dashboard"
+                        {...a11yLabel("Return to Dashboard")}
                         tabindex={0}
                     >
                         <MdiChevronLeft />

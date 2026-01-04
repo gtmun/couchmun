@@ -3,6 +3,8 @@
 -->
 
 <script lang="ts">
+    import { a11yLabel } from "$lib/util";
+
     interface Props {
         /**
          * Total attendance.
@@ -67,15 +69,15 @@
     }
 </style>
 <div class="flex flex-row gap-3 justify-center tabular-nums">
-    <div class="flex flex-row gap-1 items-center" aria-label="Majority ({maj})" title="Majority ({maj})">
+    <div class="flex flex-row gap-1 items-center" {...a11yLabel(`Majority (${maj})`)}>
         <div class="size-6 rounded-full conic-half"></div>
         {maj}
     </div>
-    <div class="flex flex-row gap-1 items-center" aria-label="Supermajority ({supermaj})" title="Supermajority ({supermaj})">
+    <div class="flex flex-row gap-1 items-center" {...a11yLabel(`Supermajority (${supermaj})`)}>
         <div class="size-6 rounded-full conic-tth"></div>
         {supermaj}
     </div>
-    <div class="flex flex-row gap-1 items-center" aria-label="Total ({total})" title="Total ({total})">
+    <div class="flex flex-row gap-1 items-center" {...a11yLabel(`Total (${total})`)}>
         <div class="size-6 rounded-full conic-full"></div>
         {total}
     </div>

@@ -14,7 +14,7 @@
     import { getSessionContext, resetSessionContext } from "$lib/context/index.svelte";
     import { getThemeContext, THEME_DEFAULTS } from "$lib/context/theme.svelte";
     import { db, queryStore } from "$lib/db/index.svelte";
-    import type { PropsOf } from "$lib/util";
+    import { a11yLabel, type PropsOf } from "$lib/util";
     import MdiChevronDown from "~icons/mdi/chevron-down";
     import MdiPlus from "~icons/mdi/plus";
     import MdiReload from "~icons/mdi/reload";
@@ -206,7 +206,7 @@
     <button
         class={["btn", selected ? "preset-ui-activated" : "preset-ui-depressed"]}
         onclick={() => { if (typeof key === "number" && !selected) db.loadSessionData(key); }}
-        aria-label="Select{selected ? "ed" : ""} Session {displayKey}"
+        {...a11yLabel(`Select Session ${displayKey}`)}
         aria-pressed={selected}
     >
         Session {displayKey}

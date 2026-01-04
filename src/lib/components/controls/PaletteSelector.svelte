@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { a11yLabel } from "$lib/util";
     import MdiPencil from "~icons/mdi/pencil";
 
     interface Props {
@@ -20,8 +21,7 @@
             ]}
             style:--selector-hue={color.displayShade}
             onclick={() => selectedColor = color.id}
-            title={color.label}
-            aria-label={color.label}
+            {...a11yLabel(color.label)}
             role="radio"
             aria-checked={selectedColor === color.id}
             ></button>

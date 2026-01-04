@@ -6,6 +6,7 @@
 
 
 <script lang="ts">
+    import { a11yLabel } from "$lib/util";
     import MdiMinus from "~icons/mdi/minus";
     import MdiPlus from "~icons/mdi/plus";
 
@@ -22,8 +23,7 @@
     <button
         type="button"
         class="btn-icon preset-filled"
-        aria-label="Decrement {ariaLabelName}"
-        title="Decrement {ariaLabelName}"
+        {...a11yLabel(`Decrement ${ariaLabelName}`)}
         onclick={() => {
             if (typeof rest.min !== "number" || value > rest.min) {
                 value = (value ?? 0) - 1;
@@ -35,8 +35,7 @@
     <button
         type="button"
         class="btn-icon preset-filled"
-        aria-label="Increment {ariaLabelName}"
-        title="Increment {ariaLabelName}"
+        {...a11yLabel(`Increment ${ariaLabelName}`)}
         onclick={() => {
             if (typeof rest.max !== "number" || value < rest.max) {
                 value = (value ?? 0) + 1;

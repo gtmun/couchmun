@@ -127,3 +127,16 @@ export type PropsOf<C extends Component<any, any, any>> = C extends Component<in
 export function hasKey<P extends PropertyKey>(obj: object, key: P): obj is Record<P, unknown> {
     return Object.hasOwn(obj, key);
 }
+
+/**
+ * Object that can be used to assign the `aria-label` and `title` attributes of an element
+ * to the same value.
+ * @param label The label
+ * @returns the object
+ */
+export function a11yLabel(label?: string) {
+    return {
+        "aria-label": label,
+        title: label
+    }
+}
