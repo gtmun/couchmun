@@ -118,9 +118,6 @@
         runStates.length = nTimers;
         runStates.fill(false);
     })
-    
-    // If any timer starts, mark the current speaker as complete.
-    watchEffect(() => runStates.some(s => s), st => {if (st) speakersList?.start(); });
 
     // Getter/setter for run state, since it depends on timer interaction
     export function getRunState(i: number): boolean {
@@ -139,6 +136,11 @@
             runStates[i] = s;
         } else {
             timerInteraction satisfies never;
+        }
+
+        // If any timer starts, mark the current speaker as complete.
+        if (s) {
+            speakersList?.start();
         }
     }
     /**
