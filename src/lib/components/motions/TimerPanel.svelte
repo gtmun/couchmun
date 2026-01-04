@@ -91,7 +91,7 @@
     let {
         delegates,
         speakersList,
-        durations: dur,
+        durations,
         editable = false,
         timerInteraction: _ti = "sync",
         resetButtons = [{ label: "Reset" }],
@@ -101,7 +101,6 @@
     }: Props = $props();
 
     // Creates a `timers` state with the specific number of timers.
-    let durations = $derived(dur);
     const numTimers = () => durations.length;
     let timers: (Timer | undefined)[] = $state(Array.from({ length: numTimers() }));
     let runStates: boolean[] = $state(Array.from({ length: numTimers() }, () => false));
