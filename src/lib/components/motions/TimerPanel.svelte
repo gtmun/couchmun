@@ -254,11 +254,11 @@
             <!-- Global start/pause button: Only exists if timers are synchronized -->
             {#if timerInteraction === "sync"}
                 <!-- If sync, it is assured that this is the only run state. -->
-                {@const running = runStates[0]}
+                {@const running = getRunState(0)}
                 <button 
                     class="btn preset-filled-primary-500"
                     disabled={!running && !isTimerPlayable()}
-                    onclick={() => runStates[0] = !running}
+                    onclick={() => setRunState(0, !running)}
                 >
                     {running ? 'Pause' : 'Start'}
                 </button>
