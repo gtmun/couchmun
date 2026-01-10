@@ -189,271 +189,273 @@
 
 <MetaTags title="Stats Screen · CouchMUN (Admin)" />
 
-<div class="flex flex-col gap-1">
-    <div class="flex items-center justify-between gap-2">
-        <div class="flex items-center">
-            <Pagination
-                count={$nSessions + 1}
-                pageSize={1}
-                page={displayPage + 1}
-                onPageChange={e => selectedPage = e.page - 1}
-                boundaryCount={2}
-            >
-                <Pagination.PrevTrigger>
-                    <MdiChevronLeft />
-                </Pagination.PrevTrigger>
-                <Pagination.Context>
-                    {#snippet children(pagination)}
-                        {#each pagination().pages as page, index (page)}
-                            {#if page.type === 'page'}
-                                <Pagination.Item
-                                    class="tabular-nums"
-                                    {...page}
-                                >
-                                    {#if page.value == $nSessions + 1}
-                                        <!-- All sessions page -->
-                                        <MdiStar /> 
-                                    {:else}
-                                        <div class="flex justify-center w-[1.5em]">
-                                            {page.value}
-                                        </div>
-                                    {/if}
-                                </Pagination.Item>
-                            {:else}
-                                <Pagination.Ellipsis {index}>
-                                    <MdiDotsHorizontal />
-                                </Pagination.Ellipsis>
-                            {/if}
-                        {/each}
-                    {/snippet}
-                </Pagination.Context>
-                <Pagination.NextTrigger>
-                    <MdiChevronRight />
-                </Pagination.NextTrigger>
-            </Pagination>
-        </div>
-        <div class="flex items-center gap-1">
-            <Popover
-                open={popupsOpen.editStats}
-                onOpenChange={e => {
-                    if (e.open) resetEditStats();
-                    popupsOpen.editStats = e.open;
-                }}
-                positioning={{ placement: 'bottom' }}
-            >
-                <Popover.Trigger
-                    class={["btn-icon-std", popupsOpen.editStats ? "preset-filled" : "preset-ui-depressed hover:preset-filled"]}
-                    {...a11yLabel("Edit Stats")}
+<main class="space-y-4 p-4 overflow-auto">
+    <div class="flex flex-col gap-1">
+        <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center">
+                <Pagination
+                    count={$nSessions + 1}
+                    pageSize={1}
+                    page={displayPage + 1}
+                    onPageChange={e => selectedPage = e.page - 1}
+                    boundaryCount={2}
                 >
-                    <MdiPencil />
-                </Popover.Trigger>
-                <Portal>
-                    <Popover.Positioner>
-                        <Popover.Content class={POPUP_CARD_CLASSES}>
-                            {@const selectedDel = typeof editStatsDel !== "undefined" ? findDelegate($delegates, editStatsDel) : undefined}
-                            <form class="flex flex-col gap-2 overflow-hidden" onsubmit={e => e.preventDefault()}>
-                                <label>
-                                    Session
-                                    <input 
-                                        class="input"
-                                        type="number"
-                                        min="1" max={$nSessions}
-                                        bind:value={
-                                            () => Math.max(0, Math.min(displayPage, $nSessions - 1)) + 1,
-                                            p => selectedPage =  Math.max(0, Math.min(p - 1, $nSessions - 1))
-                                        }
+                    <Pagination.PrevTrigger>
+                        <MdiChevronLeft />
+                    </Pagination.PrevTrigger>
+                    <Pagination.Context>
+                        {#snippet children(pagination)}
+                            {#each pagination().pages as page, index (page)}
+                                {#if page.type === 'page'}
+                                    <Pagination.Item
+                                        class="tabular-nums"
+                                        {...page}
                                     >
-                                </label>
-                                <label>
-                                    Delegate
-                                    <DelCombobox delegates={$delegates} bind:value={editStatsDel} selectOnBlur />
-                                </label>
-                                {#if typeof selectedDel !== "undefined"}
-                                    <div class="flex flex-col gap-2" transition:lazyslide>
-                                        <label>
-                                            Motions Proposed
-                                            <InputPlusMinus 
-                                                name="stats-motions-proposed"
-                                                ariaLabelName="Motions Proposed"
-                                                min={0}
-                                                bind:value={
-                                                    () => selectedDel.stats.motionsProposed,
-                                                    v => db.updateDelegate(editStatsDel, d => { d.stats.motionsProposed = v; })
-                                                }
-                                            />
-                                        </label>
-                                        <label>
-                                            Motions Accepted
-                                            <InputPlusMinus
-                                                name="stats-motions-accepted"
-                                                ariaLabelName="Motions Accepted"
-                                                min={0}
-                                                bind:value={
-                                                    () => selectedDel.stats.motionsAccepted,
-                                                    v => db.updateDelegate(editStatsDel, d => { d.stats.motionsAccepted = v; })
-                                                }
-                                            />
-                                        </label>
-                                        <label>
-                                            Times Spoken
-                                            <InputPlusMinus
-                                                name="stats-times-spoken"
-                                                ariaLabelName="Times Spoken"
-                                                min={0}
-                                                bind:value={
-                                                    () => selectedDel.stats.timesSpoken,
-                                                    v => db.updateDelegate(editStatsDel, d => { d.stats.timesSpoken = v; })
-                                                }
-                                            />
-                                        </label>
-                                        <div class="flex flex-col gap-1">
-                                            <label class="tabular-nums" for="stats-duration-spoken">
-                                                Duration Spoken &middot; {stringifyTime(selectedDel.stats.durationSpoken / 1000, "round")}
-                                            </label>
-                                            {#if editStatsTimeGuide}
-                                                <!-- Time guide
-                                                <span class="text-surface-500" transition:fade={{ duration: 150 }}>
-                                                    &middot; {sanitizeTime(editStatsTimeInput)}
-                                                </span> -->
-                                            {/if}
-                                            <div class="flex gap-1">
-                                                <!-- durationButtons is const, so this will not update -->
-                                                <!-- eslint-disable-next-line svelte/require-each-key -->
-                                                {#each durationButtons as item}
-                                                    {#if item.type === "sep"}
-                                                        <span><MdiRhombusMediumOutline /></span>
-                                                    {:else if item.type === "btn"}
-                                                        <button 
-                                                            type="button"
-                                                            class={["btn btn-sm tabular-nums", item.time < 0 ? "preset-filled-error-800-200" : "preset-filled-success-800-200"]}
-                                                            onclick={() => addToDuration(editStatsDel, item.time)}
-                                                        >
-                                                            {item.label}
-                                                        </button>
-                                                    {/if}
-                                                {/each}
+                                        {#if page.value == $nSessions + 1}
+                                            <!-- All sessions page -->
+                                            <MdiStar /> 
+                                        {:else}
+                                            <div class="flex justify-center w-[1.5em]">
+                                                {page.value}
                                             </div>
-                                            <div class="flex gap-1 items-center">
-                                                <input 
-                                                    name="stats-duration-spoken"
-                                                    class="input"
-                                                    placeholder="mm:ss"
-                                                    bind:value={editStatsTimeInput}
-                                                    onfocus={() => editStatsTimeGuide = true}
-                                                    onblur={() => { editStatsTimeGuide = false; editStatsTimeInput = sanitizeTime(editStatsTimeInput); }}
-                                                >
-                                                <button
-                                                    type="button"
-                                                    class="btn-icon preset-filled"
-                                                    onclick={() => addToDuration(editStatsDel, -parseTime(editStatsTimeInput)!)}
-                                                    {...a11yLabel("Remove from Duration Spoken")}
-                                                >
-                                                    <MdiMinus />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    class="btn-icon preset-filled"
-                                                    onclick={() => addToDuration(editStatsDel, +parseTime(editStatsTimeInput)!)}
-                                                    {...a11yLabel("Add to Duration Spoken")}
-                                                >
-                                                    <MdiPlus />
-                                                </button>
+                                        {/if}
+                                    </Pagination.Item>
+                                {:else}
+                                    <Pagination.Ellipsis {index}>
+                                        <MdiDotsHorizontal />
+                                    </Pagination.Ellipsis>
+                                {/if}
+                            {/each}
+                        {/snippet}
+                    </Pagination.Context>
+                    <Pagination.NextTrigger>
+                        <MdiChevronRight />
+                    </Pagination.NextTrigger>
+                </Pagination>
+            </div>
+            <div class="flex items-center gap-1">
+                <Popover
+                    open={popupsOpen.editStats}
+                    onOpenChange={e => {
+                        if (e.open) resetEditStats();
+                        popupsOpen.editStats = e.open;
+                    }}
+                    positioning={{ placement: 'bottom' }}
+                >
+                    <Popover.Trigger
+                        class={["btn-icon-std", popupsOpen.editStats ? "preset-filled" : "preset-ui-depressed hover:preset-filled"]}
+                        {...a11yLabel("Edit Stats")}
+                    >
+                        <MdiPencil />
+                    </Popover.Trigger>
+                    <Portal>
+                        <Popover.Positioner>
+                            <Popover.Content class={POPUP_CARD_CLASSES}>
+                                {@const selectedDel = typeof editStatsDel !== "undefined" ? findDelegate($delegates, editStatsDel) : undefined}
+                                <form class="flex flex-col gap-2 overflow-hidden" onsubmit={e => e.preventDefault()}>
+                                    <label>
+                                        Session
+                                        <input 
+                                            class="input"
+                                            type="number"
+                                            min="1" max={$nSessions}
+                                            bind:value={
+                                                () => Math.max(0, Math.min(displayPage, $nSessions - 1)) + 1,
+                                                p => selectedPage =  Math.max(0, Math.min(p - 1, $nSessions - 1))
+                                            }
+                                        >
+                                    </label>
+                                    <label>
+                                        Delegate
+                                        <DelCombobox delegates={$delegates} bind:value={editStatsDel} selectOnBlur />
+                                    </label>
+                                    {#if typeof selectedDel !== "undefined"}
+                                        <div class="flex flex-col gap-2" transition:lazyslide>
+                                            <label>
+                                                Motions Proposed
+                                                <InputPlusMinus 
+                                                    name="stats-motions-proposed"
+                                                    ariaLabelName="Motions Proposed"
+                                                    min={0}
+                                                    bind:value={
+                                                        () => selectedDel.stats.motionsProposed,
+                                                        v => db.updateDelegate(editStatsDel, d => { d.stats.motionsProposed = v; })
+                                                    }
+                                                />
+                                            </label>
+                                            <label>
+                                                Motions Accepted
+                                                <InputPlusMinus
+                                                    name="stats-motions-accepted"
+                                                    ariaLabelName="Motions Accepted"
+                                                    min={0}
+                                                    bind:value={
+                                                        () => selectedDel.stats.motionsAccepted,
+                                                        v => db.updateDelegate(editStatsDel, d => { d.stats.motionsAccepted = v; })
+                                                    }
+                                                />
+                                            </label>
+                                            <label>
+                                                Times Spoken
+                                                <InputPlusMinus
+                                                    name="stats-times-spoken"
+                                                    ariaLabelName="Times Spoken"
+                                                    min={0}
+                                                    bind:value={
+                                                        () => selectedDel.stats.timesSpoken,
+                                                        v => db.updateDelegate(editStatsDel, d => { d.stats.timesSpoken = v; })
+                                                    }
+                                                />
+                                            </label>
+                                            <div class="flex flex-col gap-1">
+                                                <label class="tabular-nums" for="stats-duration-spoken">
+                                                    Duration Spoken &middot; {stringifyTime(selectedDel.stats.durationSpoken / 1000, "round")}
+                                                </label>
+                                                {#if editStatsTimeGuide}
+                                                    <!-- Time guide
+                                                    <span class="text-surface-500" transition:fade={{ duration: 150 }}>
+                                                        &middot; {sanitizeTime(editStatsTimeInput)}
+                                                    </span> -->
+                                                {/if}
+                                                <div class="flex gap-1">
+                                                    <!-- durationButtons is const, so this will not update -->
+                                                    <!-- eslint-disable-next-line svelte/require-each-key -->
+                                                    {#each durationButtons as item}
+                                                        {#if item.type === "sep"}
+                                                            <span><MdiRhombusMediumOutline /></span>
+                                                        {:else if item.type === "btn"}
+                                                            <button 
+                                                                type="button"
+                                                                class={["btn btn-sm tabular-nums", item.time < 0 ? "preset-filled-error-800-200" : "preset-filled-success-800-200"]}
+                                                                onclick={() => addToDuration(editStatsDel, item.time)}
+                                                            >
+                                                                {item.label}
+                                                            </button>
+                                                        {/if}
+                                                    {/each}
+                                                </div>
+                                                <div class="flex gap-1 items-center">
+                                                    <input 
+                                                        name="stats-duration-spoken"
+                                                        class="input"
+                                                        placeholder="mm:ss"
+                                                        bind:value={editStatsTimeInput}
+                                                        onfocus={() => editStatsTimeGuide = true}
+                                                        onblur={() => { editStatsTimeGuide = false; editStatsTimeInput = sanitizeTime(editStatsTimeInput); }}
+                                                    >
+                                                    <button
+                                                        type="button"
+                                                        class="btn-icon preset-filled"
+                                                        onclick={() => addToDuration(editStatsDel, -parseTime(editStatsTimeInput)!)}
+                                                        {...a11yLabel("Remove from Duration Spoken")}
+                                                    >
+                                                        <MdiMinus />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        class="btn-icon preset-filled"
+                                                        onclick={() => addToDuration(editStatsDel, +parseTime(editStatsTimeInput)!)}
+                                                        {...a11yLabel("Add to Duration Spoken")}
+                                                    >
+                                                        <MdiPlus />
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                {/if}
-                            </form>
-                        </Popover.Content>
-                    </Popover.Positioner>
-                </Portal>
-            </Popover>
-            <Popover
-                open={popupsOpen.exportStats}
-                onOpenChange={e => popupsOpen.exportStats = e.open}
-                positioning={{ placement: 'bottom' }}
-            >
-                <Popover.Trigger
-                    class="btn-icon-std preset-filled-warning-500"
-                    {...a11yLabel("Export Stats")}
-                >
-                    <MdiDatabaseExportOutline />
-                </Popover.Trigger>
-                <Portal>
-                    <Popover.Positioner>
-                        <Popover.Content class={POPUP_CARD_CLASSES}>
-                            <Popover.Title class="flex justify-center text-lg font-bold">
-                                Export Statistics
-                            </Popover.Title>
-                            <Popover.Description>
-                                <div class="flex flex-col gap-2 overflow-hidden">
-                                    <button class="btn preset-filled-primary-500" onclick={exportAllStats}>Export All Sessions</button>
-                                    {#if !isAllSessions}
-                                        <button class="btn preset-filled-primary-500" onclick={exportStats}>Export Session {displayPage + 1}</button>
                                     {/if}
-                                </div>
-                            </Popover.Description>
-                        </Popover.Content>
-                    </Popover.Positioner>
-                </Portal>
-            </Popover>
+                                </form>
+                            </Popover.Content>
+                        </Popover.Positioner>
+                    </Portal>
+                </Popover>
+                <Popover
+                    open={popupsOpen.exportStats}
+                    onOpenChange={e => popupsOpen.exportStats = e.open}
+                    positioning={{ placement: 'bottom' }}
+                >
+                    <Popover.Trigger
+                        class="btn-icon-std preset-filled-warning-500"
+                        {...a11yLabel("Export Stats")}
+                    >
+                        <MdiDatabaseExportOutline />
+                    </Popover.Trigger>
+                    <Portal>
+                        <Popover.Positioner>
+                            <Popover.Content class={POPUP_CARD_CLASSES}>
+                                <Popover.Title class="flex justify-center text-lg font-bold">
+                                    Export Statistics
+                                </Popover.Title>
+                                <Popover.Description>
+                                    <div class="flex flex-col gap-2 overflow-hidden">
+                                        <button class="btn preset-filled-primary-500" onclick={exportAllStats}>Export All Sessions</button>
+                                        {#if !isAllSessions}
+                                            <button class="btn preset-filled-primary-500" onclick={exportStats}>Export Session {displayPage + 1}</button>
+                                        {/if}
+                                    </div>
+                                </Popover.Description>
+                            </Popover.Content>
+                        </Popover.Positioner>
+                    </Portal>
+                </Popover>
+            </div>
         </div>
-    </div>
-    <div class="table-wrap rounded border border-surface-200-800">
-        <table class="table">
-            <thead class="preset-ui">
-                <tr>
-                    {#each Object.entries(COLUMNS) as [key, col] (key)}
-                    <th>
-                        <button onclick={() => setSort(key)}>
-                            {#if sortOrder.item === key}
-                            <div class="flex items-center gap-1" aria-sort={sortOrder.descending ? "descending" : "ascending"}>
+        <div class="table-wrap rounded border border-surface-200-800">
+            <table class="table">
+                <thead class="preset-ui">
+                    <tr>
+                        {#each Object.entries(COLUMNS) as [key, col] (key)}
+                        <th>
+                            <button onclick={() => setSort(key)}>
+                                {#if sortOrder.item === key}
+                                <div class="flex items-center gap-1" aria-sort={sortOrder.descending ? "descending" : "ascending"}>
+                                    {col.label}
+                                    <MdiArrowUp class={["transition-transform", sortOrder.descending && "rotate-180"]} />
+                                </div>
+                                {:else}
                                 {col.label}
-                                <MdiArrowUp class={["transition-transform", sortOrder.descending && "rotate-180"]} />
+                                {/if}
+                            </button>
+                        </th>
+                        {/each}
+                    </tr>
+                </thead>
+                <tbody>
+                    {#each displayEntries as del (del.id)}
+                    {@const absent = !del.isPresent()}
+                    <tr class={[absent ? "bg-surface-200-800" : "hover:preset-tonal-primary"]}>
+                        <td class="align-middle!">
+                            {#if absent}
+                            <div class="flex gap-1">
+                                <span class="line-through italic">
+                                    <DelLabel attrs={del} inline />
+                                </span>
+                                <span class="text-error-600-400">
+                                    (Absent)
+                                </span>
                             </div>
                             {:else}
-                            {col.label}
+                            <DelLabel attrs={del} inline />
                             {/if}
-                        </button>
-                    </th>
-                    {/each}
-                </tr>
-            </thead>
-            <tbody>
-                {#each displayEntries as del (del.id)}
-                {@const absent = !del.isPresent()}
-                <tr class={[absent ? "bg-surface-200-800" : "hover:preset-tonal-primary"]}>
-                    <td class="align-middle!">
-                        {#if absent}
-                        <div class="flex gap-1">
-                            <span class="line-through italic">
-                                <DelLabel attrs={del} inline />
-                            </span>
-                            <span class="text-error-600-400">
-                                (Absent)
-                            </span>
-                        </div>
-                        {:else}
-                        <DelLabel attrs={del} inline />
-                        {/if}
-                    </td>
-                    <td class="align-middle!">{del.stats.motionsProposed}</td>
-                    <td class="align-middle!">{del.stats.motionsAccepted}</td>
-                    <td class="align-middle!">{del.stats.timesSpoken}</td>
-                    <td class="align-middle!">
-                        <div class="flex items-center justify-end gap-3">
-                            {stringifyTime(del.stats.durationSpoken / 1000, "round")}
-                            <div class="flex w-[33vw]">
-                                <Progress value={maxDurationSpoken ? del.stats.durationSpoken * 100 / maxDurationSpoken : 0}>
-                                    <Progress.Track class="bg-surface-100-900 h-8">
-                                        <Progress.Range class="bg-primary-500 duration-500 transition-width" />
-                                    </Progress.Track>
-                                </Progress>
+                        </td>
+                        <td class="align-middle!">{del.stats.motionsProposed}</td>
+                        <td class="align-middle!">{del.stats.motionsAccepted}</td>
+                        <td class="align-middle!">{del.stats.timesSpoken}</td>
+                        <td class="align-middle!">
+                            <div class="flex items-center justify-end gap-3">
+                                {stringifyTime(del.stats.durationSpoken / 1000, "round")}
+                                <div class="flex w-[33vw]">
+                                    <Progress value={maxDurationSpoken ? del.stats.durationSpoken * 100 / maxDurationSpoken : 0}>
+                                        <Progress.Track class="bg-surface-100-900 h-8">
+                                            <Progress.Range class="bg-primary-500 duration-500 transition-width" />
+                                        </Progress.Track>
+                                    </Progress>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
-                {/each}
-            </tbody>
-        </table>
+                        </td>
+                    </tr>
+                    {/each}
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
+</main>
