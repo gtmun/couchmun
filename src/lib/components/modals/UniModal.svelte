@@ -97,7 +97,7 @@
             modal: "flex justify-center items-center p-4",
         },
         card: {
-            base: "card bg-surface-50-950 p-4 space-y-4 shadow-xl",
+            base: "card bg-surface-50-950 p-4 space-y-4 shadow-xl max-h-screen overflow-auto",
             anim: "transition transition-discrete opacity-0 starting:data-[state=open]:opacity-0 data-[state=open]:opacity-100",
             drawer: {
                 base: "h-screen w-md overflow-auto",

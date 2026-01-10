@@ -7,7 +7,10 @@
     import UniModalContent, { type ExitState } from "./UniModalContent.svelte";
 
     import type { DelegateAttrs } from "$lib/types";
+    import { a11yLabel } from "$lib/util";
     import { proxify } from "$lib/util/sv.svelte";
+    import MdiDelete from "~icons/mdi/delete";
+    import MdiPlus from "~icons/mdi/plus";
 
     type SubmitData = { attrs: DelegateAttrs };
     interface Props {
@@ -29,18 +32,14 @@
 
     let newAttrs = $derived(proxify(attrs));
 
-    function joinAliasInput(aliases: string[]) {
-        return aliases.join(", ");
-    }
-    function splitAliasInput(inp: string) {
-        return inp.split(",")
-            .map(s => s.trim())
-            .filter(s => s.length !== 0);
-    }
-
     function submitValue(e: SubmitEvent, submit: (t: SubmitData) => void) {
         e.preventDefault();
-        submit({ attrs: $state.snapshot(newAttrs) });
+
+        let attrs = $state.snapshot(newAttrs);
+        attrs.aliases = attrs.aliases
+            .map(s => s.trim())
+            .filter(s => s);
+        submit({ attrs });
     }
 </script>
 
@@ -53,10 +52,31 @@
             </label>
             <label>
                 <span>Aliases (optional)</span>
-                <input class="input" bind:value={
-                    () => joinAliasInput(newAttrs.aliases),
-                    v => newAttrs.aliases = splitAliasInput(v)
-                } placeholder="Republic of Modelunia, Modelunic Republic">
+                <div class="grid grid-cols-[1fr_auto] gap-1 p-2 border border-surface-200-800 rounded max-h-120 overflow-auto">
+                    <!-- eslint-disable-next-line svelte/require-each-key -->
+                    {#each newAttrs.aliases as alias, i}
+                        <input class="input" bind:value={
+                            () => alias,
+                            alias => newAttrs.aliases[i] = alias
+                        }>
+                        <button
+                            class="btn-icon-std preset-filled-error-500"
+                            onclick={() => newAttrs.aliases.splice(i, 1)}
+                            type="button"
+                            {...a11yLabel("Delete Alias")}
+                        >
+                            <MdiDelete />
+                        </button>
+                    {/each}
+                    <button
+                        class="btn btn-sm preset-filled-primary-500 col-span-2"
+                        onclick={() => newAttrs.aliases.push("")}
+                        type="button"
+                        {...a11yLabel("Add Alias")}
+                    >
+                        <MdiPlus />
+                    </button>
+                </div>
             </label>
             <label>
                 <span>Flag URL (optional)</span>
