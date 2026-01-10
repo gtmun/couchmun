@@ -11,18 +11,15 @@
     import { getSessionContext } from "$lib/context/index.svelte";
     import { findDelegate } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";
-    import type { Speaker } from "$lib/types";
+    import type { SpeakerFA } from "$lib/types";
+    import { a11yLabel } from "$lib/util";
     import { parseTime } from "$lib/util/time";
     import MdiMinus from "~icons/mdi/minus";
     import MdiThumbUp from "~icons/mdi/thumb-up";
 
     const sessionData = getSessionContext();
-    const { delegates } = sessionData;
+    const { delegates, faSpeakersList: order } = sessionData;
 
-    interface SpeakerFA extends Speaker {
-        stance?: "for" | "against";
-    }
-    let order: SpeakerFA[] = $state([]);
     let duration: number = $state(60);
     let timerPanel = $state<TimerPanel>();
     let speakersList = $state<SpeakerList>();
@@ -101,7 +98,7 @@
         <!-- List -->
         <SpeakerList
             delegates={$delegates}
-            bind:order
+            bind:order={$order}
             bind:this={speakersList}
             onBeforeSpeakerUpdate={reset}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
@@ -112,9 +109,8 @@
 
                 <button 
                     class={["btn-icon-std transition", presetCls(speaker)]}
-                    onclick={() => speaker.stance = invertedFavor}
-                    title="Set {speakerLabel} to {invertedFavor}"
-                    aria-label="Set {speakerLabel} to {invertedFavor}"
+                    onclick={() => {speaker.stance = invertedFavor; $order = $order;}}
+                    {...a11yLabel(`Set ${speakerLabel} to ${invertedFavor}`)}
                     disabled={speaker.completed}
                 >
                     {#if speaker.stance}

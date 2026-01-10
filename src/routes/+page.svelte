@@ -2,6 +2,7 @@
 <script lang="ts">
     import { resolve } from "$app/paths";
     import MetaTags from "$lib/components/MetaTags.svelte";
+    import { a11yLabel } from "$lib/util";
     import MdiGear from "~icons/mdi/gear";
 </script>
 
@@ -23,8 +24,7 @@
             <a 
                 class="btn-icon-std preset-filled-primary-500" 
                 href="{resolve("/admin/settings")}"
-                aria-label="Settings"
-                title="Settings"
+                {...a11yLabel("Settings")}
             >
                 <MdiGear />
             </a>

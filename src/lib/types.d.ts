@@ -227,6 +227,9 @@ export type Speaker = {
      */
     completed: boolean
 };
+export interface SpeakerFA extends Speaker {
+    stance?: "for" | "against";
+}
 
 // Session Data
 /**
@@ -252,6 +255,10 @@ export type SessionData = {
      * The speakers list and speaker attributes (such as whether the given speaker has spoken already)
      */
     speakersList: Speaker[],
+    /**
+     * The speakers list for the For/Against utility.
+     */
+    faSpeakersList: SpeakerFA[]
 };
 export type DelSessionData = {
     presence: DelegatePresence,
@@ -272,7 +279,7 @@ export type SessionContext = {
     /**
      * Array of enabled delegates.
      */
-    delegates: Readable<Delegate[]>,
+    delegates: Readable<Delegate[] & { pending?: true }>,
     
     /**
      * All specified motions (from the points & motions page).
@@ -291,6 +298,10 @@ export type SessionContext = {
      */
     speakersList: Writable<SessionData["speakersList"]>,
 
+    /**
+     * The speakers list for the For/Against utility.
+     */
+    faSpeakersList: Writable<SessionData["faSpeakersList"]>,
     /**
      * Sort order.
      */

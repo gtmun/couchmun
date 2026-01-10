@@ -16,7 +16,7 @@
     import { DEFAULT_PRESET_KEY, getPreset, PRESETS } from "$lib/delegate_presets";
     import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
     import type { DelegateAttrs, DelegateID, Settings } from "$lib/types";
-    import { downloadFile } from "$lib/util";
+    import { a11yLabel, downloadFile } from "$lib/util";
     import MdiArrowDown from "~icons/mdi/arrow-down";
     import MdiCancel from "~icons/mdi/cancel";
     import MdiCircleSmall from "~icons/mdi/circle-small";
@@ -264,8 +264,7 @@
                                             class="btn-icon-std" 
                                             onclick={() => mergeUnmergeOrder(ei, ki)} 
                                             disabled={ei == 0 && ki == 0}
-                                            aria-label="Merge With Above Cell"
-                                            title="Merge With Above Cell"
+                                            {...a11yLabel("Merge With Above Cell")}
                                         >
                                             {#if ki == 0}
                                                 <MdiMerge />
@@ -377,7 +376,7 @@
                         </td>
                         <td class="text-right">
                             <button
-                                aria-label="Edit {attrs.name}"
+                                {...a11yLabel(`Edit ${attrs.name}`)}
                                 onclick={() => openModals.editDelegate = {
                                     state: true,
                                     id: attrs.id,
@@ -388,8 +387,7 @@
                             </button>
                             <button
                                 onclick={() => deleteDelegate(attrs.id)}
-                                aria-label="Delete {attrs.name}"
-                                title="Delete {attrs.name}"
+                                {...a11yLabel(`Delete ${attrs.name}`)}
                             >
                                 <MdiCancel class="text-error-500" />
                             </button>

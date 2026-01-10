@@ -31,6 +31,7 @@ class SessionImpl implements SessionContext {
     selectedMotion = db.sessionDataStore("selectedMotion", DEFAULT_SESSION_DATA.selectedMotion);
     selectedMotionState = db.sessionDataStore("selectedMotionState", DEFAULT_SESSION_DATA.selectedMotionState);
     speakersList = db.sessionDataStore("speakersList", DEFAULT_SESSION_DATA.speakersList);
+    faSpeakersList = db.sessionDataStore("faSpeakersList", DEFAULT_SESSION_DATA.faSpeakersList)
     // Settings
     sortOrder = db.settingStore("sortOrder", DEFAULT_SETTINGS.sortOrder);
     barTitle = db.settingStore("title", "");
