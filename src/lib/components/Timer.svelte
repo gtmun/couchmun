@@ -9,6 +9,8 @@
 <script lang="ts">
     import { Progress } from "@skeletonlabs/skeleton-svelte";
     import { onDestroy, onMount } from "svelte";
+    import { cubicOut } from "svelte/easing";
+    import { Tween } from "svelte/motion";
 
     import { a11yLabel, clamp } from "$lib/util";
     import { makeEditable } from "$lib/util/attach.svelte";
@@ -123,12 +125,16 @@
 
     // Progress & display values
     let msRemaining = $state(duration * 1000);
-    let progress = $derived(clamp(msRemaining / DURATION_MS, 0, 1))
-    let color = $derived((COLOR_THRESHOLDS.findLast(t => progress <= t.threshold) ?? COLOR_THRESHOLDS[0]).color);
+    const progress = Tween.of(() => clamp(msRemaining / DURATION_MS, 0, 1), {
+        duration: 1000,
+        easing: cubicOut
+    });
+    
+    let color = $derived((COLOR_THRESHOLDS.findLast(t => progress.current <= t.threshold) ?? COLOR_THRESHOLDS[0]).color);
     let barProps = $derived({
-        value: Math.round(10000 * progress) / 100,
+        value: Math.round(10000 * progress.current) / 100,
         height,
-        meterTransition: `duration-1000 ${running ? 'transition-[background-color]' : 'transition-[background-color,width]'}`,
+        meterTransition: "duration-1000 transition-colors",
         meterBg: color,
         trackBg: "preset-ui-depressed"
     });
