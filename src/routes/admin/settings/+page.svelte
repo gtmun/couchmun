@@ -48,6 +48,7 @@
     let openModals = $state({
         resetAllSettings: false,
         clearDelegates: false,
+        applyPreset: false,
         editDelegate: {
             state: false,
             id: undefined,
@@ -74,10 +75,14 @@
             // TODO: input validation
             let { settings: newSettings, delegates: newDelegates } = json;
             await db.transaction("rw", [db.sessionData, db.settings, db.delegates], async () => {
+                // Update settings
                 await db.resetSettings();
                 await db.settings.bulkUpdate(toKeyValueArray(newSettings).map(({ key, val }) => ({ key, changes: { val }})));
 
-                await db.resetSessionData();
+                // Clear sessions
+                await resetAllSessionData();
+
+                // Update delegates
                 await db.delegates.clear();
                 await db.addDelegates(newDelegates);
             })
@@ -93,14 +98,18 @@
 
         downloadFile("couchmun-config.json", JSON.stringify(exportSettings), "application/json");
     }
+
+    async function resetAllSessionData() {
+        // Remove session data + previous sessions.
+        await db.resetSessionData();
+        await db.prevSessions.clear();
+    }
     async function resetAllSettings() {
         // Reset settings
         await db.resetSettings();
         await setPreset(DEFAULT_PRESET_KEY);
-
-        // Remove session data + previous sessions.
-        await db.resetSessionData();
-        await db.prevSessions.clear();
+        // Reset session data
+        await resetAllSessionData();
     }
 
     // SORT ORDER
@@ -355,7 +364,7 @@
                         </Dialog.Trigger>
                     {/snippet}
                     {#snippet content()}
-                        Are you sure you want to reset all settings? This will also wipe all sessions.
+                        Are you sure you want to reset all settings? This will also wipe all previous and current session data.
                     {/snippet}
                 </ConfirmModal>
             </div>
@@ -479,12 +488,26 @@
                                         </div>
                                         <label class="flex gap-3 justify-center items-center">
                                             <span>Apply Preset</span>
-                                            <select class="select w-1/2" bind:value={inputPreset} onchange={() => setPreset()}>
+                                            <select class="select w-1/2" bind:value={inputPreset} onchange={() => openModals.applyPreset = true}>
                                                 <option disabled selected value>-- Select preset --</option>
                                                 {#each Object.entries(PRESETS) as [value, preset] (value)}
                                                     <option {value} label={preset.label}></option>
                                                 {/each}
                                             </select>
+                                            <ConfirmModal
+                                                bind:open={openModals.applyPreset}
+                                                success={() => {
+                                                    setPreset();
+                                                    return resetAllSessionData();
+                                                }}
+                                                failure={() => inputPreset = ""}
+                                            >
+                                                {#snippet content()}
+                                                    {@const label = (PRESETS as any)[inputPreset]?.label ?? "none" }
+                                                    Are you sure you want to change the roster preset to "{label}"?
+                                                    This will also wipe all previous and current session data.
+                                                {/snippet}
+                                            </ConfirmModal>
                                             <ConfirmModal
                                                 bind:open={openModals.clearDelegates}
                                                 success={clearDelegates}
