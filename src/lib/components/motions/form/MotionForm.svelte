@@ -19,6 +19,7 @@
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
     import type { DelegateID, Motion } from "$lib/types";
     import { hasKey } from "$lib/util";
+    import { proxify } from '$lib/util/sv.svelte';
     import { parseTime } from "$lib/util/time";
     import MdiPlus from "~icons/mdi/plus";
 
@@ -53,7 +54,8 @@
         buttons
     }: Props = $props();
     
-    let inputMotion = $state<MotionInput>(initialInput ?? defaultInputMotion());
+    // Deeply-reactive derived
+    let inputMotion = $derived(proxify<MotionInput>(initialInput ?? defaultInputMotion()));
     let inputDel = $state<DelegateID>();
     // Any input validation errors.
     let inputError = $state<z.core.$ZodIssue>();
@@ -117,7 +119,8 @@
         // Validate input
         const result = motionSchema.safeParse(inputMotion);
         if (result.success) {
-            inputMotion = defaultInputMotion();
+            // HACK: Needed b.c. inputMotion is a deeply-reactive derived
+            inputMotion = proxify(defaultInputMotion());
             inputDel = undefined;
             inputError = undefined;
 

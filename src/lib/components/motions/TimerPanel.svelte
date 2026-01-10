@@ -91,7 +91,7 @@
     let {
         delegates,
         speakersList,
-        durations: dur,
+        durations,
         editable = false,
         timerInteraction: _ti = "sync",
         resetButtons = [{ label: "Reset" }],
@@ -101,7 +101,6 @@
     }: Props = $props();
 
     // Creates a `timers` state with the specific number of timers.
-    let durations = $derived(dur);
     const numTimers = () => durations.length;
     let timers: (Timer | undefined)[] = $state(Array.from({ length: numTimers() }));
     let runStates: boolean[] = $state(Array.from({ length: numTimers() }, () => false));
@@ -118,9 +117,6 @@
         runStates.length = nTimers;
         runStates.fill(false);
     })
-    
-    // If any timer starts, mark the current speaker as complete.
-    watchEffect(() => runStates.some(s => s), st => {if (st) speakersList?.start(); });
 
     // Getter/setter for run state, since it depends on timer interaction
     export function getRunState(i: number): boolean {
@@ -139,6 +135,11 @@
             runStates[i] = s;
         } else {
             timerInteraction satisfies never;
+        }
+
+        // If any timer starts, mark the current speaker as complete.
+        if (s) {
+            speakersList?.start();
         }
     }
     /**
@@ -254,11 +255,11 @@
             <!-- Global start/pause button: Only exists if timers are synchronized -->
             {#if timerInteraction === "sync"}
                 <!-- If sync, it is assured that this is the only run state. -->
-                {@const running = runStates[0]}
+                {@const running = getRunState(0)}
                 <button 
                     class="btn preset-filled-primary-500"
                     disabled={!running && !isTimerPlayable()}
-                    onclick={() => runStates[0] = !running}
+                    onclick={() => setRunState(0, !running)}
                 >
                     {running ? 'Pause' : 'Start'}
                 </button>
