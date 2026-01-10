@@ -28,6 +28,7 @@
     import MdiMerge from "~icons/mdi/merge";
     import MdiPencil from "~icons/mdi/pencil";
     import MdiPlus from "~icons/mdi/plus";
+    import MdiUpdate from "~icons/mdi/update";
 
     const settings = queryStore(async () => toObject(await db.settings.toArray()) as Settings);
 
@@ -216,7 +217,11 @@
         const [file] = files;
         if (file) {
             const text = await file.text();
-            updateVis(enabledStatus, text);
+            if (enabledStatus) {
+                visEnabled = text;
+            } else {
+                visDisabled = text;
+            }
         }
     }
     function processVis(text: string): [ids: Set<DelegateID>, remainder: string] {
@@ -245,16 +250,16 @@
             })
         });
     }
-    async function updateVis(enabledStatus: boolean, text?: string) {
-        if (enabledStatus) {
-            const [ids, remainder] = processVis(text ?? visEnabled);
-            visEnabled = remainder;
-            await applyVis(ids, enabledStatus);
-        } else {
-            const [ids, remainder] = processVis(text ?? visDisabled);
-            visDisabled = remainder;
-            await applyVis(ids, enabledStatus);
-        }
+    async function updateVis() {
+        // Enabled:
+        const [enIds, enRemainder] = processVis(visEnabled);
+        visEnabled = enRemainder;
+        await applyVis(enIds, true);
+
+        // Disabled:
+        const [diIds, diRemainder] = processVis(visDisabled);
+        visDisabled = diRemainder;
+        await applyVis(diIds, false);
     }
 
     async function setAllEnableStatuses(enabled: boolean) {
@@ -576,7 +581,7 @@
                                                             <FileUpload.HiddenInput />
                                                         </FileUpload>
                                                 </div>
-                                                <textarea class="textarea" rows={10} bind:value={visEnabled} onkeydown={() => updateVis(true)}></textarea>
+                                                <textarea class="textarea" rows={10} bind:value={visEnabled}></textarea>
                                             </div>
                                             <div>
                                                 <div class="flex text-sm font-bold justify-between items-center">
@@ -597,12 +602,17 @@
                                                             <FileUpload.HiddenInput />
                                                         </FileUpload>
                                                 </div>
-                                                <textarea class="textarea" rows={10} bind:value={visDisabled} onkeydown={() => updateVis(false)}></textarea>
+                                                <textarea class="textarea" rows={10} bind:value={visDisabled}></textarea>
                                             </div>
                                         </div>
-
                                         <div class="italic font-bold text-center">
                                             If a name persists, then it could not be resolved into a delegate.
+                                        </div>
+                                        <div class="flex justify-end">
+                                            <button class="btn preset-filled" onclick={updateVis}>
+                                                <MdiUpdate />
+                                                Update Roster
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
