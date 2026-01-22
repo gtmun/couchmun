@@ -140,7 +140,7 @@
         <Combobox.Trigger />
     </Combobox.Control>
     <Portal>
-        <Combobox.Positioner class="z-100!">
+        <Combobox.Positioner class="z-1! max-h-96 overflow-auto">
             <Combobox.Content>
                 {#each collection.group() as [type, items] (type)}
                     <Combobox.ItemGroup>
