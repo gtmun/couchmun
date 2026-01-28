@@ -15,18 +15,20 @@ export function watchEffect<T>(signals: () => T, effect: (t: T) => void) {
 }
 
 /**
- * Equivalent to `$state(t)` (taking the effect of converting the object into a proxy),
- * but without necessarily needing `$state(...)` to be a variable initializer.
+ * Clones the object, creating a proxified version which reacts to any internal updates
+ * (this is one of the effects of `$state(...)` on an object).
  * 
- * This function may become unnecessary if `$state(...)` is allowed outside of variable initializers.
+ * This function works around two issues with Svelte's runes:
+ * 1. `$state(...)` cannot be used outside of variable declarations (even though the proxifying effect does not require it)
+ * 2. Edits to `$state(t)` (or `$derived(t)`) for some state `t` propagate back to `t`.
  * 
  * ## Deeply-reactive `$derived`s
  * 
  * This function is particularly useful for enabling deeply-reactive `$derived`s,
- *     which are `$derived` state based on other state whose internal changes can be observed.
+ *     which are `$derived` state which can be temporarily mutated and which internal changes can be observed.
  * Such a variable can be constructed as `let st = $derived(proxify(...))`.
  */
 export function proxify<T extends object>(t: T) {
-    const st = $state(t);
+    const st = $state($state.snapshot(t));
     return st;
 }

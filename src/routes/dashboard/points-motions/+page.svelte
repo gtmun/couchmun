@@ -6,7 +6,6 @@
 -->
 <script lang="ts">
   import { flip } from "svelte/animate";
-  import { dndzone } from "svelte-dnd-action";
 
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
@@ -23,7 +22,8 @@
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import type { Motion } from "$lib/types";
   import { a11yLabel, hasKey } from "$lib/util";
-  import { createDragTr, isDndShadow } from "$lib/util/dnd";
+  import { createDnd, move } from "$lib/util/dnd";
+  import { proxify } from "$lib/util/sv.svelte";
   import { stringifyTime } from "$lib/util/time";
   import MdiAccountClock from "~icons/mdi/account-clock";
   import MdiAccountMultiple from "~icons/mdi/account-multiple";
@@ -41,10 +41,14 @@
     editMotion: -1
   });
   // A clone of $motions used solely for use:dndzone
-  let dndItems = $derived($motions);
-
+  let dndItems = $derived(proxify($motions));
+  const dndManager = createDnd({
+    onmove: (oldIdx, newIdx) => move(dndItems, oldIdx, newIdx),
+    onmoveend: (oldIdx, newIdx) => $motions = move(dndItems, oldIdx, newIdx),
+    feedback: "default"
+  });
+  
   let motionSchema = $derived(createMotionSchema($delegates));
-  let motionTable: HTMLTableElement | undefined = $state();
 
   function submitMotion(motion: Motion) {
     motions.update($m => {
@@ -174,7 +178,7 @@
     </div>
     
     <div class="table-wrap rounded border border-surface-200-800">
-      <table class="table" bind:this={motionTable}>
+      <table class="table bg-surface-200-800">
         <thead class="preset-ui">
           <tr>
             <td class="px-3 w-28">Motion</td>
@@ -193,24 +197,20 @@
           </tr>
         </thead>
         <tbody
-          use:dndzone={{
-            items: dndItems,
-            flipDurationMs: 150,
-            dropTargetStyle: {},
-            transformDraggedElement: (el) => createDragTr(el, motionTable)
-          }}
-          onconsider={(e) => dndItems = e.detail.items}
-          onfinalize={(e) => $motions = dndItems = e.detail.items}
           aria-labelledby="motion-table-header-{pid}"
+          class="bg-surface-50-950"
         >
           {#each dndItems as motion, i (motion.id)}
             {@const delAttrs = findDelegate($delegates, motion.delegate)}
             {@const delName = delAttrs?.name ?? "unknown"}
-            {@const shadow = isDndShadow(motion)}
             <tr
+              {@attach dndManager.item({
+                id: motion.id,
+                index: i
+              })}
               class={[
-                "dnd-list-item hover:preset-tonal-primary [&_td]:tabular-nums",
-                shadow && "visible! bg-surface-200-800!"
+                "hover:preset-tonal-primary [&_td]:tabular-nums",
+                "data-dnd-dragging:preset-tonal-primary"
               ]}
               animate:flip={{ duration: 150 }}
               {...a11yLabel(`${delName}'s Motion`)}
@@ -262,10 +262,3 @@
     <EditMotionContent motion={$motions[openModals.editMotion]} {motionSchema} {exitState} />
   {/snippet}
 </UniModal>
-
-<style>
-  /* Styling for dragged element */
-  :global(#dnd-action-dragged-el).dnd-list-item {
-      opacity: 90% !important;
-  }
-</style>
