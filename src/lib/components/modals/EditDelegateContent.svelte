@@ -50,34 +50,33 @@
                 <span>Name</span>
                 <input class="input" bind:value={newAttrs.name} required placeholder="Modelunia">
             </label>
-            <label>
+            <div>
                 <span>Aliases (optional)</span>
-                <div class="grid grid-cols-[1fr_auto] gap-1 p-2 border border-surface-200-800 rounded max-h-120 overflow-auto">
-                    <!-- eslint-disable-next-line svelte/require-each-key -->
-                    {#each newAttrs.aliases as alias, i}
-                        <input class="input" bind:value={
-                            () => alias,
-                            alias => newAttrs.aliases[i] = alias
-                        }>
-                        <button
-                            class="btn-icon-std preset-filled-error-500"
-                            onclick={() => newAttrs.aliases.splice(i, 1)}
-                            type="button"
-                            {...a11yLabel("Delete Alias")}
-                        >
-                            <MdiDelete />
-                        </button>
-                    {/each}
+                <div class="flex flex-col items-center justify-center gap-2 p-2 border border-surface-200-800 rounded max-h-120 overflow-auto">
+                    <div class={["grid grid-cols-[1fr_auto] gap-1 w-full", newAttrs.aliases.length == 0 && "hidden"]}>
+                        <!-- eslint-disable-next-line svelte/require-each-key -->
+                        {#each newAttrs.aliases as _, i}
+                            <input class="input" bind:value={newAttrs.aliases[i]}>
+                            <button
+                                class="btn-icon-std preset-filled-error-500"
+                                onclick={() => newAttrs.aliases.splice(i, 1)}
+                                type="button"
+                                {...a11yLabel("Delete Alias")}
+                            >
+                                <MdiDelete />
+                            </button>
+                        {/each}
+                    </div>
                     <button
-                        class="btn btn-sm preset-filled-primary-500 col-span-2"
+                        class="btn btn-sm preset-filled-primary-500 w-1/3"
                         onclick={() => newAttrs.aliases.push("")}
                         type="button"
-                        {...a11yLabel("Add Alias")}
                     >
                         <MdiPlus />
+                        Add Alias
                     </button>
                 </div>
-            </label>
+            </div>
             <label>
                 <span>Flag URL (optional)</span>
                 <input class="input" bind:value={newAttrs.flagURL} placeholder="https://example.com/flag.svg">
