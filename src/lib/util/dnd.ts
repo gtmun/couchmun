@@ -1,98 +1,135 @@
 /**
- * Utilities for managing svelte-dnd-action.
+ * Utilities for managing drag-and-drop.
  * 
- * To implement drag-and-drop with svelte-dnd-action, the following steps should be performed:
- * 1. Make a stateful copy of the array you want to observe.
- * 2. Apply the `use:dndzone` or `use:dragHandleZone` onto the element that should be DnDable.
- *     a. Set the given events: 
- *         - `onconsider = (e) => copy = e.detail.items`, 
- *         - `onfinalize = (e) => original = copy = e.detail.items`
- * 3. Apply any styling to the shadow element and dragged element.
+ * This module allows you to create a drag-and-droppable list from (most) layouts.
+ * This works with the table and flex layouts, but not the grid layout.
  * 
- * In full, that would look like the following:
- * ```svelte
- * <script lang="ts">
- *   // (1)
- *   let dndItems = $derived(originalItems);
- * 
- *   // ...
- * </script>
- * 
- * <!-- (2) -->
- * <div 
- *   use:dndzone={{
- *     items: dndItems,
- *     flipDurationMs: 150,
- *     dropTargetStyle: {}
- *   }}
- *   onconsider={(e) => dndItems = e.detail.items}
- *   onfinalize={(e) => originalItems = dndItems = e.detail.items}
- * >
- *   {#each dndItems as item (item.id)}
- *     {@const shadow = isDndShadow(item)}
- *     <!-- (3): Apply attributes, with `shadow` indicating shadow element -->
- *   {/each}
- * </div>
- * 
- * <!-- (3): Apply styling to dragged element (which should copy element's styling) -->
- * <style lang="postcss">
- *   :global(#dnd-action-dragged-el).dnd-list-item {
- *     @apply ...;
- *   }
- *   :global(.dark #dnd-action-dragged-el).dnd-list-item {
- *     @apply ...;
- *   }
- * </style>
+ * To create this, first create a dndManager with `createDnd`:
  * ```
+ * const dndManager = createDnd({
+ *     onmove: (oldIdx, newIdx) => { ... }, // update some state during management
+ *     onmoveend: (oldIdx, newIdx) => { ... }, // finalize updated state
+ * });
+ * ```
+ * 
+ * Then, you can mark an element as part of the list by placing {@attach dndManager.item(...)} on it.
+ * You can also mark a subelement as a handle by placing {@attach dndManager.handle} on it.
+ * 
+ * You can also style the shadow by using data-dnd-placeholder:... 
+ * or the moving element by using data-dragging:... as Tailwind classes.
  */
 
-import { SHADOW_ITEM_MARKER_PROPERTY_NAME } from "svelte-dnd-action";
-
-export type DndItem = {
-    id: string,
-    [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: boolean
-    originalId?: string
-};
+import { DragDropManager, type FeedbackType } from "@dnd-kit/dom";
+import { isSortable, Sortable } from "@dnd-kit/dom/sortable";
+import { onDestroy } from "svelte";
+import type { Attachment } from "svelte/attachments";
 
 /**
- * Tests whether item is a shadow element
- * (i.e., the data representing this element is being dragged
- *    and currently has a placeholder in its original position)
- * @param item the item
- * @returns whether it is a shadow element
+ * The interface provided by `createDnd`,
+ * which is used to manage drag-and-droppable lists.
  */
-export function isDndShadow(item: DndItem): boolean {
-    return !!item[SHADOW_ITEM_MARKER_PROPERTY_NAME];
+interface DndInterface {
+    /**
+     * The actual underlying manager, from `@dnd-kit/dom`.
+     */
+    manager: DragDropManager,
+    /**
+     * Marks an element as draggable and droppable.
+     * @param options The configuration for the item.
+     * @returns An attachment, which can be bound using {@attach ...}
+     */
+    item: (options: {
+        /**
+         * An ID to identify this item. 
+         * 
+         * If using {#each}, this should match the key of the block.
+         *  */
+        id: string,
+        /**
+         * The index of the item in the list.
+         */
+        index: number
+    }) => Attachment,
+    handle: Attachment
 }
+type OnMove = (oldIdx: number, newIdx: number) => void;
+/**
+ * Creates a drag-and-droppable manager.
+ */
+export function createDnd(dndOptions: {
+    /**
+     * Handler called when a drag is occurring.
+     * This is useful for updating intermediate/immediate state.
+     */
+    onmove?: OnMove,
+    /**
+     * Handler called when a drag completes.
+     * This is useful for updating the actual state after a drag is complete.
+     */
+    onmoveend?: OnMove,
+    /**
+     * The feedback type of the draggable, which typically controls the display of the placeholder.
+     * By default, this is "clone", but can be switched to "default" to hide the placeholder.
+     * 
+     * Refer to <https://next.dndkit.com/concepts/draggable#feedback> for more info.
+     */
+    feedback?: FeedbackType
+}): DndInterface {
+    const manager = new DragDropManager();
+    manager.monitor.addEventListener("dragmove", e => {
+        const { source, canceled } = e.operation;
+        if (!canceled && isSortable(source)) {
+            const oldIdx = source.sortable.initialIndex;
+            const newIdx = source.sortable.index;
+            
+            if (oldIdx != newIdx) {
+                dndOptions.onmove?.(oldIdx, newIdx);
+            }
+        }
+    });
+    manager.monitor.addEventListener("dragend", e => {
+        const { source, canceled } = e.operation;
+        if (!canceled && isSortable(source)) {
+            const oldIdx = source.sortable.initialIndex;
+            const newIdx = source.sortable.index;
+            
+            setTimeout(() => {
+                dndOptions.onmoveend?.(oldIdx, newIdx);
+            }, 300); // delay needed for anim to finish
+        }
+    });
+    onDestroy(manager.destroy);
+
+    return {
+        manager,
+        item: (options) => {
+            const { id, index } = options;
+            return element => {
+                const handle = element.getElementsByClassName(DND_HANDLE_CLASS)?.[0];
+                const sortable = new Sortable(
+                    { id, index, element, handle, feedback: dndOptions.feedback ?? "clone" },
+                    manager
+                );
+                return sortable.destroy;
+            }
+        },
+        handle: element => {
+            element.classList.add(DND_HANDLE_CLASS);
+        }
+    };
+}
+const DND_HANDLE_CLASS = "dnd-handle";
 
 /**
- * Creates a display for a dragged `<tr>`.
- * @param el The TR element
- * @param origTable Reference to table that the `<tr>` originated from
+ * Moves the element at `oldIdx` and places it at `newIdx`, mutating the array in place.
+ * 
+ * This assumes the indices are valid for the array.
+ * @param arr the array to mutate
+ * @param oldIdx the old index
+ * @param newIdx the new index
+ * @returns the array
  */
-export function createDragTr(el?: HTMLElement, origTable?: HTMLTableElement) {
-    if (!el) return;
-    if (el.classList.contains("dragged-element")) return;
-    if (!origTable) return;
-
-    // Copies <tr>
-    const tr = document.createElement(el.tagName);
-    tr.replaceChildren(...Array.from(el.children, c => c.cloneNode(true)));
-
-    // Copies <thead>, <tbody>, <table>
-    const thead = origTable.querySelector("thead")!.cloneNode(true) as HTMLTableSectionElement;
-    thead.id = "";
-    thead.classList.add("collapse!");
-
-    const tbody = origTable.querySelector("tbody")!.cloneNode() as HTMLTableSectionElement;
-    tbody.id = "";
-    tbody.replaceChildren(tr);
-
-    const table = origTable.cloneNode() as HTMLTableElement;
-    table.id = "";
-    table.replaceChildren(thead, tbody);
-
-    // Updates element to include table:
-    el.classList.add("dragged-element");
-    el.replaceChildren(table);
-  }
+export function move<T>(arr: T[], oldIdx: number, newIdx: number) {
+    arr.splice(newIdx, 0, ...arr.splice(oldIdx, 1));
+    return arr;
+}

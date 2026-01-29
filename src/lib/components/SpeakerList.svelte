@@ -9,8 +9,6 @@
     import { Dialog } from "@skeletonlabs/skeleton-svelte";
     import { tick, type Snippet } from "svelte";
     import { flip } from "svelte/animate";
-    import { dragHandle, dragHandleZone } from "svelte-dnd-action";
-
 
     import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
@@ -18,7 +16,8 @@
     import { type Delegate, findDelegate } from "$lib/db/delegates";
     import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
     import { a11yLabel } from "$lib/util";
-    import { isDndShadow } from "$lib/util/dnd";
+    import { createDnd, move } from "$lib/util/dnd";
+    import { proxify } from "$lib/util/sv.svelte";
     import MdiCancel from "~icons/mdi/cancel";
     import MdiDelete from "~icons/mdi/delete";
     import MdiDragVertical from "~icons/mdi/drag-vertical";
@@ -83,8 +82,28 @@
     }: Props = $props();
     const sid = $props.id();
 
+    const dndManager = createDnd({
+        onmove(oldIdx, newIdx) {
+            move(dndItems, oldIdx, newIdx);
+        },
+        onmoveend(oldIdx, newIdx) {
+            move(dndItems, oldIdx, newIdx);
+
+            if (insertPoint > 0) {
+                const original = order.slice(-insertPoint);
+                const dragged = dndItems.slice(-insertPoint);
+
+                if (!original.every((k, i) => k.id == dragged[i].id)) {
+                    insertPoint = 0;
+                }
+            }
+
+            order = dndItems;
+        }
+    });
+
     // A clone of order used solely for use:dragHandleZone
-    let dndItems = $derived(order);
+    let dndItems: Speaker[] = $derived(proxify(order));
 
     // The UUID of the currently selected speaker object:
     let selectedSpeakerId = $state<SpeakerEntryID>();
@@ -121,9 +140,6 @@
     let openModals = $state({
         clearSpeakers: false
     });
-
-    let list_grid_layout = $derived(extra ? "grid-cols-[auto_auto_1fr_auto_auto]" : "grid-cols-[auto_auto_1fr_auto]");
-    let row_grid_layout = $derived(extra ? "col-span-5" : "col-span-4");
 
     /**
      * Whether the speakers list is complete (there are no other speakers left in the list).
@@ -288,58 +304,36 @@
         {/if}
     </h5>
 
-    <ol class={["p-2 overflow-y-auto grid auto-rows-min grow", list_grid_layout]}
+    <ol class="p-2 overflow-y-auto flex flex-col grow"
         bind:this={listEl}
-        use:dragHandleZone={{
-            items: dndItems,
-            flipDurationMs: 150,
-            dropTargetStyle: {},
-            transformDraggedElement: (el, data, index) => {
-                // Update number on dragged element:
-                let idxEl = el?.querySelector(".enumerated-index");
-                if (idxEl && typeof index === "number") {
-                    idxEl.textContent = `${index + 1}.`;
-                }
-            }
-        }}
-        onconsider={(e) => dndItems = e.detail.items}
-        onfinalize={(e) => {
-            // If any of the end speakers are moved,
-            // then wipe the end list.
-            if (insertPoint > 0) {
-                const original = order.slice(-insertPoint);
-                const dragged = e.detail.items.slice(-insertPoint);
-
-                if (!original.every((k, i) => k.id == dragged[i].id)) {
-                    insertPoint = 0;
-                }
-            }
-            order = dndItems = e.detail.items;
-        }}
         aria-labelledby="sl-header-{sid}"
     >
         {#each dndItems as speaker, i (speaker.id)}
             {@const selected = speaker.id === selectedSpeakerId}
-            {@const shadow = isDndShadow(speaker)}
             {@const delAttrs = findDelegate(delegates, speaker.key)}
             {@const speakerLabel = delAttrs?.name ?? "unknown"}
 
             <li
                 class={[
-                    "grid! grid-cols-subgrid dnd-list-item items-center gap-1 p-1", row_grid_layout,
-                    shadow && "visible! bg-surface-100-900! rounded",
+                    "flex items-center gap-1 p-1",
+                    "data-dnd-dragging:rounded data-dnd-dragging:preset-tonal-primary",
+                    "data-dnd-placeholder:rounded data-dnd-placeholder:*:invisible data-dnd-placeholder:bg-surface-200-800",
                     insertPoint > 0 && (i == order.length - insertPoint) && "border-t-2 border-surface-500"
                 ]}
+                {@attach dndManager.item({
+                    id: speaker.id,
+                    index: i
+                })}
                 animate:flip={{ duration: 150 }}
                 {...a11yLabel(speakerLabel)}
             >
-                <div use:dragHandle>
+                <div {@attach dndManager.handle}>
                     <MdiDragVertical />
                 </div>
                 <span class="enumerated-index tabular-nums pr-1">{i + 1}.</span>
                 <button 
                     class={[
-                        "btn text-wrap! justify-start overflow-hidden",
+                        "btn text-wrap! justify-start overflow-hidden grow",
                         selected
                             ? 'preset-ui-activated'
                             : speaker.completed
@@ -404,24 +398,3 @@
         </div>
     {/if}
 </div>
-
-<style>
-    @reference "$lib/../app.css";
-    
-    /* Styling for dragged element */
-    :global(#dnd-action-dragged-el).dnd-list-item {
-        background-color: var(--color-surface-50) !important;
-        opacity: 90% !important;
-        @apply border-2! border-surface-950-50!;
-
-        display: grid !important;
-        grid-template-columns: auto auto 1fr auto;
-        align-items: center;
-        gap: calc(var(--spacing) * 3);
-        padding: calc(var(--spacing) * 1);
-
-        @variant dark {
-            background-color: var(--color-surface-950) !important;
-        }
-    }
-</style>

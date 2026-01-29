@@ -39,10 +39,10 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@dnd-kit/dom": "^0.2.3",
 		"chroma-js": "^3.2.0",
 		"csv": "^6.4.1",
 		"dexie": "^4.2.1",
-		"svelte-dnd-action": "^0.9.69",
 		"zod": "^4.3.6"
 	},
 	"overrides": {
