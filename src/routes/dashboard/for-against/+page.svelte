@@ -103,13 +103,13 @@
             onBeforeSpeakerUpdate={reset}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
         >
-            {#snippet extra(speaker: SpeakerFA)}
+            {#snippet extra(speaker: SpeakerFA, index)}
                 {@const speakerLabel = findDelegate($delegates, speaker.key)?.name ?? "unknown"}
                 {@const invertedFavor = invertFavor(speaker.stance)}
 
                 <button 
                     class={["btn-icon-std transition", presetCls(speaker)]}
-                    onclick={() => {speaker.stance = invertedFavor; $order = $order;}}
+                    onclick={() => $order[index].stance = invertedFavor}
                     {...a11yLabel(`Set ${speakerLabel} to ${invertedFavor}`)}
                     disabled={speaker.completed}
                 >
