@@ -7,6 +7,7 @@
 
 import DEFAULT_DELEGATES_JSON from "$lib/delegate_presets/preset-un.json";
 import type { DelegateAttrs } from "$lib/types";
+import { hasKey } from "$lib/util";
 
 type DelProperties = Record<string, DelegateAttrs>;
 /**
@@ -28,13 +29,20 @@ export const PRESETS = {
     un: { label: "United Nations" }
 }
 
+function hasPreset(key: string): key is keyof typeof PRESETS {
+    return hasKey(PRESETS, key);
+}
 /**
  * Gets the preset data at a given file key.
  * @param file the preset key (must be a key in `PRESETS`)
  * @returns the preset data (if it exists)
  * @throws if key is not in `PRESETS` or JSON is invalid or doesn't exist
  */
-export async function getPreset(key: keyof typeof PRESETS): Promise<DelProperties | undefined> {
-    const { default: json } = await import(`$lib/delegate_presets/preset-${key}.json`);
-    return structuredClone(json);
+export async function getPreset(key: keyof typeof PRESETS): Promise<DelProperties>;
+export async function getPreset(key: string): Promise<DelProperties | undefined>;
+export async function getPreset(key: string): Promise<DelProperties | undefined> {
+    if (hasPreset(key)) {
+        const { default: json } = await import(`$lib/delegate_presets/preset-${key}.json`);
+        return structuredClone(json);
+    }
 }
