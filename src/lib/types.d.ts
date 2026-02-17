@@ -132,6 +132,10 @@ export type Preferences = {
      */
     enableMotionExt: boolean,
     /**
+     * Whether or not to yes/no with rights (during VP roll call).
+     */
+    enableWithRights: boolean,
+    /**
      * Whether the main timer in a moderated caucus (and related)
      * should automatically pause when the delegate's time elapses.
      */

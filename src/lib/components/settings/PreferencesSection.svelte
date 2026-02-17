@@ -50,6 +50,7 @@
         { type: "header", label: "Show/Hide UI" },
         { type: "setting", key: "enableMotionRoundRobin", label: "Enable round robin" },
         { type: "setting", key: "enableMotionExt", label: "Enable extensions" },
+        { type: "setting", key: "enableWithRights", label: "Enable yes/no with rights" },
     ];
 </script>
 

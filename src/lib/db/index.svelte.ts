@@ -290,6 +290,7 @@ export const DEFAULT_SETTINGS = {
     preferences: {
         enableMotionRoundRobin: true,
         enableMotionExt: true,
+        enableWithRights: true,
         pauseMainTimer: true,
         yieldMainTimer: true
     }

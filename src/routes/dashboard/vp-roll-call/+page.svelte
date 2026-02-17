@@ -24,7 +24,7 @@
     import MdiOctagon from "~icons/mdi/octagon";
     import MdiTimerSand from "~icons/mdi/timer-sand";
 
-    const { delegates } = getSessionContext();
+    const { delegates, preferences } = getSessionContext();
 
     // Pagination:
     const pageNames = ["Roll Call", "Roll Call (Passes)", "Right to Speak", "Final Votes"];
@@ -89,13 +89,15 @@
             value: "YR",
             label: "Yes with Rights",
             icon: MdiAccountCheck,
-            indicatorCls: "preset-filled-success-800-200"
+            indicatorCls: "preset-filled-success-800-200",
+            hidden: () => !$preferences.enableWithRights,
         },
         {
             value: "NR",
             label: "No with Rights",
             icon: MdiAccountCancel,
-            indicatorCls: "preset-filled-error-800-200"
+            indicatorCls: "preset-filled-error-800-200",
+            hidden: () => !$preferences.enableWithRights,
         },
         {
             value: "P",
