@@ -58,7 +58,7 @@
          * If specified, this includes an element between the delegate label and remove button.
          * This must be a singular element.
          */
-        extra?: Snippet<[Speaker]>;
+        extra?: Snippet<[Speaker, number]>;
 
         /**
          * If this prop is defined, the function callback is activated right before a speaker changes.
@@ -346,7 +346,7 @@
                 >
                     <DelLabel attrs={delAttrs} fallbackName={speakerLabel} inline />
                 </button>
-                {@render extra?.(speaker)}
+                {@render extra?.(speaker, i)}
                 <button 
                     class={[
                         "btn-icon-std transition",
