@@ -55,6 +55,14 @@
 
     let importRosterStatus = $state.raw<{ type: "success" } | { type: "error", error: string }>();
     const headers = ["name", "aliases", "flag_url"];
+    
+    /// A set of functions to normalize data to the given type.
+    const csv_norm = {
+        str: s => s ? s.trim() : "",
+        arr: s => s ? s.split("|").map(e => e.trim()).filter(e => e) : [],
+        bool: s => !!+(s ?? 0),
+    } satisfies Record<string, (s?: string) => unknown>;
+
     async function importRosterFile(files: File[]) {
         const [file] = files;
         if (file) {
@@ -80,7 +88,7 @@
                         // eslint-disable-next-line svelte/prefer-svelte-reactivity
                         enableMap = new Map<string, boolean>();
                         for (let d of data) {
-                            enableMap.set(d.name, !!+d.enabled);
+                            enableMap.set(d.name, csv_norm.bool(d.enabled));
                         }
                     }
     
@@ -88,9 +96,9 @@
                     return db.transaction("rw", db.delegates, async () => {
                         await db.delegates.clear();
                         await db.addDelegates(data.map<DelegateAttrs>(d => ({
-                            name: d.name,
-                            aliases: d.aliases.split(",").map(m => m.trim()),
-                            flagURL: d.flag_url
+                            name: csv_norm.str(d.name),
+                            aliases: csv_norm.arr(d.aliases),
+                            flagURL: csv_norm.str(d.flag_url)
                         })));
 
                         if (typeof enableMap !== "undefined") {
@@ -113,7 +121,7 @@
     function exportRosterFile() {
         const text = csv.stringify([
             headers,
-            ...delegates.map(d => [d.name, d.aliases.join(','), d.flagURL ?? ""])
+            ...delegates.map(d => [d.name, d.aliases.join('|'), d.flagURL ?? ""])
         ]);
         downloadFile("roster.csv", text, "text/csv");
     }
