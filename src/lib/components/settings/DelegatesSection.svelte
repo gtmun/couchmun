@@ -63,44 +63,44 @@
             importRosterStatus = { type: "success" };
             setTimeout(() => importRosterStatus = undefined, 3000);
 
-            let data: unknown[];
+            let data: Record<string, string>[];
             try {
                 data = csv.parse(text, { columns: true });
 
                 if (data.length > 0) {
                     const first = data[0];
-                    // eslint-disable-next-line svelte/prefer-svelte-reactivity
-                    let enableMap = new Map<string, boolean>();
-
+                    let enableMap: Map<string, boolean> | undefined = undefined;
+                    
                     // Assert headers are correct + specially handle "enabled" column
-                    if (typeof first === "object" && first) {
-                        const missingHeader = headers.find(h => !hasKey(first, h));
-                        if (missingHeader) {
-                            throw new Error(`Missing header: ${missingHeader}. The parsed headers were: ${JSON.stringify(Object.keys(first))}`)
-                        }
-                        if (hasKey(first, "enabled")) {
-                            for (let d of data) {
-                                enableMap.set((d as any).name as string, Boolean(+(d as any).enabled));
-                            }
+                    const missingHeader = headers.find(h => !hasKey(first, h));
+                    if (missingHeader) {
+                        throw new Error(`Missing header: ${missingHeader}. The parsed headers were: ${JSON.stringify(Object.keys(first))}`)
+                    }
+                    if (hasKey(first, "enabled")) {
+                        // eslint-disable-next-line svelte/prefer-svelte-reactivity
+                        enableMap = new Map<string, boolean>();
+                        for (let d of data) {
+                            enableMap.set(d.name, !!+d.enabled);
                         }
                     }
     
                     /// Wipe & reload delegates
                     return db.transaction("rw", db.delegates, async () => {
                         await db.delegates.clear();
-                        await db.addDelegates(data.map<DelegateAttrs>((d: any) => ({
-                            name: d.name as string,
-                            aliases: (d.aliases as string).split(",").map(m => m.trim()),
-                            flagURL: (d.flag_url as string)
+                        await db.addDelegates(data.map<DelegateAttrs>(d => ({
+                            name: d.name,
+                            aliases: d.aliases.split(",").map(m => m.trim()),
+                            flagURL: d.flag_url
                         })));
 
-                        if (enableMap.size > 0) {
-                            await db.delegates.toCollection().modify(d => {
-                                const result = enableMap.get(d.name);
-                                if (typeof result === "boolean") {
-                                    d.enabled = result;
-                                }
-                            });
+                        if (typeof enableMap !== "undefined") {
+                            await db.delegates.toCollection()
+                                .modify(d => {
+                                    const result = enableMap.get(d.name);
+                                    if (typeof result === "boolean") {
+                                        d.enabled = result;
+                                    }
+                                });
                         }
                     });
                 }
