@@ -301,7 +301,7 @@
             order = dndItems;
         }, { delay: 300 })}
     >
-        <ol class="p-2 overflow-y-auto flex flex-col grow"
+        <ol class="p-2 overflow-y-auto flex flex-col grow has-data-dnd-dragging:*:border-transparent"
             bind:this={listEl}
             aria-labelledby="sl-header-{sid}"
         >
@@ -316,6 +316,7 @@
                         "flex items-center gap-1 p-1",
                         "data-dnd-dragging:rounded data-dnd-dragging:preset-tonal-primary",
                         "data-dnd-placeholder:rounded data-dnd-placeholder:*:invisible data-dnd-placeholder:bg-surface-200-800",
+                        // If insert point exists, color the border where the insert point starts EXCEPT when dragging
                         insertPoint > 0 && (i == order.length - insertPoint) && "border-t-2 border-surface-500"
                     ]}
                     {@attach sortable.attach}
