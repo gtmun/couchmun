@@ -39,7 +39,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@dnd-kit/dom": "^0.2.3",
+		"@dnd-kit/svelte": "^0.3.2",
 		"chroma-js": "^3.2.0",
 		"csv": "^6.4.1",
 		"dexie": "^4.2.1",
