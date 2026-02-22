@@ -10,8 +10,7 @@
     import MdiAccountOff from "~icons/mdi/account-off";
     import MdiSearch from "~icons/mdi/search";
 
-    const { speakersList: order } = getSessionContext();
-    const delegates = db.enabledDelegatesStore();
+    const { delegates, speakersList: order } = getSessionContext();
     
     let rollCallSearch = $state("");
     function asPresence(s?: string | null): DelegatePresence {
@@ -22,16 +21,18 @@
     let delegateCount = $derived(!$delegates.pending ? $delegates.reduce((acc, d) => acc + +d.isPresent(), 0) : undefined);
 
 </script>
-<div class="grid grid-cols-2 gap-3 h-full">
+<div class="grid grid-cols-2 gap-3 h-full p-4 overflow-hidden">
     <!-- Roll Call -->
-    <div class="flex flex-col gap-1 overflow-hidden">
-        <h3 class="h3 text-center">Roll Call</h3>
-        <BarStats total={delegateCount} />
+    <div class="flex flex-col gap-2 overflow-hidden">
+        <div>
+            <h3 class="h3 text-center">Roll Call</h3>
+            <BarStats total={delegateCount} />
+        </div>
         <div class="flex gap-2 items-center">
             <MdiSearch />
             <input class="input" bind:value={rollCallSearch} placeholder="Search...">
         </div>
-        <div class="overflow-auto">
+        <div class="overflow-auto grow">
             <RollCall
                 getValue={(d) => d.presence}
                 setValue={(value, d) => db.updateDelegate(d.id, { presence: asPresence(value) })}
