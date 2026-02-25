@@ -6,6 +6,7 @@
   and rearrange speakers in the speakers list.
  -->
 <script lang="ts">
+    import { DragDropProvider } from "@dnd-kit/svelte";
     import { Dialog } from "@skeletonlabs/skeleton-svelte";
     import { tick, type Snippet } from "svelte";
     import { flip } from "svelte/animate";
@@ -16,12 +17,11 @@
     import { type Delegate, findDelegate } from "$lib/db/delegates";
     import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
     import { a11yLabel } from "$lib/util";
-    import { createDnd, move } from "$lib/util/dnd";
+    import { createSortable, handleDrag, move } from "$lib/util/dnd";
     import { proxify } from "$lib/util/sv.svelte";
     import MdiCancel from "~icons/mdi/cancel";
     import MdiDelete from "~icons/mdi/delete";
     import MdiDragVertical from "~icons/mdi/drag-vertical";
-
     
     interface Props {
         /**
@@ -81,26 +81,6 @@
         onMarkComplete = undefined
     }: Props = $props();
     const sid = $props.id();
-
-    const dndManager = createDnd({
-        onmove(oldIdx, newIdx) {
-            move(dndItems, oldIdx, newIdx);
-        },
-        onmoveend(oldIdx, newIdx) {
-            move(dndItems, oldIdx, newIdx);
-
-            if (insertPoint > 0) {
-                const original = order.slice(-insertPoint);
-                const dragged = dndItems.slice(-insertPoint);
-
-                if (!original.every((k, i) => k.id == dragged[i].id)) {
-                    insertPoint = 0;
-                }
-            }
-
-            order = dndItems;
-        }
-    });
 
     // A clone of order used solely for use:dragHandleZone
     let dndItems: Speaker[] = $derived(proxify(order));
@@ -304,63 +284,80 @@
         {/if}
     </h5>
 
-    <ol class="p-2 overflow-y-auto flex flex-col grow"
-        bind:this={listEl}
-        aria-labelledby="sl-header-{sid}"
+    <DragDropProvider
+        onDragMove={handleDrag(dndItems)}
+        onDragEnd={handleDrag((oldIdx, newIdx) => {
+            move(dndItems, oldIdx, newIdx);
+    
+            if (insertPoint > 0) {
+                const original = order.slice(-insertPoint);
+                const dragged = dndItems.slice(-insertPoint);
+    
+                if (!original.every((k, i) => k.id == dragged[i].id)) {
+                    insertPoint = 0;
+                }
+            }
+            
+            order = dndItems;
+        }, { delay: 300 })}
     >
-        {#each dndItems as speaker, i (speaker.id)}
-            {@const selected = speaker.id === selectedSpeakerId}
-            {@const delAttrs = findDelegate(delegates, speaker.key)}
-            {@const speakerLabel = delAttrs?.name ?? "unknown"}
-
-            <li
-                class={[
-                    "flex items-center gap-1 p-1",
-                    "data-dnd-dragging:rounded data-dnd-dragging:preset-tonal-primary",
-                    "data-dnd-placeholder:rounded data-dnd-placeholder:*:invisible data-dnd-placeholder:bg-surface-200-800",
-                    insertPoint > 0 && (i == order.length - insertPoint) && "border-t-2 border-surface-500"
-                ]}
-                {@attach dndManager.item({
-                    id: speaker.id,
-                    index: i
-                })}
-                animate:flip={{ duration: 150 }}
-                {...a11yLabel(speakerLabel)}
-            >
-                <div {@attach dndManager.handle}>
-                    <MdiDragVertical />
-                </div>
-                <span class="enumerated-index tabular-nums pr-1">{i + 1}.</span>
-                <button 
+        <ol class="p-2 overflow-y-auto flex flex-col grow has-data-dnd-dragging:*:border-transparent"
+            bind:this={listEl}
+            aria-labelledby="sl-header-{sid}"
+        >
+            {#each dndItems as speaker, i (speaker.id)}
+                {@const sortable = createSortable({ id: speaker.id, index: i })}
+                {@const selected = speaker.id === selectedSpeakerId}
+                {@const delAttrs = findDelegate(delegates, speaker.key)}
+                {@const speakerLabel = delAttrs?.name ?? "unknown"}
+    
+                <li
                     class={[
-                        "btn text-wrap! justify-start overflow-hidden grow",
-                        selected
-                            ? 'preset-ui-activated'
-                            : speaker.completed
-                                ? 'preset-ui-depressed'
-                                : 'preset-ui-ready'
+                        "flex items-center gap-1 p-1",
+                        "data-dnd-dragging:rounded data-dnd-dragging:preset-tonal-primary",
+                        "data-dnd-placeholder:rounded data-dnd-placeholder:*:invisible data-dnd-placeholder:bg-surface-200-800",
+                        // If insert point exists, color the border where the insert point starts EXCEPT when dragging
+                        insertPoint > 0 && (i == order.length - insertPoint) && "border-t-2 border-surface-500"
                     ]}
-                    onclick={() => setSelectedSpeaker(speaker)}
-                    {...a11yLabel(`Select ${speakerLabel}`)}
-                    aria-pressed={selected}
+                    {@attach sortable.attach}
+                    animate:flip={{ duration: 150 }}
+                    {...a11yLabel(speakerLabel)}
                 >
-                    <DelLabel attrs={delAttrs} fallbackName={speakerLabel} inline />
-                </button>
-                {@render extra?.(speaker, i)}
-                <button 
-                    class={[
-                        "btn-icon-std transition",
-                        speaker.completed ? "preset-ui-depressed" : "preset-filled-error-100-900 hover:preset-filled-error-500"
-                    ]}
-                    onclick={() => deleteSpeaker(i)}
-                    {...a11yLabel(`Delete ${speakerLabel}`)}
-                    disabled={speaker.completed}
-                >
-                    <MdiCancel />
-                </button>
-            </li>
-        {/each}
-    </ol>
+                    <div {@attach sortable.attachHandle}>
+                        <MdiDragVertical />
+                    </div>
+                    <span class="enumerated-index tabular-nums pr-1">{i + 1}.</span>
+                    <button 
+                        class={[
+                            "btn text-wrap! justify-start overflow-hidden grow",
+                            selected
+                                ? 'preset-ui-activated'
+                                : speaker.completed
+                                    ? 'preset-ui-depressed'
+                                    : 'preset-ui-ready'
+                        ]}
+                        onclick={() => setSelectedSpeaker(speaker)}
+                        {...a11yLabel(`Select ${speakerLabel}`)}
+                        aria-pressed={selected}
+                    >
+                        <DelLabel attrs={delAttrs} fallbackName={speakerLabel} inline />
+                    </button>
+                    {@render extra?.(speaker, i)}
+                    <button 
+                        class={[
+                            "btn-icon-std transition",
+                            speaker.completed ? "preset-ui-depressed" : "preset-filled-error-100-900 hover:preset-filled-error-500"
+                        ]}
+                        onclick={() => deleteSpeaker(i)}
+                        {...a11yLabel(`Delete ${speakerLabel}`)}
+                        disabled={speaker.completed}
+                    >
+                        <MdiCancel />
+                    </button>
+                </li>
+            {/each}
+        </ol>
+    </DragDropProvider>
 
     {#if controls}
         {@render controls()}

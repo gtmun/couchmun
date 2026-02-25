@@ -5,6 +5,7 @@
   and a sortable motion table (which is used to view and rearrange and edit motions).
 -->
 <script lang="ts">
+  import { DragDropProvider } from "@dnd-kit/svelte";
   import { flip } from "svelte/animate";
 
   import { goto } from "$app/navigation";
@@ -22,7 +23,7 @@
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import type { Motion } from "$lib/types";
   import { a11yLabel, hasKey } from "$lib/util";
-  import { createDnd, move } from "$lib/util/dnd";
+  import { createSortable, handleDrag, move } from "$lib/util/dnd";
   import { proxify } from "$lib/util/sv.svelte";
   import { stringifyTime } from "$lib/util/time";
   import MdiAccountClock from "~icons/mdi/account-clock";
@@ -42,11 +43,6 @@
   });
   // A clone of $motions used solely for use:dndzone
   let dndItems = $derived(proxify($motions));
-  const dndManager = createDnd({
-    onmove: (oldIdx, newIdx) => move(dndItems, oldIdx, newIdx),
-    onmoveend: (oldIdx, newIdx) => $motions = move(dndItems, oldIdx, newIdx),
-    feedback: "default"
-  });
   
   let motionSchema = $derived(createMotionSchema($delegates));
 
@@ -200,52 +196,55 @@
           aria-labelledby="motion-table-header-{pid}"
           class="bg-surface-50-950"
         >
-          {#each dndItems as motion, i (motion.id)}
-            {@const delAttrs = findDelegate($delegates, motion.delegate)}
-            {@const delName = delAttrs?.name ?? "unknown"}
-            <tr
-              {@attach dndManager.item({
-                id: motion.id,
-                index: i
-              })}
-              class={[
-                "hover:preset-tonal-primary [&_td]:tabular-nums",
-                "data-dnd-dragging:preset-tonal-primary"
-              ]}
-              animate:flip={{ duration: 150 }}
-              {...a11yLabel(`${delName}'s Motion`)}
-            >
-              <td>{motionName(motion)}</td>
-              <td>
-                <DelLabel attrs={delAttrs} fallbackName={delName} inline />
-              </td>
-              <td>{apply(motion, ["topic"], m => m.topic, "-")}</td>
-              <td>{hasKey(motion, 'totalSpeakers') ? stringifyTime(motion.totalSpeakers * motion.speakingTime) : apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
-              <td>{apply(motion, ["speakingTime"], m => stringifyTime(m.speakingTime), "-")}</td>
-              <td>{hasKey(motion, 'totalSpeakers') ? motion.totalSpeakers : apply(motion, ["totalTime", "speakingTime"], m => numSpeakersStr(m.totalTime, m.speakingTime), "-")}</td>
-              <td>
-                <div class="flex flex-row justify-end">
-                  <button
-                    class="btn-icon-std p-1"
-                    onclick={() => removeMotion(i)}
-                    {...a11yLabel(`Reject ${delName}'s Motion`)}
-                  >
-                    <MdiCancel class="text-error-500" />
-                  </button>
-                  <button
-                    class="btn-icon-std p-1"
-                    onclick={() => acceptMotionAndGoto(motion)}
-                    {...a11yLabel(`Accept ${delName}'s Motion`)}
-                  >
-                    <MdiCheck class="text-success-700" />
-                  </button>
-                  <button class="btn-icon-std p-1" onclick={() => openModals.editMotion = i}>
-                    <MdiPencil />
-                  </button>
-                </div>
-              </td>
-            </tr>
-          {/each}
+          <DragDropProvider
+            onDragMove={handleDrag(dndItems)}
+            onDragEnd={handleDrag((oldIdx, newIdx) => $motions = move(dndItems, oldIdx, newIdx), { delay: 300 })}
+          >
+            {#each dndItems as motion, i (motion.id)}
+              {@const delAttrs = findDelegate($delegates, motion.delegate)}
+              {@const delName = delAttrs?.name ?? "unknown"}
+              {@const sortable = createSortable({ id: motion.id, index: i, feedback: "default" })}
+              <tr
+                {@attach sortable.attach}
+                class={[
+                  "hover:preset-tonal-primary [&_td]:tabular-nums",
+                  "data-dnd-dragging:preset-tonal-primary"
+                ]}
+                animate:flip={{ duration: 150 }}
+                {...a11yLabel(`${delName}'s Motion`)}
+              >
+                <td>{motionName(motion)}</td>
+                <td>
+                  <DelLabel attrs={delAttrs} fallbackName={delName} inline />
+                </td>
+                <td>{apply(motion, ["topic"], m => m.topic, "-")}</td>
+                <td>{hasKey(motion, 'totalSpeakers') ? stringifyTime(motion.totalSpeakers * motion.speakingTime) : apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
+                <td>{apply(motion, ["speakingTime"], m => stringifyTime(m.speakingTime), "-")}</td>
+                <td>{hasKey(motion, 'totalSpeakers') ? motion.totalSpeakers : apply(motion, ["totalTime", "speakingTime"], m => numSpeakersStr(m.totalTime, m.speakingTime), "-")}</td>
+                <td>
+                  <div class="flex flex-row justify-end">
+                    <button
+                      class="btn-icon-std p-1"
+                      onclick={() => removeMotion(i)}
+                      {...a11yLabel(`Reject ${delName}'s Motion`)}
+                    >
+                      <MdiCancel class="text-error-500" />
+                    </button>
+                    <button
+                      class="btn-icon-std p-1"
+                      onclick={() => acceptMotionAndGoto(motion)}
+                      {...a11yLabel(`Accept ${delName}'s Motion`)}
+                    >
+                      <MdiCheck class="text-success-700" />
+                    </button>
+                    <button class="btn-icon-std p-1" onclick={() => openModals.editMotion = i}>
+                      <MdiPencil />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            {/each}
+          </DragDropProvider>
         </tbody>
       </table>
     </div>

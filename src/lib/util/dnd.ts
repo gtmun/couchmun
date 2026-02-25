@@ -2,123 +2,79 @@
  * Utilities for managing drag-and-drop.
  * 
  * This module allows you to create a drag-and-droppable list from (most) layouts.
- * This works with the table and flex layouts, but not the grid layout.
  * 
- * To create this, first create a dndManager with `createDnd`:
- * ```
- * const dndManager = createDnd({
- *     onmove: (oldIdx, newIdx) => { ... }, // update some state during management
- *     onmoveend: (oldIdx, newIdx) => { ... }, // finalize updated state
- * });
- * ```
+ * To create this, wrap a `<DragDropProvider />` around a list of elements.
  * 
- * Then, you can mark an element as part of the list by placing {@attach dndManager.item(...)} on it.
- * You can also mark a subelement as a handle by placing {@attach dndManager.handle} on it.
+ * Then, use the `handleDrag` method defined in this method.
  * 
  * You can also style the shadow by using data-dnd-placeholder:... 
- * or the moving element by using data-dragging:... as Tailwind classes.
+ * or the moving element by using data-dnd-dragging:... as Tailwind classes.
  */
 
-import { DragDropManager, type FeedbackType } from "@dnd-kit/dom";
-import { isSortable, Sortable } from "@dnd-kit/dom/sortable";
-import { onDestroy } from "svelte";
-import type { Attachment } from "svelte/attachments";
+import type { DragDropEventHandlers } from "@dnd-kit/svelte";
+import { createSortable as _createSortable, isSortable, type CreateSortableInput } from "@dnd-kit/svelte/sortable";
 
-/**
- * The interface provided by `createDnd`,
- * which is used to manage drag-and-droppable lists.
- */
-interface DndInterface {
-    /**
-     * The actual underlying manager, from `@dnd-kit/dom`.
-     */
-    manager: DragDropManager,
-    /**
-     * Marks an element as draggable and droppable.
-     * @param options The configuration for the item.
-     * @returns An attachment, which can be bound using {@attach ...}
-     */
-    item: (options: {
-        /**
-         * An ID to identify this item. 
-         * 
-         * If using {#each}, this should match the key of the block.
-         *  */
-        id: string,
-        /**
-         * The index of the item in the list.
-         */
-        index: number
-    }) => Attachment,
-    handle: Attachment
+export function createSortable(input: CreateSortableInput) {
+    return _createSortable({ feedback: "clone", ...input });
 }
-type OnMove = (oldIdx: number, newIdx: number) => void;
-/**
- * Creates a drag-and-droppable manager.
- */
-export function createDnd(dndOptions: {
-    /**
-     * Handler called when a drag is occurring.
-     * This is useful for updating intermediate/immediate state.
-     */
-    onmove?: OnMove,
-    /**
-     * Handler called when a drag completes.
-     * This is useful for updating the actual state after a drag is complete.
-     */
-    onmoveend?: OnMove,
-    /**
-     * The feedback type of the draggable, which typically controls the display of the placeholder.
-     * By default, this is "clone", but can be switched to "default" to hide the placeholder.
-     * 
-     * Refer to <https://next.dndkit.com/concepts/draggable#feedback> for more info.
-     */
-    feedback?: FeedbackType
-}): DndInterface {
-    const manager = new DragDropManager();
-    manager.monitor.addEventListener("dragmove", e => {
-        const { source, canceled } = e.operation;
-        if (!canceled && isSortable(source)) {
-            const oldIdx = source.sortable.initialIndex;
-            const newIdx = source.sortable.index;
-            
-            if (oldIdx != newIdx) {
-                dndOptions.onmove?.(oldIdx, newIdx);
-            }
-        }
-    });
-    manager.monitor.addEventListener("dragend", e => {
-        const { source, canceled } = e.operation;
-        if (!canceled && isSortable(source)) {
-            const oldIdx = source.sortable.initialIndex;
-            const newIdx = source.sortable.index;
-            
-            setTimeout(() => {
-                dndOptions.onmoveend?.(oldIdx, newIdx);
-            }, 300); // delay needed for anim to finish
-        }
-    });
-    onDestroy(manager.destroy);
 
-    return {
-        manager,
-        item: (options) => {
-            const { id, index } = options;
-            return element => {
-                const handle = element.getElementsByClassName(DND_HANDLE_CLASS)?.[0];
-                const sortable = new Sortable(
-                    { id, index, element, handle, feedback: dndOptions.feedback ?? "clone" },
-                    manager
-                );
-                return sortable.destroy;
-            }
-        },
-        handle: element => {
-            element.classList.add(DND_HANDLE_CLASS);
+type OnMove = (oldIdx: number, newIdx: number) => void;
+type DndEventHandler = DragDropEventHandlers["onDragMove" | "onDragEnd"] & {};
+type DndEventHandlerParam = Pick<Parameters<DndEventHandler>[0], "operation">;
+
+/**
+ * Handles a drag event from `dnd-kit`.
+ * 
+ * This can be used to maintain Svelte state.
+ * On the `DragDropProvider`, the most basic state-maintaining operation is the following:
+ * 
+ * ```svelte
+ * <DragDropProvider
+ *     onDragMove={handleDrag(dndItems)}
+ *     onDragEnd={handleDrag(
+ *         (oldIdx, newIdx) => order = move(dndItems, oldIdx, newIdx),
+ *         { delay: 300 }
+ *     )}
+ * >
+ *     ...
+ * </DragDropProvider>
+ * ```
+ * 
+ * @param moveable Item to move.
+ * 
+ * This can either be an array (in which the move will be applied),
+ * or a function to apply the move.
+ * 
+ * @param options Additional options.
+ *     `delay`: Delays the move (which is needed to cause a move to occur after drag end's transition)
+ * 
+ * @returns An event handler.
+ */
+export function handleDrag(
+    moveable: unknown[] | OnMove,
+    options?: {
+        delay?: number
+    }
+) {
+    const _move: OnMove = typeof moveable === "function"
+        ? moveable
+        : (oldIdx, newIdx) => move(moveable, oldIdx, newIdx);
+    const delay = options?.delay;
+    const callback = delay
+        ? (oldIdx: number, newIdx: number) => setTimeout(() => _move(oldIdx, newIdx), delay)
+        : (oldIdx: number, newIdx: number) => _move(oldIdx, newIdx);
+    
+    // Actual event handler, which finds the indexes and performs the move on the indices.
+    return (e: DndEventHandlerParam) => {
+        const { source, canceled } = e.operation;
+        if (!canceled && isSortable(source)) {
+            const oldIdx = source.sortable.initialIndex;
+            const newIdx = source.sortable.index;
+            
+            callback(oldIdx, newIdx);
         }
     };
 }
-const DND_HANDLE_CLASS = "dnd-handle";
 
 /**
  * Moves the element at `oldIdx` and places it at `newIdx`, mutating the array in place.
