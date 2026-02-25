@@ -50,6 +50,7 @@
         readonly icon: PropsOf<typeof IconLabel>["icon"],
         readonly indicatorCls?: ClassValue,
         readonly disabled?: (del: Delegate) => boolean,
+        readonly hidden?: () => boolean,
     };
 </script>
 
@@ -96,13 +97,15 @@
                                     {@const selected = segment().value}
                                     {@const indicatorCls = entries.find(k => k.value === selected)?.indicatorCls}
                                     <SegmentedControl.Indicator class={indicatorCls} />
-                                    {#each entries as { value, label, icon, disabled } (value)}
-                                        <SegmentedControl.Item {value} class="hover:preset-tonal" disabled={disabled?.(attrs)}>
-                                            <SegmentedControl.ItemText>
-                                                <IconLabel {icon} {label} />
-                                            </SegmentedControl.ItemText>
-                                            <SegmentedControl.ItemHiddenInput />
-                                        </SegmentedControl.Item>
+                                    {#each entries as { value, label, icon, disabled, hidden } (value)}
+                                        {#if !hidden?.()}
+                                            <SegmentedControl.Item {value} class="hover:preset-tonal" disabled={disabled?.(attrs)}>
+                                                <SegmentedControl.ItemText>
+                                                    <IconLabel {icon} {label} />
+                                                </SegmentedControl.ItemText>
+                                                <SegmentedControl.ItemHiddenInput />
+                                            </SegmentedControl.Item>
+                                        {/if}
                                     {/each}
                                 {/snippet}
                             </SegmentedControl.Context>
