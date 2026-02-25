@@ -13,20 +13,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # If you're using pnpm, add this step then change the commands and cache key below to use `pnpm`
-      # - name: Install pnpm
-      #   uses: pnpm/action-setup@v3
-      #   with:
-      #     version: 8
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm install
+        run: pnpm install
 
       - name: Build production site
         # Since we have a top-level domain, this is no longer necessary
@@ -34,7 +33,7 @@ jobs:
         # uncomment these two lines.
         # env:
         #   BASE_PATH: '/${{ github.event.repository.name }}'
-        run: npm run build
+        run: pnpm run build
 
       - name: Upload production build
         uses: actions/upload-artifact@v4
@@ -68,14 +67,25 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: "dev"
-      
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
       - name: Install dependencies
-        run: npm install
+        run: pnpm install
 
       - name: Build dev site
         env:
           BASE_PATH: '/dev'
-        run: npm run build
+        run: pnpm run build
       
       - name: Upload production build
         uses: actions/upload-artifact@v4
