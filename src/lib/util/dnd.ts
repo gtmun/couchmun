@@ -2,21 +2,13 @@
  * Utilities for managing drag-and-drop.
  * 
  * This module allows you to create a drag-and-droppable list from (most) layouts.
- * This works with the table and flex layouts, but not the grid layout.
  * 
- * To create this, first create a dndManager with `createDnd`:
- * ```
- * const dndManager = createDnd({
- *     onmove: (oldIdx, newIdx) => { ... }, // update some state during management
- *     onmoveend: (oldIdx, newIdx) => { ... }, // finalize updated state
- * });
- * ```
+ * To create this, wrap a `<DragDropProvider />` around a list of elements.
  * 
- * Then, you can mark an element as part of the list by placing {@attach dndManager.item(...)} on it.
- * You can also mark a subelement as a handle by placing {@attach dndManager.handle} on it.
+ * Then, use the `handleDrag` method defined in this method.
  * 
  * You can also style the shadow by using data-dnd-placeholder:... 
- * or the moving element by using data-dragging:... as Tailwind classes.
+ * or the moving element by using data-dnd-dragging:... as Tailwind classes.
  */
 
 import type { DragDropEventHandlers } from "@dnd-kit/svelte";
@@ -29,6 +21,35 @@ export function createSortable(input: CreateSortableInput) {
 type OnMove = (oldIdx: number, newIdx: number) => void;
 type DndEventHandler = DragDropEventHandlers["onDragMove" | "onDragEnd"] & {};
 type DndEventHandlerParam = Pick<Parameters<DndEventHandler>[0], "operation">;
+
+/**
+ * Handles a drag event from `dnd-kit`.
+ * 
+ * This can be used to maintain Svelte state.
+ * On the `DragDropProvider`, the most basic state-maintaining operation is the following:
+ * 
+ * ```svelte
+ * <DragDropProvider
+ *     onDragMove={handleDrag(dndItems)}
+ *     onDragEnd={handleDrag(
+ *         (oldIdx, newIdx) => order = move(dndItems, oldIdx, newIdx),
+ *         { delay: 300 }
+ *     )}
+ * >
+ *     ...
+ * </DragDropProvider>
+ * ```
+ * 
+ * @param moveable Item to move.
+ * 
+ * This can either be an array (in which the move will be applied),
+ * or a function to apply the move.
+ * 
+ * @param options Additional options.
+ *     `delay`: Delays the move (which is needed to cause a move to occur after drag end's transition)
+ * 
+ * @returns An event handler.
+ */
 export function handleDrag(
     moveable: unknown[] | OnMove,
     options?: {
