@@ -290,13 +290,18 @@ export type PrevSessionData = {
 };
 
 /**
+ * A type which might not be initialized yet (is "pending").
+ */
+export type MaybePending<T extends object> = T & { pending?: true };
+
+/**
  * All data stored in the session context.
  */
 export type SessionContext = {
     /**
      * Array of enabled delegates.
      */
-    delegates: Readable<Delegate[] & { pending?: true }>,
+    delegates: Readable<MaybePending<Delegate[]>>,
     
     /**
      * All specified motions (from the points & motions page).

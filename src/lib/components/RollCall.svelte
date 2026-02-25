@@ -8,13 +8,14 @@
     import VirtualList from "./VirtualList.svelte";
 
     import type { Delegate } from "$lib/db/delegates";
+    import type { MaybePending } from "$lib/types";
     import type { PropsOf } from "$lib/util";
 
     interface Props {
         getValue?: (del: Delegate) => string | null,
         setValue?: (s: string | null, del: Delegate) => void,
         entries: readonly RollCallEntry[],
-        delegates: Delegate[] & { pending?: true },
+        delegates: MaybePending<Delegate[]>,
         emptyPlaceholder?: Snippet<[]>,
         pendingPlaceholder?: Snippet<[]>,
         borderColor?: ClassValue,
@@ -33,10 +34,6 @@
 </script>
 
 <script module lang="ts">
-    export function notPendingThen<T extends object>(t: T & { pending?: true }, cb: (t: T) => T): T & { pending?: true} {
-        return t.pending ? t : cb(t);
-    }
-
     export type RollCallEntry = {
         readonly value: string,
         readonly label: string, 

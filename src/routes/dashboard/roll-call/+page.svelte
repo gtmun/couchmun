@@ -4,14 +4,15 @@
 -->
 <script lang="ts">
     import { resolve } from "$app/paths";
-    import RollCall, { notPendingThen } from "$lib/components/RollCall.svelte";
+    import RollCall from "$lib/components/RollCall.svelte";
+    import SearchInput from "$lib/components/SearchInput.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
+    import { filterByQuery } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";
     import type { DelegatePresence } from "$lib/types";
     import MdiAccount from "~icons/mdi/account";
     import MdiAccountCheck from "~icons/mdi/account-check";
     import MdiAccountOff from "~icons/mdi/account-off";
-    import MdiSearch from "~icons/mdi/search";
 
     const { delegates } = getSessionContext();
 
@@ -21,20 +22,16 @@
     }
 
     let rcSearchQuery = $state("");
-    let rcDelegates = $derived(notPendingThen($delegates, dels => dels.filter(d => d.nameIncludes(rcSearchQuery))));
 </script>
 
 <div class="flex flex-col h-full gap-4">
-    <div class="flex gap-2 items-center">
-        <MdiSearch />
-        <input class="input" bind:value={rcSearchQuery} placeholder="Search...">
-    </div>
+    <SearchInput bind:value={rcSearchQuery} />
     <!-- Render a table to display participants and their statuses -->
     <div class="flex overflow-hidden">
         <RollCall
             getValue={(d) => d.presence}
             setValue={(value, d) => db.updateDelegate(d.id, { presence: asPresence(value) })}
-            delegates={rcDelegates}
+            delegates={filterByQuery($delegates, rcSearchQuery)}
             entries={[
                 { value: "NP", label: "Absent", icon: MdiAccountOff },
                 { value: "P",  label: "Present", icon: MdiAccount },

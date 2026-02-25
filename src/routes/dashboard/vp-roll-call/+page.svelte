@@ -5,12 +5,12 @@
     import ToggleButton from "$lib/components/controls/ToggleButton.svelte";
     import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import MultiPage from "$lib/components/MultiPage.svelte";
-    import RollCall, { notPendingThen, type RollCallEntry } from "$lib/components/RollCall.svelte";
+    import RollCall, { type RollCallEntry } from "$lib/components/RollCall.svelte";
     import SpeakerList, { createSpeaker } from "$lib/components/SpeakerList.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import type { DelegateID, Speaker } from "$lib/types";
-    import { a11yLabel, NO_FIGURE } from "$lib/util";
+    import { a11yLabel, NO_FIGURE, notPendingThen } from "$lib/util";
     import { watchEffect } from "$lib/util/sv.svelte";
     import { parseTime } from "$lib/util/time";
     import MdiAccountCancel from "~icons/mdi/account-cancel";

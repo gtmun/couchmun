@@ -2,8 +2,8 @@
  * Delegate table definition for the session database.
  */
 
-import type { DelegateAttrs, DelegateID, DelegatePresence, DelSessionData, StatsData } from "$lib/types";
-import { eqInsensitive, includesInsensitive } from "$lib/util";
+import type { DelegateAttrs, DelegateID, DelegatePresence, DelSessionData, MaybePending, StatsData } from "$lib/types";
+import { eqInsensitive, includesInsensitive, notPendingThen } from "$lib/util";
 
 export class Delegate {
     // Indexes:
@@ -88,4 +88,22 @@ export class Delegate {
 export function findDelegate(d: Delegate[], searchId: DelegateID): Delegate | undefined {
     // linear but bleh it's synchronous so whatever
     return d.find(({id}) => id == searchId);
+}
+
+/**
+ * Filters a list of delegates by matching search query.
+ * @param delegates The delegates
+ * @param queryString The string to filter against (the delegate should have this in their search)
+ * @returns the filtered list of delegates
+ */
+export function filterByQuery(delegates: MaybePending<Delegate[]>, queryString: string): MaybePending<Delegate[]> {
+    return notPendingThen(delegates, dels => dels.filter(d => d.nameIncludes(queryString)));
+}
+/**
+ * Counts the number of present delegates.
+ * @param d The delegates
+ * @returns The number of present delegates, or undefined if array still pending.
+ */
+export function countPresentDelegates(d: MaybePending<Delegate[]>): number | undefined {
+    return d.pending ? undefined : d.reduce((acc, d) => acc + +d.isPresent(), 0);
 }
