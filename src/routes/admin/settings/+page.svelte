@@ -42,7 +42,7 @@
 
             // TODO: input validation
             let { settings: newSettings, delegates: newDelegates } = json;
-            await db.transaction("rw", [db.sessionData, db.settings, db.delegates], async () => {
+            await db.transaction("rw", [db.sessionData, db.settings, db.delegates, db.prevSessions], async () => {
                 // Update settings
                 await db.resetSettings();
                 await db.settings.bulkUpdate(toKeyValueArray(newSettings).map(({ key, val }) => ({ key, changes: { val }})));
