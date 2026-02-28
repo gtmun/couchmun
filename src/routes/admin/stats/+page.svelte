@@ -52,8 +52,22 @@
     
     let isAllSessions = $derived(displayPage === $nSessions);
     let isCurrentSession = $derived(displayPage === $currentSessionKey);
-    let selectedSession = $derived($prevSessions[displayPage] ?? $delegates ?? []);
+    let selectedSession: {
+        id: DelegateID,
+        session: DelSessionData
+    }[] = $derived.by(() => {
+        // Use prev session
+        let s = $prevSessions[displayPage];
+        // If that fails, use current session
+        if (typeof s === "undefined" && !$delegates.pending) {
+            return $delegates.map(d => ({
+                id: d.id,
+                session: Delegate.prototype.getSessionData.call(d)}
+            ));
+        }
 
+        return [];
+    });
     const presentDelegateIds: Set<DelegateID> = $derived(new Set($delegates.map(d => d.id)));
     const sessionDelegates: Delegate[] = $derived.by(() => {
         if (isAllSessions) {
