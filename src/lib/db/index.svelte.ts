@@ -16,6 +16,11 @@ import { getFlagCodes, getFlagUrl } from "$lib/flags/flagcdn";
 import { DEFAULT_SORT_PRIORITY } from "$lib/motions/definitions";
 import type { DelegateAttrs, DelegateID, DelSessionData, PrevSessionData, SessionData, Settings } from "$lib/types";
 
+interface PopulateDelegateAttrs extends DelegateAttrs {
+    /// Whether this delegate is enabled.
+    enabled?: boolean
+}
+
 /**
  * The class representing the session database.
  * This can be accessed as a singleton through the `db` const.
@@ -78,7 +83,7 @@ export class SessionDatabase extends Dexie {
      * Adds a delegate with the given attributes to the delegate database.
      * @param attrs The attributes of the new delegate
      */
-    async addDelegate(attrs: DelegateAttrs) {
+    async addDelegate(attrs: PopulateDelegateAttrs) {
         await this.transaction("rw", this.delegates, async () => {
             const order = await this.delegates.count();
             const newDel = populateDelegate(attrs, order);
@@ -89,7 +94,7 @@ export class SessionDatabase extends Dexie {
      * Adds a set of delegates with the given attributes to the delegate database.
      * @param delegates the attributes of the new delegates
      */
-    async addDelegates(delegates: DelegateAttrs[]) {
+    async addDelegates(delegates: PopulateDelegateAttrs[]) {
         await this.transaction("rw", this.delegates, async () => {
             const order = await this.delegates.count();
             const newDels = delegates.map((attrs, i) => populateDelegate(attrs, order + i));
@@ -302,11 +307,10 @@ export const DEFAULT_SETTINGS = {
  * @param order its position in the database
  * @returns the new object which contains all database attributes for the delegate
  */
-function populateDelegate(attrs: DelegateAttrs, order: number): InsertType<Delegate, "id"> {
+function populateDelegate(attrs: PopulateDelegateAttrs, order: number): InsertType<Delegate, "id"> {
     const { name, aliases, flagURL: mFlagURL } = attrs;
     return Object.assign({
-        // HACK: allows enabled to exist
-        name, aliases, order, enabled: (attrs as any).enabled ?? true, flagURL: mFlagURL ?? ""
+        name, aliases, order, enabled: attrs.enabled ?? true, flagURL: mFlagURL ?? ""
     }, DEFAULT_DEL_SESSION_DATA);
 }
 /**
