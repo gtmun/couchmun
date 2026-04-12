@@ -245,9 +245,8 @@
                     bind:this={rightsSpeakersList}
                     onBeforeSpeakerUpdate={() => rightsTimerPanel?.reset()}
                     onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
-                >
-                    {#snippet controls()}{/snippet}
-                </SpeakerList>
+                    hideControls
+                />
                 <!-- Timer config -->
                 <div class="flex flex-row gap-5">
                     <form class="contents" onsubmit={setDuration}>

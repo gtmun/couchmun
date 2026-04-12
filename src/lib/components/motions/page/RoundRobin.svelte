@@ -5,15 +5,12 @@
     - A speakers list that is automatically populated with all delegates
 -->
 <script lang="ts">
-    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
-    import { findDelegate } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";
     import type { Motion, Speaker } from "$lib/types";
-    import { lazyslide } from "$lib/util";
-
+    
     interface Props {
         motion: Motion & { kind: "rr" };
         order: Speaker[]
@@ -65,25 +62,11 @@
         <SpeakerList
             bind:order
             delegates={$delegates}
+            proposer={motion.delegate}
             {comboboxDelegates}
             bind:this={speakersList}
             onBeforeSpeakerUpdate={reset}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
-        >
-            {#snippet subcontrols()}
-                {#if !order.some(s => s.key == motion.delegate)}
-                    <div
-                        class="card card-filled p-2 flex justify-between items-center preset-filled-surface-200-800"
-                        transition:lazyslide
-                    >
-                        <DelLabel attrs={findDelegate($delegates, motion.delegate)} inline />
-                        <div>
-                            <button class="btn preset-filled-primary-500" onclick={() => speakersList?.addSpeakerFirst(motion.delegate)}>First</button>
-                            <button class="btn preset-filled-primary-500" onclick={() => speakersList?.addSpeakerLast(motion.delegate)}>Last</button>
-                        </div>
-                    </div>
-                {/if}
-            {/snippet}
-        </SpeakerList>
+        />
     </div>
 </div>
