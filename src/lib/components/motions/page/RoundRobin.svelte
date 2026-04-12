@@ -7,10 +7,12 @@
 <script lang="ts">
     import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import SpeakerList from "$lib/components/SpeakerList.svelte";
+    import SpeakerListEditControls from "$lib/components/SpeakerListEditControls.svelte";
+    import SpeakerListFirstLast from "$lib/components/SpeakerListFirstLast.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import type { Motion, Speaker } from "$lib/types";
-
+    
     interface Props {
         motion: Motion & { kind: "rr" };
         order: Speaker[]
@@ -22,7 +24,11 @@
     
     let timerPanel = $state<TimerPanel>();
     let speakersList = $state<SpeakerList>();
-    
+    const comboboxDelegates = $derived.by(() => {
+        let addedDelegates = new Set(order.map(s => s.key));
+        return $delegates.filter(d => !addedDelegates.has(d.id));
+    });
+
     function reset() {
         timerPanel?.reset();
     }
@@ -62,7 +68,12 @@
             onBeforeSpeakerUpdate={reset}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
         >
-            {#snippet controls()}{/snippet}
+            {#snippet controls()}
+                <div class="flex flex-col items-stretch gap-1">
+                    <SpeakerListFirstLast delegates={$delegates} {order} proposer={motion.delegate} {speakersList} />
+                    <SpeakerListEditControls delegates={comboboxDelegates} {order} onSelect={speakersList?.addSpeaker} />
+                </div>
+            {/snippet}
         </SpeakerList>
     </div>
 </div>
