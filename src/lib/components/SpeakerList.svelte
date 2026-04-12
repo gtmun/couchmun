@@ -33,6 +33,12 @@
          */
         delegates?: Delegate[];
         /**
+         * Specifies what delegates can be input in the combobox.
+         * 
+         * If not specified, this falls back to `delegates`.
+         */
+        comboboxDelegates?: Delegate[];
+        /**
          * The controls at the bottom of the speaker list
          * which handle the addition of new speakers.
          * 
@@ -73,6 +79,7 @@
     let {
         order = $bindable([]),
         delegates = [],
+        comboboxDelegates,
         controls = undefined,
         subcontrols = undefined,
         title = "Speakers List",
@@ -365,7 +372,7 @@
             <div class="flex flex-row gap-1 items-center">
                 <!-- Delegate combobox -->
                 <DelCombobox
-                    {delegates}
+                    delegates={comboboxDelegates ?? delegates}
                     selectionBehavior="clear"
                     class="grow"
                     forgetSelected

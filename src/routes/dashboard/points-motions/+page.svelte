@@ -100,11 +100,7 @@
   async function acceptMotion(motion: Motion) {
     // Update selected motion and initialize selected motion state:
     $selectedMotion = motion;
-    if (motion.kind === "rr") {
-      $selectedMotionState = { speakersList: $delegates.filter(d => d.isPresent()).map(s => createSpeaker(s.id)) };
-    } else {
-      $selectedMotionState = { speakersList: [] };
-    }
+    $selectedMotionState = { speakersList: [] };
 
     $motions = [];
     await db.updateDelegate(motion.delegate, d => { d.stats.motionsAccepted++; });
