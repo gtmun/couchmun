@@ -19,11 +19,22 @@
             if (!getDisabled(i)) return i;
         }
     });
+    export function decrementPage() {
+        if (typeof prevPage === "number") {
+            page = prevPage;
+        }
+    }
+
     const nextPage = $derived.by(() => {
         for (let i = page + 1; i <= totalPages - 1; i++) {
             if (!getDisabled(i)) return i;
         }
     });
+    export function incrementPage() {
+        if (typeof nextPage === "number") {
+            page = nextPage;
+        }
+    }
 
     function getDisabled(i: number) {
         if (Array.isArray(disabled)) {
@@ -37,7 +48,7 @@
     <button
         class="btn btn-sm preset-tonal"
         disabled={typeof prevPage === "undefined"}
-        onclick={() => {if (typeof prevPage === "number") page = prevPage}}
+        onclick={() => decrementPage()}
     >
         <MdiChevronLeft />
     </button>
@@ -62,7 +73,7 @@
     <button
         class="btn btn-sm preset-tonal"
         disabled={typeof nextPage === "undefined"}
-        onclick={() => {if (typeof nextPage === "number") page = nextPage}}
+        onclick={() => incrementPage()}
     >
         <MdiChevronRight />
     </button>

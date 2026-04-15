@@ -29,12 +29,10 @@
     // Pagination:
     const pageNames = ["Roll Call", "Roll Call (Passes)", "Right to Speak", "Final Votes"];
     const totalPages = pageNames.length;
+
+    let paginator = $state<PaginatorDots>();
     let page = $state<number>(0);
     let pageIncreased = $state(true);
-    function setPage(newPage: number) {
-        pageIncreased = Math.sign(newPage - page) >= 0;
-        page = Math.min(Math.max(0, newPage), totalPages - 1);
-    }
 
     // Vote handling:
     const ROLL_CALL_VOTES = ["Y", "N", "A", "YR", "NR", "P"] as const;
@@ -161,7 +159,11 @@
         </div>
         <PaginatorDots
             {totalPages}
-            bind:page={() => page, p => setPage(p)}
+            bind:this={paginator}
+            bind:page={() => page, np => {
+                pageIncreased = Math.sign(np - page) >= 0;
+                page = np;
+            }}
             disabled={pagesDisabled}
         />
         <div class="flex justify-end items-center h-6">
@@ -337,14 +339,14 @@
     <div class="flex justify-between">
         <button 
             class={["btn preset-filled-primary-500", page <= 0 && "invisible"]}
-            onclick={() => setPage(page - 1)}
+            onclick={() => paginator?.decrementPage()}
         >
             <MdiChevronLeft />
             Previous
         </button>
         <button 
             class={["btn preset-filled-primary-500", page >= totalPages - 1 && "invisible"]}
-            onclick={() => setPage(page + 1)}
+            onclick={() => paginator?.incrementPage()}
         >
             Next
             <MdiChevronRight />
