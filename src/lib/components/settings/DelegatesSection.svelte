@@ -61,6 +61,7 @@
         str: s => s ? s.trim() : "",
         arr: s => s ? s.split("|").map(e => e.trim()).filter(e => e) : [],
         bool: s => !!+(s ?? 0),
+        trool: s => typeof s === "undefined" ? undefined : !!+s
     } satisfies Record<string, (s?: string) => unknown>;
 
     async function importRosterFile(files: File[]) {
@@ -74,22 +75,12 @@
             let data: Record<string, string>[];
             try {
                 data = csv.parse(text, { columns: true });
-
-                if (data.length > 0) {
-                    const first = data[0];
-                    let enableMap: Map<string, boolean> | undefined = undefined;
-                    
-                    // Assert headers are correct + specially handle "enabled" column
+                const first = data[0];
+                if (typeof first !== "undefined") {
+                    // Assert headers are correct
                     const missingHeader = headers.find(h => !hasKey(first, h));
                     if (missingHeader) {
                         throw new Error(`Missing header: ${missingHeader}. The parsed headers were: ${JSON.stringify(Object.keys(first))}`)
-                    }
-                    if (hasKey(first, "enabled")) {
-                        // eslint-disable-next-line svelte/prefer-svelte-reactivity
-                        enableMap = new Map<string, boolean>();
-                        for (let d of data) {
-                            enableMap.set(d.name, csv_norm.bool(d.enabled));
-                        }
                     }
     
                     /// Wipe & reload delegates
@@ -98,18 +89,9 @@
                         await db.addDelegates(data.map<DelegateAttrs>(d => ({
                             name: csv_norm.str(d.name),
                             aliases: csv_norm.arr(d.aliases),
-                            flagURL: csv_norm.str(d.flag_url)
+                            flagURL: csv_norm.str(d.flag_url),
+                            enabled: csv_norm.trool(d.enabled)
                         })));
-
-                        if (typeof enableMap !== "undefined") {
-                            await db.delegates.toCollection()
-                                .modify(d => {
-                                    const result = enableMap.get(d.name);
-                                    if (typeof result === "boolean") {
-                                        d.enabled = result;
-                                    }
-                                });
-                        }
                     });
                 }
             } catch (e) {
