@@ -6,12 +6,14 @@
     interface Props {
         totalPages: number,
         page: number,
-        disabled?: boolean[] | ((i: number) => boolean)
+        disabled?: boolean[] | ((i: number) => boolean),
+        hidden?: boolean[] | ((i: number) => boolean),
     }
     let {
         totalPages,
         page = $bindable(),
-        disabled = undefined
+        disabled = undefined,
+        hidden = undefined
     }: Props = $props();
 
     const prevPage = $derived.by(() => {
@@ -36,12 +38,14 @@
         }
     }
 
+    function get(a: boolean[] | ((i: number) => boolean) | undefined, i: number) {
+        return Array.isArray(a) ? a[i] : a?.(i);
+    }
     function getDisabled(i: number) {
-        if (Array.isArray(disabled)) {
-            return disabled[i];
-        } else {
-            return disabled?.(i);
-        }
+        return get(disabled, i) || get(hidden, i);
+    }
+    function getHidden(i: number) {
+        return get(hidden, i);
     }
 </script>
 <div class="flex gap-3 justify-center items-center">
@@ -56,19 +60,21 @@
     {#each Array.from({ length: totalPages }) as _, i}
         {@const pressed = page == i}
         {@const disabled = getDisabled(i)}
-        <button
-            class={[
-                "rounded-full size-3 transition",
-                pressed 
-                    ? "preset-filled-primary-500 scale-150"
-                    : "preset-filled-surface-300-700",
-                disabled && "cursor-not-allowed"
-            ]}
-            onclick={() => {if (!disabled) page = i}}
-            {...a11yLabel(`Go to Page ${i}`)}
-            aria-pressed={pressed}
-            {disabled}
-        ></button>
+        {#if !getHidden(i)}
+            <button
+                class={[
+                    "rounded-full size-3 transition",
+                    pressed 
+                        ? "preset-filled-primary-500 scale-150"
+                        : "preset-filled-surface-300-700",
+                    disabled && "cursor-not-allowed"
+                ]}
+                onclick={() => {if (!disabled) page = i}}
+                {...a11yLabel(`Go to Page ${i}`)}
+                aria-pressed={pressed}
+                {disabled}
+            ></button>
+        {/if}
     {/each}
     <button
         class="btn btn-sm preset-tonal"

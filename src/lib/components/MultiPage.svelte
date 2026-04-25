@@ -10,7 +10,8 @@
     interface Props {
         pages: {
             name: string,
-            disabled?: boolean
+            disabled?: boolean,
+            hidden?: boolean
         }[],
         pageIndex?: number,
         children?: Snippet<[number]>,
@@ -51,6 +52,7 @@
                 page = np;
             }}
             disabled={pages.map(p => p.disabled ?? false)}
+            hidden={pages.map(p => p.hidden ?? false)}
         />
         <div class="flex justify-end items-center h-6">
             {@render topTail?.(page)}

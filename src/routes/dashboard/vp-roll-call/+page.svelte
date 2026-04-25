@@ -137,7 +137,7 @@
     pages={[
         { name: "Roll Call" },
         { name: "Roll Call (Passes)", disabled: delsRCP.length == 0 },
-        { name: "Right to Speak", disabled: delsRights.length == 0 },
+        { name: "Right to Speak", disabled: delsRights.length == 0, hidden: !$preferences.enableWithRights },
         { name: "Final Votes" }
     ]}
     bind:pageIndex={page}
