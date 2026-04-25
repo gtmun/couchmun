@@ -10,7 +10,7 @@
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import type { DelegateID, Speaker } from "$lib/types";
-    import { a11yLabel } from "$lib/util";
+    import { a11yLabel, NO_FIGURE } from "$lib/util";
     import { watchEffect } from "$lib/util/sv.svelte";
     import { parseTime } from "$lib/util/time";
     import MdiAccountCancel from "~icons/mdi/account-cancel";
@@ -174,21 +174,21 @@
                         {...a11yLabel(`Yes: ${showVotes ? voteCounts.Y : 'Hidden'}`)}
                     >
                         <ENTRIES_MAP.Y.icon />
-                        <div class="tabular-nums">{showVotes ? voteCounts.Y : '-'}</div>
+                        <div class="tabular-nums">{showVotes ? voteCounts.Y : NO_FIGURE}</div>
                     </div>
                     <div 
                         class="flex text-error-800-200"
                         {...a11yLabel(`No: ${showVotes ? voteCounts.N : 'Hidden'}`)}
                     >
                         <ENTRIES_MAP.N.icon />
-                        <div class="tabular-nums">{showVotes ? voteCounts.N : '-'}</div>
+                        <div class="tabular-nums">{showVotes ? voteCounts.N : NO_FIGURE}</div>
                     </div>
                     <div 
                         class="flex"
                         {...a11yLabel(`Abstain: ${showVotes ? voteCounts.A : 'Hidden'}`)}
                     >
                         <ENTRIES_MAP.A.icon />
-                        <div class="tabular-nums">{showVotes ? voteCounts.A : '-'}</div>
+                        <div class="tabular-nums">{showVotes ? voteCounts.A : NO_FIGURE}</div>
                     </div>
                     <ToggleButton name="show-vote-mini" bind:checked={showVotes}>
                         {#snippet activeChild()}
@@ -311,21 +311,21 @@
                             {...a11yLabel(`Yes: ${showVotes ? voteCounts.Y : 'Hidden'}`)}
                         >
                             <ENTRIES_MAP.Y.icon />
-                            <div class="tabular-nums">{showVotes ? voteCounts.Y : '-'}</div>
+                            <div class="tabular-nums">{showVotes ? voteCounts.Y : NO_FIGURE}</div>
                         </div>
                         <div 
                             class="flex gap-2 items-center text-error-800-200"
                             {...a11yLabel(`No: ${showVotes ? voteCounts.N : 'Hidden'}`)}
                         >
                             <ENTRIES_MAP.N.icon />
-                            <div class="tabular-nums">{showVotes ? voteCounts.N : '-'}</div>
+                            <div class="tabular-nums">{showVotes ? voteCounts.N : NO_FIGURE}</div>
                         </div>
                         <div 
                             class="flex gap-2 items-center"
                             {...a11yLabel(`Abstain: ${showVotes ? voteCounts.A : 'Hidden'}`)}
                         >
                             <ENTRIES_MAP.A.icon />
-                            <div class="tabular-nums">{showVotes ? voteCounts.A : '-'}</div>
+                            <div class="tabular-nums">{showVotes ? voteCounts.A : NO_FIGURE}</div>
                         </div>
                     </div>
                 </div>
