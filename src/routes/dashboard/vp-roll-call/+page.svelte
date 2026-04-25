@@ -1,10 +1,10 @@
 <script lang="ts">
     import { SvelteMap } from "svelte/reactivity";
-    import { fly, slide } from "svelte/transition";
+    import { slide } from "svelte/transition";
     
-    import PaginatorDots from "$lib/components/controls/PaginatorDots.svelte";
     import ToggleButton from "$lib/components/controls/ToggleButton.svelte";
     import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
+    import MultiPage from "$lib/components/MultiPage.svelte";
     import RollCall, { notPendingThen, type RollCallEntry } from "$lib/components/RollCall.svelte";
     import SpeakerList, { createSpeaker } from "$lib/components/SpeakerList.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
@@ -17,8 +17,6 @@
     import MdiAccountCheck from "~icons/mdi/account-check";
     import MdiCancel from "~icons/mdi/cancel";
     import MdiCheck from "~icons/mdi/check";
-    import MdiChevronLeft from "~icons/mdi/chevron-left";
-    import MdiChevronRight from "~icons/mdi/chevron-right";
     import MdiEye from "~icons/mdi/eye";
     import MdiEyeOff from "~icons/mdi/eye-off";
     import MdiOctagon from "~icons/mdi/octagon";
@@ -27,12 +25,7 @@
     const { delegates, preferences } = getSessionContext();
 
     // Pagination:
-    const pageNames = ["Roll Call", "Roll Call (Passes)", "Right to Speak", "Final Votes"];
-    const totalPages = pageNames.length;
-
-    let paginator = $state<PaginatorDots>();
     let page = $state<number>(0);
-    let pageIncreased = $state(true);
 
     // Vote handling:
     const ROLL_CALL_VOTES = ["Y", "N", "A", "YR", "NR", "P"] as const;
@@ -132,226 +125,180 @@
     let rightsOrder = $state<Speaker[]>([]);
     watchEffect(() => [page, delsRights] as const, ([page, dels]) => {
         // Only allow overriding the rights order on other pages
-        // Technically shouldn't be needed but for whatever reason,
+        // Technically shouldn't be needed, but for whatever reason,
         // delsRights can spuriously update on this page.
         if (page !== 2) {
             rightsOrder = dels.map(d => createSpeaker(d.id));
         }
     });
-
-    // Animations
-    const flyIn  = (e: Element) => fly(e, { x: pageIncreased ? "100%" : "-100%", y: 0, duration: 300 });
-    const flyOut = (e: Element) => fly(e, { x: pageIncreased ? "-100%" : "100%", y: 0, duration: 300 });
-
-    // misc
-    const pagesDisabled = $derived([false, delsRCP.length == 0, delsRights.length == 0, false]);
 </script>
 
-<div class="flex flex-col h-full gap-3">
-    <!-- Top bar -->
-    <div class="grid grid-cols-3 items-center">
-        <div class="flex">
-            {#key page}
-                <div class="text-nowrap overflow-hidden" transition:slide={{ axis: "x" }}>
-                    {pageNames[page]}
+<MultiPage
+    pages={[
+        { name: "Roll Call" },
+        { name: "Roll Call (Passes)", disabled: delsRCP.length == 0 },
+        { name: "Right to Speak", disabled: delsRights.length == 0 },
+        { name: "Final Votes" }
+    ]}
+    bind:pageIndex={page}
+>
+    {#snippet topTail(page)}
+        {#if page != 3}
+            <div class="flex items-center gap-3" transition:slide={{ axis: "x" }}>
+                <div 
+                    class="flex text-success-800-200"
+                    {...a11yLabel(`Yes: ${showVotes ? voteCounts.Y : 'Hidden'}`)}
+                >
+                    <ENTRIES_MAP.Y.icon />
+                    <div class="tabular-nums">{showVotes ? voteCounts.Y : NO_FIGURE}</div>
                 </div>
-            {/key}
-        </div>
-        <PaginatorDots
-            {totalPages}
-            bind:this={paginator}
-            bind:page={() => page, np => {
-                pageIncreased = Math.sign(np - page) >= 0;
-                page = np;
+                <div 
+                    class="flex text-error-800-200"
+                    {...a11yLabel(`No: ${showVotes ? voteCounts.N : 'Hidden'}`)}
+                >
+                    <ENTRIES_MAP.N.icon />
+                    <div class="tabular-nums">{showVotes ? voteCounts.N : NO_FIGURE}</div>
+                </div>
+                <div 
+                    class="flex"
+                    {...a11yLabel(`Abstain: ${showVotes ? voteCounts.A : 'Hidden'}`)}
+                >
+                    <ENTRIES_MAP.A.icon />
+                    <div class="tabular-nums">{showVotes ? voteCounts.A : NO_FIGURE}</div>
+                </div>
+                <ToggleButton name="show-vote-mini" bind:checked={showVotes}>
+                    {#snippet activeChild()}
+                        <MdiEye />
+                    {/snippet}
+                    {#snippet inactiveChild()}
+                        <MdiEyeOff />
+                    {/snippet}
+                </ToggleButton>
+            </div>
+        {/if}
+    {/snippet}
+    {#snippet children(page)}
+        {#if page == 0}
+        <!-- Roll call -->
+        <RollCall
+            getValue={d => votes1.get(d.id) ?? null}
+            setValue={(s, d) => {
+                let v = asVote(s);
+                if (v) votes1.set(d.id, v);
             }}
-            disabled={pagesDisabled}
+            delegates={delsRC}
+            {entries}
         />
-        <div class="flex justify-end items-center h-6">
-            {#if page != 3}
-                <div class="flex items-center gap-3" transition:slide={{ axis: "x" }}>
-                    <div 
-                        class="flex text-success-800-200"
-                        {...a11yLabel(`Yes: ${showVotes ? voteCounts.Y : 'Hidden'}`)}
-                    >
-                        <ENTRIES_MAP.Y.icon />
-                        <div class="tabular-nums">{showVotes ? voteCounts.Y : NO_FIGURE}</div>
-                    </div>
-                    <div 
-                        class="flex text-error-800-200"
-                        {...a11yLabel(`No: ${showVotes ? voteCounts.N : 'Hidden'}`)}
-                    >
-                        <ENTRIES_MAP.N.icon />
-                        <div class="tabular-nums">{showVotes ? voteCounts.N : NO_FIGURE}</div>
-                    </div>
-                    <div 
-                        class="flex"
-                        {...a11yLabel(`Abstain: ${showVotes ? voteCounts.A : 'Hidden'}`)}
-                    >
-                        <ENTRIES_MAP.A.icon />
-                        <div class="tabular-nums">{showVotes ? voteCounts.A : NO_FIGURE}</div>
-                    </div>
-                    <ToggleButton name="show-vote-mini" bind:checked={showVotes}>
-                        {#snippet activeChild()}
-                            <MdiEye />
-                        {/snippet}
-                        {#snippet inactiveChild()}
-                            <MdiEyeOff />
-                        {/snippet}
-                    </ToggleButton>
-                </div>
-            {/if}
-        </div>
-    </div>
-    <hr class="hr" />
-    <!-- Main content -->
-    <div class="grow overflow-auto">
-        <div class="relative h-full">
-            {#key page}
-            <div class="w-full h-full absolute" in:flyIn out:flyOut>
-                {#if page == 0}
-                <!-- Roll call -->
-                <RollCall
-                    getValue={d => votes1.get(d.id) ?? null}
-                    setValue={(s, d) => {
-                        let v = asVote(s);
-                        if (v) votes1.set(d.id, v);
-                    }}
-                    delegates={delsRC}
-                    {entries}
-                />
-                {:else if page == 1}
-                <!-- Passes -->
-                <RollCall
-                    getValue={d => votes2.get(d.id) ?? null}
-                    setValue={(s, d) => {
-                        let v = asVote(s);
-                        if (v && v != "A" && v != "P") votes2.set(d.id, v);
-                    }}
-                    delegates={delsRCP}
-                    entries={entriesP}
-                />
-                {:else if page == 2}
-                <!-- Y/N with rights -->
-                <div class="flex flex-col lg:flex-row h-full gap-8 items-stretch">
-                <!--
-                    Under mobile, the timer encompasses the whole page 
-                    and the speakers list can be accessed by scrolling down.
+        {:else if page == 1}
+        <!-- Passes -->
+        <RollCall
+            getValue={d => votes2.get(d.id) ?? null}
+            setValue={(s, d) => {
+                let v = asVote(s);
+                if (v && v != "A" && v != "P") votes2.set(d.id, v);
+            }}
+            delegates={delsRCP}
+            entries={entriesP}
+        />
+        {:else if page == 2}
+        <!-- Y/N with rights -->
+        <div class="flex flex-col lg:flex-row h-full gap-8 items-stretch">
+            <!--
+                Under mobile, the timer encompasses the whole page 
+                and the speakers list can be accessed by scrolling down.
 
-                    Under desktop, both are on the same screen,
-                    with the left side being the timer and the right side being the speakers list.
-                -->
-                <!-- Left/Top -->
-                <div class="flex flex-col grow shrink-0 basis-full lg:basis-auto">
-                    <TimerPanel
-                        delegates={$delegates}
-                        speakersList={rightsSpeakersList}
-                        durations={[rightsDuration]}
-                        onDurationUpdate={(_, d) => rightsDuration = d}
-                        bind:this={rightsTimerPanel}
-                        editable
-                    >
-                        {#snippet label(name)}
-                            {@const speaker = rightsSpeakersList?.selectedSpeaker()}
-                            {#if speaker}
-                                {@const vote = votes.get(speaker.key)}
-                                <div class="flex items-center">
-                                    <h2 class="h2">{name}</h2>
-                                    {#if vote == "YR"}
-                                        <ENTRIES_MAP.Y.icon class="size-8 ml-3" />
-                                    {:else if vote == "NR"}
-                                        <ENTRIES_MAP.N.icon class="size-8 ml-3" />
-                                    {/if}
-                                </div>
-                            {/if}
-                        {/snippet}
-                    </TimerPanel>
-                </div>
-                <!-- Right/Bottom -->
-                <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-100 lg:max-w-[33%]">
-                    <!-- List -->
-                    <SpeakerList
-                        delegates={$delegates}
-                        bind:order={rightsOrder}
-                        bind:this={rightsSpeakersList}
-                        onBeforeSpeakerUpdate={() => rightsTimerPanel?.reset()}
-                        onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
-                    >
-                        {#snippet controls()}{/snippet}
-                    </SpeakerList>
-                    <!-- Timer config -->
-                    <div class="flex flex-row gap-5">
-                        <form class="contents" onsubmit={setDuration}>
-                            <label class="flex grow items-center">
-                                <span>Speaker Time</span>
-                                <input class="input grow" bind:value={rightsDurInput} placeholder="mm:ss" disabled={rightsTimerPanel?.getRunState(0)} />
-                            </label>
-                        </form>
-                    </div>
+                Under desktop, both are on the same screen,
+                with the left side being the timer and the right side being the speakers list.
+            -->
+            <!-- Left/Top -->
+            <div class="flex flex-col grow shrink-0 basis-full lg:basis-auto">
+                <TimerPanel
+                    delegates={$delegates}
+                    speakersList={rightsSpeakersList}
+                    durations={[rightsDuration]}
+                    onDurationUpdate={(_, d) => rightsDuration = d}
+                    bind:this={rightsTimerPanel}
+                    editable
+                >
+                    {#snippet label(name)}
+                        {@const speaker = rightsSpeakersList?.selectedSpeaker()}
+                        {#if speaker}
+                            {@const vote = votes.get(speaker.key)}
+                            <div class="flex items-center">
+                                <h2 class="h2">{name}</h2>
+                                {#if vote == "YR"}
+                                    <ENTRIES_MAP.Y.icon class="size-8 ml-3" />
+                                {:else if vote == "NR"}
+                                    <ENTRIES_MAP.N.icon class="size-8 ml-3" />
+                                {/if}
+                            </div>
+                        {/if}
+                    {/snippet}
+                </TimerPanel>
+            </div>
+            <!-- Right/Bottom -->
+            <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-100 lg:max-w-[33%]">
+                <!-- List -->
+                <SpeakerList
+                    delegates={$delegates}
+                    bind:order={rightsOrder}
+                    bind:this={rightsSpeakersList}
+                    onBeforeSpeakerUpdate={() => rightsTimerPanel?.reset()}
+                    onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
+                >
+                    {#snippet controls()}{/snippet}
+                </SpeakerList>
+                <!-- Timer config -->
+                <div class="flex flex-row gap-5">
+                    <form class="contents" onsubmit={setDuration}>
+                        <label class="flex grow items-center">
+                            <span>Speaker Time</span>
+                            <input class="input grow" bind:value={rightsDurInput} placeholder="mm:ss" disabled={rightsTimerPanel?.getRunState(0)} />
+                        </label>
+                    </form>
                 </div>
             </div>
-                {:else if page == 3}
-                <!-- Final count -->
-                <div class="flex flex-col h-full items-center justify-center">
-                    <div class="flex items-center gap-3">
-                        <h3 class="h3">
-                            Votes
-                        </h3>
-                        <ToggleButton name="show-vote" bind:checked={showVotes}>
-                            {#snippet activeChild()}
-                                <MdiEye />
-                            {/snippet}
-                            {#snippet inactiveChild()}
-                                <MdiEyeOff />
-                            {/snippet}
-                        </ToggleButton>
-                    </div>
-                    <div class="text-3xl">
-                        <div 
-                            class="flex gap-2 items-center text-success-800-200"
-                            {...a11yLabel(`Yes: ${showVotes ? voteCounts.Y : 'Hidden'}`)}
-                        >
-                            <ENTRIES_MAP.Y.icon />
-                            <div class="tabular-nums">{showVotes ? voteCounts.Y : NO_FIGURE}</div>
-                        </div>
-                        <div 
-                            class="flex gap-2 items-center text-error-800-200"
-                            {...a11yLabel(`No: ${showVotes ? voteCounts.N : 'Hidden'}`)}
-                        >
-                            <ENTRIES_MAP.N.icon />
-                            <div class="tabular-nums">{showVotes ? voteCounts.N : NO_FIGURE}</div>
-                        </div>
-                        <div 
-                            class="flex gap-2 items-center"
-                            {...a11yLabel(`Abstain: ${showVotes ? voteCounts.A : 'Hidden'}`)}
-                        >
-                            <ENTRIES_MAP.A.icon />
-                            <div class="tabular-nums">{showVotes ? voteCounts.A : NO_FIGURE}</div>
-                        </div>
-                    </div>
-                </div>
-                {/if}
-            </div>
-            {/key}
         </div>
-    </div>
-    <hr class="hr" />
-    <!-- Bottom buttons -->
-    <div class="flex justify-between">
-        <button 
-            class="btn preset-filled-primary-500"
-            disabled={page <= 0}
-            onclick={() => paginator?.decrementPage()}
-        >
-            <MdiChevronLeft />
-            Previous
-        </button>
-        <button 
-            class="btn preset-filled-primary-500"
-            disabled={page >= totalPages - 1}
-            onclick={() => paginator?.incrementPage()}
-        >
-            Next
-            <MdiChevronRight />
-        </button>
-    </div>
-</div>
+        {:else if page == 3}
+        <!-- Final count -->
+        <div class="flex flex-col h-full items-center justify-center">
+            <div class="flex items-center gap-3">
+                <h3 class="h3">
+                    Votes
+                </h3>
+                <ToggleButton name="show-vote" bind:checked={showVotes}>
+                    {#snippet activeChild()}
+                        <MdiEye />
+                    {/snippet}
+                    {#snippet inactiveChild()}
+                        <MdiEyeOff />
+                    {/snippet}
+                </ToggleButton>
+            </div>
+            <div class="text-3xl">
+                <div 
+                    class="flex gap-2 items-center text-success-800-200"
+                    {...a11yLabel(`Yes: ${showVotes ? voteCounts.Y : 'Hidden'}`)}
+                >
+                    <ENTRIES_MAP.Y.icon />
+                    <div class="tabular-nums">{showVotes ? voteCounts.Y : NO_FIGURE}</div>
+                </div>
+                <div 
+                    class="flex gap-2 items-center text-error-800-200"
+                    {...a11yLabel(`No: ${showVotes ? voteCounts.N : 'Hidden'}`)}
+                >
+                    <ENTRIES_MAP.N.icon />
+                    <div class="tabular-nums">{showVotes ? voteCounts.N : NO_FIGURE}</div>
+                </div>
+                <div 
+                    class="flex gap-2 items-center"
+                    {...a11yLabel(`Abstain: ${showVotes ? voteCounts.A : 'Hidden'}`)}
+                >
+                    <ENTRIES_MAP.A.icon />
+                    <div class="tabular-nums">{showVotes ? voteCounts.A : NO_FIGURE}</div>
+                </div>
+            </div>
+        </div>
+        {/if}
+    {/snippet}
+</MultiPage>
