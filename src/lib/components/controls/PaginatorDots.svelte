@@ -1,12 +1,28 @@
+<!--
+    Set of dots that allow you to traverse through various pages.
+    Similar to Zag.js's "Tabs" or "Steps".
+-->
 <script lang="ts">
     import { a11yLabel } from "$lib/util";
     import MdiChevronLeft from "~icons/mdi/chevron-left";
     import MdiChevronRight from "~icons/mdi/chevron-right";
 
     interface Props {
+        /** The total number of pages this paginator has. */
         totalPages: number,
+        /** The current page index. */
         page: number,
+        /**
+         * An array or function which indicates which indicates which indices are disabled.
+         * This means they will be visible, but not traversable
+         * (unless forced by setting the page variable).
+         */
         disabled?: boolean[] | ((i: number) => boolean),
+        /**
+         * An array or function which indicates which indicates which indices are hidden.
+         * This means they will be invisible and not traversable
+         * (unless forced by setting the page variable).
+         */
         hidden?: boolean[] | ((i: number) => boolean),
     }
     let {

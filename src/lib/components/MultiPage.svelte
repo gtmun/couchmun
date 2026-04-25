@@ -8,13 +8,40 @@
     import MdiChevronRight from "~icons/mdi/chevron-right";
     
     interface Props {
+        /**
+         * List of pages defined in this multipage.
+        */
         pages: {
+            /** The display name of the page. */
             name: string,
+            /** 
+             * Whether this page is disabled.
+             * If set to true, this page is visible but cannot be accessed or traversed to
+             * by the typical controls.
+            */
             disabled?: boolean,
+            /**
+             * Whether this page is hidden.
+             * If set to true, this page cannot be seen by the typical controls.
+             */
             hidden?: boolean
         }[],
+        /**
+         * The current page index.
+         * 
+         * Though bindable, setting this value may allow disabled/hidden pages to be bypassed.
+         */
         pageIndex?: number,
+        /**
+         * The main content. The page index is provided to this snippet,
+         *     allowing you to configure different parameters for different pages.
+         * The snippet itself should consist of {#if page == n}{/if} blocks.
+         */
         children?: Snippet<[number]>,
+        /**
+         * The content for the top-right status bar.
+         * The page index is provided to this snippet.
+        */
         topTail?: Snippet<[number]>
     }
     let {
