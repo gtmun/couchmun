@@ -338,14 +338,16 @@
     <!-- Bottom buttons -->
     <div class="flex justify-between">
         <button 
-            class={["btn preset-filled-primary-500", page <= 0 && "invisible"]}
+            class="btn preset-filled-primary-500"
+            disabled={page <= 0}
             onclick={() => paginator?.decrementPage()}
         >
             <MdiChevronLeft />
             Previous
         </button>
         <button 
-            class={["btn preset-filled-primary-500", page >= totalPages - 1 && "invisible"]}
+            class="btn preset-filled-primary-500"
+            disabled={page >= totalPages - 1}
             onclick={() => paginator?.incrementPage()}
         >
             Next
