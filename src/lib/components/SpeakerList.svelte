@@ -313,7 +313,7 @@
     
                 <li
                     class={[
-                        "flex items-center gap-1 p-1",
+                        "flex items-center gap-1 p-1 preset-ui",
                         "data-dnd-dragging:rounded data-dnd-dragging:preset-tonal-primary",
                         "data-dnd-placeholder:rounded data-dnd-placeholder:*:invisible data-dnd-placeholder:bg-surface-200-800",
                         // If insert point exists, color the border where the insert point starts EXCEPT when dragging

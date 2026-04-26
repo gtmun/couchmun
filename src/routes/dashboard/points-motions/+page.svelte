@@ -207,7 +207,7 @@
               <tr
                 {@attach sortable.attach}
                 class={[
-                  "hover:preset-tonal-primary [&_td]:tabular-nums",
+                  "preset-tonal-surface hover:preset-tonal-primary [&_td]:tabular-nums",
                   "data-dnd-dragging:preset-tonal-primary"
                 ]}
                 animate:flip={{ duration: 150 }}
