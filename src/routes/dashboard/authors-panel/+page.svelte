@@ -1,10 +1,13 @@
 <script lang="ts">    
+    import ForAgainst from "$lib/components/ForAgainst.svelte";
     import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import MultiPage from "$lib/components/MultiPage.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
+    import type { SpeakerFA } from "$lib/types";
     
     const { delegates } = getSessionContext();
-    let durations = $state([60, 60, 60, 60]);
+    let durations = $state([60, 60, 60, 60, 60]);
+    let faOrder = $state<SpeakerFA[]>([]);
 </script>
 
 <MultiPage
@@ -13,7 +16,7 @@
         { name: "Presentation" },
         { name: "Question & Answer" },
         { name: "Amendment Period" },
-        { name: "Voting" }
+        { name: "For & Against" }
     ]}
 >
     {#snippet children(page)}
@@ -27,7 +30,11 @@
                 />
             </div>
         {:else}
-            voing
+            <ForAgainst
+                delegates={$delegates}
+                bind:order={faOrder}
+                bind:duration={durations[page]}
+            />
         {/if}
     {/snippet}
 </MultiPage>
