@@ -117,3 +117,16 @@
         </button>
     </div>
 </div>
+
+<svelte:window
+    onkeydown={e => {
+        if (document.activeElement == null || document.activeElement == document.body) {
+            if (e.code === "ArrowLeft") {
+                paginator?.decrementPage();
+            }
+            if (e.code === "ArrowRight") {
+                paginator?.incrementPage();
+            }
+        }
+    }}
+/>
