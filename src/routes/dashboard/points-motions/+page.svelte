@@ -23,7 +23,7 @@
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import type { Motion } from "$lib/types";
   import { a11yLabel, hasKey } from "$lib/util";
-  import { createSortable, handleDrag, move } from "$lib/util/dnd";
+  import { createSortable, handleDrag } from "$lib/util/dnd";
   import { proxify } from "$lib/util/sv.svelte";
   import { stringifyTime } from "$lib/util/time";
   import MdiAccountClock from "~icons/mdi/account-clock";
@@ -197,13 +197,13 @@
           class="bg-surface-50-950"
         >
           <DragDropProvider
-            onDragMove={handleDrag(dndItems)}
-            onDragEnd={handleDrag((oldIdx, newIdx) => $motions = move(dndItems, oldIdx, newIdx), { delay: 300 })}
+            onDragOver={handleDrag(dndItems)}
+            onDragEnd={handleDrag(() => $motions = dndItems, { delay: 300 })}
           >
             {#each dndItems as motion, i (motion.id)}
               {@const delAttrs = findDelegate($delegates, motion.delegate)}
               {@const delName = delAttrs?.name ?? "unknown"}
-              {@const sortable = createSortable({ id: motion.id, index: i, feedback: "default" })}
+              {@const sortable = createSortable({ id: motion.id, get index() { return i; }}, "default")}
               <tr
                 {@attach sortable.attach}
                 class={[
