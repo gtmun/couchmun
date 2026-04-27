@@ -70,7 +70,7 @@
     </div>
     <hr class="hr" />
     <!-- Main content -->
-    <div class="grow overflow-auto">
+    <div class="grow overflow-x-hidden overflow-y-auto">
         <div class="relative h-full">
             {#key page}
             <div class="w-full h-full absolute" in:flyIn out:flyOut>
