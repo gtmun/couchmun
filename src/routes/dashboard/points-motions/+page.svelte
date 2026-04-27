@@ -240,7 +240,11 @@
                     >
                       <MdiCheck class="text-success-700" />
                     </button>
-                    <button class="btn-icon-std p-1" onclick={() => openModals.editMotion = i}>
+                    <button
+                      class="btn-icon-std p-1"
+                      onclick={() => openModals.editMotion = i}
+                      {...a11yLabel(`Edit ${delName}'s Motion`)}
+                    >
                       <MdiPencil />
                     </button>
                   </div>
