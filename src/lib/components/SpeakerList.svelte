@@ -17,7 +17,7 @@
     import { type Delegate, findDelegate } from "$lib/db/delegates";
     import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
     import { a11yLabel } from "$lib/util";
-    import { createSortable, handleDrag, move } from "$lib/util/dnd";
+    import { createSortable, handleDrag } from "$lib/util/dnd";
     import { proxify } from "$lib/util/sv.svelte";
     import MdiCancel from "~icons/mdi/cancel";
     import MdiDelete from "~icons/mdi/delete";
@@ -285,10 +285,8 @@
     </h5>
 
     <DragDropProvider
-        onDragMove={handleDrag(dndItems)}
-        onDragEnd={handleDrag((oldIdx, newIdx) => {
-            move(dndItems, oldIdx, newIdx);
-    
+        onDragOver={handleDrag(dndItems)}
+        onDragEnd={handleDrag(() => {
             if (insertPoint > 0) {
                 const original = order.slice(-insertPoint);
                 const dragged = dndItems.slice(-insertPoint);
@@ -306,14 +304,14 @@
             aria-labelledby="sl-header-{sid}"
         >
             {#each dndItems as speaker, i (speaker.id)}
-                {@const sortable = createSortable({ id: speaker.id, index: i })}
+                {@const sortable = createSortable({ id: speaker.id, get index() { return i; } })}
                 {@const selected = speaker.id === selectedSpeakerId}
                 {@const delAttrs = findDelegate(delegates, speaker.key)}
                 {@const speakerLabel = delAttrs?.name ?? "unknown"}
     
                 <li
                     class={[
-                        "flex items-center gap-1 p-1",
+                        "flex items-center gap-1 p-1 preset-ui",
                         "data-dnd-dragging:rounded data-dnd-dragging:preset-tonal-primary",
                         "data-dnd-placeholder:rounded data-dnd-placeholder:*:invisible data-dnd-placeholder:bg-surface-200-800",
                         // If insert point exists, color the border where the insert point starts EXCEPT when dragging
