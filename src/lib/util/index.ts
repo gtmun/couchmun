@@ -140,3 +140,8 @@ export function a11yLabel(label?: string) {
         title: label
     }
 }
+
+/**
+ * Used to mark a missing number.
+ */
+export const NO_FIGURE = "\u{2012}";

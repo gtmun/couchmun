@@ -35,11 +35,12 @@
         "/dashboard/current-motion": { label: "Current Motion" },
         "/dashboard/generic-timer":  { label: "Generic Timer" },
         "/dashboard/for-against":    { label: "For and Against Speeches" },
-        "/dashboard/vp-roll-call":   { label: "Voting Procedure (Roll Call)" }
+        "/dashboard/authors-panel":  { label: "Author's Panel" },
+        "/dashboard/vp-roll-call":   { label: "Voting Procedure (Roll Call)" },
     };
 
     const header = (label: string) => ({ type: "header" as const, label });
-    const link = (href: RouteId) => ({ type: "link" as const, href, label: links[href]?.label });
+    const link = (href: RouteId) => ({ type: "link" as const, href, label: links[href]?.label ?? href });
     const navMenu = [
         header("Main"),
         link("/dashboard/roll-call"),
@@ -49,6 +50,7 @@
         header("Utilities"),
         link("/dashboard/generic-timer"),
         link("/dashboard/for-against"),
+        link("/dashboard/authors-panel"),
         link("/dashboard/vp-roll-call"),
     ] as const;
     let thisLinkTitle = $derived(typeof page.route.id == "string" ? links[page.route.id]?.label : undefined);

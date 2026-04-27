@@ -1,17 +1,37 @@
+<!--
+    Set of dots that allow you to traverse through various pages.
+    Similar to Zag.js's "Tabs" or "Steps".
+-->
 <script lang="ts">
     import { a11yLabel } from "$lib/util";
     import MdiChevronLeft from "~icons/mdi/chevron-left";
     import MdiChevronRight from "~icons/mdi/chevron-right";
 
+    export type DotPage = {
+        /** The display name of the page. */
+        name: string,
+        /** 
+         * Whether this page is disabled.
+         * If set to true, this page is visible but cannot be accessed or traversed to
+         * by the typical controls.
+        */
+        disabled?: boolean,
+        /**
+         * Whether this page is hidden.
+         * If set to true, this page cannot be seen by the typical controls.
+         */
+        hidden?: boolean
+    };
+
     interface Props {
-        totalPages: number,
+        /** The current page index. */
         page: number,
-        disabled?: boolean[] | ((i: number) => boolean)
+        /** Set of pages available to paginator dots */
+        pages: DotPage[],
     }
     let {
-        totalPages,
         page = $bindable(),
-        disabled = undefined
+        pages,
     }: Props = $props();
 
     const prevPage = $derived.by(() => {
@@ -26,7 +46,7 @@
     }
 
     const nextPage = $derived.by(() => {
-        for (let i = page + 1; i <= totalPages - 1; i++) {
+        for (let i = page + 1; i <= pages.length - 1; i++) {
             if (!getDisabled(i)) return i;
         }
     });
@@ -37,11 +57,7 @@
     }
 
     function getDisabled(i: number) {
-        if (Array.isArray(disabled)) {
-            return disabled[i];
-        } else {
-            return disabled?.(i);
-        }
+        return pages[i].disabled || pages[i].hidden;
     }
 </script>
 <div class="flex gap-3 justify-center items-center">
@@ -53,22 +69,24 @@
         <MdiChevronLeft />
     </button>
     <!-- eslint-disable-next-line svelte/require-each-key -->
-    {#each Array.from({ length: totalPages }) as _, i}
+    {#each pages as { name: pageName, hidden }, i}
         {@const pressed = page == i}
         {@const disabled = getDisabled(i)}
-        <button
-            class={[
-                "rounded-full size-3 transition",
-                pressed 
-                    ? "preset-filled-primary-500 scale-150"
-                    : "preset-filled-surface-300-700",
-                disabled && "cursor-not-allowed"
-            ]}
-            onclick={() => {if (!disabled) page = i}}
-            {...a11yLabel(`Go to Page ${i}`)}
-            aria-pressed={pressed}
-            {disabled}
-        ></button>
+        {#if !hidden}
+            <button
+                class={[
+                    "rounded-full size-3 transition",
+                    pressed 
+                        ? "preset-filled-primary-500 scale-150"
+                        : "preset-filled-surface-300-700",
+                    disabled && "cursor-not-allowed"
+                ]}
+                onclick={() => {if (!disabled) page = i}}
+                {...a11yLabel(`Go to ${pageName}`)}
+                aria-pressed={pressed}
+                {disabled}
+            ></button>
+        {/if}
     {/each}
     <button
         class="btn btn-sm preset-tonal"

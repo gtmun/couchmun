@@ -18,7 +18,7 @@
     import { formatValidationError } from "$lib/motions/form_validation";
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
     import type { DelegateID, Motion } from "$lib/types";
-    import { hasKey } from "$lib/util";
+    import { hasKey, NO_FIGURE } from "$lib/util";
     import { proxify } from '$lib/util/sv.svelte';
     import { parseTime } from "$lib/util/time";
     import MdiPlus from "~icons/mdi/plus";
@@ -241,7 +241,7 @@
     <!-- Number of speakers display -->
     {#if hasField(inputMotion, ["totalTime", "speakingTime"])}
     <div class="text-center">
-        <strong>Number of speakers</strong>: {numSpeakersStr(inputMotion.totalTime, inputMotion.speakingTime) ?? '-'}
+        <strong>Number of speakers</strong>: {numSpeakersStr(inputMotion.totalTime, inputMotion.speakingTime) ?? NO_FIGURE}
     </div>
     {/if}
 

@@ -32,7 +32,7 @@
         /**
          * The speakers list component (to implement logic for).
          */
-        speakersList: SpeakerList | undefined,
+        speakersList?: SpeakerList,
 
         /**
          * The duration (in seconds) for the timers.

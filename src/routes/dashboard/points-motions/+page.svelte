@@ -22,7 +22,7 @@
   import { createMotionSchema, MOTION_DEFS } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import type { Motion } from "$lib/types";
-  import { a11yLabel, hasKey } from "$lib/util";
+  import { a11yLabel, hasKey, NO_FIGURE } from "$lib/util";
   import { createSortable, handleDrag } from "$lib/util/dnd";
   import { proxify } from "$lib/util/sv.svelte";
   import { stringifyTime } from "$lib/util/time";
@@ -80,7 +80,7 @@
 
 
   function motionName(m: Motion) {
-    const kindLabel = MOTION_DEFS[m.kind].label ?? "-";
+    const kindLabel = MOTION_DEFS[m.kind].label ?? NO_FIGURE;
     const extension = hasKey(m, "isExtension") && m.isExtension;
     
     return kindLabel + (extension ? ' (Extension)': '');
@@ -217,10 +217,10 @@
                 <td>
                   <DelLabel attrs={delAttrs} fallbackName={delName} inline />
                 </td>
-                <td>{apply(motion, ["topic"], m => m.topic, "-")}</td>
-                <td>{hasKey(motion, 'totalSpeakers') ? stringifyTime(motion.totalSpeakers * motion.speakingTime) : apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), "-")}</td>
-                <td>{apply(motion, ["speakingTime"], m => stringifyTime(m.speakingTime), "-")}</td>
-                <td>{hasKey(motion, 'totalSpeakers') ? motion.totalSpeakers : apply(motion, ["totalTime", "speakingTime"], m => numSpeakersStr(m.totalTime, m.speakingTime), "-")}</td>
+                <td>{apply(motion, ["topic"], m => m.topic, NO_FIGURE)}</td>
+                <td>{hasKey(motion, 'totalSpeakers') ? stringifyTime(motion.totalSpeakers * motion.speakingTime) : apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), NO_FIGURE)}</td>
+                <td>{apply(motion, ["speakingTime"], m => stringifyTime(m.speakingTime), NO_FIGURE)}</td>
+                <td>{hasKey(motion, 'totalSpeakers') ? motion.totalSpeakers : apply(motion, ["totalTime", "speakingTime"], m => numSpeakersStr(m.totalTime, m.speakingTime), NO_FIGURE)}</td>
                 <td>
                   <div class="flex flex-row justify-end">
                     <button
