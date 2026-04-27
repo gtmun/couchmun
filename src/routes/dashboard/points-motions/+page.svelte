@@ -214,6 +214,7 @@
                   "data-dnd-dragging:preset-tonal-primary"
                 ]}
                 animate:flip={{ duration: 150 }}
+                ondblclick={() => openModals.editMotion = i}
                 {...a11yLabel(`${delName}'s Motion`)}
               >
                 <td>{motionName(motion)}</td>
