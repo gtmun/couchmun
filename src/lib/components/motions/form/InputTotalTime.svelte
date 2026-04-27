@@ -1,6 +1,4 @@
 <script lang="ts">
-    import { fade } from "svelte/transition";
-
     import type { InputComponentProps } from "$lib/motions/definitions";
     import { a11yLabel, hasKey, lazyslide } from "$lib/util";
     import { sanitizeTime, stringifyTime } from "$lib/util/time";
@@ -10,7 +8,6 @@
     let {
         name,
         error,
-        focused = false,
         value = $bindable(),
         isExtending,
         motion
@@ -26,16 +23,14 @@
         }
     }
 </script>
-<label class="label">
+<label class="label group">
     <div class="flex justify-between">
         <span>
             Total Time
-            {#if focused}
-                <!-- Time guide -->
-                <span class="text-surface-500" transition:fade={{ duration: 150 }}>
-                    &middot; {sanitizeTime(value)}
-                </span>
-            {/if}
+            <!-- Time guide -->
+            <span class="text-surface-500 not-group-has-focus-within:opacity-0 transition-opacity duration-150">
+                &middot; {sanitizeTime(value)}
+            </span>
         </span>
         {#if isExtending}
             <button

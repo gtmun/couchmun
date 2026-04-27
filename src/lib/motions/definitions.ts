@@ -71,7 +71,6 @@ export const MOTION_DEFS = {
 export type InputComponentProps<V> = {
     name: string,
     error?: boolean,
-    focused?: boolean,
     value?: V,
     isExtending?: boolean,
     motion: Motion | null

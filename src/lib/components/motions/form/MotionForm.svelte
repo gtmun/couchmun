@@ -83,7 +83,6 @@
         }
     }
 
-    let activeElement = $state<HTMLElement>();
     // Motions that you can input into dropdown (taking into account provided preferences)
     let allowedMotions = $derived.by(() => {
         // A map indicating whether a given motion type should appear.
@@ -182,7 +181,6 @@
     }
 </script>
 
-<svelte:document bind:activeElement />
 <form 
     onsubmit={submitMotion}
     oninput={() => inputError = undefined}
@@ -229,7 +227,6 @@
             <Component
                 {name}
                 error={inputError?.path.includes(name)}
-                focused={(activeElement as any)?.name === name}
                 bind:value={(inputMotion as any)[name]}
                 isExtending={isExtending(inputMotion)}
                 motion={$selectedMotion}

@@ -1,13 +1,10 @@
 <script lang="ts">
-    import { fade } from "svelte/transition";
-
     import type { InputComponentProps } from "$lib/motions/definitions";
     import { parseTime, sanitizeTime, stringifyTime } from "$lib/util/time";
 
     type Props = InputComponentProps<string>;
     let {
         name,
-        focused = false,
         value = $bindable(),
         error,
         isExtending
@@ -21,16 +18,14 @@
 
     const inpId = $props.id();
 </script>
-<label class="label" for="input-stime-{inpId}">
+<label class="label group" for="input-stime-{inpId}">
     <div class="flex justify-between">
         <span>
             Speaking Time
-            {#if focused}
-                <!-- Time guide -->
-                <span class="text-surface-500" transition:fade={{ duration: 150 }}>
-                    &middot; {sanitizeTime(value)}
-                </span>
-            {/if}
+            <!-- Time guide -->
+            <span class="text-surface-500 not-group-has-focus-within:opacity-0 transition-opacity duration-150">
+                &middot; {sanitizeTime(value)}
+            </span>
         </span>
         <div class="flex gap-1 items-center">
             <!-- Items are const and won't change, so key not necessary -->
