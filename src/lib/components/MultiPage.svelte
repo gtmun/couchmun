@@ -3,7 +3,7 @@
     import type { Snippet } from "svelte";
     import { fly, slide } from "svelte/transition";
     
-    import PaginatorDots from "$lib/components/controls/PaginatorDots.svelte";
+    import PaginatorDots, { type DotPage } from "$lib/components/controls/PaginatorDots.svelte";
     import MdiChevronLeft from "~icons/mdi/chevron-left";
     import MdiChevronRight from "~icons/mdi/chevron-right";
     
@@ -11,21 +11,7 @@
         /**
          * List of pages defined in this multipage.
         */
-        pages: {
-            /** The display name of the page. */
-            name: string,
-            /** 
-             * Whether this page is disabled.
-             * If set to true, this page is visible but cannot be accessed or traversed to
-             * by the typical controls.
-            */
-            disabled?: boolean,
-            /**
-             * Whether this page is hidden.
-             * If set to true, this page cannot be seen by the typical controls.
-             */
-            hidden?: boolean
-        }[],
+        pages: DotPage[],
         /**
          * The current page index.
          * 
@@ -52,7 +38,6 @@
     }: Props = $props();
 
     // Pagination:
-    let totalPages = $derived(pages.length);
     let paginator = $state<PaginatorDots>();
     let pageIncreased = $state(true);
 
@@ -72,14 +57,12 @@
             {/key}
         </div>
         <PaginatorDots
-            {totalPages}
             bind:this={paginator}
             bind:page={() => page, np => {
                 pageIncreased = Math.sign(np - page) >= 0;
                 page = np;
             }}
-            disabled={pages.map(p => p.disabled ?? false)}
-            hidden={pages.map(p => p.hidden ?? false)}
+            {pages}
         />
         <div class="flex justify-end items-center h-6">
             {@render topTail?.(page)}
@@ -109,7 +92,7 @@
         </button>
         <button 
             class="btn preset-filled-primary-500"
-            disabled={page >= totalPages - 1}
+            disabled={page >= pages.length - 1}
             onclick={() => paginator?.incrementPage()}
         >
             Next
