@@ -11,11 +11,15 @@
  * or the moving element by using data-dnd-dragging:... as Tailwind classes.
  */
 
+import { Feedback, type FeedbackType } from "@dnd-kit/dom";
 import type { DragDropEventHandlers } from "@dnd-kit/svelte";
 import { createSortable as _createSortable, isSortable, type CreateSortableInput } from "@dnd-kit/svelte/sortable";
 
-export function createSortable(input: CreateSortableInput) {
-    return _createSortable({ feedback: "clone", ...input });
+export function createSortable(input: CreateSortableInput, feedback: FeedbackType = "clone") {
+    return _createSortable({
+        ...input,
+        plugins: (defaults) => [...defaults, Feedback.configure({ feedback })]
+    });
 }
 
 type OnMove = (oldIdx: number, newIdx: number) => void;
@@ -30,9 +34,9 @@ type DndEventHandlerParam = Pick<Parameters<DndEventHandler>[0], "operation">;
  * 
  * ```svelte
  * <DragDropProvider
- *     onDragMove={handleDrag(dndItems)}
+ *     onDragOver={handleDrag(dndItems)}
  *     onDragEnd={handleDrag(
- *         (oldIdx, newIdx) => order = move(dndItems, oldIdx, newIdx),
+ *         () => order = dndItems,
  *         { delay: 300 }
  *     )}
  * >
@@ -66,12 +70,9 @@ export function handleDrag(
     
     // Actual event handler, which finds the indexes and performs the move on the indices.
     return (e: DndEventHandlerParam) => {
-        const { source, canceled } = e.operation;
-        if (!canceled && isSortable(source)) {
-            const oldIdx = source.sortable.initialIndex;
-            const newIdx = source.sortable.index;
-            
-            callback(oldIdx, newIdx);
+        const { source, target, canceled } = e.operation;
+        if (!canceled && isSortable(source) && isSortable(target)) {
+            callback(source.index, target.index);
         }
     };
 }
