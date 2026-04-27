@@ -10,6 +10,7 @@
     import { Dialog } from "@skeletonlabs/skeleton-svelte";
     import { tick, type Snippet } from "svelte";
     import { flip } from "svelte/animate";
+    import { slide } from "svelte/transition";
 
     import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
@@ -33,20 +34,26 @@
          */
         delegates?: Delegate[];
         /**
-         * The controls at the bottom of the speaker list
-         * which handle the addition of new speakers.
+         * Specifies what delegates can be input in the combobox.
          * 
-         * If this prop is defined, this overrides the default add delegate controls
-         * provided by this component.
+         * If not specified, this falls back to `delegates`.
          */
-        controls?: Snippet;
+        comboboxDelegates?: Delegate[];
+
         /**
-         * Controls placed above the add speakers control.
-         * 
-         * If `controls` is defined, neither this nor the default add speakers control
-         * will appear.
-         */
-        subcontrols?: Snippet;
+         * If enabled, the controls at the bottom of the speakers list
+         * (the "add speakers", "clear speakers", and "set first/last speaker" options)
+         * are hidden.
+        */
+        hideControls?: boolean;
+
+        /**
+         * If provided, this displays the "set first/last speaker" option,
+         * which allows you to select whether this delegate is placed first or last
+         * in the list.
+        */
+        proposer?: DelegateID;
+        
         /**
          * The title of the component, which appears at the top. 
          * 
@@ -73,8 +80,9 @@
     let {
         order = $bindable([]),
         delegates = [],
-        controls = undefined,
-        subcontrols = undefined,
+        comboboxDelegates,
+        hideControls = false,
+        proposer = undefined,
         title = "Speakers List",
         extra,
         onBeforeSpeakerUpdate = undefined,
@@ -204,7 +212,7 @@
         return true;
     }
 
-    export function addSpeakerFirst(key: number): boolean {
+    function addSpeakerFirst(key: number): boolean {
         if (!delegates.some(k => k.id === key)) return false;
 
         // Successful, so add speakers:
@@ -214,7 +222,7 @@
 
         return true;
     }
-    export function addSpeakerLast(key: number): boolean {
+    function addSpeakerLast(key: number): boolean {
         if (!delegates.some(k => k.id === key)) return false;
 
         // Successful, so add speakers:
@@ -357,15 +365,26 @@
         </ol>
     </DragDropProvider>
 
-    {#if controls}
-        {@render controls()}
-    {:else}
+    {#if !hideControls}
         <div class="flex flex-col items-stretch gap-1">
-            {@render subcontrols?.()}
+            <!-- First/Last Speaker display -->
+            {#if typeof proposer !== "undefined" && !order.some(s => s.key == proposer)}
+                <div
+                    class="card card-filled p-2 flex justify-between items-center preset-filled-surface-200-800"
+                    transition:slide
+                >
+                    <DelLabel attrs={findDelegate(delegates, proposer)} inline />
+                    <div>
+                        <button class="btn preset-filled-primary-500" onclick={() => addSpeakerFirst(proposer)}>First</button>
+                        <button class="btn preset-filled-primary-500" onclick={() => addSpeakerLast(proposer)}>Last</button>
+                    </div>
+                </div>
+            {/if}
+            <!-- Add/Clear Speakers list -->
             <div class="flex flex-row gap-1 items-center">
                 <!-- Delegate combobox -->
                 <DelCombobox
-                    {delegates}
+                    delegates={comboboxDelegates ?? delegates}
                     selectionBehavior="clear"
                     class="grow"
                     forgetSelected

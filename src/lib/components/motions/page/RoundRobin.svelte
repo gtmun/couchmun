@@ -10,7 +10,7 @@
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import type { Motion, Speaker } from "$lib/types";
-
+    
     interface Props {
         motion: Motion & { kind: "rr" };
         order: Speaker[]
@@ -22,7 +22,11 @@
     
     let timerPanel = $state<TimerPanel>();
     let speakersList = $state<SpeakerList>();
-    
+    const comboboxDelegates = $derived.by(() => {
+        let addedDelegates = new Set(order.map(s => s.key));
+        return $delegates.filter(d => !addedDelegates.has(d.id));
+    });
+
     function reset() {
         timerPanel?.reset();
     }
@@ -58,11 +62,11 @@
         <SpeakerList
             bind:order
             delegates={$delegates}
+            proposer={motion.delegate}
+            {comboboxDelegates}
             bind:this={speakersList}
             onBeforeSpeakerUpdate={reset}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
-        >
-            {#snippet controls()}{/snippet}
-        </SpeakerList>
+        />
     </div>
 </div>
