@@ -62,7 +62,6 @@
     <!-- Left/Top -->
     <div class="flex flex-col grow shrink-0 basis-full lg:basis-auto">
         <TimerPanel
-            delegates={$delegates}
             {speakersList}
             durations={[motion.speakingTime, motion.totalTime]}
             timerInteraction={$preferences.pauseMainTimer ? "sync" : "cascade"}

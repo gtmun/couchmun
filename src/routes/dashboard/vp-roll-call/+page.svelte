@@ -213,7 +213,6 @@
             <!-- Left/Top -->
             <div class="flex flex-col grow shrink-0 basis-full lg:basis-auto">
                 <TimerPanel
-                    delegates={$delegates}
                     speakersList={rightsSpeakersList}
                     durations={[rightsDuration]}
                     onDurationUpdate={(_, d) => rightsDuration = d}

@@ -75,7 +75,6 @@
     <!-- Left/Top -->
     <div class="flex flex-col grow shrink-0 basis-full lg:basis-auto">
         <TimerPanel
-            {delegates}
             {speakersList}
             durations={[duration]}
             onDurationUpdate={(_, d) => duration = d}

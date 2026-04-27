@@ -118,7 +118,10 @@
      * Gets the data for the current selected speaker.
      */
     export function selectedSpeaker() {
-        return $state.snapshot(findSpeaker(selectedSpeakerId));
+        let snap = $state.snapshot(findSpeaker(selectedSpeakerId));
+        return snap
+            ? Object.assign({}, snap, { delegate: findDelegate(delegates, snap.key) })
+            : undefined;
         
     }
     /**

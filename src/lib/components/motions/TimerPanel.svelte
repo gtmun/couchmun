@@ -17,18 +17,12 @@
 
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import SpeakerList from "$lib/components/SpeakerList.svelte";
-    import { findDelegate, type Delegate } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";
     import { lazyslide } from "$lib/util";
     import { watchEffect } from "$lib/util/sv.svelte";
     import MdiChevronDown from "~icons/mdi/chevron-down";
 
     interface Props {
-        /**
-         * The delegate array.
-         */
-        delegates: Delegate[]
-
         /**
          * The speakers list component (to implement logic for).
          */
@@ -89,7 +83,6 @@
         label?: Snippet<[string]>
     }
     let {
-        delegates,
         speakersList,
         durations,
         editable = false,
@@ -215,7 +208,7 @@
         <div transition:lazyslide>
             {#if typeof selectedSpeaker !== "undefined"}
                 <div class="pb-5">
-                    <DelLabel attrs={findDelegate(delegates, selectedSpeaker.key)} {label} />
+                    <DelLabel attrs={selectedSpeaker.delegate} {label} />
                 </div>
             {/if}
         </div>
