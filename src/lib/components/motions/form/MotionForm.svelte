@@ -124,6 +124,8 @@
             inputError = undefined;
 
             submit?.(result.data);
+            // Refocus to top of form:
+            (formEl?.children[0] as HTMLElement)?.focus();
         } else {
             inputError = formatValidationError(result.error);
         }
