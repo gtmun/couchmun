@@ -79,21 +79,18 @@
 {#if _flagURL}
     <img
         src={_flagURL}
-        alt="Flag of {label}"
+        alt=""
         class={height}
     >
 {:else if fallback === "un"}
     <img
         src={getFlagUrl("un", false)!.toString()}
-        alt="Flag of {label} (missing)"
+        alt=""
         class={height}
     >
 {:else if fallback === "icon"}
     <!-- HACK: Just don't use this if not inline. -->
-    <MdiFlagOff 
-        role="img" 
-        aria-label="Flag of {label} (missing)"
-    />
+    <MdiFlagOff role="none" />
 {:else}
     <!-- do nothing -->
 {/if}
