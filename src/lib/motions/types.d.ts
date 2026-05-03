@@ -28,4 +28,4 @@ export type MotionInputWithFields<F extends string> = Form<WithFields<Motion, F>
 /**
  * Checks that type A and B are identical types.
  */
-export type Is<A, B, True = unknown, False = never> = NoInfer<A> extends B ? NoInfer<B> extends A ? True : False : False;
+export type Is<A, B, True = true, False = false> = NoInfer<A> extends B ? NoInfer<B> extends A ? True : False : False;

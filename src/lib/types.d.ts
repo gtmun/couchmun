@@ -47,7 +47,7 @@ export type DelegateAttrs = {
  * All possible categories of motion.
  * Note that this doesn't perfectly align to `MotionKind`.
  */
-export type SortKind = "mod" | "unmod" | "rr" | "other" | "ext";
+export type SortKind = MotionKind | "ext";
 /**
  * All possible properties that can define the order between
  * motions of the same `SortKind`.
@@ -174,37 +174,33 @@ export type Settings = {
 export type DelegatePresence = "NP" | "P" | "PV";
 
 // Motions
+type BaseMotion = {
+    id: MotionID,
+    delegate: DelegateID,
+};
 /**
  * Data relating to a motion's properties.
  */
-export type Motion = {
-    id: MotionID,
-    delegate: DelegateID,
+export type Motion = BaseMotion & ({
     kind: "mod", 
     totalTime: number,
     speakingTime: number,
     topic: string,
     isExtension: boolean
 } | {
-    id: MotionID,
-    delegate: DelegateID,
     kind: "unmod",
     totalTime: number,
     isExtension: boolean
 } | {
-    id: MotionID,
-    delegate: DelegateID,
     kind: "rr",
     speakingTime: number,
     topic: string
     totalSpeakers: number
 } | {
-    id: MotionID,
-    delegate: DelegateID,
     kind: "other",
     totalTime?: number,
     topic?: string
-};
+});
 export type MotionKind = Motion["kind"];
 
 /**

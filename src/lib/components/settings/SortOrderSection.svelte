@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { SessionDatabase } from "$lib/db/index.svelte";
-    import { SORT_KIND_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
+    import { getSortLabel } from "$lib/motions/definitions";
+    import { SORT_PROPERTY_NAMES } from "$lib/motions/sort";
     import type { SortOrder } from "$lib/types";
     import { a11yLabel } from "$lib/util";
     import MdiArrowDown from "~icons/mdi/arrow-down";
@@ -78,7 +79,7 @@
                                         <MdiCircleSmall />
                                     {/if}
                                 </button>
-                                {SORT_KIND_NAMES[k]}
+                                {getSortLabel(k)}
                             </div>
                         {/each}
                     </td>
@@ -88,7 +89,7 @@
                             <!-- eslint-disable-next-line svelte/require-each-key -->
                             {#each entry.order as key, oi}
                             <div class="card-filled p-1 flex items-center">
-                                <span>{SORT_PROPERTY_NAMES[key.property]}</span>
+                                <span>{SORT_PROPERTY_NAMES[key.property].toLowerCase()}</span>
                                 <button onclick={() => {
                                     db.settings.update("sortOrder", ({ val: order }) => { order[ei].order[oi].ascending = !order[ei].order[oi].ascending })
                                 }}>

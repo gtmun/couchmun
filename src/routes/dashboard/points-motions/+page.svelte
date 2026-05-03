@@ -12,26 +12,22 @@
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
   import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-  import IconLabel, { type IconComponent } from "$lib/components/IconLabel.svelte";
+  import IconLabel from "$lib/components/IconLabel.svelte";
   import EditMotionContent from "$lib/components/modals/EditMotionContent.svelte";
   import UniModal from "$lib/components/modals/UniModal.svelte";
-  import MotionForm, { numSpeakersStr } from "$lib/components/motions/form/MotionForm.svelte";
+  import MotionForm from "$lib/components/motions/form/MotionForm.svelte";
   import OrientedCollapsible from "$lib/components/OrientedCollapsible.svelte";
   import { getSessionContext } from "$lib/context/index.svelte";
   import { findDelegate } from "$lib/db/delegates";
   import { db } from "$lib/db/index.svelte";
-  import { createMotionSchema, MOTION_DEFS } from "$lib/motions/definitions";
+  import { createMotionSchema, MOTION_DEFS, type MotionDisplayFunction } from "$lib/motions/definitions";
   import { compareMotions as motionComparator } from "$lib/motions/sort";
   import type { Motion } from "$lib/types";
   import { a11yLabel, hasKey, NO_FIGURE } from "$lib/util";
   import { createSortable, handleDrag } from "$lib/util/dnd";
   import { proxify } from "$lib/util/sv.svelte";
-  import { stringifyTime } from "$lib/util/time";
-  import MdiAccountClock from "~icons/mdi/account-clock";
-  import MdiAccountMultiple from "~icons/mdi/account-multiple";
   import MdiCancel from "~icons/mdi/cancel";
   import MdiCheck from "~icons/mdi/check";
-  import MdiClock from "~icons/mdi/clock";
   import MdiPencil from "~icons/mdi/pencil";
   import MdiSort from "~icons/mdi/sort";
   import MdiUndo from "~icons/mdi/undo";
@@ -64,47 +60,8 @@
     return kindLabel + (extension ? ' (Extension)': '');
   }
 
-  interface MotionDisplayEntry {
-    header: string,
-    icon?: IconComponent,
-    value: string | number | undefined,
-    right?: boolean,
-  }
-  const MDE = {
-    topic: { header: "Topic" },
-    nSpeakers: { header: "Speakers", icon: MdiAccountMultiple, right: true },
-    speakingTime: { header: "Speaking Time", icon: MdiAccountClock, right: true },
-    totalTime: { header: "Total Time", icon: MdiClock, right: true },
-  } satisfies Record<string, Omit<MotionDisplayEntry, "value">>;
-  function motionDisplayEntries(m: Motion): MotionDisplayEntry[] {
-    if (m.kind === "mod") {
-      return [
-        { ...MDE.topic, value: m.topic },
-        { ...MDE.nSpeakers, value: numSpeakersStr(m.totalTime, m.speakingTime) },
-        { ...MDE.speakingTime, value: stringifyTime(m.speakingTime) },
-        { ...MDE.totalTime, value: stringifyTime(m.totalTime) },
-      ];
-    } else if (m.kind === "unmod") {
-      return [
-        { ...MDE.topic, value: undefined },
-        { ...MDE.totalTime, value: stringifyTime(m.totalTime) },
-      ];
-    } else if (m.kind === "rr") {
-      let nSpeakers = $delegates.filter(d => d.isPresent()).length;
-      return [
-        { ...MDE.topic, value: m.topic },
-        { ...MDE.nSpeakers, value: nSpeakers },
-        { ...MDE.speakingTime, value: stringifyTime(m.speakingTime) },
-        { ...MDE.totalTime, value: stringifyTime(nSpeakers * m.speakingTime) },
-      ];
-    } else if (m.kind === "other") {
-      return [
-        { ...MDE.topic, value: m.topic },
-        { ...MDE.totalTime, value: typeof m.totalTime === "number" ? stringifyTime(m.totalTime) : undefined, right: true },
-      ];
-    } else {
-      return m satisfies never;
-    }
+  function motionDisplayEntries(m: Motion) {
+    return (MOTION_DEFS[m.kind].display as MotionDisplayFunction<Motion>)(m, $delegates);
   }
 
   // MOTION BUTTONS

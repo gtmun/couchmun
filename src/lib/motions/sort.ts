@@ -8,22 +8,18 @@
  * See the docs for `SortOrder` in `$lib/types` for more details about how sort order is set up.
  */
 
-import type { Motion, SortKind, SortOrder, SortOrderProperty } from "$lib/types";
+import type { Motion, MotionKind, SortKind, SortOrder, SortOrderProperty } from "$lib/types";
 import { compare, hasKey, type Comparator } from "$lib/util";
 
-export const SORT_KIND_NAMES: Record<SortKind, string> = {
-    mod: "Moderated Caucus",
-    unmod: "Unmoderated Caucus",
-    rr: "Round Robin",
-    other: "Other",
+export const SORT_KIND_EXTRAS_NAMES: Record<Exclude<SortKind, MotionKind>, string> = {
     ext: "Extension"
 };
 export const SORT_PROPERTY_NAMES: Record<SortOrderProperty, string> = {
-    totalTime: "total time",
-    speakingTime: "speaking time",
-    topic: "topic",
-    delegate: "delegate key",
-    nSpeakers: "number of speakers"
+    totalTime: "Total Time",
+    speakingTime: "Speaking Time",
+    topic: "Topic",
+    delegate: "Delegate Key",
+    nSpeakers: "Number of Speakers"
 };
 
 type AllKeys<O> = O extends object ? keyof O : never;

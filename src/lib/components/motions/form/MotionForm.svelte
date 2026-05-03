@@ -7,15 +7,11 @@
     import { slide } from 'svelte/transition';
     import type { z } from "zod";
 
-    import InputExtension from './InputExtension.svelte';
-    import InputSpeakingTime from './InputSpeakingTime.svelte';
-    import InputString from './InputString.svelte';
-    import InputTotalTime from './InputTotalTime.svelte';
-
     import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
-    import { MOTION_BASE_FIELDS, MOTION_DEFS, type InputKind, type InputProperties, type MotionSchema } from "$lib/motions/definitions";
+    import { MOTION_BASE_FIELDS, MOTION_DEFS, MOTION_GROUP_LABELS, type FieldProperties, type MotionSchema } from "$lib/motions/definitions";
     import { formatValidationError } from "$lib/motions/form_validation";
+    import { getComponent } from '$lib/motions/input';
     import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
     import type { DelegateID, Motion } from "$lib/types";
     import { hasKey, NO_FIGURE } from "$lib/util";
@@ -64,36 +60,20 @@
     
     const motionDef = $derived(MOTION_DEFS[inputMotion.kind]);
     
-    function getComponent(k: InputKind) {
-        if (k === "totalTime") {
-            return InputTotalTime;
-        } else if (k === "speakingTime") {
-            return InputSpeakingTime;
-        } else if (k === "topic") {
-            return InputString;
-        } else if (k === "extension") {
-            // Only allow if motion is the same
-            if (inputMotion.kind === $selectedMotion?.kind) {
-                return InputExtension;
-            }
-        } else if (k === "none") {
-            return undefined;
-        } else {
-            k satisfies never;
-        }
-    }
+    let dropdownMotions = $derived.by(() => {
+        type GroupLabel = keyof typeof MOTION_GROUP_LABELS;
 
-    // Motions that you can input into dropdown (taking into account provided preferences)
-    let allowedMotions = $derived.by(() => {
         // A map indicating whether a given motion type should appear.
         // If mapped to false, it will not appear.
         // If mapped to true (or not mapped at all), it will also appear.
         const filters: Record<string, boolean> = {
             "rr": $preferences.enableMotionRoundRobin
         };
-
-        return Object.entries(MOTION_DEFS)
-            .filter(([kind]) => filters[kind] ?? true);
+        let motions = Object.entries<{ label: string, group?: GroupLabel }>(MOTION_DEFS)
+            .filter(([kind, _]) => filters[kind] ?? true)
+            .map(([kind, { label, group }]) => ({ kind, label, group }));
+        
+        return Map.groupBy(motions, ({ group }) => group);
     });
     
     // Motion validation and submission.
@@ -213,17 +193,24 @@
         <select 
             class={["select", inputError?.path.includes("kind") && "preset-input-error"]}
             bind:value={inputMotion.kind}
-            >
-            {#each allowedMotions as [value, {label}] (value)}
-                <option {value} {label}></option>
+        >
+            {#snippet spreadOptions(options: { kind: string, label: string }[])}
+                {#each options as { kind, label } (kind)}
+                    <option value={kind} {label}></option>
+                {/each}
+            {/snippet}
+            {#each dropdownMotions as [group, options] (group)}
+                {#if group}
+                    <optgroup label={MOTION_GROUP_LABELS[group]}>{@render spreadOptions(options)}</optgroup>
+                {:else}
+                    {@render spreadOptions(options)}
+                {/if}
             {/each}
         </select>
     </label>
 
-    {#each Object.entries(motionDef.fields as Record<string, InputProperties>) as [name, prop] (name)}
-        {@const type = typeof prop === "string" ? prop : prop.type}
-        {@const args = typeof prop === "string" ? {} : prop}
-        {@const Component = getComponent(type)}
+    {#each Object.entries<FieldProperties>(motionDef.fields) as [name, {input, schema: _schema, ...args}] (name)}
+        {@const Component = getComponent(input, { inputKind: inputMotion.kind, prevMotionKind: $selectedMotion?.kind })}
 
         {#if Component}
             <Component
