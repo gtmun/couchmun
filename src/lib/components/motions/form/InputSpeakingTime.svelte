@@ -1,13 +1,14 @@
 <script lang="ts">
+    import InputTime from "./InputTime.svelte";
+
     import type { InputComponentProps } from "$lib/motions/definitions";
-    import { parseTime, sanitizeTime, stringifyTime } from "$lib/util/time";
+    import { parseTime, stringifyTime } from "$lib/util/time";
 
     type Props = InputComponentProps<string>;
     let {
-        name,
         value = $bindable(),
-        error,
-        isExtending
+        isExtending,
+        ...rest
     }: Props = $props();
 
     const speakingTimeButtons = [
@@ -15,18 +16,16 @@
         { time: 45, label: ":45" },
         { time: 60, label: "1:00" },
     ];
-
-    const inpId = $props.id();
 </script>
-<label class="label group" for="input-stime-{inpId}">
-    <div class="flex justify-between">
-        <span>
-            Speaking Time
-            <!-- Time guide -->
-            <span class="text-surface-500 not-group-has-focus-within:opacity-0 transition-opacity duration-150">
-                &middot; {sanitizeTime(value)}
-            </span>
-        </span>
+
+<InputTime
+    bind:value
+    {isExtending}
+    {...rest}
+    label="Speaking Time"
+    inputDisabled={isExtending}
+>
+    {#snippet sideButtons(o)}
         <div class="flex gap-1 items-center">
             <!-- Items are const and won't change, so key not necessary -->
             <!-- eslint-disable-next-line svelte/require-each-key -->
@@ -34,22 +33,16 @@
                 <button
                     type="button"
                     class="btn btn-sm preset-filled tabular-nums"
-                    disabled={isExtending || (typeof value !== "undefined" && parseTime(value) == btn.time)}
-                    onclick={() => value = stringifyTime(btn.time)}
+                    disabled={isExtending || (typeof o.value !== "undefined" && parseTime(o.value) == btn.time)}
+                    onclick={() => {
+                        o.value = stringifyTime(btn.time);
+                        o.focus();
+                    }}
                     tabindex="-1"
                 >
                     {btn.label}
                 </button>
             {/each}
         </div>
-    </div>
-    <input
-        {name}
-        id="input-stime-{inpId}"
-        class={["input", error && "preset-input-error"]}
-        placeholder="mm:ss" 
-        bind:value
-        onchange={() => value = sanitizeTime(value)}
-        disabled={isExtending}
-    >
-</label>
+    {/snippet}
+</InputTime>
