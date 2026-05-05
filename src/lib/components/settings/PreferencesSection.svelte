@@ -48,8 +48,6 @@
         },
 
         { type: "header", label: "Show/Hide UI" },
-        { type: "setting", key: "enableMotionRoundRobin", label: "Enable round robin" },
-        { type: "setting", key: "enableMotionExt", label: "Enable extensions" },
         { type: "setting", key: "enableWithRights", label: "Enable yes/no with rights" },
     ];
 </script>
@@ -65,39 +63,41 @@
                 {item.label}
             </div>
         {:else if item.type === "setting"}
-            <LabeledSwitch 
-                name="prefs-{item.key}"
-                bind:checked={
-                    () => preferences[item.key],
-                    pref => db.settings.update("preferences", (prefs) => { prefs.val[item.key] = pref; })
-                }
-            >
-                <div class="flex items-center gap-1">
-                    {item.label}
-                    {#if item.info && item.info.length}
-                        <Tooltip openDelay={150}>
-                            <Tooltip.Trigger>
-                                <MdiInformationOutline class="text-sm text-surface-500" />
-                            </Tooltip.Trigger>
-                            <Portal>
-                                <Tooltip.Positioner>
-                                    <Tooltip.Content class="card bg-surface-100-900 p-4 shadow max-w-100">
-                                        <span class="text-sm">
-                                            <!-- eslint-disable-next-line svelte/require-each-key -->
-                                            {#each item.info as line}
-                                                {line}<br/>
-                                            {/each}
-                                        </span>
-                                        <Tooltip.Arrow class="[--arrow-size:--spacing(2)] [--arrow-background:var(--color-surface-100-900)]">
-                                            <Tooltip.ArrowTip />
-                                        </Tooltip.Arrow>
-                                    </Tooltip.Content>
-                                </Tooltip.Positioner>
-                            </Portal>
-                        </Tooltip>
-                    {/if}
-                </div>
-            </LabeledSwitch>
+            <div class="rounded hover:bg-surface-100-900 py-1 px-1">
+                <LabeledSwitch 
+                    name="prefs-{item.key}"
+                    bind:checked={
+                        () => preferences[item.key],
+                        pref => db.settings.update("preferences", (prefs) => { prefs.val[item.key] = pref; })
+                    }
+                >
+                    <div class="flex items-center gap-1">
+                        {item.label}
+                        {#if item.info && item.info.length}
+                            <Tooltip openDelay={150}>
+                                <Tooltip.Trigger>
+                                    <MdiInformationOutline class="text-sm text-surface-500" />
+                                </Tooltip.Trigger>
+                                <Portal>
+                                    <Tooltip.Positioner>
+                                        <Tooltip.Content class="card bg-surface-100-900 p-4 shadow max-w-100">
+                                            <span class="text-sm">
+                                                <!-- eslint-disable-next-line svelte/require-each-key -->
+                                                {#each item.info as line}
+                                                    {line}<br/>
+                                                {/each}
+                                            </span>
+                                            <Tooltip.Arrow class="[--arrow-size:--spacing(2)] [--arrow-background:var(--color-surface-100-900)]">
+                                                <Tooltip.ArrowTip />
+                                            </Tooltip.Arrow>
+                                        </Tooltip.Content>
+                                    </Tooltip.Positioner>
+                                </Portal>
+                            </Tooltip>
+                        {/if}
+                    </div>
+                </LabeledSwitch>
+            </div>
         {/if}
     {/each}
 </div>

@@ -20,7 +20,7 @@
     import MdiPlus from "~icons/mdi/plus";
 
 
-    const { selectedMotion, delegates, preferences } = getSessionContext();
+    const { selectedMotion, delegates, enabledMotions } = getSessionContext();
     const defaultInputMotion = () => ({ id: crypto.randomUUID(), kind: "mod" } satisfies MotionInput);
 
     interface Props {
@@ -63,12 +63,7 @@
     let dropdownMotions = $derived.by(() => {
         type GroupLabel = keyof typeof MOTION_GROUP_LABELS;
 
-        // A map indicating whether a given motion type should appear.
-        // If mapped to false, it will not appear.
-        // If mapped to true (or not mapped at all), it will also appear.
-        const filters: Record<string, boolean> = {
-            "rr": $preferences.enableMotionRoundRobin
-        };
+        let filters: Record<string, boolean | undefined> = $enabledMotions;
         let motions = Object.entries<{ label: string, group?: GroupLabel }>(MOTION_DEFS)
             .filter(([kind, _]) => filters[kind] ?? true)
             .map(([kind, { label, group }]) => ({ kind, label, group }));
@@ -205,7 +200,7 @@
     </label>
 
     {#each Object.entries<FieldProperties>(motionDef.fields) as [name, {input, schema: _schema, ...args}] (name)}
-        {@const Component = getComponent(input, { inputKind: inputMotion.kind, prevMotionKind: $selectedMotion?.kind })}
+        {@const Component = getComponent(input, { inputKind: inputMotion.kind, prevMotionKind: $selectedMotion?.kind, extEnabled: $enabledMotions.ext ?? true })}
 
         {#if Component}
             <Component

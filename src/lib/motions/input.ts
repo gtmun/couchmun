@@ -6,14 +6,14 @@ import InputTotalTime from "$lib/components/motions/form/InputTotalTime.svelte";
 import type { MotionKind } from "$lib/types";
 
 export type InputKind = "time" | "totalTime" | "speakingTime" | "text" | "extension" | "none";
-export function getComponent(k: InputKind, state: { inputKind?: MotionKind, prevMotionKind?: MotionKind }) {
+export function getComponent(k: InputKind, state: { inputKind?: MotionKind, prevMotionKind?: MotionKind, extEnabled?: boolean }) {
     if (k === "time") return InputTime;
     if (k === "totalTime") return InputTotalTime;
     if (k === "speakingTime") return InputSpeakingTime;
     if (k === "text") return InputString;
     if (k === "extension") {
         // Only allow if motion is the same
-        if (state.inputKind === state.prevMotionKind) {
+        if (state.extEnabled && state.inputKind === state.prevMotionKind) {
             return InputExtension;
         } else {
             return undefined;

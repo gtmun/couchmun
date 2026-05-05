@@ -119,14 +119,6 @@ export type SortOrder = SortEntry[];
  */
 export type Preferences = {
     /**
-     * Whether or not to enable the round robin motion.
-     */
-    enableMotionRoundRobin: boolean,
-    /**
-     * Whether or not to enable extensions.
-     */
-    enableMotionExt: boolean,
-    /**
      * Whether or not to yes/no with rights (during VP roll call).
      */
     enableWithRights: boolean,
@@ -163,6 +155,11 @@ export type Settings = {
      * Toggleable preferences.
      */
     preferences: Preferences,
+
+    /**
+     * All enabled motions. Any omitted motions are assumed to be enabled.
+     */
+    enabledMotions: Partial<Record<SortKind, boolean>>,
 };
 
 // Attendance
@@ -308,6 +305,10 @@ export type SessionContext = {
      * Preferences (simple setting toggles).
      */
     preferences: Readable<Settings["preferences"]>,
+    /**
+     * Map of enabled motions.
+     */
+    enabledMotions: Readable<Settings["enabledMotions"]>,
     /**
      * Current topic of discussion, visible on the app bar.
      */

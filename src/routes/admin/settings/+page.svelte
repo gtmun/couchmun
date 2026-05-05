@@ -10,13 +10,16 @@
     import MotionsSection from "$lib/components/settings/MotionsSection.svelte";
     import PreferencesSection from "$lib/components/settings/PreferencesSection.svelte";
     import SortOrderSection from "$lib/components/settings/SortOrderSection.svelte";
+    import { getSessionContext } from "$lib/context/index.svelte";
     import { _legacyFixDelFlag, db, queryStore } from "$lib/db/index.svelte";
     import { toKeyValueArray, toObject } from "$lib/db/keyval";
     import { DEFAULT_PRESET_KEY, getPreset } from "$lib/delegate_presets";
     import type { Settings } from "$lib/types";
     import { downloadFile } from "$lib/util";
 
+    // FIXME: this goofiness is rather unstable
     const settings = queryStore(async () => toObject(await db.settings.toArray()) as Settings);
+    const { sortOrder, preferences, enabledMotions } = getSessionContext();
 
     let delegates = queryStore(() => db.delegates.orderBy("order").toArray(), []);
     
@@ -150,15 +153,15 @@
         </div>
         <hr class="hr" />
         <div class="panel">
-            <PreferencesSection {db} preferences={$settings.preferences} />
+            <PreferencesSection {db} preferences={$preferences} />
         </div>
         <hr class="hr" />
         <div class="panel">
-            <MotionsSection />
+            <MotionsSection {db} enabledMotions={$enabledMotions} />
         </div>
         <hr class="hr" />
         <div class="panel">
-            <SortOrderSection {db} sortOrder={$settings.sortOrder} />
+            <SortOrderSection bind:sortOrder={() => $sortOrder, val => db.settings.put({ key: "sortOrder", val })} />
         </div>
         <hr class="hr" />
         <div class="panel">

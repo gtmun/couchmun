@@ -26,15 +26,18 @@ const INPUT_KINDS = {
     time: (label: string) => ({
         input: "time",
         schema: timeSchema(label),
-        label
+        label,
+        isSortable: true
     }),
     totalTime: {
         input: "totalTime",
         schema: timeSchema("Total time"),
+        isSortable: true
     },
     speakingTime: {
         input: "speakingTime",
         schema: timeSchema("Speaking time"),
+        isSortable: true
     },
     text: (label: string, autocomplete?: string[]) => ({
         input: "text",
@@ -113,6 +116,8 @@ export type FieldProperties = {
     input: InputKind,
     /** The schema used to validate the input. */
     schema: z.ZodType,
+    /** Whether the field is sortable. */
+    isSortable?: boolean,
     /** Any arguments used for the input type. */
     [s: string]: unknown
 };
@@ -215,6 +220,35 @@ export function getSortLabel(k: SortKind) {
         ?? (SORT_KIND_EXTRAS_NAMES as Record<string, string>)[k];
 }
 
+function arrayIntersect_<T>(arrays: Iterable<T>[]): T[] {
+    if (arrays.length == 0) return [];
+    const isxSet = arrays.map(it => new Set(it))
+        .reduce((acc, set) => acc.intersection(set));
+    return Array.from(isxSet);
+}
+function getAllMotionSortableKeys(k: MotionKind): string[] {
+    const def: MotionDef = (MOTION_DEFS as Record<MotionKind, MotionDef>)[k];
+    const sortableFields = Object.entries(def.fields)
+        .filter(([_, f]) => f.isSortable)
+        .map(([k, _]) => k);
+    const computedFields = Object.keys(def.computedFields ?? {});
+    return [...sortableFields, ...computedFields];
+}
+export function getAllSortableKeys(...ks: SortKind[]): string[] {
+    const kinds: MotionKind[] = [];
+    for (const k of ks) {
+        if (k === "ext") {
+            const extensionKeys = Object.entries(MOTION_DEFS)
+                .filter(([_, d]) => hasKey(d.fields, "isExtension"))
+                .map(([k, _]) => k as MotionKind);
+            kinds.push(...extensionKeys);
+        } else {
+            kinds.push(k);
+        }
+    }
+
+    return arrayIntersect_(Array.from(kinds, k => getAllMotionSortableKeys(k)));
+}
 // ~~~ TYPE SPAGHETTI ~~~
 
 /**
