@@ -191,6 +191,32 @@ export type Motion = BaseMotion & ({
     kind: "other",
     totalTime?: number,
     topic?: string
+} | {
+    kind: "spklist",
+    speakingTime: number
+} | {
+    kind: "agenda",
+    topicOrder: string
+} | {
+    kind: "introdoc",
+    order: string,
+    readingPeriodTime: number,
+    authorsPanelTime: number,
+    qnaTime: number
+
+} | {
+    kind: "open"
+} | {
+    kind: "suspend"
+} | {
+    kind: "adjourn"
+} | {
+    kind: "divq"
+} | {
+    kind: "amendments"
+} | {
+    kind: "vp",
+    method: string
 });
 export type MotionKind = Motion["kind"];
 

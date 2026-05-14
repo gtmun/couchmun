@@ -56,7 +56,8 @@ const optionalInput = <O extends { schema: z.ZodType<unknown, string> }>({ schem
 
 export const MOTION_GROUP_LABELS = {
     opening: "Opening",
-    voting: "Voting"
+    voting: "Voting",
+    closing: "Closing"
 };
 
 /** Creates a "field" from a motion. Used for computed fields and display. */
@@ -148,7 +149,6 @@ export const MOTION_DEFS = {
             isExtension: INPUT_KINDS.extension,
         },
         display: m => [
-            { ..._MDE_TEMPLATES.topic, value: undefined },
             { ..._MDE_TEMPLATES.totalTime, value: stringifyTime(m.totalTime) },
         ]
     },
@@ -184,10 +184,91 @@ export const MOTION_DEFS = {
             { ..._MDE_TEMPLATES.totalTime, value: typeof m.totalTime === "number" ? stringifyTime(m.totalTime) : undefined, right: true },
         ]
     },
+
+    // Opening debate:
+    open: {
+        label: "Open Debate",
+        group: "opening",
+        fields: {},
+        display: () => []
+    },
+    spklist: {
+        label: "Open Speakers List",
+        group: "opening",
+        fields: {
+            speakingTime: INPUT_KINDS.speakingTime,
+        },
+        display: m => [
+            { ..._MDE_TEMPLATES.speakingTime, value: stringifyTime(m.speakingTime) }
+        ]
+    },
+    agenda: {
+        label: "Set Agenda",
+        group: "opening",
+        fields: {
+            topicOrder: INPUT_KINDS.text("Topic Order", ["1 \u2192 2", "2 \u2192 1"]),
+        },
+        display: m => [
+            { ..._MDE_TEMPLATES.topic, value: m.topicOrder }
+        ]
+    },
+    // Voting
+    introdoc: {
+        label: "Introduce Documents",
+        group: "voting",
+        fields: {
+            order: INPUT_KINDS.text("Introduction Order", ["Received", "Reverse"]),
+            readingPeriodTime: INPUT_KINDS.time("Reading Period Time"),
+            authorsPanelTime: INPUT_KINDS.time("Author's Panel Time"),
+            qnaTime: INPUT_KINDS.time("Q&A Time"),
+        },
+        display: m => [
+            { header: "Order", value: m.order },
+            { header: "Reading Period", right: true, value: stringifyTime(m.readingPeriodTime) },
+            { header: "Authors Panel", right: true, value: stringifyTime(m.authorsPanelTime) },
+            { header: "Q&A", right: true, value: stringifyTime(m.qnaTime) },
+        ]
+    },
+    amendments: {
+        label: "Introduce Amendments",
+        group: "voting",
+        fields: {},
+        display: () => []
+    },
+    divq: {
+        label: "Divide the Question",
+        group: "voting",
+        fields: {},
+        display: () => []
+    },
+    vp: {
+        label: "Enter Voting Procedure",
+        group: "voting",
+        fields: {
+            method: INPUT_KINDS.text("Method", ["Placard", "Acclamation", "Roll Call"]),
+        },
+        display: m => [
+            { header: "Method", value: m.method }
+        ]
+    },
+    // Closing
+    suspend: {
+        label: "Suspend Debate",
+        group: "closing",
+        fields: {},
+        display: () => []
+    },
+    adjourn: {
+        label: "Adjourn Debate",
+        group: "closing",
+        fields: {},
+        display: () => []
+    },
+    
 } satisfies { [K in MotionKind]: MotionDefOf<K> };
 
 /** List of every motion (as defined in `MOTION_DEFS` above). */
-const MOTION_KINDS = ["mod", "unmod", "rr", "other"] as const;
+const MOTION_KINDS = ["mod", "unmod", "rr", "other", "spklist", "agenda", "introdoc", "open", "suspend", "adjourn", "amendments", "divq", "vp"] as const satisfies readonly MotionKind[];
 /**
  * This const asserts that `MOTION_DEFS` and `MOTION_KINDS` match.
  * If it errors, you should add the missing key to `MOTION_KINDS`.
@@ -209,10 +290,13 @@ export type InputComponentProps<V> = {
  * Any kinds not specified in this list are thrown at the end.
  */
 export const DEFAULT_SORT_PRIORITY: SortOrder = [
-    { kind: ["ext"], order: [] },
-    { kind: ["rr"], order: [{ property: "speakingTime", ascending: false }] },
+    { kind: ["adjourn", "suspend"], order: [] },
+    { kind: ["vp", "divq"], order: [] },
+    { kind: ["introdoc", "amendments"], order: [] },
+    { kind: ["ext"], order: [{ property: "totalTime", ascending: false }] },
     { kind: ["unmod"], order: [{ property: "totalTime", ascending: false }] },
-    { kind: ["mod"], order: [{ property: "nSpeakers", ascending: false }, { property: "totalTime", ascending: false }] }
+    { kind: ["mod", "rr"], order: [{ property: "nSpeakers", ascending: false }, { property: "totalTime", ascending: false }] },
+    // <-- Everything else is presumed to be here -->
 ];
 
 export function getSortLabel(k: SortKind) {

@@ -19,7 +19,10 @@ export const SORT_PROPERTY_NAMES = {
     speakingTime: "Speaking Time",
     topic: "Topic",
     delegate: "Delegate Key",
-    nSpeakers: "Number of Speakers"
+    nSpeakers: "Number of Speakers",
+    readingPeriodTime: "Reading Period Time",
+    authorsPanelTime: "Author's Panel Time",
+    qnaTime: "Q&A Time",
 } satisfies Record<string, string>;
 
 function getSortKind(m: Motion): SortKind | undefined {
