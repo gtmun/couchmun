@@ -50,14 +50,5 @@
 		"@sveltejs/kit": {
 			"cookie": "^0.7.0"
 		}
-	},
-	"pnpm": {
-		"overrides": {
-			"cookie": "^0.7.0"
-		},
-		"onlyBuiltDependencies": [
-			"esbuild",
-			"unrs-resolver"
-		]
 	}
 }
