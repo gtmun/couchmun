@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
   import { DragDropProvider } from "@dnd-kit/svelte";
+  import { untrack } from "svelte";
   import { flip } from "svelte/animate";
 
   import { goto } from "$app/navigation";
@@ -198,12 +199,14 @@
         >
           <DragDropProvider
             onDragOver={handleDrag(dndItems)}
-            onDragEnd={handleDrag(() => $motions = dndItems, { delay: 300 })}
+            onDragEnd={() => $motions = dndItems}
           >
             {#each dndItems as motion, i (motion.id)}
               {@const delAttrs = findDelegate($delegates, motion.delegate)}
               {@const delName = delAttrs?.name ?? "unknown"}
-              {@const sortable = createSortable({ id: motion.id, get index() { return i; }}, "default")}
+              {@const sortable = untrack(() => createSortable({
+                get id() { return motion.id; }, get index() { return i; }
+              }, "default"))}
               <tr
                 {@attach sortable.attach}
                 class={[

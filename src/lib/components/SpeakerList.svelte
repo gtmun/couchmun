@@ -8,7 +8,7 @@
 <script lang="ts">
     import { DragDropProvider } from "@dnd-kit/svelte";
     import { Dialog } from "@skeletonlabs/skeleton-svelte";
-    import { tick, type Snippet } from "svelte";
+    import { tick, untrack, type Snippet } from "svelte";
     import { flip } from "svelte/animate";
 
     import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
@@ -286,7 +286,7 @@
 
     <DragDropProvider
         onDragOver={handleDrag(dndItems)}
-        onDragEnd={handleDrag(() => {
+        onDragEnd={() => {
             if (insertPoint > 0) {
                 const original = order.slice(-insertPoint);
                 const dragged = dndItems.slice(-insertPoint);
@@ -297,14 +297,16 @@
             }
             
             order = dndItems;
-        }, { delay: 300 })}
+        }}
     >
         <ol class="p-2 overflow-y-auto flex flex-col grow has-data-dnd-dragging:*:border-transparent"
             bind:this={listEl}
             aria-labelledby="sl-header-{sid}"
         >
             {#each dndItems as speaker, i (speaker.id)}
-                {@const sortable = createSortable({ id: speaker.id, get index() { return i; } })}
+                {@const sortable = untrack(() => createSortable({
+                    get id() { return speaker.id; }, get index() { return i; }
+                }))}
                 {@const selected = speaker.id === selectedSpeakerId}
                 {@const delAttrs = findDelegate(delegates, speaker.key)}
                 {@const speakerLabel = delAttrs?.name ?? "unknown"}
