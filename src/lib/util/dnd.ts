@@ -13,13 +13,13 @@
 
 import { Feedback, type FeedbackType } from "@dnd-kit/dom";
 import type { DragDropEventHandlers } from "@dnd-kit/svelte";
-import { createSortable as _createSortable, isSortable, type CreateSortableInput } from "@dnd-kit/svelte/sortable";
+import { createSortable as createSortable_, isSortable, type CreateSortableInput } from "@dnd-kit/svelte/sortable";
 
+/** Alias for `createSortable` from `@dnd-kit/svelte/sortable`, but with support for feedback. */
 export function createSortable(input: CreateSortableInput, feedback: FeedbackType = "clone") {
-    return _createSortable({
-        ...input,
-        plugins: (defaults) => [...defaults, Feedback.configure({ feedback })]
-    });
+    return createSortable_(Object.assign(input, {
+        plugins: defaults => [...defaults, Feedback.configure({ feedback })]
+    } satisfies Partial<CreateSortableInput>))
 }
 
 type OnMove = (oldIdx: number, newIdx: number) => void;
@@ -27,7 +27,7 @@ type DndEventHandler = DragDropEventHandlers["onDragMove" | "onDragEnd"] & {};
 type DndEventHandlerParam = Pick<Parameters<DndEventHandler>[0], "operation">;
 
 /**
- * Handles a drag event from `dnd-kit`.
+ * Handles a drag event from `dnd-kit` between a sortable source and target.
  * 
  * This can be used to maintain Svelte state.
  * On the `DragDropProvider`, the most basic state-maintaining operation is the following:
@@ -35,10 +35,7 @@ type DndEventHandlerParam = Pick<Parameters<DndEventHandler>[0], "operation">;
  * ```svelte
  * <DragDropProvider
  *     onDragOver={handleDrag(dndItems)}
- *     onDragEnd={handleDrag(
- *         () => order = dndItems,
- *         { delay: 300 }
- *     )}
+ *     onDragEnd={() => order = dndItems}
  * >
  *     ...
  * </DragDropProvider>
@@ -49,30 +46,18 @@ type DndEventHandlerParam = Pick<Parameters<DndEventHandler>[0], "operation">;
  * This can either be an array (in which the move will be applied),
  * or a function to apply the move.
  * 
- * @param options Additional options.
- *     `delay`: Delays the move (which is needed to cause a move to occur after drag end's transition)
- * 
  * @returns An event handler.
  */
-export function handleDrag(
-    moveable: unknown[] | OnMove,
-    options?: {
-        delay?: number
-    }
-) {
-    const _move: OnMove = typeof moveable === "function"
+export function handleDrag(moveable: unknown[] | OnMove) {
+    const move_: OnMove = typeof moveable === "function"
         ? moveable
         : (oldIdx, newIdx) => move(moveable, oldIdx, newIdx);
-    const delay = options?.delay;
-    const callback = delay
-        ? (oldIdx: number, newIdx: number) => setTimeout(() => _move(oldIdx, newIdx), delay)
-        : (oldIdx: number, newIdx: number) => _move(oldIdx, newIdx);
     
     // Actual event handler, which finds the indexes and performs the move on the indices.
     return (e: DndEventHandlerParam) => {
         const { source, target, canceled } = e.operation;
         if (!canceled && isSortable(source) && isSortable(target)) {
-            callback(source.index, target.index);
+            move_(source.index, target.index);
         }
     };
 }
