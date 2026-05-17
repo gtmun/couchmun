@@ -1,9 +1,8 @@
 import { fileURLToPath } from 'node:url';
 
-import { includeIgnoreFile } from '@eslint/compat';
 import js from '@eslint/js';
-import { defineConfig } from 'eslint/config';
-import importPlugin from 'eslint-plugin-import';
+import { defineConfig, includeIgnoreFile } from 'eslint/config';
+import { importX } from 'eslint-plugin-import-x';
 import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';
 import ts from 'typescript-eslint';
@@ -18,8 +17,8 @@ export default defineConfig(
 	js.configs.recommended,
 	...ts.configs.recommended,
 	...svelte.configs.recommended,
-	importPlugin.flatConfigs.recommended,
-	importPlugin.flatConfigs.typescript,
+	importX.flatConfigs.recommended,
+	importX.flatConfigs.typescript,
 	{
 		languageOptions: {
 			globals: { ...globals.browser, ...globals.node }
@@ -39,7 +38,7 @@ export default defineConfig(
 					"argsIgnorePattern": "^_\\w*$",
 				}],
 				// Imports!
-				'import/order': [
+				'import-x/order': [
 					'warn',
 					{
 						alphabetize: {
@@ -49,15 +48,13 @@ export default defineConfig(
 						'newlines-between': 'always'
 					}
 				],
-				// Handled by TS
-				"import/named": "off",
-				"import/namespace": "off",
-				"import/default": "off",
-				"import/no-named-as-default-member": "off",
-				// Too many false positives
-				"import/no-unresolved": "off",
-				// import/no-duplicates causes some bugs
-				"import/no-duplicates": "off",
+				// Remove cases that import plugin doesn't understand
+				"import-x/default": "off",
+				"import-x/no-unresolved": ["warn", { ignore: ["[~$]"] }],
+				// Bugged?
+				"import-x/no-named-as-default-member": "off",
+				// import-x/no-duplicates causes some bugs, use eslint default instead
+				"import-x/no-duplicates": "off",
 				"no-duplicate-imports": "warn",
 		},
 		settings: {
