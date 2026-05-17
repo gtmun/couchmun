@@ -7,20 +7,17 @@
  -->
 <script lang="ts">
     import { DragDropProvider } from "@dnd-kit/svelte";
-    import { Dialog } from "@skeletonlabs/skeleton-svelte";
     import { tick, untrack, type Snippet } from "svelte";
     import { flip } from "svelte/animate";
 
-    import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import ConfirmModal from "$lib/components/modals/ConfirmModal.svelte";
+    import SpeakerListEditControls from "$lib/components/SpeakerListEditControls.svelte";
     import { type Delegate, findDelegate } from "$lib/db/delegates";
     import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
     import { a11yLabel } from "$lib/util";
     import { createSortable, handleDrag } from "$lib/util/dnd";
     import { proxify } from "$lib/util/sv.svelte";
     import MdiCancel from "~icons/mdi/cancel";
-    import MdiDelete from "~icons/mdi/delete";
     import MdiDragVertical from "~icons/mdi/drag-vertical";
     
     interface Props {
@@ -40,13 +37,6 @@
          * provided by this component.
          */
         controls?: Snippet;
-        /**
-         * Controls placed above the add speakers control.
-         * 
-         * If `controls` is defined, neither this nor the default add speakers control
-         * will appear.
-         */
-        subcontrols?: Snippet;
         /**
          * The title of the component, which appears at the top. 
          * 
@@ -74,7 +64,6 @@
         order = $bindable([]),
         delegates = [],
         controls = undefined,
-        subcontrols = undefined,
         title = "Speakers List",
         extra,
         onBeforeSpeakerUpdate = undefined,
@@ -117,9 +106,6 @@
         });
     }
 
-    let openModals = $state({
-        clearSpeakers: false
-    });
 
     /**
      * Whether the speakers list is complete (there are no other speakers left in the list).
@@ -362,36 +348,6 @@
     {#if controls}
         {@render controls()}
     {:else}
-        <div class="flex flex-col items-stretch gap-1">
-            {@render subcontrols?.()}
-            <div class="flex flex-row gap-1 items-center">
-                <!-- Delegate combobox -->
-                <DelCombobox
-                    {delegates}
-                    selectionBehavior="clear"
-                    class="grow"
-                    forgetSelected
-                    onSelect={addSpeaker}
-                />
-                <!-- Clear order -->
-                <ConfirmModal
-                    bind:open={openModals.clearSpeakers}
-                    success={() => order = []}
-                >
-                    {#snippet trigger()}
-                        <Dialog.Trigger
-                            class="btn-icon-std preset-filled-primary-500"
-                            disabled={order.length === 0}
-                            {...a11yLabel("Clear Speakers List")}
-                        >
-                            <MdiDelete />
-                        </Dialog.Trigger>
-                    {/snippet}
-                    {#snippet content()}
-                        Are you sure you want to clear the Speakers List?
-                    {/snippet}
-                </ConfirmModal>
-            </div>
-        </div>
+        <SpeakerListEditControls {delegates} {order} onSelect={addSpeaker} />
     {/if}
 </div>
