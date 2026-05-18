@@ -20,8 +20,7 @@
   import { getSessionContext } from "$lib/context/index.svelte";
   import { findDelegate } from "$lib/db/delegates";
   import { db } from "$lib/db/index.svelte";
-  import { createMotionSchema, MOTION_DEFS, type MotionDisplayFunction } from "$lib/motions/definitions";
-  import { compareMotions as motionComparator } from "$lib/motions/sort";
+  import { compareMotions as motionComparator, createMotionSchema, MOTION_DEFS, type MotionDef } from "$lib/motions/definitions";
   import type { Motion } from "$lib/types";
   import { a11yLabel, hasKey, NO_FIGURE } from "$lib/util";
   import { createSortable, handleDrag } from "$lib/util/dnd";
@@ -40,6 +39,7 @@
   let dndItems = $derived(proxify($motions));
   
   let motionSchema = $derived(createMotionSchema($delegates));
+  let motionCmp = $derived(motionComparator($sortOrder, $delegates));
 
   function submitMotion(motion: Motion) {
     motions.update($m => {
@@ -61,7 +61,7 @@
   }
 
   function motionDisplayEntries(m: Motion) {
-    return (MOTION_DEFS[m.kind].display as MotionDisplayFunction<Motion>)(m, $delegates);
+    return (MOTION_DEFS[m.kind] as MotionDef).display(m, $delegates);
   }
 
   // MOTION BUTTONS
@@ -93,13 +93,14 @@
     db.updateDelegate(motion.delegate, d => { d.stats.motionsProposed++; });
     $motions[i] = motion;
   }
+
   function sortMotions() {
-    $motions = $motions.sort(motionComparator($sortOrder));
+    $motions = $motions.sort(motionCmp);
   }
   // Check every window of two motions is in the right order:
   let motionsSorted = $derived.by(() => {
     try {
-      return Array.from({ length: $motions.length - 1 }, (_, i) => motionComparator($sortOrder)($motions[i], $motions[i + 1]) <= 0)
+      return Array.from({ length: $motions.length - 1 }, (_, i) => motionCmp($motions[i], $motions[i + 1]) <= 0)
         .every(b => b);
     } catch {
       // If comparing crashes, don't allow the button to do anything

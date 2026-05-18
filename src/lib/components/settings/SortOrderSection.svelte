@@ -89,7 +89,7 @@
                             <!-- eslint-disable-next-line svelte/require-each-key -->
                             {#each entry.order as key, oi}
                             <div class="card-filled p-1 flex items-center">
-                                <span>{SORT_PROPERTY_NAMES[key.property].toLowerCase()}</span>
+                                <span>{(SORT_PROPERTY_NAMES as Record<string, string>)[key.property]?.toLowerCase()}</span>
                                 <button onclick={() => {
                                     db.settings.update("sortOrder", ({ val: order }) => { order[ei].order[oi].ascending = !order[ei].order[oi].ascending })
                                 }}>

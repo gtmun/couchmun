@@ -80,11 +80,6 @@
     function submitMotion(e: SubmitEvent) {
         e.preventDefault();
 
-        // Round-Robin: Apply total speakers
-        if (inputMotion.kind === "rr") {
-            inputMotion.totalSpeakers = $delegates.filter(d => d.isPresent()).length.toString();
-        }
-
         // Filter out any keys that aren't the correct kind:
         for (let key of Object.keys(inputMotion)) {
             if (!hasField(inputMotion, [key])) {

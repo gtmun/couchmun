@@ -10,12 +10,12 @@ import { z } from "zod";
 import type { IconComponent } from "$lib/components/IconLabel.svelte";
 import { numSpeakersStr } from "$lib/components/motions/form/MotionForm.svelte";
 import { type Delegate } from "$lib/db/delegates";
-import { optional, presentDelegateSchema, refineSpeakingTime, stringSchema, stringToIntSchema, timeSchema, type Refine, type SchemaOutput } from "$lib/motions/form_validation";
+import { optional, presentDelegateSchema, refineSpeakingTime, stringSchema, timeSchema, type Refine, type SchemaOutput } from "$lib/motions/form_validation";
 import type { InputKind } from "$lib/motions/input";
-import { SORT_KIND_EXTRAS_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
+import { baseCompareMotions, SORT_KIND_EXTRAS_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
 import type { Is } from "$lib/motions/types";
 import type { Motion, MotionKind, SortKind, SortOrder } from "$lib/types";
-import { hasKey } from "$lib/util";
+import { hasKey, type Comparator } from "$lib/util";
 import { stringifyTime } from "$lib/util/time";
 import MdiAccountClock from "~icons/mdi/account-clock";
 import MdiAccountMultiple from "~icons/mdi/account-multiple";
@@ -44,11 +44,7 @@ const INPUT_KINDS = {
     extension: {
         input: "extension",
         schema: z.boolean().default(false)
-    },
-    none: {
-        input: "none",
-        schema: stringToIntSchema()
-    },
+    }
 } satisfies Record<string, FieldProperties | ((...args: any[]) => FieldProperties)>;
 const optionalInput = <O extends { schema: z.ZodType<unknown, string> }>({ schema, ...rest }: O) => ({
     ...rest, schema: optional<O["schema"]>(schema)
@@ -59,6 +55,9 @@ export const MOTION_GROUP_LABELS = {
     voting: "Voting"
 };
 
+/** Creates a "field" from a motion. Used for computed fields and display. */
+type MotionFn<M extends Motion, R> = (motion: M, delegates: Delegate[]) => R;
+/** Properties used to define how a motion property is displayed. */
 interface MotionDisplayEntry {
     /** Text/name of the field. */
     header: string,
@@ -69,7 +68,6 @@ interface MotionDisplayEntry {
     /** Whether to right align the value. */
     right?: boolean,
 }
-export type MotionDisplayFunction<M> = (motion: M, delegates: Delegate[]) => readonly MotionDisplayEntry[];
 const _MDE_TEMPLATES = {
     topic: { header: SORT_PROPERTY_NAMES.topic },
     nSpeakers: { header: "Speakers", icon: MdiAccountMultiple, right: true },
@@ -77,8 +75,35 @@ const _MDE_TEMPLATES = {
     totalTime: { header: SORT_PROPERTY_NAMES.totalTime, icon: MdiClock, right: true },
 } satisfies Record<string, Omit<MotionDisplayEntry, "value">>;
 
-/// Gets the non-base motion fields associated with a given motion kind.
+/** Properties used to define a motion. */
+export type MotionDef<K extends MotionKind = MotionKind, Fields extends PropertyKey = PropertyKey> = {
+    /** Name (label) of motion */
+    label: string,
+    /**
+     * The motion's group (or none if not part of a group).
+     * 
+     * This is used to partition groups in the motion dropdown.
+     **/
+    group?: keyof typeof MOTION_GROUP_LABELS,
+    /** Field property definitions for the motion (these are all fields defined in the `Motion` type). */
+    fields: Record<Fields, FieldProperties>,
+    /** Computed fields. These are fields which are computed and can be used for sorting. */
+    computedFields?: Record<string, MotionFn<Motion & {kind: K}, unknown>>,
+    /** Extra constraints for a given motion (in the form of a Zod schema refine) */
+    refine?: Refine,
+    /** The fields to display in the motion list. */
+    display: MotionFn<Motion & { kind: K }, readonly MotionDisplayEntry[]>
+};
+
 type ExtraMotionFields<K extends MotionKind> = Exclude<keyof (Motion & { kind: K }), typeof MOTION_BASE_FIELDS[number]>;
+type MotionDefOf<K extends MotionKind> = MotionDef<K, ExtraMotionFields<K>>;
+
+function getSortableField(m: Motion, delegates: Delegate[], k: string): unknown {
+    return (m as Record<string, unknown>)[k]
+        ?? (MOTION_DEFS[m.kind] as MotionDef).computedFields?.[k]?.(m, delegates);
+}
+
+/// Gets the non-base motion fields associated with a given motion kind.
 export type FieldProperties = {
     /** The type of input. This is typically directly associated with some component.
      * 
@@ -100,6 +125,9 @@ export const MOTION_DEFS = {
             isExtension: INPUT_KINDS.extension,
         },
         refine: refineSpeakingTime(),
+        computedFields: {
+            nSpeakers: m => m.totalTime / m.speakingTime,
+        },
         display: m => [
             { ..._MDE_TEMPLATES.topic, value: m.topic },
             { ..._MDE_TEMPLATES.nSpeakers, value: numSpeakersStr(m.totalTime, m.speakingTime) },
@@ -122,17 +150,20 @@ export const MOTION_DEFS = {
         label: "Round Robin",
         fields: {
             speakingTime: INPUT_KINDS.speakingTime,
-            topic: INPUT_KINDS.text("Topic"),
-            // FIXME: Remove as form field
-            totalSpeakers: INPUT_KINDS.none
+            topic: INPUT_KINDS.text("Topic")
+        },
+        computedFields: {
+            nSpeakers: (_, dels) => dels.filter(d => d.isPresent()).length,
+            totalTime: (m, dels) => m.speakingTime * (getSortableField(m, dels, "nSpeakers") as number)
         },
         display: (m, delegates) => {
-            const nSpeakers = delegates.filter(d => d.isPresent()).length;
+            const nSpeakers = getSortableField(m, delegates, "nSpeakers") as number;
+            const totalTime = getSortableField(m, delegates, "totalTime") as number;
             return [
                 { ..._MDE_TEMPLATES.topic, value: m.topic },
                 { ..._MDE_TEMPLATES.nSpeakers, value: nSpeakers },
                 { ..._MDE_TEMPLATES.speakingTime, value: stringifyTime(m.speakingTime) },
-                { ..._MDE_TEMPLATES.totalTime, value: stringifyTime(nSpeakers * m.speakingTime) },
+                { ..._MDE_TEMPLATES.totalTime, value: stringifyTime(totalTime) },
             ];
         }
     },
@@ -147,13 +178,7 @@ export const MOTION_DEFS = {
             { ..._MDE_TEMPLATES.totalTime, value: typeof m.totalTime === "number" ? stringifyTime(m.totalTime) : undefined, right: true },
         ]
     },
-} satisfies { [K in MotionKind]: {
-    label: string,
-    group?: keyof typeof MOTION_GROUP_LABELS,
-    fields: Record<ExtraMotionFields<K>, FieldProperties>,
-    refine?: Refine,
-    display: MotionDisplayFunction<Motion & { kind: K }>
-}};
+} satisfies { [K in MotionKind]: MotionDefOf<K> };
 
 /** List of every motion (as defined in `MOTION_DEFS` above). */
 const MOTION_KINDS = ["mod", "unmod", "rr", "other"] as const;
@@ -262,3 +287,24 @@ const _assertSchemaValidatesMotions: Is<SchemaOutput<typeof createMotionSchema>,
 
 /** Type of motion schema verification. */
 export type MotionSchema = ReturnType<typeof createMotionSchema>;
+
+/**
+ * Creates a "comparator" for motions, using the provided sort order.
+ * 
+ * A comparator is a function that "compares" two motions. This can be directly input to 
+ * `Array.sort` to sort an array of motions. For example,
+ * 
+ * ```ts
+ * const motions: Motion[] = [ ... ];
+ * const comparator = compareMotions(...);
+ * 
+ * motions.sort(comparator);
+ * ```
+ * 
+ * @param priority the sort order to use.
+ * @param delegates the list of delegates.
+ * @returns the comparator
+ */
+export function compareMotions(priority: SortOrder, delegates: Delegate[]): Comparator<Motion> {
+    return baseCompareMotions(priority, (m, k) => getSortableField(m, delegates, k));
+}

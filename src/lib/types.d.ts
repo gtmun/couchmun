@@ -49,16 +49,11 @@ export type DelegateAttrs = {
  */
 export type SortKind = MotionKind | "ext";
 /**
- * All possible properties that can define the order between
- * motions of the same `SortKind`.
- */
-export type SortOrderProperty = "totalTime" | "speakingTime" | "topic" | "delegate" | "nSpeakers";
-/**
  * A `SortOrderProperty` alongside 
  * whether the items should be in ascending or descending order.
  */
 export type SortOrderKey = {
-    property: SortOrderProperty,
+    property: string,
     ascending: boolean
 };
 /**
@@ -195,7 +190,6 @@ export type Motion = BaseMotion & ({
     kind: "rr",
     speakingTime: number,
     topic: string
-    totalSpeakers: number
 } | {
     kind: "other",
     totalTime?: number,
