@@ -36,10 +36,11 @@ const INPUT_KINDS = {
         input: "speakingTime",
         schema: timeSchema("Speaking time"),
     },
-    text: (label: string) => ({
+    text: (label: string, autocomplete?: string[]) => ({
         input: "text",
         schema: stringSchema(label),
-        label
+        label,
+        autocomplete
     }),
     extension: {
         input: "extension",
