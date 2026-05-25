@@ -12,7 +12,7 @@
     import { MOTION_BASE_FIELDS, MOTION_DEFS, MOTION_GROUP_LABELS, type FieldProperties, type MotionSchema } from "$lib/motions/definitions";
     import { formatValidationError } from "$lib/motions/form_validation";
     import { getComponent } from '$lib/motions/input';
-    import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
+    import type { MotionInput } from "$lib/motions/types";
     import type { DelegateID, Motion } from "$lib/types";
     import { hasKey, NO_FIGURE } from "$lib/util";
     import { proxify } from '$lib/util/sv.svelte';
@@ -71,20 +71,27 @@
         return Map.groupBy(motions, ({ group }) => group);
     });
     
+    function defHasFields(...keys: string[]) {
+        return keys.every(k => hasKey(motionDef.fields, k));
+    }
+    function defAccepts(key: string) {
+        return (MOTION_BASE_FIELDS as readonly string[]).includes(key)
+            || defHasFields(key);
+    }
     // Motion validation and submission.
     function submitMotion(e: SubmitEvent) {
         e.preventDefault();
 
         // Filter out any keys that aren't the correct kind:
+        let im_: Record<string, unknown> = inputMotion;
         for (let key of Object.keys(inputMotion)) {
-            if (!hasField(inputMotion, [key])) {
-                delete inputMotion[key];
+            if (!defAccepts(key)) {
+                delete im_[key];
             }
         }
-        if ($selectedMotion?.kind !== inputMotion.kind && hasKey(inputMotion, "isExtension")) {
-            delete inputMotion["isExtension"];
+        if ($selectedMotion?.kind !== im_.kind) {
+            delete im_["isExtension"];
         }
-
         // Validate input
         const result = motionSchema.safeParse(inputMotion);
         if (result.success) {
@@ -99,17 +106,6 @@
         } else {
             inputError = formatValidationError(result.error);
         }
-    }
-
-    /**
-     * Returns true if the inputMotion's kind has the provided fields.
-     * This is useful for conditionally showing a field input only if the motion requires that field.
-     * 
-     * @param m the input motion
-     * @param fields the list of fields to check for
-     */
-    function hasField<F extends string>(m: MotionInput, fields: F[]): m is MotionInputWithFields<F> {
-        return fields.every(f => (MOTION_BASE_FIELDS as readonly string[]).includes(f) || hasKey(MOTION_DEFS[m.kind].fields, f));
     }
 
     // Extension handling.
@@ -215,10 +211,11 @@
     {/each}
 
     <!-- Number of speakers display -->
-    {#if hasField(inputMotion, ["totalTime", "speakingTime"])}
-    <div class="text-center">
-        <strong>Number of speakers</strong>: {numSpeakersStr(inputMotion.totalTime, inputMotion.speakingTime) ?? NO_FIGURE}
-    </div>
+    {#if defHasFields("totalTime", "speakingTime")}
+        {@const im_: Record<"totalTime" | "speakingTime", number | string | undefined> = inputMotion as any}
+        <div class="text-center">
+            <strong>Number of speakers</strong>: {numSpeakersStr(im_.totalTime, im_.speakingTime) ?? NO_FIGURE}
+        </div>
     {/if}
 
     <!-- End buttons -->
