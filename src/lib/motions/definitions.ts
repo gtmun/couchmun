@@ -19,7 +19,10 @@ import { hasKey, type Comparator } from "$lib/util";
 import { stringifyTime } from "$lib/util/time";
 import MdiAccountClock from "~icons/mdi/account-clock";
 import MdiAccountMultiple from "~icons/mdi/account-multiple";
+import MdiBookClock from "~icons/mdi/book-clock";
+import MdiClipboardClock from "~icons/mdi/clipboard-clock";
 import MdiClock from "~icons/mdi/clock";
+import MdiCookieClockOutline from "~icons/mdi/cookie-clock-outline";
 
 export const MOTION_BASE_FIELDS = ["id", "kind", "delegate"] as const;
 const INPUT_KINDS = {
@@ -62,23 +65,27 @@ export const MOTION_GROUP_LABELS = {
 
 /** Creates a "field" from a motion. Used for computed fields and display. */
 type MotionFn<M extends Motion, R> = (motion: M, delegates: Delegate[]) => R;
-/** Properties used to define how a motion property is displayed. */
-interface MotionDisplayEntry {
+
+export interface DisplayFieldHeader {
     /** Text/name of the field. */
     header: string,
     /** Icon to use if window is too narrow. */
     icon?: IconComponent,
-    /** Value of field. */
-    value: string | number | undefined,
-    /** Whether to right align the value. */
-    right?: boolean,
+    right?: boolean
 }
-const _MDE_TEMPLATES = {
+export const DISPLAY_FIELD_HEADERS = {
     topic: { header: SORT_PROPERTY_NAMES.topic },
-    nSpeakers: { header: "Speakers", icon: MdiAccountMultiple, right: true },
-    speakingTime: { header: SORT_PROPERTY_NAMES.speakingTime, icon: MdiAccountClock, right: true },
     totalTime: { header: SORT_PROPERTY_NAMES.totalTime, icon: MdiClock, right: true },
-} satisfies Record<string, Omit<MotionDisplayEntry, "value">>;
+    speakingTime: { header: SORT_PROPERTY_NAMES.speakingTime, icon: MdiAccountClock, right: true },
+    nSpeakers: { header: "Speakers", icon: MdiAccountMultiple, right: true },
+    docOrder: { header: "Order" },
+    docRp: { header: "Reading Period", icon: MdiCookieClockOutline, right: true },
+    docAp: { header: "Author's Panel", icon: MdiBookClock, right: true },
+    docQna: { header: "Q&A", icon: MdiClipboardClock, right: true },
+    vpMethod: { header: "Method" }
+} satisfies Record<string, DisplayFieldHeader>;
+export type DisplayFieldKey = keyof typeof DISPLAY_FIELD_HEADERS;
+type DisplayFieldRecord = Partial<Record<DisplayFieldKey, string | number | undefined>>;
 
 /** Properties used to define a motion. */
 export type MotionDef<K extends MotionKind = MotionKind, Fields extends PropertyKey = PropertyKey> = {
@@ -97,7 +104,7 @@ export type MotionDef<K extends MotionKind = MotionKind, Fields extends Property
     /** Extra constraints for a given motion (in the form of a Zod schema refine) */
     refine?: Refine,
     /** The fields to display in the motion list. */
-    display: MotionFn<Motion & { kind: K }, readonly MotionDisplayEntry[]>
+    display: MotionFn<Motion & { kind: K }, DisplayFieldRecord>
 };
 
 type ExtraMotionFields<K extends MotionKind> = Exclude<keyof (Motion & { kind: K }), typeof MOTION_BASE_FIELDS[number]>;
@@ -135,12 +142,12 @@ export const MOTION_DEFS = {
         computedFields: {
             nSpeakers: m => m.totalTime / m.speakingTime,
         },
-        display: m => [
-            { ..._MDE_TEMPLATES.topic, value: m.topic },
-            { ..._MDE_TEMPLATES.nSpeakers, value: numSpeakersStr(m.totalTime, m.speakingTime) },
-            { ..._MDE_TEMPLATES.speakingTime, value: stringifyTime(m.speakingTime) },
-            { ..._MDE_TEMPLATES.totalTime, value: stringifyTime(m.totalTime) },
-        ]
+        display: m => ({
+            topic: m.topic,
+            totalTime: stringifyTime(m.totalTime),
+            speakingTime: stringifyTime(m.speakingTime),
+            nSpeakers: numSpeakersStr(m.totalTime, m.speakingTime)
+        })
     },
     unmod: {
         label: "Unmoderated Caucus",
@@ -148,9 +155,9 @@ export const MOTION_DEFS = {
             totalTime: INPUT_KINDS.totalTime,
             isExtension: INPUT_KINDS.extension,
         },
-        display: m => [
-            { ..._MDE_TEMPLATES.totalTime, value: stringifyTime(m.totalTime) },
-        ]
+        display: m => ({
+            totalTime: stringifyTime(m.totalTime)
+        })
     },
     rr: {
         label: "Round Robin",
@@ -165,12 +172,12 @@ export const MOTION_DEFS = {
         display: (m, delegates) => {
             const nSpeakers = getSortableField(m, delegates, "nSpeakers") as number;
             const totalTime = getSortableField(m, delegates, "totalTime") as number;
-            return [
-                { ..._MDE_TEMPLATES.topic, value: m.topic },
-                { ..._MDE_TEMPLATES.nSpeakers, value: nSpeakers },
-                { ..._MDE_TEMPLATES.speakingTime, value: stringifyTime(m.speakingTime) },
-                { ..._MDE_TEMPLATES.totalTime, value: stringifyTime(totalTime) },
-            ];
+            return {
+                topic: m.topic,
+                totalTime: stringifyTime(totalTime),
+                speakingTime: stringifyTime(m.speakingTime),
+                nSpeakers: nSpeakers,
+            };
         }
     },
     other: {
@@ -179,10 +186,10 @@ export const MOTION_DEFS = {
             totalTime: optionalInput(INPUT_KINDS.totalTime),
             topic: optionalInput(INPUT_KINDS.text("Topic")),
         },
-        display: m => [
-            { ..._MDE_TEMPLATES.topic, value: m.topic },
-            { ..._MDE_TEMPLATES.totalTime, value: typeof m.totalTime === "number" ? stringifyTime(m.totalTime) : undefined, right: true },
-        ]
+        display: m => ({
+            topic: m.topic,
+            totalTime: typeof m.totalTime === "number" ? stringifyTime(m.totalTime) : undefined,
+        })
     },
 
     // Opening debate:
@@ -190,7 +197,7 @@ export const MOTION_DEFS = {
         label: "Open Debate",
         group: "opening",
         fields: {},
-        display: () => []
+        display: () => ({})
     },
     spklist: {
         label: "Open Speakers List",
@@ -198,9 +205,9 @@ export const MOTION_DEFS = {
         fields: {
             speakingTime: INPUT_KINDS.speakingTime,
         },
-        display: m => [
-            { ..._MDE_TEMPLATES.speakingTime, value: stringifyTime(m.speakingTime) }
-        ]
+        display: m => ({
+            speakingTime: stringifyTime(m.speakingTime),
+        })
     },
     agenda: {
         label: "Set Agenda",
@@ -208,9 +215,9 @@ export const MOTION_DEFS = {
         fields: {
             topicOrder: INPUT_KINDS.text("Topic Order", ["1 \u2192 2", "2 \u2192 1"]),
         },
-        display: m => [
-            { ..._MDE_TEMPLATES.topic, value: m.topicOrder }
-        ]
+        display: m => ({
+            topic: m.topicOrder,
+        })
     },
     // Voting
     introdoc: {
@@ -222,24 +229,24 @@ export const MOTION_DEFS = {
             authorsPanelTime: INPUT_KINDS.time("Author's Panel Time"),
             qnaTime: INPUT_KINDS.time("Q&A Time"),
         },
-        display: m => [
-            { header: "Order", value: m.order },
-            { header: "Reading Period", right: true, value: stringifyTime(m.readingPeriodTime) },
-            { header: "Authors Panel", right: true, value: stringifyTime(m.authorsPanelTime) },
-            { header: "Q&A", right: true, value: stringifyTime(m.qnaTime) },
-        ]
+        display: m => ({
+            docOrder: m.order,
+            docRp: stringifyTime(m.readingPeriodTime),
+            docAp: stringifyTime(m.authorsPanelTime),
+            docQna: stringifyTime(m.qnaTime),
+        })
     },
     amendments: {
         label: "Introduce Amendments",
         group: "voting",
         fields: {},
-        display: () => []
+        display: () => ({})
     },
     divq: {
         label: "Divide the Question",
         group: "voting",
         fields: {},
-        display: () => []
+        display: () => ({})
     },
     vp: {
         label: "Enter Voting Procedure",
@@ -247,22 +254,22 @@ export const MOTION_DEFS = {
         fields: {
             method: INPUT_KINDS.text("Method", ["Placard", "Acclamation", "Roll Call"]),
         },
-        display: m => [
-            { header: "Method", value: m.method }
-        ]
+        display: m =>({
+            vpMethod: m.method,
+        })
     },
     // Closing
     suspend: {
         label: "Suspend Debate",
         group: "closing",
         fields: {},
-        display: () => []
+        display: () => ({})
     },
     adjourn: {
         label: "Adjourn Debate",
         group: "closing",
         fields: {},
-        display: () => []
+        display: () => ({})
     },
     
 } satisfies { [K in MotionKind]: MotionDefOf<K> };

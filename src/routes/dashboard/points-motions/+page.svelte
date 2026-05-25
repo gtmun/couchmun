@@ -20,7 +20,7 @@
   import { getSessionContext } from "$lib/context/index.svelte";
   import { findDelegate } from "$lib/db/delegates";
   import { db } from "$lib/db/index.svelte";
-  import { compareMotions as motionComparator, createMotionSchema, MOTION_DEFS, type MotionDef } from "$lib/motions/definitions";
+  import { compareMotions as motionComparator, createMotionSchema, MOTION_DEFS, type MotionDef, type DisplayFieldKey, type DisplayFieldHeader, DISPLAY_FIELD_HEADERS } from "$lib/motions/definitions";
   import type { Motion } from "$lib/types";
   import { a11yLabel, hasKey, NO_FIGURE } from "$lib/util";
   import { createSortable, handleDrag } from "$lib/util/dnd";
@@ -40,7 +40,7 @@
   
   let motionSchema = $derived(createMotionSchema($delegates));
   let motionCmp = $derived(motionComparator($sortOrder, $delegates));
-
+  
   function submitMotion(motion: Motion) {
     motions.update($m => {
       $m.push(motion);
@@ -63,7 +63,20 @@
   function motionDisplayEntries(m: Motion) {
     return (MOTION_DEFS[m.kind] as MotionDef).display(m, $delegates);
   }
-
+  function motionHeader(m: DisplayFieldKey): DisplayFieldHeader {
+    return DISPLAY_FIELD_HEADERS[m] as DisplayFieldHeader;
+  }
+  // Get all fields which are used by the current set of motiosn,
+  // and order them by header order
+  let fieldHeaders = $derived.by(() => {
+    const keys = new Set(
+      dndItems.map(m => motionDisplayEntries(m))
+        .flatMap(e => Object.keys(e) as DisplayFieldKey[])
+    );
+    return (Object.keys(DISPLAY_FIELD_HEADERS) as DisplayFieldKey[])
+      .filter(k => keys.has(k));
+  });
+  
   // MOTION BUTTONS
   function removeMotion(i: number) {
     let removing: Motion[] = [];
@@ -155,9 +168,46 @@
     <DragDropProvider
       onDragOver={handleDrag(dndItems)}
       onDragEnd={() => $motions = dndItems}
+      --cm-gap-x={2}
+      --cm-motion-colsize={28}
+      --cm-delegate-colsize={36}
+      --cm-field-min-colsize={20}
+      --cm-controls-colsize={24}
+      --cm-field-colsizes={
+        fieldHeaders.length
+        ? `repeat(${fieldHeaders.length}, minmax(calc(var(--spacing) * var(--cm-field-min-colsize)), 1fr)) 1px`
+        : "1fr"
+      }
+      --cm-all-cols={2 + 1 + fieldHeaders.length + 1 + 1}
     >
-      <div class="table-wrap rounded border border-surface-200-800">
-        <ul>
+      <div class={[
+        "grid cm-table-colsizes",
+        "rounded border border-surface-200-800 w-full overflow-auto"
+      ]}>
+        <!-- Headers -->
+        <div class={[
+            "grid grid-cols-subgrid col-span-(--cm-all-cols)",
+            "p-2 items-center border-b",
+            "border-surface-200-800 bg-surface-100-900"
+          ]}>
+          <div>Motion</div>
+          <div>By</div>
+          <div class="border-r border-surface-200-800 self-stretch"></div>
+          {#each fieldHeaders as k (k)}
+            {const field = motionHeader(k)}
+            <div class={["flex", field.right && "justify-end text-right"]}>
+              {#if field.icon}
+                <IconLabel icon={field.icon} label={field.header} />
+              {:else}
+                <div>{field.header}</div>
+              {/if}
+            </div>
+          {/each}
+          <div class="border-r border-surface-200-800 self-stretch"></div>
+          <div></div>
+        </div>
+        <!-- Data -->
+        <ul class="contents">
           {#each dndItems as motion, i (motion.id)}
             {@const delAttrs = findDelegate($delegates, motion.delegate)}
             {@const delName = delAttrs?.name ?? "unknown"}
@@ -168,9 +218,10 @@
             }))}
             <li
               class={[
-                "flex p-2 gap-3 items-stretch",
+                "grid grid-cols-subgrid col-span-(--cm-all-cols)",
+                "p-2 items-center",
                 "preset-tonal-surface hover:preset-tonal-primary not-last:border-b border-surface-200-800",
-                "data-dnd-dragging:preset-tonal-primary data-dnd-dragging:rounded",
+                "data-dnd-dragging:preset-tonal-primary data-dnd-dragging:rounded cm-table-colsizes-drag",
                 "data-dnd-placeholder:*:invisible data-dnd-placeholder:bg-surface-200-800",
               ]}
               {@attach sortable.attach}
@@ -180,47 +231,29 @@
               // Needed because {sortable.attach} overrides role
               role="listitem"
             >
-              <!-- Data display -->
-              <div class="grow flex flex-col justify-center">
-                <div class="flex gap-1 items-center flex-wrap font-bold">
-                  <DelLabel attrs={delAttrs} fallbackName={delName} inline />
-                  <span>&middot;</span>
-                  <span>{motName}</span>
-                </div>
-                <div class="flex gap-3">
-                  <!-- eslint-disable-next-line svelte/require-each-key -->
-                  {#each motEntries as entry, i}
-                    {#if entry.right && !motEntries[i - 1]?.right}
-                      <div class="grow"></div>
-                    {/if}
-                    {@const dataNf = dataOrFallback(entry.value, NO_FIGURE)}
-                    {@const dataNone = dataOrFallback(entry.value, "none")}
-                    <div
-                      class="flex flex-col"
-                      role="group"
-                      aria-label="{entry.header} {dataNone}"
-                    >
-                      <div class={["nav-header", entry.right && "text-right"]}>
-                        {#if entry.icon}
-                          <IconLabel icon={entry.icon} label={entry.header} />
-                        {:else}
-                          <div>{entry.header}</div>
-                        {/if}
-                      </div>
-                      <div
-                        class={["tabular-nums", entry.right && "text-right"]}
-                        aria-label={String(dataNone)}
-                      >
-                        {dataNf}
-                      </div>
-                    </div>
-                  {/each}
-                </div>
+              <!-- Delegate & motion display -->
+              <div aria-label="Motion {motName}">{motName}</div>
+              <div aria-label="By {delName}">
+                <DelLabel attrs={delAttrs} fallbackName={delName} inline />
               </div>
               <!-- Vertical rule -->
-              <div class="border-r border-surface-200-800"></div>
+              <div class="self-stretch border-r border-surface-200-800"></div>
+              {#each fieldHeaders as k (k)}
+                {const field = motionHeader(k)}
+                {@const value = motEntries[k]}
+                {@const dataNf = dataOrFallback(value, NO_FIGURE)}
+                {@const dataNone = dataOrFallback(value, "none")}
+                <div
+                  class={["tabular-nums wrap-break-word break-all", field.right && "text-right"]}
+                  aria-label="{field.header} {dataNone}"
+                >
+                  {dataNf}
+                </div>
+              {/each}
+              <!-- Vertical rule -->
+              <div class="self-stretch border-r border-surface-200-800"></div>
               <!-- Control buttons -->
-              <div class="flex justify-end items-center gap-1">
+              <div class="flex justify-center items-center gap-1">
                 <button
                   class="btn-icon-std p-1 preset-tonal-error"
                   onclick={() => removeMotion(i)}
@@ -258,3 +291,16 @@
     <EditMotionContent motion={$motions[editMotionModal.index]} {motionSchema} {exitState} />
   {/snippet}
 </UniModal>
+
+<style>
+  /* The size of columns in the table */
+  .cm-table-colsizes, .cm-table-colsizes-drag[data-dnd-dragging] {
+    column-gap: calc(var(--spacing) * var(--cm-gap-x));
+    grid-template-columns:
+      calc(var(--spacing) * var(--cm-motion-colsize))
+      calc(var(--spacing) * var(--cm-delegate-colsize))
+      1px
+      var(--cm-field-colsizes)
+      calc(var(--spacing) * var(--cm-controls-colsize));
+  }
+</style>
