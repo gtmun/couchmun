@@ -16,6 +16,7 @@
   import EditMotionContent from "$lib/components/modals/EditMotionContent.svelte";
   import UniModal from "$lib/components/modals/UniModal.svelte";
   import MotionForm, { numSpeakersStr } from "$lib/components/motions/form/MotionForm.svelte";
+  import OrientedCollapsible from "$lib/components/OrientedCollapsible.svelte";
   import { getSessionContext } from "$lib/context/index.svelte";
   import { findDelegate } from "$lib/db/delegates";
   import { db } from "$lib/db/index.svelte";
@@ -141,12 +142,16 @@
   }
 </script>
 
-<div class="grid gap-5 min-h-full md:grid-cols-[1fr_2fr] md:h-full">
-  <div class="card-filled motion-form">
-    <MotionForm submit={submitMotion} {motionSchema} />
+<div class="flex flex-col gap-3 min-h-full md:h-full md:flex-row @container">
+  <div class="flex card-filled">
+    <OrientedCollapsible>
+      <div class="w-full md:w-[30cqw] *:md:pr-0">
+        <MotionForm submit={submitMotion} {motionSchema} />
+      </div>
+    </OrientedCollapsible>
   </div>
   
-  <div class="flex flex-col gap-2 overflow-x-auto">
+  <div class="flex flex-col gap-2 overflow-x-auto md:min-w-[60cqw] grow">
     <div class="grid grid-cols-[auto_1fr_auto] items-center">
       <button
         class="btn-icon-std transition-colors preset-filled-primary-500"
