@@ -16,7 +16,6 @@
   import EditMotionContent from "$lib/components/modals/EditMotionContent.svelte";
   import UniModal from "$lib/components/modals/UniModal.svelte";
   import MotionForm, { numSpeakersStr } from "$lib/components/motions/form/MotionForm.svelte";
-  import { createSpeaker } from "$lib/components/SpeakerList.svelte";
   import { getSessionContext } from "$lib/context/index.svelte";
   import { findDelegate } from "$lib/db/delegates";
   import { db } from "$lib/db/index.svelte";
@@ -39,9 +38,7 @@
   const { motions, selectedMotion, selectedMotionState, delegates, sortOrder } = getSessionContext();
   const pid = $props.id();
 
-  let openModals = $state({
-    editMotion: -1
-  });
+  let editMotionModal = $state({ open: false, index: -1 });
   // A clone of $motions used solely for use:dndzone
   let dndItems = $derived(proxify($motions));
   
@@ -210,7 +207,7 @@
                   "data-dnd-dragging:preset-tonal-primary"
                 ]}
                 animate:flip={{ duration: 150 }}
-                ondblclick={() => openModals.editMotion = i}
+                ondblclick={() => editMotionModal = { open: true, index: i }}
                 {...a11yLabel(`${delName}'s Motion`)}
               >
                 <td>{motionName(motion)}</td>
@@ -239,7 +236,7 @@
                     </button>
                     <button
                       class="btn-icon-std p-1"
-                      onclick={() => openModals.editMotion = i}
+                      onclick={() => editMotionModal = { open: true, index: i }}
                       {...a11yLabel(`Edit ${delName}'s Motion`)}
                     >
                       <MdiPencil />
@@ -255,13 +252,10 @@
   </div>
 </div>
 <UniModal
-  bind:open={
-    () => openModals.editMotion >= 0,
-    open => { if (!open) openModals.editMotion = -1}
-  }
-  onSubmit={(m: Motion) => editMotion(openModals.editMotion, m)}
+  bind:open={editMotionModal.open}
+  onSubmit={(m: Motion) => editMotion(editMotionModal.index, m)}
 >
   {#snippet content(exitState)}
-    <EditMotionContent motion={$motions[openModals.editMotion]} {motionSchema} {exitState} />
+    <EditMotionContent motion={$motions[editMotionModal.index]} {motionSchema} {exitState} />
   {/snippet}
 </UniModal>
