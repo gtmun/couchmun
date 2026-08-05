@@ -275,7 +275,7 @@
                     </td>
                     <td>
                         {#if ei != 0}
-                            <button class="btn-icon-std" onclick={() => mergeUp(ei)}>
+                            <button class="btn-icon btn-icon-xl" onclick={() => mergeUp(ei)}>
                                 <MdiCallMerge />
                             </button>
                         {/if}

@@ -263,7 +263,7 @@
                                 >
                                     {#snippet trigger()}
                                         <Dialog.Trigger
-                                            class="btn-icon-std preset-filled-error-500"
+                                            class="btn-icon btn-icon-xl preset-filled-error-500"
                                             title="Remove All Delegates"
                                             aria-label="Remove All Delegates"
                                         >

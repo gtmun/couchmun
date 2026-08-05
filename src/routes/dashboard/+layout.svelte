@@ -84,7 +84,7 @@
                         }
                     >
                         {#snippet trigger()}
-                            <Dialog.Trigger class="btn-icon-std">
+                            <Dialog.Trigger class="btn-icon btn-icon-xl">
                                 <MdiMenu />
                             </Dialog.Trigger>
                         {/snippet}
@@ -125,7 +125,7 @@
                         }
                     >
                         {#snippet trigger()}
-                            <Dialog.Trigger class="btn-icon-std">
+                            <Dialog.Trigger class="btn-icon btn-icon-xl">
                                 <MdiGear />
                             </Dialog.Trigger>
                         {/snippet}

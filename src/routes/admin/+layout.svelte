@@ -24,7 +24,7 @@
                 <AppBar.Lead>
                     <a
                         href="{resolve("/dashboard")}"
-                        class="btn-icon-std"
+                        class="btn-icon btn-icon-xl"
                         {...a11yLabel("Return to Dashboard")}
                         tabindex={0}
                     >
@@ -38,7 +38,7 @@
                 </AppBar.Headline>
                 <AppBar.Trail>
                     <!-- Alignment spacing -->
-                    <div class="btn-icon-std"></div>
+                    <div class="btn-icon btn-icon-xl"></div>
                 </AppBar.Trail>
             </AppBar.Toolbar>
         </AppBar>

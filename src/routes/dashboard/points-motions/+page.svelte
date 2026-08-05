@@ -155,7 +155,7 @@
   <div class="flex flex-col gap-2 overflow-x-auto md:min-w-[60cqw] grow">
     <div class="grid grid-cols-[auto_1fr_auto] items-center">
       <button
-        class="btn-icon-std transition-colors preset-filled-primary-500"
+        class="btn-icon btn-icon-xl transition-colors preset-filled-primary-500"
         onclick={undo}
         {...a11yLabel("Undo Deleted Motion")}
         disabled={deletedMotions.length == 0}
@@ -164,7 +164,7 @@
       </button>
       <h3 class="h3 text-center" id="motion-table-header-{pid}">List of Motions</h3>
       <button
-        class={["btn-icon-std transition-colors", motionsSorted ? "preset-ui-depressed" : "preset-ui-activated"]}
+        class={["btn-icon btn-icon-xl transition-colors", motionsSorted ? "preset-ui-depressed" : "preset-ui-activated"]}
         onclick={sortMotions}
         {...a11yLabel("Sort Motions")}
         disabled={motionsSorted}
@@ -264,21 +264,21 @@
               <!-- Control buttons -->
               <div class="flex justify-center items-center gap-1">
                 <button
-                  class="btn-icon-std p-1 preset-tonal-error"
+                  class="btn-icon btn-icon-xl p-1 preset-tonal-error"
                   onclick={() => removeMotion(i)}
                   {...a11yLabel(`Reject ${delName}'s Motion`)}
                 >
                   <MdiCancel />
                 </button>
                 <button
-                  class="btn-icon-std p-1 preset-tonal-success"
+                  class="btn-icon btn-icon-xl p-1 preset-tonal-success"
                   onclick={() => acceptMotionAndGoto(motion)}
                   {...a11yLabel(`Accept ${delName}'s Motion`)}
                 >
                   <MdiCheck />
                 </button>
                 <button
-                  class="btn-icon-std p-1 preset-tonal"
+                  class="btn-icon btn-icon-xl p-1 preset-tonal"
                   onclick={() => editMotionModal = { open: true, index: i }}
                   {...a11yLabel(`Edit ${delName}'s Motion`)}
                 >

@@ -333,7 +333,7 @@
                     {@render extra?.(speaker, i)}
                     <button 
                         class={[
-                            "btn-icon-std transition",
+                            "btn-icon btn-icon-xl transition",
                             speaker.completed ? "preset-ui-depressed" : "preset-filled-error-100-900 hover:preset-filled-error-500"
                         ]}
                         onclick={() => deleteSpeaker(i)}

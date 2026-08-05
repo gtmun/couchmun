@@ -22,7 +22,7 @@
                 Open Dashboard
             </a>
             <a 
-                class="btn-icon-std preset-filled-primary-500" 
+                class="btn-icon btn-icon-xl preset-filled-primary-500" 
                 href="{resolve("/admin/settings")}"
                 {...a11yLabel("Settings")}
             >

@@ -58,7 +58,7 @@
                         {#each newAttrs.aliases as _, i}
                             <input class="input" bind:value={newAttrs.aliases[i]}>
                             <button
-                                class="btn-icon-std preset-filled-error-500"
+                                class="btn-icon btn-icon-xl preset-filled-error-500"
                                 onclick={() => newAttrs.aliases.splice(i, 1)}
                                 type="button"
                                 {...a11yLabel("Delete Alias")}
@@ -81,7 +81,7 @@
                 <span>Flag URL (optional)</span>
                 <input class="input" bind:value={newAttrs.flagURL} placeholder="https://example.com/flag.svg">
             </label>
-            <div class="flex justify-end gap-3">
+            <div class="flex justify-end gap-1">
                 <button class="btn preset-filled-error-500" type="button" onclick={close}>Cancel</button>
                 <button class="btn preset-filled-primary-500" type="submit">Submit</button>
             </div>

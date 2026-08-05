@@ -46,13 +46,6 @@
   color: var(--color-primary-contrast-500);
 }
 
-@utility btn-icon-std {
-  @apply btn-icon;
-  font-size: var(--text-xl);
-  width: var(--text-xl);
-  height: var(--text-xl);
-  padding: calc(var(--spacing) * 2);
-}
 @utility editable-std {
   @apply hover:bg-surface-500/25 focus:bg-surface-500/25 transition-[background-color,font-size];
   border-radius: 0.25rem;

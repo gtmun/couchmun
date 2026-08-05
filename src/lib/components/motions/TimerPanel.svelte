@@ -207,13 +207,13 @@
     {#key selectedSpeaker?.key}
         <div transition:lazyslide>
             {#if typeof selectedSpeaker !== "undefined"}
-                <div class="pb-5">
+                <div class="pb-4">
                     <DelLabel attrs={selectedSpeaker.delegate} {label} />
                 </div>
             {/if}
         </div>
     {/key}
-    <div class="flex flex-col gap-5">
+    <div class="flex flex-col gap-4">
         <!-- HACK: Each timer depends on its index, so key isn't required -->
         <!-- eslint-disable-next-line svelte/require-each-key -->
         {#each timers as _, i}
@@ -244,13 +244,13 @@
             />
         {/each}
         <!-- Button bar -->
-        <div class="flex flex-row gap-3 justify-center">
+        <div class="flex flex-row gap-2 justify-center">
             <!-- Global start/pause button: Only exists if timers are synchronized -->
             {#if timerInteraction === "sync"}
                 <!-- If sync, it is assured that this is the only run state. -->
                 {@const running = getRunState(0)}
                 <button 
-                    class="btn preset-filled-primary-500"
+                    class="btn btn-lg preset-filled-primary-500"
                     disabled={!running && !isTimerPlayable()}
                     onclick={() => setRunState(0, !running)}
                 >
@@ -258,12 +258,12 @@
                 </button>
             {/if}
             <!-- Next -->
-            <button class="btn preset-filled-primary-500" disabled={speakersList?.isAllDone() ?? true} onclick={next}>Next</button>
+            <button class="btn btn-lg preset-filled-primary-500" disabled={speakersList?.isAllDone() ?? true} onclick={next}>Next</button>
             <!-- Reset Buttons -->
             <!-- eslint-disable-next-line svelte/require-each-key -->
             {#each resetButtons as { indices, label }}
                 <button
-                    class="btn preset-filled-primary-500"
+                    class="btn btn-lg preset-filled-primary-500"
                     disabled={!canReset(...(indices ?? []))}
                     onclick={() => reset(...(indices ?? []))}
                 >

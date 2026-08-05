@@ -323,7 +323,7 @@
         <!-- A start/pause button -->
         {#if !hidePlay}
             <button 
-                class="btn-icon-std preset-filled-primary-500" 
+                class="btn-icon btn-icon-xl preset-filled-primary-500" 
                 onclick={() => running = !running}
                 disabled={disablePlay || isElapsed()}
                 {...a11yLabel(running ? "Pause Timer" : "Start Timer")}

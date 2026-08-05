@@ -145,7 +145,7 @@
                 {@const invertedFavor = invertFavor(speaker.stance)}
 
                 <button 
-                    class={["btn-icon-std transition", presetCls(speaker)]}
+                    class={["btn-icon btn-icon-xl transition", presetCls(speaker)]}
                     onclick={() => order[index].stance = invertedFavor}
                     {...a11yLabel(`Set ${speakerLabel} to ${invertedFavor}`)}
                     disabled={speaker.completed}
