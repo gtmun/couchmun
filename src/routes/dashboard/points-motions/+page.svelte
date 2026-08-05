@@ -12,7 +12,7 @@
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
   import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-  import IconLabel from "$lib/components/IconLabel.svelte";
+  import IconLabel, { type IconComponent } from "$lib/components/IconLabel.svelte";
   import EditMotionContent from "$lib/components/modals/EditMotionContent.svelte";
   import UniModal from "$lib/components/modals/UniModal.svelte";
   import MotionForm, { numSpeakersStr } from "$lib/components/motions/form/MotionForm.svelte";
@@ -53,36 +53,58 @@
     db.updateDelegate(motion.delegate, d => { d.stats.motionsProposed++; });
   }
 
-  /**
-   * Filters union type M to all options which include all entries of Fs as a field.
-   */
-  type WithFields<M, Fs extends string> = Extract<M, Record<Fs, unknown>>;
-  /**
-   * Produces a value by using the callback (if the provided motion has the required fields) 
-   * or using a default (if the provided motion does not have the required fields).
-   * @param m the motion
-   * @param fields the list of fields to check for
-   * @param cb the callback to produce a value (if the motion has the required fields)
-   * @param dflt the default value (if the motion does not have the required fields)
-   */
-  function apply<M extends object, F extends string, R>(
-    m: M, 
-    fields: F[], 
-    cb: (m: WithFields<M, F>) => R | undefined, 
-    dflt: R
-  ): R {
-    if (fields.every(f => hasKey(m, f))) {
-      return cb(m as any) ?? dflt;
-    }
-    return dflt;
+  /// Converts empty strings and nullish values to the provided fallback.
+  function dataOrFallback<T>(data: T | undefined, fallback: T) {
+    return data !== "" ? (data ?? fallback) : fallback;
   }
-
-
   function motionName(m: Motion) {
     const kindLabel = MOTION_DEFS[m.kind].label ?? NO_FIGURE;
     const extension = hasKey(m, "isExtension") && m.isExtension;
     
     return kindLabel + (extension ? ' (Extension)': '');
+  }
+
+  interface MotionDisplayEntry {
+    header: string,
+    icon?: IconComponent,
+    value: string | number | undefined,
+    right?: boolean,
+  }
+  const MDE = {
+    topic: { header: "Topic" },
+    nSpeakers: { header: "Speakers", icon: MdiAccountMultiple, right: true },
+    speakingTime: { header: "Speaking Time", icon: MdiAccountClock, right: true },
+    totalTime: { header: "Total Time", icon: MdiClock, right: true },
+  } satisfies Record<string, Omit<MotionDisplayEntry, "value">>;
+  function motionDisplayEntries(m: Motion): MotionDisplayEntry[] {
+    if (m.kind === "mod") {
+      return [
+        { ...MDE.topic, value: m.topic },
+        { ...MDE.nSpeakers, value: numSpeakersStr(m.totalTime, m.speakingTime) },
+        { ...MDE.speakingTime, value: stringifyTime(m.speakingTime) },
+        { ...MDE.totalTime, value: stringifyTime(m.totalTime) },
+      ];
+    } else if (m.kind === "unmod") {
+      return [
+        { ...MDE.topic, value: undefined },
+        { ...MDE.totalTime, value: stringifyTime(m.totalTime) },
+      ];
+    } else if (m.kind === "rr") {
+      let nSpeakers = $delegates.filter(d => d.isPresent()).length;
+      return [
+        { ...MDE.topic, value: m.topic },
+        { ...MDE.nSpeakers, value: nSpeakers },
+        { ...MDE.speakingTime, value: stringifyTime(m.speakingTime) },
+        { ...MDE.totalTime, value: stringifyTime(nSpeakers * m.speakingTime) },
+      ];
+    } else if (m.kind === "other") {
+      return [
+        { ...MDE.topic, value: m.topic },
+        { ...MDE.totalTime, value: typeof m.totalTime === "number" ? stringifyTime(m.totalTime) : undefined, right: true },
+      ];
+    } else {
+      return m satisfies never;
+    }
   }
 
   // MOTION BUTTONS
@@ -172,88 +194,102 @@
       </button>
     </div>
     
-    <div class="table-wrap rounded border border-surface-200-800">
-      <table class="table bg-surface-200-800">
-        <thead class="preset-ui">
-          <tr>
-            <td class="px-3 w-28">Motion</td>
-            <td class="px-3 w-36">By</td>
-            <td class="px-3">Topic</td>
-            <td class="px-3 w-16">
-              <IconLabel icon={MdiClock} label="Total Time" />
-            </td>
-            <td class="px-3 w-16">
-              <IconLabel icon={MdiAccountClock} label="Speaking Time" />
-            </td>
-            <td class="px-3 w-16">
-              <IconLabel icon={MdiAccountMultiple} label="No. of Speakers" />
-            </td>
-            <td class="w-30"></td>
-          </tr>
-        </thead>
-        <tbody
-          aria-labelledby="motion-table-header-{pid}"
-          class="bg-surface-50-950"
-        >
-          <DragDropProvider
-            onDragOver={handleDrag(dndItems)}
-            onDragEnd={() => $motions = dndItems}
-          >
-            {#each dndItems as motion, i (motion.id)}
-              {@const delAttrs = findDelegate($delegates, motion.delegate)}
-              {@const delName = delAttrs?.name ?? "unknown"}
-              {@const sortable = untrack(() => createSortable({
-                get id() { return motion.id; }, get index() { return i; }
-              }, "default"))}
-              <tr
-                {@attach sortable.attach}
-                class={[
-                  "preset-tonal-surface hover:preset-tonal-primary [&_td]:tabular-nums",
-                  "data-dnd-dragging:preset-tonal-primary"
-                ]}
-                animate:flip={{ duration: 150 }}
-                ondblclick={() => editMotionModal = { open: true, index: i }}
-                {...a11yLabel(`${delName}'s Motion`)}
-              >
-                <td>{motionName(motion)}</td>
-                <td>
+    <DragDropProvider
+      onDragOver={handleDrag(dndItems)}
+      onDragEnd={() => $motions = dndItems}
+    >
+      <div class="table-wrap rounded border border-surface-200-800">
+        <ul>
+          {#each dndItems as motion, i (motion.id)}
+            {@const delAttrs = findDelegate($delegates, motion.delegate)}
+            {@const delName = delAttrs?.name ?? "unknown"}
+            {@const motName = motionName(motion)}
+            {@const motEntries = motionDisplayEntries(motion)}
+            {@const sortable = untrack(() => createSortable({
+              get id() { return motion.id; }, get index() { return i; }
+            }))}
+            <li
+              class={[
+                "flex p-2 gap-3 items-stretch",
+                "preset-tonal-surface hover:preset-tonal-primary not-last:border-b border-surface-200-800",
+                "data-dnd-dragging:preset-tonal-primary data-dnd-dragging:rounded",
+                "data-dnd-placeholder:*:invisible data-dnd-placeholder:bg-surface-200-800",
+              ]}
+              {@attach sortable.attach}
+              animate:flip={{ duration: 150 }}
+              ondblclick={() => editMotionModal = { open: true, index: i }}
+              {...a11yLabel(`${delName}'s ${motName}`)}
+              // Needed because {sortable.attach} overrides role
+              role="listitem"
+            >
+              <!-- Data display -->
+              <div class="grow flex flex-col justify-center">
+                <div class="flex gap-1 items-center flex-wrap font-bold">
                   <DelLabel attrs={delAttrs} fallbackName={delName} inline />
-                </td>
-                <td>{apply(motion, ["topic"], m => m.topic, NO_FIGURE)}</td>
-                <td>{hasKey(motion, 'totalSpeakers') ? stringifyTime(motion.totalSpeakers * motion.speakingTime) : apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), NO_FIGURE)}</td>
-                <td>{apply(motion, ["speakingTime"], m => stringifyTime(m.speakingTime), NO_FIGURE)}</td>
-                <td>{hasKey(motion, 'totalSpeakers') ? motion.totalSpeakers : apply(motion, ["totalTime", "speakingTime"], m => numSpeakersStr(m.totalTime, m.speakingTime), NO_FIGURE)}</td>
-                <td>
-                  <div class="flex flex-row justify-end">
-                    <button
-                      class="btn-icon-std p-1"
-                      onclick={() => removeMotion(i)}
-                      {...a11yLabel(`Reject ${delName}'s Motion`)}
+                  <span>&middot;</span>
+                  <span>{motName}</span>
+                </div>
+                <div class="flex gap-3">
+                  <!-- eslint-disable-next-line svelte/require-each-key -->
+                  {#each motEntries as entry, i}
+                    {#if entry.right && !motEntries[i - 1]?.right}
+                      <div class="grow"></div>
+                    {/if}
+                    {@const dataNf = dataOrFallback(entry.value, NO_FIGURE)}
+                    {@const dataNone = dataOrFallback(entry.value, "none")}
+                    <div
+                      class="flex flex-col"
+                      role="group"
+                      aria-label="{entry.header} {dataNone}"
                     >
-                      <MdiCancel class="text-error-500" />
-                    </button>
-                    <button
-                      class="btn-icon-std p-1"
-                      onclick={() => acceptMotionAndGoto(motion)}
-                      {...a11yLabel(`Accept ${delName}'s Motion`)}
-                    >
-                      <MdiCheck class="text-success-700" />
-                    </button>
-                    <button
-                      class="btn-icon-std p-1"
-                      onclick={() => editMotionModal = { open: true, index: i }}
-                      {...a11yLabel(`Edit ${delName}'s Motion`)}
-                    >
-                      <MdiPencil />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            {/each}
-          </DragDropProvider>
-        </tbody>
-      </table>
-    </div>
+                      <div class={["nav-header", entry.right && "text-right"]}>
+                        {#if entry.icon}
+                          <IconLabel icon={entry.icon} label={entry.header} />
+                        {:else}
+                          <div>{entry.header}</div>
+                        {/if}
+                      </div>
+                      <div
+                        class={["tabular-nums", entry.right && "text-right"]}
+                        aria-label={String(dataNone)}
+                      >
+                        {dataNf}
+                      </div>
+                    </div>
+                  {/each}
+                </div>
+              </div>
+              <!-- Vertical rule -->
+              <div class="border-r border-surface-200-800"></div>
+              <!-- Control buttons -->
+              <div class="flex justify-end items-center gap-1">
+                <button
+                  class="btn-icon-std p-1 preset-tonal-error"
+                  onclick={() => removeMotion(i)}
+                  {...a11yLabel(`Reject ${delName}'s Motion`)}
+                >
+                  <MdiCancel />
+                </button>
+                <button
+                  class="btn-icon-std p-1 preset-tonal-success"
+                  onclick={() => acceptMotionAndGoto(motion)}
+                  {...a11yLabel(`Accept ${delName}'s Motion`)}
+                >
+                  <MdiCheck />
+                </button>
+                <button
+                  class="btn-icon-std p-1 preset-tonal"
+                  onclick={() => editMotionModal = { open: true, index: i }}
+                  {...a11yLabel(`Edit ${delName}'s Motion`)}
+                >
+                  <MdiPencil />
+                </button>
+              </div>
+            </li>
+          {/each}
+        </ul>
+      </div>
+    </DragDropProvider>
   </div>
 </div>
 <UniModal
