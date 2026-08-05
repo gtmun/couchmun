@@ -6,11 +6,12 @@
     import type { Component } from "svelte";
     import type { SVGAttributes } from "svelte/elements";
 
+    export type IconComponent = Component<SVGAttributes<SVGSVGElement>>;
     interface Props {
         /**
          * The icon to use.
          */
-        icon: Component<SVGAttributes<SVGSVGElement>>,
+        icon: IconComponent,
         /**
          * The label if the screen is wide enough.
          */
