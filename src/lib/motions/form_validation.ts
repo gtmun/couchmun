@@ -11,6 +11,11 @@ import { parseTime, stringifyTime } from "$lib/util/time";
 
 export type SchemaInput<F extends (...args: any) => any> = z.input<ReturnType<F>>;
 export type SchemaOutput<F extends (...args: any) => any> = z.output<ReturnType<F>>;
+// Checks the given schema accepts input of type `Input` and accepts output of type `Output`.
+type MatchesIO<F extends (...args: any) => any, Input, Output> =
+    Is<SchemaInput<F>, Input> extends true ?
+        Is<SchemaOutput<F>, Output> extends true ? true : false
+    : false;
 
 export function formatValidationError(error: z.ZodError) {
     return error.issues[0];
@@ -58,8 +63,7 @@ export function stringToIntSchema() {
         }
     );
 }
-const _assert_i0: Is<SchemaInput<typeof stringToIntSchema>, string> = {};
-const _assert_o0: Is<SchemaOutput<typeof stringToIntSchema>, number> = {};
+const _assertSchema0: MatchesIO<typeof stringToIntSchema, string, number> = true;
 
 /**
  * Creates a schema that requires the input is the name of a present delegate.
@@ -112,8 +116,7 @@ export function presentDelegateSchema(delegates: Delegate[]) {
         }
     );
 }
-const _assert_i1: Is<SchemaInput<typeof presentDelegateSchema>, string> = {};
-const _assert_o1: Is<SchemaOutput<typeof presentDelegateSchema>, DelegateID> = {};
+const _assertSchema1: MatchesIO<typeof presentDelegateSchema, string, DelegateID> = true;
 
 export function timeSchema(label: string) {
     return z.codec(
@@ -137,9 +140,9 @@ export function timeSchema(label: string) {
         }
     );
 }
-const _assert_i2: Is<SchemaInput<typeof timeSchema>, string> = {};
-const _assert_o2: Is<SchemaOutput<typeof timeSchema>, number> = {};
+const _assertSchema2: MatchesIO<typeof timeSchema, string, number> = true;
 
+export type Refine = readonly [check: (o: any) => boolean, z.core.$ZodCustomParams];
 export function refineSpeakingTime(totalTimeAttr = "totalTime", speakingTimeAttr = "speakingTime") {
     return [(o: any) => {
         const totalTime: number = o[totalTimeAttr];
@@ -148,5 +151,5 @@ export function refineSpeakingTime(totalTimeAttr = "totalTime", speakingTimeAttr
     }, {
         message: "Total time cannot be evenly divided among speakers",
         path: [speakingTimeAttr]
-    } satisfies z.core.$ZodCustomParams] as const;
+    }] as const satisfies Refine;
 }

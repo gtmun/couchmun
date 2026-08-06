@@ -72,6 +72,9 @@ export function handleDrag(moveable: unknown[] | OnMove) {
  * @returns the array
  */
 export function move<T>(arr: T[], oldIdx: number, newIdx: number) {
-    arr.splice(newIdx, 0, ...arr.splice(oldIdx, 1));
-    return arr;
+    return moveAcross(arr, oldIdx, arr, newIdx);
+}
+export function moveAcross<T>(source: T[], oldIdx: number, target: T[], newIdx: number) {
+    target.splice(newIdx, 0, ...source.splice(oldIdx, 1));
+    return target;
 }

@@ -7,16 +7,12 @@
     import { slide } from 'svelte/transition';
     import type { z } from "zod";
 
-    import InputExtension from './InputExtension.svelte';
-    import InputSpeakingTime from './InputSpeakingTime.svelte';
-    import InputString from './InputString.svelte';
-    import InputTotalTime from './InputTotalTime.svelte';
-
     import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
-    import { MOTION_BASE_FIELDS, MOTION_DEFS, type InputKind, type InputProperties, type MotionSchema } from "$lib/motions/definitions";
+    import { MOTION_BASE_FIELDS, MOTION_DEFS, MOTION_GROUP_LABELS, type FieldProperties, type MotionSchema } from "$lib/motions/definitions";
     import { formatValidationError } from "$lib/motions/form_validation";
-    import type { MotionInput, MotionInputWithFields } from "$lib/motions/types";
+    import { getComponent } from '$lib/motions/input';
+    import type { MotionInput } from "$lib/motions/types";
     import type { DelegateID, Motion } from "$lib/types";
     import { hasKey, NO_FIGURE } from "$lib/util";
     import { proxify } from '$lib/util/sv.svelte';
@@ -24,7 +20,7 @@
     import MdiPlus from "~icons/mdi/plus";
 
 
-    const { selectedMotion, delegates, preferences } = getSessionContext();
+    const { selectedMotion, delegates, enabledMotions } = getSessionContext();
     const defaultInputMotion = () => ({ id: crypto.randomUUID(), kind: "mod" } satisfies MotionInput);
 
     interface Props {
@@ -64,57 +60,38 @@
     
     const motionDef = $derived(MOTION_DEFS[inputMotion.kind]);
     
-    function getComponent(k: InputKind) {
-        if (k === "totalTime") {
-            return InputTotalTime;
-        } else if (k === "speakingTime") {
-            return InputSpeakingTime;
-        } else if (k === "topic") {
-            return InputString;
-        } else if (k === "extension") {
-            // Only allow if motion is the same
-            if (inputMotion.kind === $selectedMotion?.kind) {
-                return InputExtension;
-            }
-        } else if (k === "none") {
-            return undefined;
-        } else {
-            k satisfies never;
-        }
-    }
+    let dropdownMotions = $derived.by(() => {
+        type GroupLabel = keyof typeof MOTION_GROUP_LABELS;
 
-    // Motions that you can input into dropdown (taking into account provided preferences)
-    let allowedMotions = $derived.by(() => {
-        // A map indicating whether a given motion type should appear.
-        // If mapped to false, it will not appear.
-        // If mapped to true (or not mapped at all), it will also appear.
-        const filters: Record<string, boolean> = {
-            "rr": $preferences.enableMotionRoundRobin
-        };
-
-        return Object.entries(MOTION_DEFS)
-            .filter(([kind]) => filters[kind] ?? true);
+        let filters: Record<string, boolean | undefined> = $enabledMotions;
+        let motions = Object.entries<{ label: string, group?: GroupLabel }>(MOTION_DEFS)
+            .filter(([kind, _]) => filters[kind] ?? true)
+            .map(([kind, { label, group }]) => ({ kind, label, group }));
+        
+        return Map.groupBy(motions, ({ group }) => group);
     });
     
+    function defHasFields(...keys: string[]) {
+        return keys.every(k => hasKey(motionDef.fields, k));
+    }
+    function defAccepts(key: string) {
+        return (MOTION_BASE_FIELDS as readonly string[]).includes(key)
+            || defHasFields(key);
+    }
     // Motion validation and submission.
     function submitMotion(e: SubmitEvent) {
         e.preventDefault();
 
-        // Round-Robin: Apply total speakers
-        if (inputMotion.kind === "rr") {
-            inputMotion.totalSpeakers = $delegates.filter(d => d.isPresent()).length.toString();
-        }
-
         // Filter out any keys that aren't the correct kind:
+        let im_: Record<string, unknown> = inputMotion;
         for (let key of Object.keys(inputMotion)) {
-            if (!hasField(inputMotion, [key])) {
-                delete inputMotion[key];
+            if (!defAccepts(key)) {
+                delete im_[key];
             }
         }
-        if ($selectedMotion?.kind !== inputMotion.kind && hasKey(inputMotion, "isExtension")) {
-            delete inputMotion["isExtension"];
+        if ($selectedMotion?.kind !== im_.kind) {
+            delete im_["isExtension"];
         }
-
         // Validate input
         const result = motionSchema.safeParse(inputMotion);
         if (result.success) {
@@ -129,17 +106,6 @@
         } else {
             inputError = formatValidationError(result.error);
         }
-    }
-
-    /**
-     * Returns true if the inputMotion's kind has the provided fields.
-     * This is useful for conditionally showing a field input only if the motion requires that field.
-     * 
-     * @param m the input motion
-     * @param fields the list of fields to check for
-     */
-    function hasField<F extends string>(m: MotionInput, fields: F[]): m is MotionInputWithFields<F> {
-        return fields.every(f => (MOTION_BASE_FIELDS as readonly string[]).includes(f) || hasKey(MOTION_DEFS[m.kind].fields, f));
     }
 
     // Extension handling.
@@ -213,17 +179,24 @@
         <select 
             class={["select", inputError?.path.includes("kind") && "preset-input-error"]}
             bind:value={inputMotion.kind}
-            >
-            {#each allowedMotions as [value, {label}] (value)}
-                <option {value} {label}></option>
+        >
+            {#snippet spreadOptions(options: { kind: string, label: string }[])}
+                {#each options as { kind, label } (kind)}
+                    <option value={kind} {label}></option>
+                {/each}
+            {/snippet}
+            {#each dropdownMotions as [group, options] (group)}
+                {#if group}
+                    <optgroup label={MOTION_GROUP_LABELS[group]}>{@render spreadOptions(options)}</optgroup>
+                {:else}
+                    {@render spreadOptions(options)}
+                {/if}
             {/each}
         </select>
     </label>
 
-    {#each Object.entries(motionDef.fields as Record<string, InputProperties>) as [name, prop] (name)}
-        {@const type = typeof prop === "string" ? prop : prop.type}
-        {@const args = typeof prop === "string" ? {} : prop}
-        {@const Component = getComponent(type)}
+    {#each Object.entries<FieldProperties>(motionDef.fields) as [name, {input, schema: _schema, ...args}] (name)}
+        {@const Component = getComponent(input, { inputKind: inputMotion.kind, prevMotionKind: $selectedMotion?.kind, extEnabled: $enabledMotions.ext ?? true })}
 
         {#if Component}
             <Component
@@ -238,10 +211,11 @@
     {/each}
 
     <!-- Number of speakers display -->
-    {#if hasField(inputMotion, ["totalTime", "speakingTime"])}
-    <div class="text-center">
-        <strong>Number of speakers</strong>: {numSpeakersStr(inputMotion.totalTime, inputMotion.speakingTime) ?? NO_FIGURE}
-    </div>
+    {#if defHasFields("totalTime", "speakingTime")}
+        {@const im_: Record<"totalTime" | "speakingTime", number | string | undefined> = inputMotion as any}
+        <div class="text-center">
+            <strong>Number of speakers</strong>: {numSpeakersStr(im_.totalTime, im_.speakingTime) ?? NO_FIGURE}
+        </div>
     {/if}
 
     <!-- End buttons -->

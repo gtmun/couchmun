@@ -36,6 +36,7 @@ class SessionImpl implements SessionContext {
     sortOrder = db.settingStore("sortOrder", DEFAULT_SETTINGS.sortOrder);
     barTitle = db.settingStore("title", "");
     preferences = db.settingStore("preferences", DEFAULT_SETTINGS.preferences);
+    enabledMotions = db.settingStore("enabledMotions", DEFAULT_SETTINGS.enabledMotions);
 
     barTopic = $state<string>();
     tabTitleExtras = $state<string>();

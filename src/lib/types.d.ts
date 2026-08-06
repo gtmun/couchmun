@@ -47,18 +47,13 @@ export type DelegateAttrs = {
  * All possible categories of motion.
  * Note that this doesn't perfectly align to `MotionKind`.
  */
-export type SortKind = "mod" | "unmod" | "rr" | "other" | "ext";
-/**
- * All possible properties that can define the order between
- * motions of the same `SortKind`.
- */
-export type SortOrderProperty = "totalTime" | "speakingTime" | "topic" | "delegate" | "nSpeakers";
+export type SortKind = MotionKind | "ext";
 /**
  * A `SortOrderProperty` alongside 
  * whether the items should be in ascending or descending order.
  */
 export type SortOrderKey = {
-    property: SortOrderProperty,
+    property: string,
     ascending: boolean
 };
 /**
@@ -124,14 +119,6 @@ export type SortOrder = SortEntry[];
  */
 export type Preferences = {
     /**
-     * Whether or not to enable the round robin motion.
-     */
-    enableMotionRoundRobin: boolean,
-    /**
-     * Whether or not to enable extensions.
-     */
-    enableMotionExt: boolean,
-    /**
      * Whether or not to yes/no with rights (during VP roll call).
      */
     enableWithRights: boolean,
@@ -168,43 +155,69 @@ export type Settings = {
      * Toggleable preferences.
      */
     preferences: Preferences,
+
+    /**
+     * All enabled motions. Any omitted motions are assumed to be enabled.
+     */
+    enabledMotions: Partial<Record<SortKind, boolean>>,
 };
 
 // Attendance
 export type DelegatePresence = "NP" | "P" | "PV";
 
 // Motions
+type BaseMotion = {
+    id: MotionID,
+    delegate: DelegateID,
+};
 /**
  * Data relating to a motion's properties.
  */
-export type Motion = {
-    id: MotionID,
-    delegate: DelegateID,
+export type Motion = BaseMotion & ({
     kind: "mod", 
     totalTime: number,
     speakingTime: number,
     topic: string,
     isExtension: boolean
 } | {
-    id: MotionID,
-    delegate: DelegateID,
     kind: "unmod",
     totalTime: number,
     isExtension: boolean
 } | {
-    id: MotionID,
-    delegate: DelegateID,
     kind: "rr",
     speakingTime: number,
     topic: string
-    totalSpeakers: number
 } | {
-    id: MotionID,
-    delegate: DelegateID,
     kind: "other",
     totalTime?: number,
     topic?: string
-};
+} | {
+    kind: "spklist",
+    speakingTime: number
+} | {
+    kind: "agenda",
+    topicOrder: string
+} | {
+    kind: "introdoc",
+    order: string,
+    readingPeriodTime: number,
+    authorsPanelTime: number,
+    qnaTime: number
+
+} | {
+    kind: "open"
+} | {
+    kind: "suspend"
+} | {
+    kind: "adjourn"
+} | {
+    kind: "divq"
+} | {
+    kind: "amendments"
+} | {
+    kind: "vp",
+    method: string
+});
 export type MotionKind = Motion["kind"];
 
 /**
@@ -318,6 +331,10 @@ export type SessionContext = {
      * Preferences (simple setting toggles).
      */
     preferences: Readable<Settings["preferences"]>,
+    /**
+     * Map of enabled motions.
+     */
+    enabledMotions: Readable<Settings["enabledMotions"]>,
     /**
      * Current topic of discussion, visible on the app bar.
      */

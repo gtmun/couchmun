@@ -11,21 +11,13 @@ type Form<O extends object, Require extends keyof O = never> = O extends object
     {[P in keyof O]?: Formify<O[P]> } &
     {[P in Require]:  Formify<O[P]> }
 : never;
-/**
- * Filters union type M to all options which include all entries of Fs as a field.
- */
-type WithFields<M, Fs extends string> = Extract<M, Record<Fs, unknown>>;
 ////
 /**
  * Type of the motion input object.
  */
 export type MotionInput = Form<Motion, "id" | "kind">;
-/**
- * Type of motion input object, filtering only the motions with the given fields.
- */
-export type MotionInputWithFields<F extends string> = Form<WithFields<Motion, F>, "id" | "kind">;
 
 /**
  * Checks that type A and B are identical types.
  */
-export type Is<A, B, True = unknown, False = never> = NoInfer<A> extends B ? NoInfer<B> extends A ? True : False : False;
+export type Is<A, B, True = true, False = false> = NoInfer<A> extends B ? NoInfer<B> extends A ? True : False : False;

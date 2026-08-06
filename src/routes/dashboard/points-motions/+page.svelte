@@ -15,23 +15,18 @@
   import IconLabel from "$lib/components/IconLabel.svelte";
   import EditMotionContent from "$lib/components/modals/EditMotionContent.svelte";
   import UniModal from "$lib/components/modals/UniModal.svelte";
-  import MotionForm, { numSpeakersStr } from "$lib/components/motions/form/MotionForm.svelte";
+  import MotionForm from "$lib/components/motions/form/MotionForm.svelte";
   import OrientedCollapsible from "$lib/components/OrientedCollapsible.svelte";
   import { getSessionContext } from "$lib/context/index.svelte";
   import { findDelegate } from "$lib/db/delegates";
   import { db } from "$lib/db/index.svelte";
-  import { createMotionSchema, MOTION_DEFS } from "$lib/motions/definitions";
-  import { compareMotions as motionComparator } from "$lib/motions/sort";
-  import type { Motion } from "$lib/types";
+  import { compareMotions as motionComparator, createMotionSchema, MOTION_DEFS, type MotionDef, type DisplayFieldKey, type DisplayFieldHeader, DISPLAY_FIELD_HEADERS } from "$lib/motions/definitions";
+  import type { Motion, MotionKind } from "$lib/types";
   import { a11yLabel, hasKey, NO_FIGURE } from "$lib/util";
   import { createSortable, handleDrag } from "$lib/util/dnd";
   import { proxify } from "$lib/util/sv.svelte";
-  import { stringifyTime } from "$lib/util/time";
-  import MdiAccountClock from "~icons/mdi/account-clock";
-  import MdiAccountMultiple from "~icons/mdi/account-multiple";
   import MdiCancel from "~icons/mdi/cancel";
   import MdiCheck from "~icons/mdi/check";
-  import MdiClock from "~icons/mdi/clock";
   import MdiPencil from "~icons/mdi/pencil";
   import MdiSort from "~icons/mdi/sort";
   import MdiUndo from "~icons/mdi/undo";
@@ -44,7 +39,8 @@
   let dndItems = $derived(proxify($motions));
   
   let motionSchema = $derived(createMotionSchema($delegates));
-
+  let motionCmp = $derived(motionComparator($sortOrder, $delegates));
+  
   function submitMotion(motion: Motion) {
     motions.update($m => {
       $m.push(motion);
@@ -53,31 +49,10 @@
     db.updateDelegate(motion.delegate, d => { d.stats.motionsProposed++; });
   }
 
-  /**
-   * Filters union type M to all options which include all entries of Fs as a field.
-   */
-  type WithFields<M, Fs extends string> = Extract<M, Record<Fs, unknown>>;
-  /**
-   * Produces a value by using the callback (if the provided motion has the required fields) 
-   * or using a default (if the provided motion does not have the required fields).
-   * @param m the motion
-   * @param fields the list of fields to check for
-   * @param cb the callback to produce a value (if the motion has the required fields)
-   * @param dflt the default value (if the motion does not have the required fields)
-   */
-  function apply<M extends object, F extends string, R>(
-    m: M, 
-    fields: F[], 
-    cb: (m: WithFields<M, F>) => R | undefined, 
-    dflt: R
-  ): R {
-    if (fields.every(f => hasKey(m, f))) {
-      return cb(m as any) ?? dflt;
-    }
-    return dflt;
+  /// Converts empty strings and nullish values to the provided fallback.
+  function dataOrFallback<T>(data: T | undefined, fallback: T) {
+    return data !== "" ? (data ?? fallback) : fallback;
   }
-
-
   function motionName(m: Motion) {
     const kindLabel = MOTION_DEFS[m.kind].label ?? NO_FIGURE;
     const extension = hasKey(m, "isExtension") && m.isExtension;
@@ -85,6 +60,26 @@
     return kindLabel + (extension ? ' (Extension)': '');
   }
 
+  function motionDef(m: MotionKind) {
+    return MOTION_DEFS[m] as MotionDef;
+  }
+  function motionDisplayEntries(m: Motion) {
+    return motionDef(m.kind).display(m, $delegates);
+  }
+  function motionHeader(m: DisplayFieldKey): DisplayFieldHeader {
+    return DISPLAY_FIELD_HEADERS[m] as DisplayFieldHeader;
+  }
+  // Get all fields which are used by the current set of motiosn,
+  // and order them by header order
+  let fieldHeaders = $derived.by(() => {
+    const keys = new Set(
+      dndItems.map(m => motionDisplayEntries(m))
+        .flatMap(e => Object.keys(e) as DisplayFieldKey[])
+    );
+    return (Object.keys(DISPLAY_FIELD_HEADERS) as DisplayFieldKey[])
+      .filter(k => keys.has(k));
+  });
+  
   // MOTION BUTTONS
   function removeMotion(i: number) {
     let removing: Motion[] = [];
@@ -105,8 +100,14 @@
     await db.updateDelegate(motion.delegate, d => { d.stats.motionsAccepted++; });
   }
   async function acceptMotionAndGoto(motion: Motion) {
+    // Find route ID:
+    const mdGoto = motionDef(motion.kind).goto;
+    const routeId = typeof mdGoto === "function"
+      ? mdGoto(motion, $delegates)
+      : mdGoto;
+    
     await acceptMotion(motion);
-    goto(resolve("/dashboard/current-motion"));
+    goto(resolve(routeId));
   }
   function editMotion(i: number, motion?: Motion) {
     if (!motion) return;
@@ -114,13 +115,14 @@
     db.updateDelegate(motion.delegate, d => { d.stats.motionsProposed++; });
     $motions[i] = motion;
   }
+
   function sortMotions() {
-    $motions = $motions.sort(motionComparator($sortOrder));
+    $motions = $motions.sort(motionCmp);
   }
   // Check every window of two motions is in the right order:
   let motionsSorted = $derived.by(() => {
     try {
-      return Array.from({ length: $motions.length - 1 }, (_, i) => motionComparator($sortOrder)($motions[i], $motions[i + 1]) <= 0)
+      return Array.from({ length: $motions.length - 1 }, (_, i) => motionCmp($motions[i], $motions[i + 1]) <= 0)
         .every(b => b);
     } catch {
       // If comparing crashes, don't allow the button to do anything
@@ -172,88 +174,122 @@
       </button>
     </div>
     
-    <div class="table-wrap rounded border border-surface-200-800">
-      <table class="table bg-surface-200-800">
-        <thead class="preset-ui">
-          <tr>
-            <td class="px-3 w-28">Motion</td>
-            <td class="px-3 w-36">By</td>
-            <td class="px-3">Topic</td>
-            <td class="px-3 w-16">
-              <IconLabel icon={MdiClock} label="Total Time" />
-            </td>
-            <td class="px-3 w-16">
-              <IconLabel icon={MdiAccountClock} label="Speaking Time" />
-            </td>
-            <td class="px-3 w-16">
-              <IconLabel icon={MdiAccountMultiple} label="No. of Speakers" />
-            </td>
-            <td class="w-30"></td>
-          </tr>
-        </thead>
-        <tbody
-          aria-labelledby="motion-table-header-{pid}"
-          class="bg-surface-50-950"
-        >
-          <DragDropProvider
-            onDragOver={handleDrag(dndItems)}
-            onDragEnd={() => $motions = dndItems}
-          >
-            {#each dndItems as motion, i (motion.id)}
-              {@const delAttrs = findDelegate($delegates, motion.delegate)}
-              {@const delName = delAttrs?.name ?? "unknown"}
-              {@const sortable = untrack(() => createSortable({
-                get id() { return motion.id; }, get index() { return i; }
-              }, "default"))}
-              <tr
-                {@attach sortable.attach}
-                class={[
-                  "preset-tonal-surface hover:preset-tonal-primary [&_td]:tabular-nums",
-                  "data-dnd-dragging:preset-tonal-primary"
-                ]}
-                animate:flip={{ duration: 150 }}
-                ondblclick={() => editMotionModal = { open: true, index: i }}
-                {...a11yLabel(`${delName}'s Motion`)}
-              >
-                <td>{motionName(motion)}</td>
-                <td>
-                  <DelLabel attrs={delAttrs} fallbackName={delName} inline />
-                </td>
-                <td>{apply(motion, ["topic"], m => m.topic, NO_FIGURE)}</td>
-                <td>{hasKey(motion, 'totalSpeakers') ? stringifyTime(motion.totalSpeakers * motion.speakingTime) : apply(motion, ["totalTime"], m => stringifyTime(m.totalTime), NO_FIGURE)}</td>
-                <td>{apply(motion, ["speakingTime"], m => stringifyTime(m.speakingTime), NO_FIGURE)}</td>
-                <td>{hasKey(motion, 'totalSpeakers') ? motion.totalSpeakers : apply(motion, ["totalTime", "speakingTime"], m => numSpeakersStr(m.totalTime, m.speakingTime), NO_FIGURE)}</td>
-                <td>
-                  <div class="flex flex-row justify-end">
-                    <button
-                      class="btn-icon-std p-1"
-                      onclick={() => removeMotion(i)}
-                      {...a11yLabel(`Reject ${delName}'s Motion`)}
-                    >
-                      <MdiCancel class="text-error-500" />
-                    </button>
-                    <button
-                      class="btn-icon-std p-1"
-                      onclick={() => acceptMotionAndGoto(motion)}
-                      {...a11yLabel(`Accept ${delName}'s Motion`)}
-                    >
-                      <MdiCheck class="text-success-700" />
-                    </button>
-                    <button
-                      class="btn-icon-std p-1"
-                      onclick={() => editMotionModal = { open: true, index: i }}
-                      {...a11yLabel(`Edit ${delName}'s Motion`)}
-                    >
-                      <MdiPencil />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            {/each}
-          </DragDropProvider>
-        </tbody>
-      </table>
-    </div>
+    <DragDropProvider
+      onDragOver={handleDrag(dndItems)}
+      onDragEnd={() => $motions = dndItems}
+      --cm-gap-x={2}
+      --cm-motion-colsize={28}
+      --cm-delegate-colsize={36}
+      --cm-field-min-colsize={20}
+      --cm-controls-colsize={24}
+      --cm-field-colsizes={
+        fieldHeaders.length
+        ? `repeat(${fieldHeaders.length}, minmax(calc(var(--spacing) * var(--cm-field-min-colsize)), 1fr)) 1px`
+        : "1fr"
+      }
+      --cm-all-cols={2 + 1 + fieldHeaders.length + 1 + 1}
+    >
+      <div class={[
+        "grid cm-table-colsizes",
+        "rounded border border-surface-200-800 w-full overflow-auto"
+      ]}>
+        <!-- Headers -->
+        <div class={[
+            "grid grid-cols-subgrid col-span-(--cm-all-cols)",
+            "p-2 items-center border-b",
+            "border-surface-200-800 bg-surface-100-900"
+          ]}>
+          <div>Motion</div>
+          <div>By</div>
+          <div class="border-r border-surface-200-800 self-stretch"></div>
+          {#each fieldHeaders as k (k)}
+            {const field = motionHeader(k)}
+            <div class={["flex", field.right && "justify-end text-right"]}>
+              {#if field.icon}
+                <IconLabel icon={field.icon} label={field.header} />
+              {:else}
+                <div>{field.header}</div>
+              {/if}
+            </div>
+          {/each}
+          <div class="border-r border-surface-200-800 self-stretch"></div>
+          <div></div>
+        </div>
+        <!-- Data -->
+        <ul class="contents">
+          {#each dndItems as motion, i (motion.id)}
+            {@const delAttrs = findDelegate($delegates, motion.delegate)}
+            {@const delName = delAttrs?.name ?? "unknown"}
+            {@const motName = motionName(motion)}
+            {@const motEntries = motionDisplayEntries(motion)}
+            {@const sortable = untrack(() => createSortable({
+              get id() { return motion.id; }, get index() { return i; }
+            }))}
+            <li
+              class={[
+                "grid grid-cols-subgrid col-span-(--cm-all-cols)",
+                "p-2 items-center",
+                "preset-tonal-surface hover:preset-tonal-primary not-last:border-b border-surface-200-800",
+                "data-dnd-dragging:preset-tonal-primary data-dnd-dragging:rounded cm-table-colsizes-drag",
+                "data-dnd-placeholder:*:invisible data-dnd-placeholder:bg-surface-200-800",
+              ]}
+              {@attach sortable.attach}
+              animate:flip={{ duration: 150 }}
+              ondblclick={() => editMotionModal = { open: true, index: i }}
+              {...a11yLabel(`${delName}'s ${motName}`)}
+              // Needed because {sortable.attach} overrides role
+              role="listitem"
+            >
+              <!-- Delegate & motion display -->
+              <div aria-label="Motion {motName}">{motName}</div>
+              <div aria-label="By {delName}">
+                <DelLabel attrs={delAttrs} fallbackName={delName} inline />
+              </div>
+              <!-- Vertical rule -->
+              <div class="self-stretch border-r border-surface-200-800"></div>
+              {#each fieldHeaders as k (k)}
+                {const field = motionHeader(k)}
+                {@const value = motEntries[k]}
+                {@const dataNf = dataOrFallback(value, NO_FIGURE)}
+                {@const dataNone = dataOrFallback(value, "none")}
+                <div
+                  class={["tabular-nums wrap-break-word break-all", field.right && "text-right"]}
+                  aria-label="{field.header} {dataNone}"
+                >
+                  {dataNf}
+                </div>
+              {/each}
+              <!-- Vertical rule -->
+              <div class="self-stretch border-r border-surface-200-800"></div>
+              <!-- Control buttons -->
+              <div class="flex justify-center items-center gap-1">
+                <button
+                  class="btn-icon-std p-1 preset-tonal-error"
+                  onclick={() => removeMotion(i)}
+                  {...a11yLabel(`Reject ${delName}'s Motion`)}
+                >
+                  <MdiCancel />
+                </button>
+                <button
+                  class="btn-icon-std p-1 preset-tonal-success"
+                  onclick={() => acceptMotionAndGoto(motion)}
+                  {...a11yLabel(`Accept ${delName}'s Motion`)}
+                >
+                  <MdiCheck />
+                </button>
+                <button
+                  class="btn-icon-std p-1 preset-tonal"
+                  onclick={() => editMotionModal = { open: true, index: i }}
+                  {...a11yLabel(`Edit ${delName}'s Motion`)}
+                >
+                  <MdiPencil />
+                </button>
+              </div>
+            </li>
+          {/each}
+        </ul>
+      </div>
+    </DragDropProvider>
   </div>
 </div>
 <UniModal
@@ -264,3 +300,16 @@
     <EditMotionContent motion={$motions[editMotionModal.index]} {motionSchema} {exitState} />
   {/snippet}
 </UniModal>
+
+<style>
+  /* The size of columns in the table */
+  .cm-table-colsizes, .cm-table-colsizes-drag[data-dnd-dragging] {
+    column-gap: calc(var(--spacing) * var(--cm-gap-x));
+    grid-template-columns:
+      calc(var(--spacing) * var(--cm-motion-colsize))
+      calc(var(--spacing) * var(--cm-delegate-colsize))
+      1px
+      var(--cm-field-colsizes)
+      calc(var(--spacing) * var(--cm-controls-colsize));
+  }
+</style>

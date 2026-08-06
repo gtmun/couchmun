@@ -11,8 +11,14 @@
     import MdiWrench from "~icons/mdi/wrench";
 
     const sessionData = getSessionContext();
-    const { delegates } = sessionData;
-    let durations = $state([60, 60, 60, 60, 60]);
+    const { delegates, selectedMotion } = sessionData;
+    let durations = $state(
+        $selectedMotion?.kind === "introdoc"
+        // Use motion's definitions if motion configured
+        ? [$selectedMotion.readingPeriodTime, $selectedMotion.authorsPanelTime, $selectedMotion.qnaTime, 60, 60]
+        // Fallback if motion not configured
+        : [60, 60, 60, 60, 60]
+    );
     let durInputs = $derived(proxify(durations.map(d => stringifyTime(d))));
     let faOrder = $state<SpeakerFA[]>([]);
 

@@ -8,32 +8,22 @@
  * See the docs for `SortOrder` in `$lib/types` for more details about how sort order is set up.
  */
 
-import type { Motion, SortKind, SortOrder, SortOrderProperty } from "$lib/types";
+import type { Motion, MotionKind, SortKind, SortOrder } from "$lib/types";
 import { compare, hasKey, type Comparator } from "$lib/util";
 
-export const SORT_KIND_NAMES: Record<SortKind, string> = {
-    mod: "Moderated Caucus",
-    unmod: "Unmoderated Caucus",
-    rr: "Round Robin",
-    other: "Other",
+export const SORT_KIND_EXTRAS_NAMES: Record<Exclude<SortKind, MotionKind>, string> = {
     ext: "Extension"
 };
-export const SORT_PROPERTY_NAMES: Record<SortOrderProperty, string> = {
-    totalTime: "total time",
-    speakingTime: "speaking time",
-    topic: "topic",
-    delegate: "delegate key",
-    nSpeakers: "number of speakers"
-};
-
-type AllKeys<O> = O extends object ? keyof O : never;
-const SORT_PROPERTY_REQUIRES = {
-    totalTime:    ["totalTime"],
-    speakingTime: ["speakingTime"],
-    topic:        ["topic"],
-    delegate:     ["delegate"],
-    nSpeakers:    ["totalTime", "speakingTime"],
-} as const satisfies Record<SortOrderProperty, readonly AllKeys<Motion>[]>;
+export const SORT_PROPERTY_NAMES = {
+    totalTime: "Total Time",
+    speakingTime: "Speaking Time",
+    topic: "Topic",
+    delegate: "Delegate Key",
+    nSpeakers: "Number of Speakers",
+    readingPeriodTime: "Reading Period Time",
+    authorsPanelTime: "Author's Panel Time",
+    qnaTime: "Q&A Time",
+} satisfies Record<string, string>;
 
 function getSortKind(m: Motion): SortKind | undefined {
     if (hasKey(m, "isExtension") && m.isExtension) return "ext";
@@ -45,29 +35,6 @@ function getSortIndex(m: Motion, priority: SortOrder): number {
     // Find the index of this motion under the priority, putting it at the end if not in the list.
     const index = priority.findIndex((entry) => (entry.kind as (SortKind | undefined)[]).includes(kind));
     return index >= 0 ? index : priority.length;
-}
-
-function hasSortProperty<P extends SortOrderProperty>(m: object, key: P): m is Record<typeof SORT_PROPERTY_REQUIRES[P][number], unknown> {
-    return SORT_PROPERTY_REQUIRES[key].every(f => hasKey(m, f));
-}
-function getSortProperty(m: Motion, key: SortOrderProperty): unknown {
-    if (key === "delegate") {
-        if (hasSortProperty(m, key)) return m.delegate;
-    } else if (key === "nSpeakers") {
-        if (m.kind === "rr") return m.totalSpeakers;
-        if (hasSortProperty(m, key)) return m.totalTime / m.speakingTime;
-    } else if (key === "speakingTime") {
-        if (hasSortProperty(m, key)) return m.speakingTime;
-    } else if (key === "topic") {
-        if (hasSortProperty(m, key)) return m.topic;
-    } else if (key === "totalTime") {
-        if (m.kind === "rr") return m.totalSpeakers * m.speakingTime;
-        if (hasSortProperty(m, key)) return m.totalTime;
-    } else {
-        key satisfies never;
-    }
-
-    throw Error(`Motion cannot be sorted by ${key}`);
 }
 
 /**
@@ -86,7 +53,7 @@ function getSortProperty(m: Motion, key: SortOrderProperty): unknown {
  * @param priority the sort order to use.
  * @returns the comparator
  */
-export function compareMotions(priority: SortOrder): Comparator<Motion> {
+export function baseCompareMotions(priority: SortOrder, getSortProperty: (m: Motion, key: string) => unknown): Comparator<Motion> {
     return (a, b) => {
         let k: number;
 

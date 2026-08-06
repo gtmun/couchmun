@@ -293,12 +293,11 @@ export const DEFAULT_SETTINGS = {
     sortOrder: DEFAULT_SORT_PRIORITY,
     title: "General Assembly",
     preferences: {
-        enableMotionRoundRobin: true,
-        enableMotionExt: true,
         enableWithRights: true,
         pauseMainTimer: true,
         yieldMainTimer: true
-    }
+    },
+    enabledMotions: {}
 } satisfies Settings;
 
 /**
@@ -367,7 +366,7 @@ export function queryStore<T>(cb: () => T | Promise<T>, fallback?: T) {
  * @param fallback a fallback/default value to use before the value is first read successfully
  */
 function getKVStore(table: EntityTable<KeyValuePair, "key">, key: string, fallback?: any): Writable<any> {
-    const store = writableQueryStore(() => table.get(key).then(entry => entry?.val), fallback);
+    const store = writableQueryStore(() => table.get(key).then(entry => entry?.val ?? fallback), fallback);
     const set = async (val: any) => {
         // Do a synchronous update before asynchronously updating the database.
         // Note: This does cause a double update, but since the result is the same it *should* be fine.
