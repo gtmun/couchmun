@@ -5,7 +5,8 @@
     import { Collapsible } from "@skeletonlabs/skeleton-svelte";
     import type { Snippet } from "svelte";
     import { slide } from "svelte/transition";
-    
+
+    import { a11yLabel } from "$lib/util";
     import MdiChevronLeft from "~icons/mdi/chevron-left";
 
     interface Props {
@@ -49,8 +50,11 @@
                 {/if}
             {/snippet}
             </Collapsible.Content>
-            <div class="flex items-center justify-center">
-                <Collapsible.Trigger class="btn-icon-std p-0 m-1 hover:preset-tonal">
+            <div class="flex items-stretch justify-center flex-col md:flex-row">
+                <Collapsible.Trigger
+                    class="flex items-center justify-center m-1 hover:preset-tonal"
+                    {...a11yLabel(open ? "Collapse item" : "Expand item")}
+                >
                     <MdiChevronLeft
                     class={[
                         "transition-transform duration-150",

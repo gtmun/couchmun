@@ -145,7 +145,7 @@
 <div class="flex flex-col gap-3 min-h-full md:h-full md:flex-row @container">
   <div class="flex card-filled">
     <OrientedCollapsible>
-      <div class="w-full md:w-[30cqw] *:md:pr-0">
+      <div class="w-full md:w-[30cqw] *:pb-0 *:md:pb-3 *:md:pr-0">
         <MotionForm submit={submitMotion} {motionSchema} />
       </div>
     </OrientedCollapsible>
