@@ -21,7 +21,7 @@
   import { findDelegate } from "$lib/db/delegates";
   import { db } from "$lib/db/index.svelte";
   import { compareMotions as motionComparator, createMotionSchema, MOTION_DEFS, type MotionDef, type DisplayFieldKey, type DisplayFieldHeader, DISPLAY_FIELD_HEADERS } from "$lib/motions/definitions";
-  import type { Motion } from "$lib/types";
+  import type { Motion, MotionKind } from "$lib/types";
   import { a11yLabel, hasKey, NO_FIGURE } from "$lib/util";
   import { createSortable, handleDrag } from "$lib/util/dnd";
   import { proxify } from "$lib/util/sv.svelte";
@@ -60,8 +60,11 @@
     return kindLabel + (extension ? ' (Extension)': '');
   }
 
+  function motionDef(m: MotionKind) {
+    return MOTION_DEFS[m] as MotionDef;
+  }
   function motionDisplayEntries(m: Motion) {
-    return (MOTION_DEFS[m.kind] as MotionDef).display(m, $delegates);
+    return motionDef(m.kind).display(m, $delegates);
   }
   function motionHeader(m: DisplayFieldKey): DisplayFieldHeader {
     return DISPLAY_FIELD_HEADERS[m] as DisplayFieldHeader;
@@ -97,8 +100,14 @@
     await db.updateDelegate(motion.delegate, d => { d.stats.motionsAccepted++; });
   }
   async function acceptMotionAndGoto(motion: Motion) {
+    // Find route ID:
+    const mdGoto = motionDef(motion.kind).goto;
+    const routeId = typeof mdGoto === "function"
+      ? mdGoto(motion, $delegates)
+      : mdGoto;
+    
     await acceptMotion(motion);
-    goto(resolve("/dashboard/current-motion"));
+    goto(resolve(routeId));
   }
   function editMotion(i: number, motion?: Motion) {
     if (!motion) return;

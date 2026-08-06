@@ -7,6 +7,7 @@
 
 import { z } from "zod";
 
+import type { RouteId } from "$app/types";
 import type { IconComponent } from "$lib/components/IconLabel.svelte";
 import { numSpeakersStr } from "$lib/components/motions/form/MotionForm.svelte";
 import { type Delegate } from "$lib/db/delegates";
@@ -103,6 +104,12 @@ export type MotionDef<K extends MotionKind = MotionKind, Fields extends Property
     computedFields?: Record<string, MotionFn<Motion & {kind: K}, unknown>>,
     /** Extra constraints for a given motion (in the form of a Zod schema refine) */
     refine?: Refine,
+    /**
+     * Defines which link this motion goes to once accepted.
+     * 
+     * This defaults to `/dashboard/current-motion/` if not present.
+     **/
+    goto: RouteId | MotionFn<Motion & {kind: K}, RouteId>,
     /** The fields to display in the motion list. */
     display: MotionFn<Motion & { kind: K }, DisplayFieldRecord>
 };
@@ -147,7 +154,8 @@ export const MOTION_DEFS = {
             totalTime: stringifyTime(m.totalTime),
             speakingTime: stringifyTime(m.speakingTime),
             nSpeakers: numSpeakersStr(m.totalTime, m.speakingTime)
-        })
+        }),
+        goto: "/dashboard/current-motion",
     },
     unmod: {
         label: "Unmoderated Caucus",
@@ -157,7 +165,8 @@ export const MOTION_DEFS = {
         },
         display: m => ({
             totalTime: stringifyTime(m.totalTime)
-        })
+        }),
+        goto: "/dashboard/current-motion",
     },
     rr: {
         label: "Round Robin",
@@ -178,7 +187,8 @@ export const MOTION_DEFS = {
                 speakingTime: stringifyTime(m.speakingTime),
                 nSpeakers: nSpeakers,
             };
-        }
+        },
+        goto: "/dashboard/current-motion",
     },
     other: {
         label: "Other",
@@ -189,7 +199,8 @@ export const MOTION_DEFS = {
         display: m => ({
             topic: m.topic,
             totalTime: typeof m.totalTime === "number" ? stringifyTime(m.totalTime) : undefined,
-        })
+        }),
+        goto: "/dashboard/current-motion"
     },
 
     // Opening debate:
@@ -197,7 +208,8 @@ export const MOTION_DEFS = {
         label: "Open Debate",
         group: "opening",
         fields: {},
-        display: () => ({})
+        display: () => ({}),
+        goto: "/dashboard/points-motions"
     },
     spklist: {
         label: "Open Speakers List",
@@ -207,7 +219,8 @@ export const MOTION_DEFS = {
         },
         display: m => ({
             speakingTime: stringifyTime(m.speakingTime),
-        })
+        }),
+        goto: "/dashboard/speaker-list"
     },
     agenda: {
         label: "Set Agenda",
@@ -217,7 +230,8 @@ export const MOTION_DEFS = {
         },
         display: m => ({
             topic: m.topicOrder,
-        })
+        }),
+        goto: "/dashboard/points-motions"
     },
     // Voting
     introdoc: {
@@ -234,19 +248,22 @@ export const MOTION_DEFS = {
             docRp: stringifyTime(m.readingPeriodTime),
             docAp: stringifyTime(m.authorsPanelTime),
             docQna: stringifyTime(m.qnaTime),
-        })
+        }),
+        goto: "/dashboard/authors-panel"
     },
     amendments: {
         label: "Introduce Amendments",
         group: "voting",
         fields: {},
-        display: () => ({})
+        display: () => ({}),
+        goto: "/dashboard/points-motions"
     },
     divq: {
         label: "Divide the Question",
         group: "voting",
         fields: {},
-        display: () => ({})
+        display: () => ({}),
+        goto: "/dashboard/points-motions"
     },
     vp: {
         label: "Enter Voting Procedure",
@@ -256,20 +273,25 @@ export const MOTION_DEFS = {
         },
         display: m =>({
             vpMethod: m.method,
-        })
+        }),
+        goto: m => m.method === "Roll Call"
+            ? "/dashboard/vp-roll-call"
+            : "/dashboard/current-motion"
     },
     // Closing
     suspend: {
         label: "Suspend Debate",
         group: "closing",
         fields: {},
-        display: () => ({})
+        display: () => ({}),
+        goto: "/dashboard/points-motions"
     },
     adjourn: {
         label: "Adjourn Debate",
         group: "closing",
         fields: {},
-        display: () => ({})
+        display: () => ({}),
+        goto: "/dashboard/points-motions"
     },
     
 } satisfies { [K in MotionKind]: MotionDefOf<K> };

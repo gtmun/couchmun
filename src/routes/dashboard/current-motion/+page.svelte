@@ -31,8 +31,12 @@
             <RoundRobin motion={$selectedMotion} bind:order={$selectedMotionState.speakersList} />
         {:else if $selectedMotion.kind === "other"}
             <!-- TODO -->
-        {:else if $selectedMotion satisfies never}
-            <!-- unreachable -->
+        {:else if $selectedMotion.kind === "vp"}
+            <!-- TODO -->
+            <h3 class="h3 text-center">Voting Procedure</h3>
+            <h3 class="h3 text-center">Method: {$selectedMotion.method}</h3>
+        {:else}
+            <!-- TODO -->
         {/if}
     {:else}
         <div class="text-center">

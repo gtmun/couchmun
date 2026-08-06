@@ -11,9 +11,15 @@
     import { parseTime } from "$lib/util/time";
 
     const sessionData = getSessionContext();
-    const { speakersList: order, delegates } = sessionData;
+    const { speakersList: order, delegates, selectedMotion } = sessionData;
 
-    let duration: number = $state(60);
+    let duration: number = $state(
+        $selectedMotion?.kind === "spklist"
+        // Use motion's speaking time if motion configured
+        ? $selectedMotion.speakingTime
+        // Fallback if motion not configured
+        : 60
+    );
     let timerPanel = $state<TimerPanel>();
     let speakersList = $state<SpeakerList>();
     let durInput: string = $state("");
