@@ -35,5 +35,5 @@
         set value(text) { title = text }
     })}
 >
-    {title}
+    {title || "\u2026"}
 </h1>
