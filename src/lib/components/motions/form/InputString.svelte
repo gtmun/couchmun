@@ -2,7 +2,7 @@
     import { Combobox, Portal, useListCollection } from "@skeletonlabs/skeleton-svelte";
 
     import type { InputComponentProps } from "$lib/motions/definitions";
-    import { includesInsensitive } from "$lib/util";
+    import { searchFuse } from "$lib/util";
 
     interface Props extends InputComponentProps<string> {
         label?: string;
@@ -18,10 +18,10 @@
     }: Props = $props();
 
     let items = $derived(value && !autocomplete.includes(value) ? [...autocomplete, value] : autocomplete);
-    let filteredItems = $derived(items.filter(it => !value || includesInsensitive(it, value)));
+    let fuse = $derived(searchFuse(items));
     const collection = $derived(
         useListCollection({
-            items: filteredItems,
+            items: fuse.query(value),
             itemToString: (item) => item,
             itemToValue: (item) => item,
         }),
@@ -46,7 +46,7 @@
             <Portal>
                 <Combobox.Positioner class="z-51! max-h-96 overflow-auto">
                     <Combobox.Content>
-                        {#each filteredItems as item (item)}
+                        {#each collection.items as item (item)}
                             <Combobox.Item {item}>
                                 <Combobox.ItemText>{item}</Combobox.ItemText>
                                 <Combobox.ItemIndicator />

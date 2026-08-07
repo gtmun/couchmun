@@ -9,7 +9,7 @@
     import { Combobox, Portal, useListCollection } from "@skeletonlabs/skeleton-svelte";
 
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import { filterByQuery, findDelegate, type Delegate } from "$lib/db/delegates";
+    import { delegateSearch, findDelegate, type Delegate } from "$lib/db/delegates";
     import type { DelegateID } from "$lib/types";
 
     interface Props {
@@ -81,8 +81,9 @@
     }: Props = $props();
     
     let presentDelegates = $derived(delegates.filter(d => d.isPresent()));
+    let search = $derived(delegateSearch(presentDelegates));
     const collection = $derived(useListCollection({
-        items: filterByQuery(presentDelegates, input ?? ""),
+        items: search.query(input),
         itemToString: it => it.name,
         itemToValue: it => String(it.id)
     }))

@@ -3,7 +3,7 @@
  */
 
 import type { DelegateAttrs, DelegateID, DelegatePresence, DelSessionData, MaybePending, StatsData } from "$lib/types";
-import { eqInsensitive, includesInsensitive, notPendingThen } from "$lib/util";
+import { eqInsensitive, searchFuse } from "$lib/util";
 
 export class Delegate {
     // Indexes:
@@ -50,18 +50,6 @@ export class Delegate {
     }
 
     /**
-     * Checks if given string is a substring of a delegate's name
-     * @param sub name we're looking at
-     * @returns whether the given string is a substring
-     */
-    nameIncludes(sub: string): boolean {
-        for (const name of this.names()) {
-            if (includesInsensitive(name, sub)) return true;
-        }
-        return false;
-    }
-
-    /**
      * @returns the attributes of this delegate
      */
     getAttributes(): DelegateAttrs {
@@ -91,14 +79,17 @@ export function findDelegate(d: Delegate[], searchId: DelegateID): Delegate | un
 }
 
 /**
- * Filters a list of delegates by matching search query.
- * @param delegates The delegates
- * @param queryString The string to filter against (the delegate should have this in their search)
- * @returns the filtered list of delegates
+ * Constructs object which can be used to search for delegates with a given name.
+ * 
+ * This can be wrapped in `$derived(...)` to reduce number of times this object is constructed.
+ * 
+ * @param delegates THe delegates to search for.
+ * @returns an object, with the `query` method, which provides a list of filtered delegates
  */
-export function filterByQuery(delegates: MaybePending<Delegate[]>, queryString: string): MaybePending<Delegate[]> {
-    return notPendingThen(delegates, dels => dels.filter(d => d.nameIncludes(queryString)));
+export function delegateSearch(delegates: Delegate[]): { query: (queryString?: string) => Delegate[] } {
+    return searchFuse(delegates, { keys: ["name", "aliases"] });
 }
+
 /**
  * Counts the number of present delegates.
  * @param d The delegates

@@ -7,7 +7,7 @@
     import RollCall from "$lib/components/RollCall.svelte";
     import SearchInput from "$lib/components/SearchInput.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
-    import { filterByQuery } from "$lib/db/delegates";
+    import { delegateSearch } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";
     import type { DelegatePresence } from "$lib/types";
     import MdiAccount from "~icons/mdi/account";
@@ -21,6 +21,7 @@
         return "NP";
     }
 
+    let search = $derived(delegateSearch($delegates));
     let rcSearchQuery = $state("");
 </script>
 
@@ -31,7 +32,7 @@
         <RollCall
             getValue={(d) => d.presence}
             setValue={(value, d) => db.updateDelegate(d.id, { presence: asPresence(value) })}
-            delegates={filterByQuery($delegates, rcSearchQuery)}
+            delegates={search.query(rcSearchQuery)}
             entries={[
                 { value: "NP", label: "Absent", icon: MdiAccountOff },
                 { value: "P",  label: "Present", icon: MdiAccount },
