@@ -4,6 +4,7 @@
     import { getSortLabel, MOTION_DEFS, MOTION_GROUP_LABELS } from "$lib/motions/definitions";
     import { SORT_KIND_EXTRAS_NAMES } from "$lib/motions/sort";
     import type { SortKind } from "$lib/types";
+    import { mapGroupBy } from "$lib/util";
 
     interface Props {
         /**
@@ -25,7 +26,7 @@
     }
     let motionGroups: Map<GroupLabel | undefined, { key: SortKind }[]> = $derived.by(() => {
         let motions = allKeys.map(key => ({ key, group: getGroup(key) }));
-        return Map.groupBy(motions, ({ group }) => group);
+        return mapGroupBy(motions, ({ group }) => group);
     });
 </script>
 

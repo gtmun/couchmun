@@ -142,6 +142,31 @@ export function a11yLabel(label?: string) {
 }
 
 /**
+ * Groups members of an iterable according to the return value of the passed callback.
+ * @param items An iterable.
+ * @param keySelector A callback which will be invoked for each item in items.
+ */
+export function mapGroupBy<K, T>(
+    items: Iterable<T>,
+    keySelector: (item: T, index: number) => K,
+): Map<K, T[]> {
+    // Polyfill for Map.groupBy (2024)
+    const map = new Map<K, T[]>();
+
+    let i = 0;
+    for (const it of items) {
+        const group = keySelector(it, i);
+        // Polyfill for Map.getOrInsert (2026)
+        if (!map.has(group)) {
+            map.set(group, []);
+        }
+        map.get(group)!.push(it);
+
+        i++;
+    }
+    return map;
+}
+/**
  * Used to mark a missing number.
  */
 export const NO_FIGURE = "\u{2012}";

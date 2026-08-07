@@ -15,7 +15,7 @@
     import { getComponent } from '$lib/motions/input';
     import type { MotionInput } from "$lib/motions/types";
     import type { DelegateID, Motion } from "$lib/types";
-    import { hasKey, NO_FIGURE } from "$lib/util";
+    import { hasKey, mapGroupBy, NO_FIGURE } from "$lib/util";
     import { proxify } from '$lib/util/sv.svelte';
     import { parseTime } from "$lib/util/time";
     import MdiPlus from "~icons/mdi/plus";
@@ -68,7 +68,7 @@
             .filter(([kind, _]) => filters[kind] ?? true)
             .map(([kind, { label, group }]) => ({ kind, label, group }));
         
-        return Map.groupBy(motions, ({ group }) => group);
+        return mapGroupBy(motions, ({ group }) => group);
     });
     
     function defHasFields(...keys: string[]) {
