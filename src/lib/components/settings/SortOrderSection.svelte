@@ -3,6 +3,7 @@
     import { isSortable } from "@dnd-kit/svelte/sortable";
     import { Popover, Portal } from "@skeletonlabs/skeleton-svelte";
     import { flip } from "svelte/animate";
+    import { v7 as uuidv7 } from "uuid";
 
     import { DEFAULT_SORT_PRIORITY, getAllSortableKeys, getSortLabel } from "$lib/motions/definitions";
     import { SORT_PROPERTY_NAMES } from "$lib/motions/sort";
@@ -41,7 +42,7 @@
         initialSortOrder = uninstallKeys_(s);
     }
     function installKeys_(s: SortOrder) {
-        return $state.snapshot(s).map(e => Object.assign(e, { id: crypto.randomUUID() }))
+        return $state.snapshot(s).map(e => Object.assign(e, { id: uuidv7() }))
     }
     function uninstallKeys_(s: (SortOrder[number] & { id?: string })[]): SortOrder {
         return $state.snapshot(s.map(({ id: _, ...rest}) => rest));
@@ -54,7 +55,7 @@
         sortOrder.push({
             kind: [],
             order: [],
-            id: crypto.randomUUID()
+            id: uuidv7()
         });
         updateSortOrder_(sortOrder);
     }

@@ -65,7 +65,11 @@ export function baseCompareMotions(priority: SortOrder, getSortProperty: (m: Mot
         if (k) return k;
         
         // Run through the order until we find a difference:
-        const order = priority[ai ?? bi]?.order;
+        const order = [
+            ...(priority[ai ?? bi]?.order ?? []),
+            // IDs should be UUIDv7, meaning they are sorted by timestamp introduced
+            { property: "id", ascending: true }
+        ];
         if (typeof order !== "undefined") {
             for (const { property, ascending } of order) {
                 const av = getSortProperty(a, property);

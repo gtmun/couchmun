@@ -5,6 +5,7 @@
 <script lang="ts">
     import { type Snippet } from 'svelte';
     import { slide } from 'svelte/transition';
+    import { v7 as uuidv7 } from "uuid";
     import type { z } from "zod";
 
     import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
@@ -19,9 +20,8 @@
     import { parseTime } from "$lib/util/time";
     import MdiPlus from "~icons/mdi/plus";
 
-
     const { selectedMotion, delegates, enabledMotions } = getSessionContext();
-    const defaultInputMotion = () => ({ id: crypto.randomUUID(), kind: "mod" } satisfies MotionInput);
+    const defaultInputMotion = () => ({ id: uuidv7(), kind: "mod" } satisfies MotionInput);
 
     interface Props {
         /**

@@ -9,6 +9,7 @@
     import { DragDropProvider } from "@dnd-kit/svelte";
     import { tick, type Snippet } from "svelte";
     import { flip } from "svelte/animate";
+    import { v7 as uuidv7 } from "uuid";
 
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import SpeakerListEditControls from "$lib/components/SpeakerListEditControls.svelte";
@@ -257,7 +258,7 @@
      * @return the speaker object
      */
     export function createSpeaker(key: DelegateID, completed: boolean = false): Speaker {
-        return { key, completed, id: crypto.randomUUID() }
+        return { key, completed, id: uuidv7() }
     }
 </script>
 
