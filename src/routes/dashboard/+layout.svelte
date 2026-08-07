@@ -26,7 +26,7 @@
 
     const sessionData = getSessionContext();
     const { delegates, barTitle } = sessionData;
-    let delegateCount = $derived($delegates.reduce((acc, d) => acc + +d.isPresent(), 0));
+    let delegateCount = $derived(!$delegates.pending ? $delegates.reduce((acc, d) => acc + +d.isPresent(), 0) : undefined);
 
     const links: Partial<Record<RouteId, { label: string }>> = {
         "/dashboard/roll-call":      { label: "Roll Call" },

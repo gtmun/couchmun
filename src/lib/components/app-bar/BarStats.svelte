@@ -3,13 +3,13 @@
 -->
 
 <script lang="ts">
-    import { a11yLabel } from "$lib/util";
+    import { a11yLabel, NO_FIGURE } from "$lib/util";
 
     interface Props {
         /**
          * Total attendance.
          */
-        total: number;
+        total?: number;
         /**
          * An override for the majority value
          * (if the default calculation is not sufficient).
@@ -22,7 +22,7 @@
         supermajOverride?: number | undefined;
     }
     let {
-        total,
+        total = undefined,
         majOverride = undefined,
         supermajOverride = undefined
     }: Props = $props();
@@ -30,8 +30,12 @@
     // Given the total attendance (n),
     // the majority is the smallest integer > n/2
     // the supermajority is the smallest integer >= 2/3 n
-    let maj: number = $derived(majOverride ?? smallestIntGt(total / 2));
-    let supermaj: number = $derived(supermajOverride ?? smallestIntGe(total * 2 / 3));
+    let maj = $derived.by(() => {
+        if (typeof total === "number") return majOverride ?? smallestIntGt(total / 2);
+    });
+    let supermaj = $derived.by(() => {
+        if (typeof total === "number") return supermajOverride ?? smallestIntGe(total * 2 / 3);
+    });
 
     /**
      * Smallest integer greater than `n`, capped to at least 0.
@@ -69,16 +73,16 @@
     }
 </style>
 <div class="flex flex-row gap-3 justify-center tabular-nums">
-    <div class="flex flex-row gap-1 items-center" {...a11yLabel(`Majority (${maj})`)}>
+    <div class="flex flex-row gap-1 items-center" {...a11yLabel(`Majority (${maj ?? 'unknown'})`)}>
         <div class="size-6 rounded-full conic-half"></div>
-        {maj}
+        {maj ?? NO_FIGURE}
     </div>
-    <div class="flex flex-row gap-1 items-center" {...a11yLabel(`Supermajority (${supermaj})`)}>
+    <div class="flex flex-row gap-1 items-center" {...a11yLabel(`Supermajority (${supermaj ?? 'unknown'})`)}>
         <div class="size-6 rounded-full conic-tth"></div>
-        {supermaj}
+        {supermaj ?? NO_FIGURE}
     </div>
-    <div class="flex flex-row gap-1 items-center" {...a11yLabel(`Total (${total})`)}>
+    <div class="flex flex-row gap-1 items-center" {...a11yLabel(`Total (${total ?? 'unknown'})`)}>
         <div class="size-6 rounded-full conic-full"></div>
-        {total}
+        {total ?? NO_FIGURE}
     </div>
 </div>

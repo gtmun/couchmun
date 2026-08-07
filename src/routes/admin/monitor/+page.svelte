@@ -1,6 +1,6 @@
 <script lang="ts">
     import BarStats from "$lib/components/app-bar/BarStats.svelte";
-import RollCall, { notPendingThen } from "$lib/components/RollCall.svelte";
+    import RollCall, { notPendingThen } from "$lib/components/RollCall.svelte";
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
@@ -19,13 +19,14 @@ import RollCall, { notPendingThen } from "$lib/components/RollCall.svelte";
         return "NP";
     }
     const rcDelegates = $derived(notPendingThen($delegates, dels => dels.filter(d => d.nameIncludes(rollCallSearch))));
+    let delegateCount = $derived(!$delegates.pending ? $delegates.reduce((acc, d) => acc + +d.isPresent(), 0) : undefined);
 
 </script>
 <div class="grid grid-cols-2 gap-3 h-full">
     <!-- Roll Call -->
     <div class="flex flex-col gap-1 overflow-hidden">
         <h3 class="h3 text-center">Roll Call</h3>
-        <BarStats total={$delegates.filter(d => d.isPresent()).length} />
+        <BarStats total={delegateCount} />
         <div class="flex gap-2 items-center">
             <MdiSearch />
             <input class="input" bind:value={rollCallSearch} placeholder="Search...">
