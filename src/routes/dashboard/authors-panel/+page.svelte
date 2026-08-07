@@ -73,7 +73,7 @@
     {#snippet children(page)}
         {#if page != 4}
             <!-- FIXME: Unify UnmodCaucus and this -->
-            <div class="flex flex-col justify-center h-full gap-5">
+            <div class="flex flex-col justify-center h-full gap-4">
                 <Timer
                     bind:duration={durations[page]}
                     bind:this={timer}
@@ -85,11 +85,11 @@
                     onTimeChange={msElapsed => sessionData.updateTabTitleExtras(running, msElapsed / 1000)}
                     editable
                 />
-                <div class="flex flex-row gap-3 justify-center">
-                    <button class="btn preset-filled-primary-500" onclick={() => running = !running}>
+                <div class="flex flex-row gap-2 justify-center">
+                    <button class="btn btn-lg preset-filled-primary-500" onclick={() => running = !running}>
                         {!running ? 'Start' : 'Pause'}
                     </button>
-                    <button class="btn preset-filled-primary-500" onclick={timer?.reset}>Reset</button>
+                    <button class="btn btn-lg preset-filled-primary-500" onclick={timer?.reset}>Reset</button>
                 </div>
             </div>
         {:else}

@@ -264,21 +264,21 @@
               <!-- Control buttons -->
               <div class="flex justify-center items-center gap-1">
                 <button
-                  class="btn-icon btn-icon-xl p-1 preset-tonal-error"
+                  class="btn-icon p-1 preset-tonal-error"
                   onclick={() => removeMotion(i)}
                   {...a11yLabel(`Reject ${delName}'s Motion`)}
                 >
                   <MdiCancel />
                 </button>
                 <button
-                  class="btn-icon btn-icon-xl p-1 preset-tonal-success"
+                  class="btn-icon p-1 preset-tonal-success"
                   onclick={() => acceptMotionAndGoto(motion)}
                   {...a11yLabel(`Accept ${delName}'s Motion`)}
                 >
                   <MdiCheck />
                 </button>
                 <button
-                  class="btn-icon btn-icon-xl p-1 preset-tonal"
+                  class="btn-icon p-1 preset-tonal"
                   onclick={() => editMotionModal = { open: true, index: i }}
                   {...a11yLabel(`Edit ${delName}'s Motion`)}
                 >

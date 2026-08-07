@@ -24,7 +24,7 @@
                 <AppBar.Lead>
                     <a
                         href="{resolve("/dashboard")}"
-                        class="btn-icon btn-icon-xl"
+                        class="btn-icon btn-icon-xl hover:preset-tonal"
                         {...a11yLabel("Return to Dashboard")}
                         tabindex={0}
                     >

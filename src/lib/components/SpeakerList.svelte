@@ -311,7 +311,7 @@
                     animate:flip={{ duration: 150 }}
                     {...a11yLabel(speakerLabel)}
                 >
-                    <div {@attach sortable.attachHandle}>
+                    <div class="hover:preset-tonal rounded cursor-grab" {@attach sortable.attachHandle}>
                         <MdiDragVertical />
                     </div>
                     <span class="enumerated-index tabular-nums pr-1">{i + 1}.</span>
@@ -333,7 +333,7 @@
                     {@render extra?.(speaker, i)}
                     <button 
                         class={[
-                            "btn-icon btn-icon-xl transition",
+                            "btn-icon transition",
                             speaker.completed ? "preset-ui-depressed" : "preset-filled-error-100-900 hover:preset-filled-error-500"
                         ]}
                         onclick={() => deleteSpeaker(i)}

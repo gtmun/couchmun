@@ -59,7 +59,7 @@
     {...a11yLabel(label)}
     class={[
         // Base
-        "btn-icon btn-icon-xl aspect-square rounded-full cursor-pointer",
+        "btn-icon btn-icon-xl aspect-square rounded-full",
         "hover:brightness-90! dark:hover:brightness-110!",
         // Transitions
         "transition duration-200 ease-in-out",

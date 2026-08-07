@@ -50,9 +50,9 @@
                 <span>Name</span>
                 <input class="input" bind:value={newAttrs.name} required placeholder="Modelunia">
             </label>
-            <div>
-                <span>Aliases (optional)</span>
-                <div class="flex flex-col items-center justify-center gap-2 p-2 border border-surface-200-800 rounded max-h-120 overflow-auto">
+            <fieldset class="fieldset">
+                <legend class="legend">Aliases (optional)</legend>
+                <div class="flex flex-col items-center justify-center gap-2 max-h-120 overflow-auto">
                     <div class={["grid grid-cols-[1fr_auto] gap-1 w-full", newAttrs.aliases.length == 0 && "hidden"]}>
                         <!-- eslint-disable-next-line svelte/require-each-key -->
                         {#each newAttrs.aliases as _, i}
@@ -76,7 +76,7 @@
                         Add Alias
                     </button>
                 </div>
-            </div>
+            </fieldset>
             <label>
                 <span>Flag URL (optional)</span>
                 <input class="input" bind:value={newAttrs.flagURL} placeholder="https://example.com/flag.svg">

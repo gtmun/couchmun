@@ -263,7 +263,7 @@
                                 >
                                     {#snippet trigger()}
                                         <Dialog.Trigger
-                                            class="btn-icon btn-icon-xl preset-filled-error-500"
+                                            class="btn-icon preset-filled-error-500"
                                             title="Remove All Delegates"
                                             aria-label="Remove All Delegates"
                                         >
@@ -428,6 +428,7 @@
                 </td>
                 <td class="text-right">
                     <button
+                        class="rounded hover:preset-tonal p-0.5 transition"
                         {...a11yLabel(`Edit ${attrs.name}`)}
                         onclick={() => openModals.editDelegate = {
                             state: true,
@@ -438,6 +439,7 @@
                         <MdiPencil />
                     </button>
                     <button
+                        class="rounded hover:preset-tonal-error p-0.5 transition"
                         onclick={() => deleteDelegate(attrs.id)}
                         {...a11yLabel(`Delete ${attrs.name}`)}
                     >
