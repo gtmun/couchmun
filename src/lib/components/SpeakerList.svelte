@@ -7,7 +7,7 @@
  -->
 <script lang="ts">
     import { DragDropProvider } from "@dnd-kit/svelte";
-    import { tick, untrack, type Snippet } from "svelte";
+    import { tick, type Snippet } from "svelte";
     import { flip } from "svelte/animate";
 
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
@@ -290,9 +290,10 @@
             aria-labelledby="sl-header-{sid}"
         >
             {#each dndItems as speaker, i (speaker.id)}
-                {@const sortable = untrack(() => createSortable({
-                    get id() { return speaker.id; }, get index() { return i; }
-                }))}
+                {const sortable = createSortable({
+                    get id() { return speaker.id; },
+                    get index() { return i; }
+                })}
                 {@const selected = speaker.id === selectedSpeakerId}
                 {@const delAttrs = findDelegate(delegates, speaker.key)}
                 {@const speakerLabel = delAttrs?.name ?? "unknown"}

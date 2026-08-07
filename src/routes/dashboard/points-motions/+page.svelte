@@ -6,7 +6,6 @@
 -->
 <script lang="ts">
   import { DragDropProvider } from "@dnd-kit/svelte";
-  import { untrack } from "svelte";
   import { flip } from "svelte/animate";
 
   import { goto } from "$app/navigation";
@@ -222,9 +221,10 @@
             {@const delName = delAttrs?.name ?? "unknown"}
             {@const motName = motionName(motion)}
             {@const motEntries = motionDisplayEntries(motion)}
-            {@const sortable = untrack(() => createSortable({
-              get id() { return motion.id; }, get index() { return i; }
-            }))}
+            {const sortable = createSortable({
+              get id() { return motion.id; },
+              get index() { return i; }
+            })}
             <li
               class={[
                 "grid grid-cols-subgrid col-span-(--cm-all-cols)",

@@ -2,7 +2,6 @@
     import { createDroppable, DragDropProvider } from "@dnd-kit/svelte";
     import { isSortable } from "@dnd-kit/svelte/sortable";
     import { Popover, Portal } from "@skeletonlabs/skeleton-svelte";
-    import { untrack } from "svelte";
     import { flip } from "svelte/animate";
 
     import { DEFAULT_SORT_PRIORITY, getAllSortableKeys, getSortLabel } from "$lib/motions/definitions";
@@ -153,12 +152,17 @@
             </thead>
             <tbody>
                 {#each dndSortOrder as group, ei (group.id)}
-                {@const rowSort = untrack(() => createSortable({
-                    get id() { return `r-${group.id}`; }, get index() { return ei; }, type: COLUMN_KEY, accept: [COLUMN_KEY]
-                }))}
-                {@const groupDrop = untrack(() => createDroppable({
-                    get id() { return group.id }, accept: [KIND_KEY], collisionPriority: 1
-                }))}
+                {const rowSort = createSortable({
+                    get id() { return `r-${group.id}`; },
+                    get index() { return ei; }, 
+                    type: COLUMN_KEY,
+                    accept: [COLUMN_KEY]
+                })}
+                {const groupDrop = createDroppable({
+                    get id() { return group.id },
+                    accept: [KIND_KEY],
+                    collisionPriority: 1
+                })}
                 <tr
                     class={[
                         "bg-surface-50-950",
@@ -176,9 +180,14 @@
                     <td class="py-3!" {@attach groupDrop.attach}>
                         <div class="flex flex-col gap-1">
                             {#each group.kind as kind, ki (kind)}
-                                {@const kindChip = untrack(() => createSortable({
-                                    get id() { return kind; }, get index() { return ki; }, type: KIND_KEY, group: group.id, collisionPriority: 2, accept: [KIND_KEY]
-                                }, "default"))}
+                                {const kindChip = createSortable({
+                                    get id() { return kind; },
+                                    get index() { return ki; },
+                                    type: KIND_KEY,
+                                    group: group.id,
+                                    collisionPriority: 2,
+                                    accept: [KIND_KEY]
+                                }, "default")}
                                 <div 
                                     class={[
                                         "chip preset-filled-surface-100-900 p-1 flex items-center select-none",
@@ -198,9 +207,10 @@
                     <td>
                         <div class="flex flex-wrap gap-3 items-center">
                             {#each group.order as key, oi (key.property)}
-                            {@const keySort = untrack(() => createSortable({
-                                get id() { return key.property }, get index() { return oi; }
-                            }, "default"))}
+                            {const keySort = createSortable({
+                                get id() { return key.property },
+                                get index() { return oi; }
+                            }, "default")}
                             {@const keyName = getSortPropertyName(key.property)}
                             {@const ascDesc = key.ascending ? "Ascending" : "Descending"}
                             {@const ascDescRev = !key.ascending ? "Ascending" : "Descending"}
