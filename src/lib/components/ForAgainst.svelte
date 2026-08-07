@@ -12,8 +12,10 @@
     import { Delegate, findDelegate } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";
     import type { SpeakerFA } from "$lib/types";
-    import { a11yLabel } from "$lib/util";
+    import { a11yLabel, NO_FIGURE } from "$lib/util";
     import { parseTime } from "$lib/util/time";
+    import MdiChevronDown from "~icons/mdi/chevron-down";
+    import MdiChevronUp from "~icons/mdi/chevron-up";
     import MdiMinus from "~icons/mdi/minus";
     import MdiThumbUp from "~icons/mdi/thumb-up";
 
@@ -28,6 +30,9 @@
     let timerPanel = $state<TimerPanel>();
     let speakersList = $state<SpeakerList>();
     let durInput: string = $state("");
+    let shiftDown = $state(false);
+    
+    let orderIndex = $state(1);
 
     function reset() {
         timerPanel?.reset();
@@ -43,8 +48,36 @@
     }
 
     function invertFavor(s: SpeakerFA["stance"]) {
-        return s !== "for" ? "for" : "against";
+        const setToFor = (typeof s === "undefined" && !shiftDown) || s === "against";
+        return setToFor ? "for" : "against";
     }
+    const ORDER_NAMES = [
+        "Manual",
+        "1F, 1A",
+        "1A, 1F",
+        "2F, 2A",
+        "2A, 2F",
+        "3F, 3A",
+        "3A, 3F",
+        "4F, 4A",
+        "4A, 4F",
+    ]
+    function getDefault(i: number) {
+        if (orderIndex == 0) return undefined;
+        
+        // Pattern is to start F (or A, if inverted), alternate every delta
+        let invert = orderIndex % 2 == 0;
+        let delta = (orderIndex + 1) >> 1;
+
+        return invert
+            ? Math.floor(i / delta) % 2 != 0
+            : Math.floor(i / delta) % 2 == 0;
+    }
+    function troolSelect<T>(t: boolean | undefined, sel_true: T, sel_false: T, sel_undef: T) {
+        if (typeof t === "undefined") return sel_undef;
+        return t ? sel_true : sel_false;
+    }
+
     function presetCls(s: SpeakerFA) {
         if (s.completed) return "preset-ui-depressed";
 
@@ -97,7 +130,7 @@
         </TimerPanel>
     </div>
     <!-- Right/Bottom -->
-    <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-100 lg:max-w-[33%]">
+    <div class="flex flex-col gap-2 h-full lg:overflow-hidden xl:min-w-100 lg:max-w-[33%]">
         <!-- List -->
         <SpeakerList
             {delegates}
@@ -105,6 +138,7 @@
             bind:this={speakersList}
             onBeforeSpeakerUpdate={reset}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
+            onCreate={(_, i, s) => (s as SpeakerFA).stance = troolSelect(getDefault(i), "for", "against", undefined)}
         >
             {#snippet extra(speaker: SpeakerFA, index)}
                 {@const speakerLabel = findDelegate(delegates, speaker.key)?.name ?? "unknown"}
@@ -133,5 +167,49 @@
                 </label>
             </form>
         </div>
+        <!-- F/A order -->
+        <div class="flex flex-row items-center gap-1">
+            <div class="flex flex-col w-15">
+                <span>Order</span>
+                <span class="tabular-nums">{ORDER_NAMES[orderIndex]}</span>
+            </div>
+            <div class="flex flex-col gap-1">
+                <button 
+                    class="btn btn-sm py-0! preset-filled-primary-500"
+                    onclick={() => orderIndex = (orderIndex + 1) % ORDER_NAMES.length}
+                >
+                    <MdiChevronUp />
+                </button>
+                <button 
+                    class="btn btn-sm py-0! preset-filled-primary-500"
+                    onclick={() => orderIndex = (orderIndex - 1) % ORDER_NAMES.length}
+                >
+                    <MdiChevronDown />
+                </button>
+            </div>
+            <div class="flex grow justify-center">
+                <div class="flex gap-1 justify-center items-center p-2 border rounded-md border-surface-200-800">
+                    <!-- eslint-disable-next-line svelte/require-each-key -->
+                    {#each { length: 8 } as _, i}
+                        {@const item = getDefault(i)}
+                        <div class={[
+                            "flex size-6 rounded-md transition-color items-center justify-center",
+                            troolSelect(item,
+                                "preset-filled-success-200-800",
+                                "preset-filled-error-200-800",
+                                "preset-filled-surface-200-800",
+                            )
+                        ]}>
+                            {troolSelect(item, "F", "A", NO_FIGURE)}
+                        </div>
+                    {/each}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<svelte:window
+    onkeydown={e => shiftDown = e.shiftKey}
+    onkeyup={e => shiftDown = e.shiftKey}
+/>

@@ -58,6 +58,11 @@
          * If this prop is defined, the function callback is activated when a speaker is marked as completed.
          */
         onMarkComplete?: ((key: DelegateID, isRepeat: boolean) => unknown);
+
+        /**
+         * Callback called when speaker is created.
+        */
+        onCreate?: (key: DelegateID, index: number, speaker: Speaker) => void;
     }
 
     let {
@@ -67,7 +72,8 @@
         title = "Speakers List",
         extra,
         onBeforeSpeakerUpdate = undefined,
-        onMarkComplete = undefined
+        onMarkComplete = undefined,
+        onCreate = undefined
     }: Props = $props();
     const sid = $props.id();
 
@@ -163,56 +169,47 @@
             .then(() => jumpToSpeaker(selectedSpeakerId)); // Scroll new speaker to view
     }
 
+    function insertSpeaker(key: number, index: number): boolean {
+        if (!delegates.some(k => k.id === key)) return false;
+
+        // Update speakers:
+        let speaker = createSpeaker(key);
+        onCreate?.(key, index, speaker);
+        order.splice(index, 0, speaker);
+        order = order;
+
+        return true;
+    }
     /**
      * Adds a speaker to the speakers list.
      * @param key The key of the speaker
      * @returns if key exists (asserting adding succeeds)
      */
     export function addSpeaker(key: number): boolean {
-        if (!delegates.some(k => k.id === key)) return false;
-
-        // Successful, so add speakers:
-        let speaker = createSpeaker(key);
-        if (insertPoint == 0) {
-            order.push(speaker);
-        } else {
-            order.splice(-insertPoint, 0, speaker);
-        }
-        order = order;
-
-        // Jump to this speaker when DOM updates.
-        // HACK: this is waiting for 2 frames, which is usually enough for the dom to update
-        requestAnimationFrame(() => {
+        let result = insertSpeaker(key, order.length - insertPoint);
+        if (result) {
+            // Jump to this speaker when DOM updates.
+            // HACK: this is waiting for 2 frames, which is usually enough for the dom to update
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    jumpToSpeaker();
-                })
+                    requestAnimationFrame(() => {
+                        jumpToSpeaker();
+                    })
+                });
             });
-        });
-
-        return true;
+        }
+        return result;
     }
 
     export function addSpeakerFirst(key: number): boolean {
-        if (!delegates.some(k => k.id === key)) return false;
-
-        // Successful, so add speakers:
-        let speaker = createSpeaker(key);
-        order.unshift(speaker);
-        order = order;
-
-        return true;
+        return insertSpeaker(key, 0);
     }
     export function addSpeakerLast(key: number): boolean {
-        if (!delegates.some(k => k.id === key)) return false;
-
-        // Successful, so add speakers:
-        let speaker = createSpeaker(key);
-        order.push(speaker);
-        order = order;
-        insertPoint++;
-
-        return true;
+        let result = insertSpeaker(key, order.length);
+        if (result) {
+            insertPoint++;
+        }
+        return result;
     }
 
     // DEFAULT CONTROLS
