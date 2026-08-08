@@ -2,8 +2,8 @@
  * Delegate table definition for the session database.
  */
 
-import type { DelegateAttrs, DelegateID, DelegatePresence, DelSessionData, StatsData } from "$lib/types";
-import { eqInsensitive, includesInsensitive } from "$lib/util";
+import type { DelegateAttrs, DelegateID, DelegatePresence, DelSessionData, MaybePending, StatsData } from "$lib/types";
+import { eqInsensitive, searchFuse } from "$lib/util";
 
 export class Delegate {
     // Indexes:
@@ -50,18 +50,6 @@ export class Delegate {
     }
 
     /**
-     * Checks if given string is a substring of a delegate's name
-     * @param sub name we're looking at
-     * @returns whether the given string is a substring
-     */
-    nameIncludes(sub: string): boolean {
-        for (const name of this.names()) {
-            if (includesInsensitive(name, sub)) return true;
-        }
-        return false;
-    }
-
-    /**
      * @returns the attributes of this delegate
      */
     getAttributes(): DelegateAttrs {
@@ -88,4 +76,25 @@ export class Delegate {
 export function findDelegate(d: Delegate[], searchId: DelegateID): Delegate | undefined {
     // linear but bleh it's synchronous so whatever
     return d.find(({id}) => id == searchId);
+}
+
+/**
+ * Constructs object which can be used to search for delegates with a given name.
+ * 
+ * This can be wrapped in `$derived(...)` to reduce number of times this object is constructed.
+ * 
+ * @param delegates THe delegates to search for.
+ * @returns an object, with the `query` method, which provides a list of filtered delegates
+ */
+export function delegateSearch(delegates: Delegate[]): { query: (queryString?: string) => Delegate[] } {
+    return searchFuse(delegates, { keys: ["name", "aliases"] });
+}
+
+/**
+ * Counts the number of present delegates.
+ * @param d The delegates
+ * @returns The number of present delegates, or undefined if array still pending.
+ */
+export function countPresentDelegates(d: MaybePending<Delegate[]>): number | undefined {
+    return d.pending ? undefined : d.reduce((acc, d) => acc + +d.isPresent(), 0);
 }

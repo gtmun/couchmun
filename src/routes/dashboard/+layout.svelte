@@ -17,6 +17,7 @@
     import Navigation from '$lib/components/nav/Navigation.svelte';
     import SettingsNavigation from '$lib/components/nav/SettingsNavigation.svelte';
     import { getSessionContext } from '$lib/context/index.svelte';
+    import { countPresentDelegates } from '$lib/db/delegates';
     import MdiGear from "~icons/mdi/gear";
     import MdiMenu from "~icons/mdi/menu";
 
@@ -26,7 +27,6 @@
 
     const sessionData = getSessionContext();
     const { delegates, barTitle } = sessionData;
-    let delegateCount = $derived(!$delegates.pending ? $delegates.reduce((acc, d) => acc + +d.isPresent(), 0) : undefined);
 
     const links: Partial<Record<RouteId, { label: string }>> = {
         "/dashboard/roll-call":      { label: "Roll Call" },
@@ -105,7 +105,7 @@
                             <BarHeader bind:title={$barTitle} size={committeeMain ? "md" : "sm"} />
                             <div class={["border-2 rounded border-primary-900-100", committeeMain ? "m-1 mt-0" : "mx-4"]} role="separator"></div>
                             <div class="flex items-center justify-center">
-                                <BarStats total={delegateCount} />
+                                <BarStats total={countPresentDelegates($delegates)} />
                             </div>
                         </div>
                         {#if sessionData.barTopic}

@@ -14,7 +14,7 @@ import { KeyValuePair, toKeyValueArray, toObject } from "./keyval";
 import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
 import { getFlagCodes, getFlagUrl } from "$lib/flags/flagcdn";
 import { DEFAULT_SORT_PRIORITY } from "$lib/motions/definitions";
-import type { DelegateAttrs, DelegateID, DelSessionData, PrevSessionData, SessionData, Settings } from "$lib/types";
+import type { DelegateAttrs, DelegateID, DelSessionData, MaybePending, PrevSessionData, SessionData, Settings } from "$lib/types";
 
 interface PopulateDelegateAttrs extends DelegateAttrs {
     /// Whether this delegate is enabled.
@@ -116,7 +116,7 @@ export class SessionDatabase extends Dexie {
      * 
      * @returns the store
      */
-    enabledDelegatesStore(): Readable<Delegate[] & { pending?: true }> {
+    enabledDelegatesStore(): Readable<MaybePending<Delegate[]>> {
         return queryStore(() => {
             return db.delegates.orderBy("order")
                 .filter(e => e.enabled)

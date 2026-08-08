@@ -2,9 +2,12 @@
  * Miscellaneous helper functions.
  */
 
+import Fuse, { type IFuseOptions } from "fuse.js/basic";
 import type { Component } from "svelte";
 import { cubicOut } from "svelte/easing";
 import type { SlideParams, TransitionConfig } from "svelte/transition";
+
+import type { MaybePending } from "$lib/types";
 
 export type Comparator<K> = (a: K, b: K) => number;
 
@@ -101,12 +104,20 @@ export function eqInsensitive(s: string, t: string) {
 }
 
 /**
- * Checks if the "full" string contains the "sub" string, case insensitive.
- * @param full the larger string
- * @param sub the substring
+ * Constructs simple search fuse, which can be used to query a list of items for a matching value.
+ * 
+ * This constructor can be wrapped in `$derived(...)` to prevent this object from being
+ * constructed on every query.
+ * 
+ * @param items The items to query.
+ * @param options Fuse parameters.
+ * @returns an object which contains a function `query`, which can be used to search from the list of items.
  */
-export function includesInsensitive(full: string, sub: string) {
-    return full.toLowerCase().includes(sub.toLowerCase());
+export function searchFuse<T>(items: T[], options?: IFuseOptions<T>): { query: (queryString?: string) => T[] } {
+    const fuse = new Fuse(items, options);
+    return {
+        query: qs => fuse.search(qs ?? "").map(({ item }) => item)
+    }
 }
 
 /**
@@ -126,6 +137,16 @@ export type PropsOf<C extends Component<any, any, any>> = C extends Component<in
  */
 export function hasKey<P extends PropertyKey>(obj: object, key: P): obj is Record<P, unknown> {
     return Object.hasOwn(obj, key);
+}
+
+/**
+ * Applies a mapping to the object if it is not pending.
+ * @param t the object
+ * @param cb the callback to apply
+ * @returns the result
+ */
+export function notPendingThen<T extends object>(t: MaybePending<T>, cb: (t: T) => T): MaybePending<T> {
+    return t.pending ? t : cb(t);
 }
 
 /**
