@@ -173,12 +173,17 @@
                     {@attach rowSort.attach}
                 >
                     <td>
-                        <div {@attach rowSort.attachHandle}>
-                            <MdiDragVertical />
+                        <div class="flex">
+                            <div
+                                class="aspect-square hover:preset-tonal rounded cursor-grab"
+                                {@attach rowSort.attachHandle}
+                            >
+                                <MdiDragVertical />
+                            </div>
                         </div>
                     </td>
                     <td>{ei + 1}</td>
-                    <td class="py-3!" {@attach groupDrop.attach}>
+                    <td class="py-3! cursor-grab" {@attach groupDrop.attach}>
                         <div class="flex flex-col gap-1">
                             {#each group.kind as kind, ki (kind)}
                                 {const kindChip = createSortable({
@@ -191,7 +196,7 @@
                                 }, "default")}
                                 <div 
                                     class={[
-                                        "chip preset-filled-surface-100-900 p-1 flex items-center select-none",
+                                        "chip preset-filled-surface-100-900 p-1 flex items-center select-none cursor-grab",
                                     ]} 
                                     {@attach kindChip.attach}
                                     animate:flip={{ duration: 150 }}
@@ -275,7 +280,7 @@
                     </td>
                     <td>
                         {#if ei != 0}
-                            <button class="btn-icon-std" onclick={() => mergeUp(ei)}>
+                            <button class="btn-icon btn-icon-xl hover:preset-tonal" onclick={() => mergeUp(ei)}>
                                 <MdiCallMerge />
                             </button>
                         {/if}

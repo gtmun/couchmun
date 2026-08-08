@@ -50,15 +50,15 @@
                 <span>Name</span>
                 <input class="input" bind:value={newAttrs.name} required placeholder="Modelunia">
             </label>
-            <div>
-                <span>Aliases (optional)</span>
-                <div class="flex flex-col items-center justify-center gap-2 p-2 border border-surface-200-800 rounded max-h-120 overflow-auto">
+            <fieldset class="fieldset">
+                <legend class="legend">Aliases (optional)</legend>
+                <div class="flex flex-col items-center justify-center gap-2 max-h-120 overflow-auto">
                     <div class={["grid grid-cols-[1fr_auto] gap-1 w-full", newAttrs.aliases.length == 0 && "hidden"]}>
                         <!-- eslint-disable-next-line svelte/require-each-key -->
                         {#each newAttrs.aliases as _, i}
                             <input class="input" bind:value={newAttrs.aliases[i]}>
                             <button
-                                class="btn-icon-std preset-filled-error-500"
+                                class="btn-icon btn-icon-xl preset-filled-error-500"
                                 onclick={() => newAttrs.aliases.splice(i, 1)}
                                 type="button"
                                 {...a11yLabel("Delete Alias")}
@@ -76,12 +76,12 @@
                         Add Alias
                     </button>
                 </div>
-            </div>
+            </fieldset>
             <label>
                 <span>Flag URL (optional)</span>
                 <input class="input" bind:value={newAttrs.flagURL} placeholder="https://example.com/flag.svg">
             </label>
-            <div class="flex justify-end gap-3">
+            <div class="flex justify-end gap-1">
                 <button class="btn preset-filled-error-500" type="button" onclick={close}>Cancel</button>
                 <button class="btn preset-filled-primary-500" type="submit">Submit</button>
             </div>

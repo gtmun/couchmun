@@ -257,7 +257,7 @@
                     positioning={{ placement: 'bottom' }}
                 >
                     <Popover.Trigger
-                        class={["btn-icon-std", popupsOpen.editStats ? "preset-filled" : "preset-ui-depressed hover:preset-filled"]}
+                        class={["btn-icon btn-icon-xl", popupsOpen.editStats ? "preset-filled" : "preset-ui-depressed hover:preset-filled"]}
                         {...a11yLabel("Edit Stats")}
                     >
                         <MdiPencil />
@@ -388,7 +388,7 @@
                     positioning={{ placement: 'bottom' }}
                 >
                     <Popover.Trigger
-                        class="btn-icon-std preset-filled-warning-500"
+                        class="btn-icon btn-icon-xl preset-filled-warning-500"
                         {...a11yLabel("Export Stats")}
                     >
                         <MdiDatabaseExportOutline />

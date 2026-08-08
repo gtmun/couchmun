@@ -37,7 +37,7 @@
     >
         {#snippet trigger()}
             <Dialog.Trigger
-                class="btn-icon-std preset-filled-primary-500"
+                class="btn-icon preset-filled-error-500"
                 disabled={order.length === 0}
                 {...a11yLabel("Clear Speakers List")}
             >
