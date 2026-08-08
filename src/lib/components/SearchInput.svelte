@@ -4,11 +4,12 @@
     import MdiSearch from "~icons/mdi/search";
 
     let { value = $bindable() } = $props();
+    const id = $props.id();
 </script>
 
-<label class="flex gap-2 items-center">
-    <div {...a11yLabel("Search")}>
+<div class="field-group grid-cols-[auto_1fr]">
+    <label class="label label-text preset-tonal" for="search-{id}" {...a11yLabel("Search")}>
         <MdiSearch />
-    </div>
-    <input class="input" bind:value placeholder="Search...">
-</label>
+    </label>
+    <input class="input" id="search-{id}" bind:value placeholder="Search...">
+</div>
