@@ -4,6 +4,12 @@
 @import '@skeletonlabs/skeleton-svelte';
 @plugin '@tailwindcss/forms';
 
+button, input.checkbox, label[data-scope="switch"] {
+  &:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant contenteditable (&:is([contenteditable]));
 
