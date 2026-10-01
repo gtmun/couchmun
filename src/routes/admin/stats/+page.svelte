@@ -9,7 +9,7 @@
     import DelLabel from "$lib/components/del-label/DelLabel.svelte";
     import MetaTags from "$lib/components/MetaTags.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
-    import { Delegate, findDelegate } from "$lib/db/delegates";
+    import { Delegate } from "$lib/db/delegates";
     import { db, queryStore, SessionDatabase } from "$lib/db/index.svelte";
     import type { DelegateID, DelSessionData, StatsData } from "$lib/types";
     import { a11yLabel, compare, downloadFile, hasKey, lazyslide } from "$lib/util";
@@ -31,13 +31,14 @@
     const prevSessions = queryStore(
         async () => Array.from(await db.prevSessions.toArray(), e => e.val.delegates), []
     );
-    const currentSessionKey = queryStore(() => db.getSessionValue("sessionKey"));
-
-    const nSessions = queryStore(async () => {
+    const sessionSummary = queryStore(async () => {
         const nPrevSessions = await db.prevSessions.count();
         const currentSessionKey = await db.getSessionValue("sessionKey");
-        return nPrevSessions + +(typeof currentSessionKey === "undefined");
-    }, 0);
+
+        const count = nPrevSessions + +(typeof currentSessionKey === "undefined");
+        const currentKey = currentSessionKey ?? count - 1;
+        return { count, currentKey };
+    }, { count: 0, currentKey: -1 });
 
     // The page to use for stats.
     // - selectedPage is the page manually set by clicking the pagination buttons.
@@ -46,28 +47,51 @@
     // - displayPage is the true page to display on stats.
     //    This will be selectedPage if manually selected, otherwise it will be based on the other types.
     let selectedPage = $state<number>();
-    let displayPage = $derived(
-        selectedPage ?? $currentSessionKey ?? ($nSessions - 1)
-    );
+    let displayPage = $derived(selectedPage ?? $sessionSummary.currentKey);
     
-    let isAllSessions = $derived(displayPage === $nSessions);
-    let isCurrentSession = $derived(displayPage === $currentSessionKey);
-    let selectedSession: {
+    let isAllSessions = $derived(displayPage === $sessionSummary.count);
+
+    function isCurrentSession(sessionNo: number) {
+        return $sessionSummary.currentKey === sessionNo;
+    }
+    function getStatsForSession(sessionNo: number): {
         id: DelegateID,
         session: DelSessionData
-    }[] = $derived.by(() => {
-        // Use prev session
-        let s = $prevSessions[displayPage];
-        // If that fails, use current session
-        if (typeof s === "undefined" && !$delegates.pending) {
+    }[] {
+        // Use current session if the specified session is the current session:
+        if (isCurrentSession(sessionNo)) {
             return $delegates.map(d => ({
                 id: d.id,
                 session: Delegate.prototype.getSessionData.call(d)}
             ));
         }
 
-        return [];
-    });
+        return $prevSessions[sessionNo] ?? [];
+    }
+    async function updateStatesForSession(
+        sessionNo: number,
+        delId: DelegateID | undefined,
+        cb: (d: DelSessionData) => void
+    ) {
+        if (isCurrentSession(sessionNo)) {
+            return db.updateDelegate(delId, cb);
+        }
+
+        return db.prevSessions.update(sessionNo, psd => {
+            let del = psd.val.delegates.find(({ id }) => id == delId);
+            if (del) cb(del.session);
+        });
+    }
+    function mergeStats(accum: DelSessionData, current: DelSessionData) {
+        if (accum.presence == "NP") {
+            accum.presence = current.presence;
+        }
+        accum.stats.durationSpoken += current.stats.durationSpoken;
+        accum.stats.motionsAccepted += current.stats.motionsAccepted;
+        accum.stats.motionsProposed += current.stats.motionsProposed;
+        accum.stats.timesSpoken += current.stats.timesSpoken;
+    }
+    let selectedSession = $derived(getStatsForSession(displayPage));
 
     let hideAbsentDelegates = $state(true);
     const presentDelegateIds: Set<DelegateID> = $derived(new Set($delegates.map(d => d.id)));
@@ -78,26 +102,20 @@
             // Not a map that will be exposed.
             // eslint-disable-next-line svelte/prefer-svelte-reactivity
             let delStats = new Map<DelegateID, DelSessionData>();
-            for (let del of $delegates) {
-                delStats.set(del.id, del.getSessionData());
-            }
-            for (let session of $prevSessions) {
+            for (let i = 0; i < $sessionSummary.count; i++) {
+                let session = getStatsForSession(i);
                 for (let del of session) {
                     let currentData = delStats.get(del.id);
-                    if (typeof currentData !== "undefined") {
-                        if (currentData.presence == "NP") currentData.presence = del.session.presence;
-                        currentData.stats.durationSpoken += del.session.stats.durationSpoken;
-                        currentData.stats.motionsAccepted += del.session.stats.motionsAccepted;
-                        currentData.stats.motionsProposed += del.session.stats.motionsProposed;
-                        currentData.stats.timesSpoken += del.session.stats.timesSpoken;
+                    if (typeof currentData === "undefined") {
+                        delStats.set(del.id, structuredClone(del.session));
                     } else {
-                        delStats.set(del.id, del.session);
+                        mergeStats(currentData, del.session);
                     }
                 }
             }
 
             return Array.from($delegates, d => Object.assign(new Delegate(), d, delStats.get(d.id)));
-        } else if (isCurrentSession) {
+        } else if (isCurrentSession(displayPage)) {
             // Current session:
             return $delegates;
         } else {
@@ -175,10 +193,10 @@
         editStatsTimeGuide = false;
         editStatsTimeInput = "";
     }
-    async function addToDuration(delId: DelegateID | undefined, secs: number) {
+    async function addToDuration(sessionNo: number, delId: DelegateID | undefined, secs: number) {
         if (Number.isFinite(secs)) {
-            return db.updateDelegate(delId, d => {
-                d.stats.durationSpoken = Math.max(0, d.stats.durationSpoken + secs * 1000)
+            return updateStatesForSession(sessionNo, delId, d => {
+                d.stats.durationSpoken = Math.max(0, d.stats.durationSpoken + secs * 1000);
             });
         }
     }
@@ -211,7 +229,7 @@
         <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-1">
                 <Pagination
-                    count={$nSessions + 1}
+                    count={$sessionSummary.count + 1}
                     pageSize={1}
                     page={displayPage + 1}
                     onPageChange={e => selectedPage = e.page - 1}
@@ -228,7 +246,7 @@
                                         class="tabular-nums"
                                         {...page}
                                     >
-                                        {#if page.value == $nSessions + 1}
+                                        {#if page.value == $sessionSummary.count + 1}
                                             <!-- All sessions page -->
                                             <MdiStar /> 
                                         {:else}
@@ -274,17 +292,21 @@
                     <Portal>
                         <Popover.Positioner>
                             <Popover.Content class={POPUP_CARD_CLASSES}>
-                                {@const selectedDel = typeof editStatsDel !== "undefined" ? findDelegate($delegates, editStatsDel) : undefined}
+                                {@const selectedDel = 
+                                    typeof editStatsDel !== "undefined"
+                                    ? getStatsForSession(displayPage).find(({id}) => id == editStatsDel)?.session
+                                    : undefined
+                                }
                                 <form class="flex flex-col gap-2 overflow-hidden" onsubmit={e => e.preventDefault()}>
                                     <label>
                                         Session
                                         <input 
                                             class="input"
                                             type="number"
-                                            min="1" max={$nSessions}
+                                            min="1" max={$sessionSummary.count}
                                             bind:value={
-                                                () => Math.max(0, Math.min(displayPage, $nSessions - 1)) + 1,
-                                                p => selectedPage =  Math.max(0, Math.min(p - 1, $nSessions - 1))
+                                                () => Math.max(0, Math.min(displayPage, $sessionSummary.count - 1)) + 1,
+                                                p => selectedPage = Math.max(0, Math.min(p - 1, $sessionSummary.count - 1))
                                             }
                                         >
                                     </label>
@@ -302,7 +324,7 @@
                                                     min={0}
                                                     bind:value={
                                                         () => selectedDel.stats.motionsProposed,
-                                                        v => db.updateDelegate(editStatsDel, d => { d.stats.motionsProposed = v; })
+                                                        v => updateStatesForSession(displayPage, editStatsDel, d => { d.stats.motionsProposed = v; })
                                                     }
                                                 />
                                             </label>
@@ -314,7 +336,7 @@
                                                     min={0}
                                                     bind:value={
                                                         () => selectedDel.stats.motionsAccepted,
-                                                        v => db.updateDelegate(editStatsDel, d => { d.stats.motionsAccepted = v; })
+                                                        v => updateStatesForSession(displayPage, editStatsDel, d => { d.stats.motionsAccepted = v; })
                                                     }
                                                 />
                                             </label>
@@ -326,7 +348,7 @@
                                                     min={0}
                                                     bind:value={
                                                         () => selectedDel.stats.timesSpoken,
-                                                        v => db.updateDelegate(editStatsDel, d => { d.stats.timesSpoken = v; })
+                                                        v => updateStatesForSession(displayPage, editStatsDel, d => { d.stats.timesSpoken = v; })
                                                     }
                                                 />
                                             </label>
@@ -350,7 +372,7 @@
                                                             <button 
                                                                 type="button"
                                                                 class={["btn btn-sm tabular-nums", item.time < 0 ? "preset-filled-error-800-200" : "preset-filled-success-800-200"]}
-                                                                onclick={() => addToDuration(editStatsDel, item.time)}
+                                                                onclick={() => addToDuration(displayPage, editStatsDel, item.time)}
                                                             >
                                                                 {item.label}
                                                             </button>
@@ -369,7 +391,7 @@
                                                     <button
                                                         type="button"
                                                         class="btn-icon preset-filled"
-                                                        onclick={() => addToDuration(editStatsDel, -parseTime(editStatsTimeInput)!)}
+                                                        onclick={() => addToDuration(displayPage, editStatsDel, -parseTime(editStatsTimeInput)!)}
                                                         {...a11yLabel("Remove from Duration Spoken")}
                                                     >
                                                         <MdiMinus />
@@ -377,7 +399,7 @@
                                                     <button
                                                         type="button"
                                                         class="btn-icon preset-filled"
-                                                        onclick={() => addToDuration(editStatsDel, +parseTime(editStatsTimeInput)!)}
+                                                        onclick={() => addToDuration(displayPage, editStatsDel, +parseTime(editStatsTimeInput)!)}
                                                         {...a11yLabel("Add to Duration Spoken")}
                                                     >
                                                         <MdiPlus />
