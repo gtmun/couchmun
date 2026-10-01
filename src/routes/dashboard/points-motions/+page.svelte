@@ -253,7 +253,7 @@
                 {@const dataNf = dataOrFallback(value, NO_FIGURE)}
                 {@const dataNone = dataOrFallback(value, "none")}
                 <div
-                  class={["tabular-nums wrap-break-word break-all", field.right && "text-right"]}
+                  class={["tabular-nums", field.right && "text-right"]}
                   aria-label="{field.header} {dataNone}"
                 >
                   {dataNf}
