@@ -8,8 +8,9 @@
     import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import SpeakerListEditControls from "$lib/components/SpeakerListEditControls.svelte";
-    import SpeakerListFirstLast from "$lib/components/SpeakerListFirstLast.svelte";
+    import SpeakerListRR from "$lib/components/SpeakerListRR.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
+    import { findDelegate } from "$lib/db/delegates";
     import { db } from "$lib/db/index.svelte";
     import type { Motion, Speaker } from "$lib/types";
     
@@ -26,7 +27,7 @@
     let speakersList = $state<SpeakerList>();
     const comboboxDelegates = $derived.by(() => {
         let addedDelegates = new Set(order.map(s => s.key));
-        return $delegates.filter(d => !addedDelegates.has(d.id));
+        return $delegates.filter(d => d.isPresent() && !addedDelegates.has(d.id));
     });
 
     function reset() {
@@ -69,7 +70,7 @@
         >
             {#snippet controls()}
                 <div class="flex flex-col items-stretch gap-1">
-                    <SpeakerListFirstLast delegates={$delegates} {order} proposer={motion.delegate} {speakersList} />
+                    <SpeakerListRR {comboboxDelegates} {order} proposer={findDelegate($delegates, motion.delegate)} {speakersList} />
                     <SpeakerListEditControls delegates={comboboxDelegates} {order} onSelect={speakersList?.addSpeaker} />
                 </div>
             {/snippet}
