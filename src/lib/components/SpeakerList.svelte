@@ -298,7 +298,9 @@
                 {@const selected = speaker.id === selectedSpeakerId}
                 {@const delAttrs = findDelegate(delegates, speaker.key)}
                 {@const speakerLabel = delAttrs?.name ?? "unknown"}
-    
+                <!-- Adds space to the start to align each number to the right
+                    and to ensure each index div holds an equal amount of space. -->
+                {@const enumeratedIndex = String(i + 1).padStart(dndItems.length.toString().length, "\u2007")}
                 <li
                     class={[
                         "flex items-center gap-1 p-1 preset-ui",
@@ -314,7 +316,7 @@
                     <div class="hover:preset-tonal rounded cursor-grab" {@attach sortable.attachHandle}>
                         <MdiDragVertical />
                     </div>
-                    <span class="enumerated-index tabular-nums pr-1">{i + 1}.</span>
+                    <span class="enumerated-index tabular-nums pr-1">{enumeratedIndex}.</span>
                     <button 
                         class={[
                             "btn text-wrap! justify-start overflow-hidden grow",
