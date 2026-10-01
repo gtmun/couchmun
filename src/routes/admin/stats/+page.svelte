@@ -68,6 +68,8 @@
 
         return [];
     });
+
+    let hideAbsentDelegates = $state(true);
     const presentDelegateIds: Set<DelegateID> = $derived(new Set($delegates.map(d => d.id)));
     const sessionDelegates: Delegate[] = $derived.by(() => {
         if (isAllSessions) {
@@ -143,6 +145,7 @@
     let maxDurationSpoken = $derived(Math.max(0, ...sessionDelegates.map(d => d.stats.durationSpoken)));
     let displayEntries = $derived(
         Array.from(sessionDelegates)
+            .filter(d => !hideAbsentDelegates || d.isPresent())
             .sort((e1, e2) => {
                 let { item, descending } = sortOrder;
                 return compare(readEntryValue(e1, item), readEntryValue(e2, item), descending);
@@ -206,7 +209,7 @@
 <main class="space-y-4 p-4 overflow-auto">
     <div class="flex flex-col gap-1">
         <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center">
+            <div class="flex items-center gap-1">
                 <Pagination
                     count={$nSessions + 1}
                     pageSize={1}
@@ -246,6 +249,12 @@
                         <MdiChevronRight />
                     </Pagination.NextTrigger>
                 </Pagination>
+                <label class="flex gap-1 items-center">
+                    <input class="checkbox" type="checkbox" bind:checked={hideAbsentDelegates}>
+                    <span>
+                        Hide absent delegates?
+                    </span>
+                </label>
             </div>
             <div class="flex items-center gap-1">
                 <Popover
