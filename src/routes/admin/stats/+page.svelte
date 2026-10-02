@@ -177,6 +177,7 @@
     });
 
     let editStatsDel = $state<DelegateID | undefined>(undefined);
+    let editStatsDelInput = $state<string>("");
     let editStatsTimeGuide = $state(false);
     let editStatsTimeInput = $state("");
     const durationButtons = [
@@ -190,6 +191,7 @@
     ] as const;
     function resetEditStats() {
         editStatsDel = undefined;
+        editStatsDelInput = "";
         editStatsTimeGuide = false;
         editStatsTimeInput = "";
     }
@@ -278,7 +280,7 @@
                 <Popover
                     open={popupsOpen.editStats}
                     onOpenChange={e => {
-                        if (e.open) resetEditStats();
+                        resetEditStats();
                         popupsOpen.editStats = e.open;
                     }}
                     positioning={{ placement: 'bottom' }}
@@ -312,7 +314,7 @@
                                     </label>
                                     <label>
                                         Delegate
-                                        <DelCombobox delegates={$delegates} bind:value={editStatsDel} selectOnBlur />
+                                        <DelCombobox delegates={$delegates} bind:input={editStatsDelInput} bind:value={editStatsDel} selectOnBlur />
                                     </label>
                                     {#if typeof selectedDel !== "undefined"}
                                         <div class="flex flex-col gap-2" transition:lazyslide>
