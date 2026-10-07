@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
     import ToggleButton from "$lib/components/controls/ToggleButton.svelte";
-    import DelFlag from "$lib/components/del-label/DelFlag.svelte";
+    import DelFlag, { SIZE_CLASSES_DISPLAY } from "$lib/components/del-label/DelFlag.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { lazyslide } from "$lib/util";
@@ -71,7 +71,9 @@
             {#key showFlag && attrs?.flagURL}
                 <div transition:lazyslide>
                     {#if showFlag}
-                        <DelFlag label={labelText} url={attrs?.flagURL} height="h-[25dvh]" fallback="un" />
+                        <div class={SIZE_CLASSES_DISPLAY}>
+                            <DelFlag label={labelText} url={attrs?.flagURL} fallback="un" />
+                        </div>
                     {/if}
                 </div>
             {/key}

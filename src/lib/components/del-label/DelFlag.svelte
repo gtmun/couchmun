@@ -24,10 +24,6 @@
          */
         url: string | undefined,
         /**
-         * The height of the flag, which should be defined with Tailwind CSS classes.
-         */
-        height?: ClassValue;
-        /**
          * The fallback if the URL provided doesn't exist.
          * - `un`: Fallback to the United Nations flag
          * - `icon`: Fallback to a broken flag icon (this should only be used for inline, small flags)
@@ -45,11 +41,11 @@
     let {
         label,
         url: flagURL,
-        height = "",
         fallback = "none",
         inline = false
     }: Props = $props();
 
+    const IMG_SIZE_CLASSES = "size-full object-contain";
     let _flagCodes: Record<string, string> = $state({});
     onMount(async () => {
         Object.assign(_flagCodes, await getFlagCodes());
@@ -76,21 +72,27 @@
     let _flagURL = $derived(_legacyFixedFlagSrc(flagURL, label, inline));
 </script>
 
+<script module lang="ts">
+    // 4:3 ratio for FlagCDN
+    export const SIZE_CLASSES_INLINE: ClassValue = "size-5.5 empty:hidden";
+    export const SIZE_CLASSES_DISPLAY: ClassValue = "h-[25dvh] w-[75dvh] empty:hidden";
+</script>
+
 {#if _flagURL}
     <img
         src={_flagURL}
         alt=""
-        class={height}
+        class={IMG_SIZE_CLASSES}
     >
 {:else if fallback === "un"}
     <img
         src={getFlagUrl("un", false)!.toString()}
         alt=""
-        class={height}
+        class={IMG_SIZE_CLASSES}
     >
 {:else if fallback === "icon"}
     <!-- HACK: Just don't use this if not inline. -->
-    <MdiFlagOff role="none" />
+    <MdiFlagOff role="none" preserveAspectRatio="xMinYMin meet" />
 {:else}
     <!-- do nothing -->
 {/if}

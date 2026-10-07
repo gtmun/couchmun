@@ -7,7 +7,7 @@
 <script lang="ts">
     import type { Snippet } from "svelte";
 
-    import DelFlag from "$lib/components/del-label/DelFlag.svelte";
+    import DelFlag, { SIZE_CLASSES_DISPLAY, SIZE_CLASSES_INLINE } from "$lib/components/del-label/DelFlag.svelte";
     import type { DelegateAttrs } from "$lib/types";
 
     interface Props {
@@ -16,10 +16,6 @@
          * (this can be undefined to indicate no delegate).
          */
         attrs: DelegateAttrs | undefined;
-        /**
-         * Height of the flag, defined with Tailwind CSS classes.
-         */
-        flagHeight?: string | undefined;
         /**
          * Whether this label is inline text or not.
          * This decides whether it is a large block or text with a flag.
@@ -39,7 +35,6 @@
 
     let {
         attrs,
-        flagHeight: height = undefined,
         inline = false,
         fallbackFlag = undefined,
         fallbackName = undefined,
@@ -51,7 +46,9 @@
 
 {#if inline}
 <div class="inline-flex items-center gap-1">
-    <DelFlag {label} url={attrs?.flagURL} height={height ?? "h-4"} fallback={fallbackFlag ?? "none"} inline />
+    <div class={SIZE_CLASSES_INLINE}>
+        <DelFlag {label} url={attrs?.flagURL} fallback={fallbackFlag ?? "none"} inline />
+    </div>
     <span class="text-left">{label}</span>
 </div>
 {:else}
@@ -61,6 +58,8 @@
     {:else}
         <h2 class="h2">{label}</h2>
     {/if}
-    <DelFlag {label} url={attrs?.flagURL} height={height ?? "h-[25dvh]"} fallback={fallbackFlag ?? "un"} />
+    <div class={SIZE_CLASSES_DISPLAY}>
+        <DelFlag {label} url={attrs?.flagURL} fallback={fallbackFlag ?? "un"} />
+    </div>
 </div>
 {/if}
