@@ -10,6 +10,7 @@
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import SpeakerListEditControls from "$lib/components/SpeakerListEditControls.svelte";
     import SpeakerListFirstLast from "$lib/components/SpeakerListFirstLast.svelte";
+    import SpeakLayout from "$lib/components/SpeakLayout.svelte";
     import type Timer from "$lib/components/Timer.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
@@ -51,16 +52,8 @@
     });
 </script>
 
-<div class="flex flex-col lg:flex-row h-full gap-8 items-stretch">
-    <!--
-        Under mobile, the timer encompasses the whole page 
-        and the speakers list can be accessed by scrolling down.
-
-        Under desktop, both are on the same screen,
-        with the left side being the timer and the right side being the speakers list.
-    -->
-    <!-- Left/Top -->
-    <div class="flex flex-col grow shrink-0 basis-full lg:basis-auto">
+<SpeakLayout>
+    {#snippet main()}
         <TimerPanel
             {speakersList}
             durations={[motion.speakingTime, motion.totalTime]}
@@ -72,9 +65,8 @@
                 { label: "Reset All" }
             ]}
         />
-    </div>
-    <!-- Right/Bottom -->
-    <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-100 lg:max-w-[33%]">
+    {/snippet}
+    {#snippet side()}
         <!-- List -->
         <SpeakerList
             bind:order
@@ -93,5 +85,5 @@
                 </div>
             {/snippet}
         </SpeakerList>
-    </div>
-</div>
+    {/snippet}
+</SpeakLayout>

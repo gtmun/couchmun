@@ -20,7 +20,6 @@
     import { db } from "$lib/db/index.svelte";
     import { lazyslide } from "$lib/util";
     import { watchEffect } from "$lib/util/sv.svelte";
-    import MdiChevronDown from "~icons/mdi/chevron-down";
 
     interface Props {
         /**
@@ -200,9 +199,6 @@
     }
 </script>
 
-<div class="flex justify-center h-6 lg:hidden">
-    <!-- Placeholder which matches size of chevron-down -->
-</div>
 <div class="flex flex-col justify-center grow">
     {#key selectedSpeaker?.key}
         <div transition:lazyslide>
@@ -272,8 +268,4 @@
             {/each}
         </div>
     </div>
-</div>
-<!-- Mobile chevron -->
-<div class="flex justify-center lg:hidden">
-    <MdiChevronDown />
 </div>

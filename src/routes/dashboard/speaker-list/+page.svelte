@@ -6,6 +6,7 @@
 <script lang="ts">
     import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
     import SpeakerList from "$lib/components/SpeakerList.svelte";
+    import SpeakLayout from "$lib/components/SpeakLayout.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { db } from "$lib/db/index.svelte";
     import { parseTime } from "$lib/util/time";
@@ -45,16 +46,8 @@
     });
 </script>
 
-<div class="flex flex-col lg:flex-row h-full gap-8 items-stretch">
-    <!--
-        Under mobile, the timer encompasses the whole page 
-        and the speakers list can be accessed by scrolling down.
-
-        Under desktop, both are on the same screen,
-        with the left side being the timer and the right side being the speakers list.
-    -->
-    <!-- Left/Top -->
-    <div class="flex flex-col grow shrink-0 basis-full lg:basis-auto">
+<SpeakLayout>
+    {#snippet main()}
         <TimerPanel
             {speakersList}
             durations={[duration]}
@@ -62,9 +55,8 @@
             bind:this={timerPanel}
             editable
         />
-    </div>
-    <!-- Right/Bottom -->
-    <div class="flex flex-col gap-4 h-full lg:overflow-hidden xl:min-w-100 lg:max-w-[33%]">
+    {/snippet}
+    {#snippet side()}
         <!-- List -->
         <SpeakerList
             delegates={$delegates}
@@ -82,5 +74,5 @@
                 </label>
             </form>
         </div>
-    </div>
-</div>
+    {/snippet}
+</SpeakLayout>
