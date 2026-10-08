@@ -3,9 +3,11 @@
     import SpeakerList from "$lib/components/SpeakerList.svelte";
     import type { Delegate } from "$lib/db/delegates";
     import type { DelegateID, Speaker } from "$lib/types";
-    import { lazyslide } from "$lib/util";
+    import { a11yLabel, lazyslide } from "$lib/util";
     import MdiCancel from "~icons/mdi/cancel";
     import MdiCheck from "~icons/mdi/check";
+    import MdiNumericOne from "~icons/mdi/numeric-one";
+    import MdiSizeL from "~icons/mdi/size-l";
 
     interface Props {
         comboboxDelegates: Delegate[];
@@ -65,7 +67,7 @@
 >
     {#if !hideAddAll}
         <div
-            class="flex justify-between items-center"
+            class="flex justify-between items-center gap-2"
             transition:lazyslide
         >
             <div>Add delegates in roll call order?</div>
@@ -74,6 +76,7 @@
                     <button
                         class="btn-icon preset-filled-success-500"
                         onclick={() => addAll()}
+                        {...a11yLabel("Accept")}
                     >
                         <MdiCheck />
                     </button>
@@ -82,6 +85,7 @@
                     <button
                         class="btn-icon preset-filled-error-500"
                         onclick={() => overrideHAA = true}
+                        {...a11yLabel("Deny")}
                     >
                         <MdiCancel />
                     </button>
@@ -94,26 +98,29 @@
     {/if}
     {#if !hideFirstLast}
         <div
-            class="flex justify-between items-center"
+            class="flex justify-between items-center gap-2"
             transition:lazyslide
         >
             <DelLabel attrs={proposer?.getAttributes()} inline />
-            <div>
+            <div class="flex gap-1">
                 <button
-                    class="btn preset-filled-primary-500"
+                    class="btn-icon preset-filled-primary-500 p-0.5"
                     onclick={() => moveProposerFirst()}
+                    {...a11yLabel("First")}
                 >
-                    First
+                    <MdiNumericOne class="size-6" />
                 </button>
                 <button
-                    class="btn preset-filled-primary-500"
+                    class="btn-icon preset-filled-primary-500 p-0.5"
                     onclick={() => moveProposerLast()}
+                    {...a11yLabel("Last")}
                 >
-                    Last
+                    <MdiSizeL class="size-6" />
                 </button>
                 <button
                     class="btn-icon preset-filled-error-500"
                     onclick={() => overrideHFL = true}
+                    {...a11yLabel("Do Not Reorder")}
                 >
                     <MdiCancel />
                 </button>

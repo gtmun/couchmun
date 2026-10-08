@@ -16,11 +16,11 @@
 
 {#if !order.some((s) => s.key == proposer)}
     <div
-        class="card card-filled p-2 flex justify-between items-center preset-filled-surface-200-800"
+        class="card card-filled p-2 flex justify-between items-center preset-filled-surface-200-800 gap-2"
         transition:lazyslide
     >
         <DelLabel attrs={findDelegate(delegates, proposer)} inline />
-        <div>
+        <div class="flex gap-1">
             <button
                 class="btn preset-filled-primary-500"
                 onclick={() => speakersList?.addSpeakerFirst(proposer)}
