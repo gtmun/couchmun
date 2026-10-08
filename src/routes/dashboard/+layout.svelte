@@ -6,6 +6,7 @@
 
 <script lang="ts">
     import { AppBar, Dialog } from '@skeletonlabs/skeleton-svelte';
+    import { slide } from 'svelte/transition';
 
     import { onNavigate } from '$app/navigation';
     import { page } from '$app/state';
@@ -100,7 +101,8 @@
                         if commiteeMain == false: the committee title are relegated for something else
                     -->
                     {@const committeeMain = !sessionData.barTopic}
-                    <div class="flex flex-col items-center gap-2">
+                    {#key committeeMain}
+                    <div class="flex flex-col items-center gap-2" transition:slide={{ duration: 150 }}>
                         <div class={["flex max-sm:flex-col gap-1 items-stretch", committeeMain && "flex-col"]}>
                             <BarHeader bind:title={$barTitle} size={committeeMain ? "md" : "sm"} />
                             <div class={["border-2 rounded border-primary-900-100", committeeMain ? "m-1 mt-0" : "mx-4"]} role="separator"></div>
@@ -112,6 +114,7 @@
                             <BarHeader bind:title={sessionData.barTopic} styles="italic capitalize" />
                         {/if}
                     </div>
+                    {/key}
                 </AppBar.Headline>
                 <AppBar.Trail>
                     <!-- Settings -->
