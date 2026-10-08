@@ -3,7 +3,7 @@
     import type { Snippet } from "svelte";
     import { fly, slide } from "svelte/transition";
     
-    import PaginatorDots, { type DotPage } from "$lib/components/controls/PaginatorDots.svelte";
+    import PaginatorDots, { type DotPage } from "#lib/components/controls/PaginatorDots.svelte";
     import MdiChevronLeft from "~icons/mdi/chevron-left";
     import MdiChevronRight from "~icons/mdi/chevron-right";
     

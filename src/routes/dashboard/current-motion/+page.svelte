@@ -1,55 +1,58 @@
-<!--
-  @component The page for the current motion (after it was selected in the Points & Motions page).
-
-  This page delegates to one of the motion components located in `$lib/components/motions/page`.
--->
 <script lang="ts">
-    import { resolve } from "$app/paths";
-    import ModCaucus from "$lib/components/motions/page/ModCaucus.svelte";
-    import RoundRobin from "$lib/components/motions/page/RoundRobin.svelte";
-    import UnmodCaucus from "$lib/components/motions/page/UnmodCaucus.svelte";
-    import { getSessionContext } from "$lib/context/index.svelte";
-    import { hasKey } from "$lib/util";
+  import ModCaucus from "#lib/components/motions/page/ModCaucus.svelte";
+  import RoundRobin from "#lib/components/motions/page/RoundRobin.svelte";
+  import UnmodCaucus from "#lib/components/motions/page/UnmodCaucus.svelte";
+  import { getSessionContext } from "#lib/context/index.svelte.js";
+  import { hasKey } from "#lib/util/index.js";
+  import { resolve } from "$app/paths";
 
-    const sessionData = getSessionContext();
-    const { selectedMotion, selectedMotionState } = sessionData;
+  const sessionData = getSessionContext();
+  const { selectedMotion, selectedMotionState } = sessionData;
 
-    $effect(() => {
-        if ($selectedMotion != null && hasKey($selectedMotion, "topic")) {
-            sessionData.barTopic = `Topic: ${$selectedMotion.topic}`;
-        }
+  $effect(() => {
+    if ($selectedMotion != null && hasKey($selectedMotion, "topic")) {
+      sessionData.barTopic = `Topic: ${$selectedMotion.topic}`;
+    }
     })
 </script>
 
-<div class="h-full w-full flex flex-col items-stretch justify-center">
-    {#if $selectedMotion && hasKey($selectedMotion, "kind")}
-        {#if $selectedMotion.kind === "mod"}
+<!--
+  @component The page for the current motion (after it was selected in the Points & Motions page).
+
+  This page delegates to one of the motion components located in `#lib/components/motions/page`.
+-->
+
+<div
+  class="h-full w-full flex flex-col items-stretch justify-center"
+>
+  {#if $selectedMotion && hasKey($selectedMotion, "kind")}
+    {#if $selectedMotion.kind === "mod"}
             <ModCaucus motion={$selectedMotion} bind:order={$selectedMotionState.speakersList} />
-        {:else if $selectedMotion.kind === "unmod"}
-            <UnmodCaucus motion={$selectedMotion} />
-        {:else if $selectedMotion.kind === "rr"}
+    {:else if $selectedMotion.kind === "unmod"}
+      <UnmodCaucus motion={$selectedMotion} />
+    {:else if $selectedMotion.kind === "rr"}
             <RoundRobin motion={$selectedMotion} bind:order={$selectedMotionState.speakersList} />
-        {:else if $selectedMotion.kind === "other"}
-            <!-- TODO -->
-        {:else if $selectedMotion.kind === "vp"}
-            <!-- TODO -->
-            <h3 class="h3 text-center">Voting Procedure</h3>
-            <h3 class="h3 text-center">Method: {$selectedMotion.method}</h3>
-        {:else}
-            <!-- TODO -->
-        {/if}
+    {:else if $selectedMotion.kind === "other"}
+      <!-- TODO -->
+    {:else if $selectedMotion.kind === "vp"}
+      <!-- TODO -->
+      <h3 class="h3 text-center">Voting Procedure</h3>
+      <h3 class="h3 text-center">Method: {$selectedMotion.method}</h3>
     {:else}
-        <div class="text-center">
-            <h3 class="h3">No motion set.</h3>
-            Visit 
-            <a
-                class="btn btn-sm preset-tonal-primary"
-                href="{resolve("/dashboard/points-motions")}"
-                tabindex="0"
+      <!-- TODO -->
+    {/if}
+  {:else}
+    <div class="text-center">
+      <h3 class="h3">No motion set.</h3>
+      Visit 
+      <a
+        class="btn btn-sm preset-tonal-primary"
+        href={resolve('dashboard/points-motions')}
+        tabindex="0"
             >
                 Points and Motions
             </a>
-            to set a motion.
-        </div>
-    {/if}
+      to set a motion.
+    </div>
+  {/if}
 </div>

@@ -3,9 +3,9 @@
     - A timer
 -->
 <script lang="ts">
-    import Timer from "$lib/components/Timer.svelte";
-    import { getSessionContext } from "$lib/context/index.svelte";
-    import type { Motion } from "$lib/types";
+    import Timer from "#lib/components/Timer.svelte";
+    import { getSessionContext } from "#lib/context/index.svelte.js";
+    import type { Motion } from "#lib/types.d.ts";
     
     interface Props {
         motion: Motion & { kind: "unmod" };

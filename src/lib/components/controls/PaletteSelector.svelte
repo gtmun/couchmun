@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { a11yLabel } from "$lib/util";
+    import { a11yLabel } from "#lib/util/index.js";
     import MdiPencil from "~icons/mdi/pencil";
 
     interface Props {

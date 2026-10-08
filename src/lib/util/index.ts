@@ -7,7 +7,7 @@ import type { Component } from "svelte";
 import { cubicOut } from "svelte/easing";
 import type { SlideParams, TransitionConfig } from "svelte/transition";
 
-import type { MaybePending } from "$lib/types";
+import type { MaybePending } from "#lib/types.d.ts";
 
 export type Comparator<K> = (a: K, b: K) => number;
 

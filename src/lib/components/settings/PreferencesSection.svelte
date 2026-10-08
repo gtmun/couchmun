@@ -3,8 +3,8 @@
 
     import LabeledSwitch from "../controls/LabeledSwitch.svelte";
 
-    import type { SessionDatabase } from "$lib/db/index.svelte";
-    import type { Preferences } from "$lib/types";
+    import type { SessionDatabase } from "#lib/db/index.svelte.js";
+    import type { Preferences } from "#lib/types.d.ts";
     import MdiInformationOutline from "~icons/mdi/information-outline";
 
     interface Props {

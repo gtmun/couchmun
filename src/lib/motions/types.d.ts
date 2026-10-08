@@ -1,4 +1,4 @@
-import type { Motion } from "$lib/types";
+import type { Motion } from "#lib/types.d.ts";
 
 //// Wacky type magic:
 type Formify<T> = T extends number ? string : T;

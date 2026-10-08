@@ -1,9 +1,9 @@
 <script lang="ts">
     import InputTime from "./InputTime.svelte";
 
-    import type { InputComponentProps } from "$lib/motions/definitions";
-    import { a11yLabel, hasKey, lazyslide } from "$lib/util";
-    import { stringifyTime } from "$lib/util/time";
+    import type { InputComponentProps } from "#lib/motions/definitions.js";
+    import { a11yLabel, hasKey, lazyslide } from "#lib/util/index.js";
+    import { stringifyTime } from "#lib/util/time.js";
     import MdiFractionOneHalf from "~icons/mdi/fraction-one-half";
 
     type Props = InputComponentProps<string>;

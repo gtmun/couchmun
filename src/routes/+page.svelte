@@ -1,10 +1,11 @@
-<!-- @component The front page. -->
 <script lang="ts">
+    import MetaTags from "#lib/components/MetaTags.svelte";
+    import { a11yLabel } from "#lib/util/index.js";
     import { resolve } from "$app/paths";
-    import MetaTags from "$lib/components/MetaTags.svelte";
-    import { a11yLabel } from "$lib/util";
     import MdiGear from "~icons/mdi/gear";
 </script>
+
+<!-- @component The front page. -->
 
 <MetaTags
     title="CouchMUN"
@@ -18,12 +19,14 @@
     
         <!-- Entry buttons -->
         <div class="flex justify-center gap-3">
-            <a class="btn preset-filled-primary-500" href="{resolve("/dashboard")}">
-                Open Dashboard
-            </a>
-            <a 
-                class="btn-icon btn-icon-xl preset-filled-primary-500" 
-                href="{resolve("/admin/settings")}"
+            <a
+                class="btn preset-filled-primary-500"
+                href={resolve('dashboard')}
+            >Open Dashboard</a>
+
+            <a
+                class="btn-icon btn-icon-xl preset-filled-primary-500"
+                href={resolve('admin/settings')}
                 {...a11yLabel("Settings")}
             >
                 <MdiGear />
@@ -32,8 +35,16 @@
     </div>
     <div class="text-right">
         <i>
-            CouchMUN is in its alpha development stages.<br>
-            If you catch any bugs, report them to <a class="anchor" href="https://github.com/gtmun/couchmun/">its repository</a>.
+            CouchMUN is in its alpha development stages.
+            <br />
+            If you catch any bugs, report them to 
+
+            <a
+                class="anchor"
+                href="https://github.com/gtmun/couchmun/"
+            >its repository</a>
+
+            .
         </i>
     </div>
 </div>

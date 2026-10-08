@@ -1,10 +1,10 @@
 <script lang="ts">
-    import LabeledSwitch from "$lib/components/controls/LabeledSwitch.svelte";
-    import type { SessionDatabase } from "$lib/db/index.svelte";
-    import { getSortLabel, MOTION_DEFS, MOTION_GROUP_LABELS } from "$lib/motions/definitions";
-    import { SORT_KIND_EXTRAS_NAMES } from "$lib/motions/sort";
-    import type { SortKind } from "$lib/types";
-    import { mapGroupBy } from "$lib/util";
+    import LabeledSwitch from "#lib/components/controls/LabeledSwitch.svelte";
+    import type { SessionDatabase } from "#lib/db/index.svelte.js";
+    import { getSortLabel, MOTION_DEFS, MOTION_GROUP_LABELS } from "#lib/motions/definitions.js";
+    import { SORT_KIND_EXTRAS_NAMES } from "#lib/motions/sort.js";
+    import type { SortKind } from "#lib/types.d.ts";
+    import { mapGroupBy } from "#lib/util/index.js";
 
     interface Props {
         /**

@@ -6,7 +6,7 @@
 
 
 <script lang="ts">
-    import { a11yLabel } from "$lib/util";
+    import { a11yLabel } from "#lib/util/index.js";
     import MdiMinus from "~icons/mdi/minus";
     import MdiPlus from "~icons/mdi/plus";
 

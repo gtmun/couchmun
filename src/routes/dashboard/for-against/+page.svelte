@@ -1,6 +1,6 @@
 <script lang="ts">
-    import ForAgainst from "$lib/components/ForAgainst.svelte";
-    import { getSessionContext } from "$lib/context/index.svelte";
+    import ForAgainst from "#lib/components/ForAgainst.svelte";
+    import { getSessionContext } from "#lib/context/index.svelte.js";
 
     const sessionData = getSessionContext();
     const { delegates, faSpeakersList } = sessionData;

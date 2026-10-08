@@ -5,12 +5,12 @@
     import { flip } from "svelte/animate";
     import { v7 as uuidv7 } from "uuid";
 
-    import { DEFAULT_SORT_PRIORITY, getAllSortableKeys, getSortLabel } from "$lib/motions/definitions";
-    import { SORT_PROPERTY_NAMES } from "$lib/motions/sort";
-    import type { SortOrder } from "$lib/types";
-    import { a11yLabel } from "$lib/util";
-    import { createSortable, handleDrag, moveAcross } from "$lib/util/dnd";
-    import { proxify } from "$lib/util/sv.svelte";
+    import { DEFAULT_SORT_PRIORITY, getAllSortableKeys, getSortLabel } from "#lib/motions/definitions.js";
+    import { SORT_PROPERTY_NAMES } from "#lib/motions/sort.js";
+    import type { SortOrder } from "#lib/types.d.ts";
+    import { createSortable, handleDrag, moveAcross } from "#lib/util/dnd.js";
+    import { a11yLabel } from "#lib/util/index.js";
+    import { proxify } from "#lib/util/sv.svelte.js";
     import MdiArrowDown from "~icons/mdi/arrow-down";
     import MdiCallMerge from "~icons/mdi/call-merge";
     import MdiClose from "~icons/mdi/close";

@@ -4,7 +4,7 @@
 
 import type { Readable, Writable } from "svelte/store";
 
-import type { Delegate } from "$lib/db/delegates";
+import type { Delegate } from "#lib/db/delegates.js";
 
 /**
  * ID of a delegate

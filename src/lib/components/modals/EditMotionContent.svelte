@@ -9,9 +9,9 @@
 <script lang="ts">
     import UniModalContent, { type ExitState } from "./UniModalContent.svelte";
 
-    import MotionForm from "$lib/components/motions/form/MotionForm.svelte";
-    import { type MotionSchema } from "$lib/motions/definitions";
-    import type { Motion } from "$lib/types";
+    import MotionForm from "#lib/components/motions/form/MotionForm.svelte";
+    import { type MotionSchema } from "#lib/motions/definitions.js";
+    import type { Motion } from "#lib/types.d.ts";
     
     interface Props {
         /**

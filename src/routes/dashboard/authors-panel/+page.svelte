@@ -1,13 +1,13 @@
 <script lang="ts">    
     import { Popover, Portal } from "@skeletonlabs/skeleton-svelte";
 
-    import ForAgainst from "$lib/components/ForAgainst.svelte";
-    import MultiPage from "$lib/components/MultiPage.svelte";
-    import Timer from "$lib/components/Timer.svelte";
-    import { getSessionContext } from "$lib/context/index.svelte";
-    import type { SpeakerFA } from "$lib/types";
-    import { proxify } from "$lib/util/sv.svelte";
-    import { parseTime, sanitizeTime, stringifyTime } from "$lib/util/time";
+    import ForAgainst from "#lib/components/ForAgainst.svelte";
+    import MultiPage from "#lib/components/MultiPage.svelte";
+    import Timer from "#lib/components/Timer.svelte";
+    import { getSessionContext } from "#lib/context/index.svelte.js";
+    import type { SpeakerFA } from "#lib/types.d.ts";
+    import { proxify } from "#lib/util/sv.svelte.js";
+    import { parseTime, sanitizeTime, stringifyTime } from "#lib/util/time.js";
     import MdiWrench from "~icons/mdi/wrench";
 
     const sessionData = getSessionContext();

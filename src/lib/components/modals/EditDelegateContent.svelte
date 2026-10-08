@@ -6,9 +6,9 @@
 <script lang="ts">
     import UniModalContent, { type ExitState } from "./UniModalContent.svelte";
 
-    import type { DelegateAttrs } from "$lib/types";
-    import { a11yLabel } from "$lib/util";
-    import { proxify } from "$lib/util/sv.svelte";
+    import type { DelegateAttrs } from "#lib/types.d.ts";
+    import { a11yLabel } from "#lib/util/index.js";
+    import { proxify } from "#lib/util/sv.svelte.js";
     import MdiDelete from "~icons/mdi/delete";
     import MdiPlus from "~icons/mdi/plus";
 

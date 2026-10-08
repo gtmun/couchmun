@@ -10,7 +10,7 @@
     import { onMount, tick, type Snippet } from "svelte";
     import type { ClassValue } from "svelte/elements";
 
-    import { watchEffect } from "$lib/util/sv.svelte";
+    import { watchEffect } from "#lib/util/sv.svelte.js";
 
     // Copyright (c) 2018 Rich Harris
     // Permission is hereby granted by the authors of this software, to any person, to use the software for any purpose, free of charge, including the rights to run, read, copy, change, distribute and sell it, and including usage rights to any patents the authors may hold on it, subject to the following conditions:

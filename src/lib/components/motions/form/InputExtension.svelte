@@ -1,8 +1,8 @@
 <script lang="ts">
     import type { Snippet } from "svelte";
 
-    import LabeledSwitch from "$lib/components/controls/LabeledSwitch.svelte";
-    import type { InputComponentProps } from "$lib/motions/definitions";
+    import LabeledSwitch from "#lib/components/controls/LabeledSwitch.svelte";
+    import type { InputComponentProps } from "#lib/motions/definitions.js";
 
     interface Props extends InputComponentProps<boolean> {
         label?: Snippet<[]>

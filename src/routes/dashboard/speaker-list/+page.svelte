@@ -4,12 +4,12 @@
     - An editable speakers list
 -->
 <script lang="ts">
-    import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
-    import SpeakerList from "$lib/components/SpeakerList.svelte";
-    import SpeakLayout from "$lib/components/SpeakLayout.svelte";
-    import { getSessionContext } from "$lib/context/index.svelte";
-    import { db } from "$lib/db/index.svelte";
-    import { parseTime } from "$lib/util/time";
+    import TimerPanel from "#lib/components/motions/TimerPanel.svelte";
+    import SpeakerList from "#lib/components/SpeakerList.svelte";
+    import SpeakLayout from "#lib/components/SpeakLayout.svelte";
+    import { getSessionContext } from "#lib/context/index.svelte.js";
+    import { db } from "#lib/db/index.svelte.js";
+    import { parseTime } from "#lib/util/time.js";
 
     const sessionData = getSessionContext();
     const { speakersList: order, delegates, selectedMotion } = sessionData;

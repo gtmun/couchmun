@@ -1,8 +1,8 @@
 <script lang="ts">
     import { Combobox, Portal, useListCollection } from "@skeletonlabs/skeleton-svelte";
 
-    import type { InputComponentProps } from "$lib/motions/definitions";
-    import { searchFuse } from "$lib/util";
+    import type { InputComponentProps } from "#lib/motions/definitions.js";
+    import { searchFuse } from "#lib/util/index.js";
 
     interface Props extends InputComponentProps<string> {
         label?: string;

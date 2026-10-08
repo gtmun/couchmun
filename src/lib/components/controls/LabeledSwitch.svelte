@@ -8,7 +8,7 @@
     import { Switch } from "@skeletonlabs/skeleton-svelte";
     import { type Snippet } from "svelte";
 
-    import type { PropsOf } from "$lib/util";
+    import type { PropsOf } from "#lib/util/index.js";
 
     interface Props extends PropsOf<typeof Switch> {
         /**

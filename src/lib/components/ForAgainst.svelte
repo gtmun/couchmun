@@ -6,15 +6,15 @@
 <script lang="ts">
     import { slide } from "svelte/transition";
 
-    import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
-    import SpeakerList from "$lib/components/SpeakerList.svelte";
-    import SpeakLayout from "$lib/components/SpeakLayout.svelte";
-    import { getSessionContext } from "$lib/context/index.svelte";
-    import { Delegate, findDelegate } from "$lib/db/delegates";
-    import { db } from "$lib/db/index.svelte";
-    import type { SpeakerFA } from "$lib/types";
-    import { a11yLabel, NO_FIGURE } from "$lib/util";
-    import { parseTime } from "$lib/util/time";
+    import TimerPanel from "#lib/components/motions/TimerPanel.svelte";
+    import SpeakerList from "#lib/components/SpeakerList.svelte";
+    import SpeakLayout from "#lib/components/SpeakLayout.svelte";
+    import { getSessionContext } from "#lib/context/index.svelte.js";
+    import { Delegate, findDelegate } from "#lib/db/delegates.js";
+    import { db } from "#lib/db/index.svelte.js";
+    import type { SpeakerFA } from "#lib/types.d.ts";
+    import { a11yLabel, NO_FIGURE } from "#lib/util/index.js";
+    import { parseTime } from "#lib/util/time.js";
     import MdiChevronDown from "~icons/mdi/chevron-down";
     import MdiChevronUp from "~icons/mdi/chevron-up";
     import MdiMinus from "~icons/mdi/minus";

@@ -5,7 +5,7 @@
  * See `Timer`'s module script for an example.
  */
 
-import type { ClockMessage } from "$lib/types";
+import type { ClockMessage } from "#lib/types.d.ts";
 
 function loop(ts: number) {
     postMessage({ kind: "startTick", ts } satisfies ClockMessage);

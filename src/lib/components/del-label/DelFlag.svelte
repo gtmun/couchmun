@@ -8,7 +8,7 @@
     import { onMount } from "svelte";
     import type { ClassValue } from "svelte/elements";
 
-    import { getFlagCodes, getFlagUrl } from "$lib/flags/flagcdn";
+    import { getFlagCodes, getFlagUrl } from "#lib/flags/flagcdn.js";
     import MdiFlagOff from "~icons/mdi/flag-off";
 
     interface Props {

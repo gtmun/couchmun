@@ -5,11 +5,11 @@
  * (which can be inserted into `Array.sort`) that compares motions.
  * 
  * Using it requires defining a "sort order", which is the priority in which motions are ordered.
- * See the docs for `SortOrder` in `$lib/types` for more details about how sort order is set up.
+ * See the docs for `SortOrder` in `#lib/types` for more details about how sort order is set up.
  */
 
-import type { Motion, MotionKind, SortKind, SortOrder } from "$lib/types";
-import { compare, hasKey, type Comparator } from "$lib/util";
+import type { Motion, MotionKind, SortKind, SortOrder } from "#lib/types.d.ts";
+import { compare, hasKey, type Comparator } from "#lib/util/index.js";
 
 export const SORT_KIND_EXTRAS_NAMES: Record<Exclude<SortKind, MotionKind>, string> = {
     ext: "Extension"

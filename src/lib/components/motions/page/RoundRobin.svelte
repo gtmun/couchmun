@@ -5,15 +5,15 @@
     - A speakers list that is automatically populated with all delegates
 -->
 <script lang="ts">
-    import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
-    import SpeakerList from "$lib/components/SpeakerList.svelte";
-    import SpeakerListEditControls from "$lib/components/SpeakerListEditControls.svelte";
-    import SpeakerListRR from "$lib/components/SpeakerListRR.svelte";
-    import SpeakLayout from "$lib/components/SpeakLayout.svelte";
-    import { getSessionContext } from "$lib/context/index.svelte";
-    import { findDelegate } from "$lib/db/delegates";
-    import { db } from "$lib/db/index.svelte";
-    import type { Motion, Speaker } from "$lib/types";
+    import TimerPanel from "#lib/components/motions/TimerPanel.svelte";
+    import SpeakerList from "#lib/components/SpeakerList.svelte";
+    import SpeakerListEditControls from "#lib/components/SpeakerListEditControls.svelte";
+    import SpeakerListRR from "#lib/components/SpeakerListRR.svelte";
+    import SpeakLayout from "#lib/components/SpeakLayout.svelte";
+    import { getSessionContext } from "#lib/context/index.svelte.js";
+    import { findDelegate } from "#lib/db/delegates.js";
+    import { db } from "#lib/db/index.svelte.js";
+    import type { Motion, Speaker } from "#lib/types.d.ts";
     
     interface Props {
         motion: Motion & { kind: "rr" };

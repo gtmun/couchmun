@@ -8,11 +8,11 @@
     import EditDelegateContent from "../modals/EditDelegateContent.svelte";
     import UniModal from "../modals/UniModal.svelte";
 
-    import { Delegate } from "$lib/db/delegates";
-    import { _legacyFixDelFlag, SessionDatabase } from "$lib/db/index.svelte";
-    import { PRESETS } from "$lib/delegate_presets";
-    import type { DelegateAttrs, DelegateID } from "$lib/types";
-    import { a11yLabel, downloadFile, hasKey } from "$lib/util";
+    import { Delegate } from "#lib/db/delegates.js";
+    import { _legacyFixDelFlag, SessionDatabase } from "#lib/db/index.svelte.js";
+    import { PRESETS } from "#lib/delegate_presets/index.js";
+    import type { DelegateAttrs, DelegateID } from "#lib/types.d.ts";
+    import { a11yLabel, downloadFile, hasKey } from "#lib/util/index.js";
     import MdiCancel from "~icons/mdi/cancel";
     import MdiChevronDown from "~icons/mdi/chevron-down";
     import MdiDelete from "~icons/mdi/delete";

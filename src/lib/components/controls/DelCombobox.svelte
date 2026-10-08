@@ -8,9 +8,9 @@
 <script lang="ts">
     import { Combobox, Portal, useListCollection } from "@skeletonlabs/skeleton-svelte";
 
-    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import { delegateSearch, findDelegate, type Delegate } from "$lib/db/delegates";
-    import type { DelegateID } from "$lib/types";
+    import DelLabel from "#lib/components/del-label/DelLabel.svelte";
+    import { delegateSearch, findDelegate, type Delegate } from "#lib/db/delegates.js";
+    import type { DelegateID } from "#lib/types.d.ts";
 
     interface Props {
         /**

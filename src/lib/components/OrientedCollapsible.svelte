@@ -6,7 +6,7 @@
     import type { Snippet } from "svelte";
     import { slide } from "svelte/transition";
 
-    import { a11yLabel } from "$lib/util";
+    import { a11yLabel } from "#lib/util/index.js";
     import MdiChevronLeft from "~icons/mdi/chevron-left";
 
     interface Props {

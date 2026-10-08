@@ -5,16 +5,16 @@
     - An editable speakers list
 -->
 <script lang="ts">
-    import { numSpeakersStr } from "$lib/components/motions/form/MotionForm.svelte";
-    import TimerPanel from "$lib/components/motions/TimerPanel.svelte";
-    import SpeakerList from "$lib/components/SpeakerList.svelte";
-    import SpeakerListEditControls from "$lib/components/SpeakerListEditControls.svelte";
-    import SpeakerListFirstLast from "$lib/components/SpeakerListFirstLast.svelte";
-    import SpeakLayout from "$lib/components/SpeakLayout.svelte";
-    import type Timer from "$lib/components/Timer.svelte";
-    import { getSessionContext } from "$lib/context/index.svelte";
-    import { db } from "$lib/db/index.svelte";
-    import type { Motion, Speaker } from "$lib/types";
+    import { numSpeakersStr } from "#lib/components/motions/form/MotionForm.svelte";
+    import TimerPanel from "#lib/components/motions/TimerPanel.svelte";
+    import SpeakerList from "#lib/components/SpeakerList.svelte";
+    import SpeakerListEditControls from "#lib/components/SpeakerListEditControls.svelte";
+    import SpeakerListFirstLast from "#lib/components/SpeakerListFirstLast.svelte";
+    import SpeakLayout from "#lib/components/SpeakLayout.svelte";
+    import type Timer from "#lib/components/Timer.svelte";
+    import { getSessionContext } from "#lib/context/index.svelte.js";
+    import { db } from "#lib/db/index.svelte.js";
+    import type { Motion, Speaker } from "#lib/types.d.ts";
 
     interface Props {
         motion: Motion & { kind: "mod" };

@@ -1,9 +1,9 @@
 <script lang="ts">
-    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import SpeakerList from "$lib/components/SpeakerList.svelte";
-    import { findDelegate, type Delegate } from "$lib/db/delegates";
-    import type { DelegateID, Speaker } from "$lib/types";
-    import { lazyslide } from "$lib/util";
+    import DelLabel from "#lib/components/del-label/DelLabel.svelte";
+    import SpeakerList from "#lib/components/SpeakerList.svelte";
+    import { findDelegate, type Delegate } from "#lib/db/delegates.js";
+    import type { DelegateID, Speaker } from "#lib/types.d.ts";
+    import { lazyslide } from "#lib/util/index.js";
 
     interface Props {
         delegates: Delegate[];

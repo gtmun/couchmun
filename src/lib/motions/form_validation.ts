@@ -4,9 +4,9 @@
 
 import { z } from "zod";
 
-import { findDelegate, type Delegate } from "$lib/db/delegates";
-import type { DelegateID } from "$lib/types";
-import { parseTime, stringifyTime } from "$lib/util/time";
+import { findDelegate, type Delegate } from "#lib/db/delegates.js";
+import type { DelegateID } from "#lib/types.d.ts";
+import { parseTime, stringifyTime } from "#lib/util/time.js";
 
 export function formatValidationError(error: z.ZodError) {
     return error.issues[0];

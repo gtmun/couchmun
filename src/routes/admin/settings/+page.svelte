@@ -4,18 +4,18 @@
 <script lang="ts">
     import { FileUpload, Dialog, Navigation } from "@skeletonlabs/skeleton-svelte";
     
-    import MetaTags from "$lib/components/MetaTags.svelte";
-    import ConfirmModal from "$lib/components/modals/ConfirmModal.svelte";
-    import DelegatesSection from "$lib/components/settings/DelegatesSection.svelte";
-    import MotionsSection from "$lib/components/settings/MotionsSection.svelte";
-    import PreferencesSection from "$lib/components/settings/PreferencesSection.svelte";
-    import SortOrderSection from "$lib/components/settings/SortOrderSection.svelte";
-    import { getSessionContext } from "$lib/context/index.svelte";
-    import { _legacyFixDelFlag, db, queryStore } from "$lib/db/index.svelte";
-    import { toKeyValueArray, toObject } from "$lib/db/keyval";
-    import { DEFAULT_PRESET_KEY, getPreset } from "$lib/delegate_presets";
-    import type { Settings } from "$lib/types";
-    import { downloadFile } from "$lib/util";
+    import MetaTags from "#lib/components/MetaTags.svelte";
+    import ConfirmModal from "#lib/components/modals/ConfirmModal.svelte";
+    import DelegatesSection from "#lib/components/settings/DelegatesSection.svelte";
+    import MotionsSection from "#lib/components/settings/MotionsSection.svelte";
+    import PreferencesSection from "#lib/components/settings/PreferencesSection.svelte";
+    import SortOrderSection from "#lib/components/settings/SortOrderSection.svelte";
+    import { getSessionContext } from "#lib/context/index.svelte.js";
+    import { _legacyFixDelFlag, db, queryStore } from "#lib/db/index.svelte.js";
+    import { toKeyValueArray, toObject } from "#lib/db/keyval.js";
+    import { DEFAULT_PRESET_KEY, getPreset } from "#lib/delegate_presets/index.js";
+    import type { Settings } from "#lib/types.d.ts";
+    import { downloadFile } from "#lib/util/index.js";
 
     // FIXME: this goofiness is rather unstable
     const settings = queryStore(async () => toObject(await db.settings.toArray()) as Settings);

@@ -4,17 +4,17 @@
 <script lang="ts">
     import { Progress, Pagination, Popover, Portal } from "@skeletonlabs/skeleton-svelte";
 
-    import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
-    import InputPlusMinus from "$lib/components/controls/InputPlusMinus.svelte";
-    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import MetaTags from "$lib/components/MetaTags.svelte";
-    import { getSessionContext } from "$lib/context/index.svelte";
-    import { Delegate } from "$lib/db/delegates";
-    import { db, queryStore, SessionDatabase } from "$lib/db/index.svelte";
-    import type { DelegateID, DelSessionData, StatsData } from "$lib/types";
-    import { a11yLabel, compare, downloadFile, hasKey, lazyslide } from "$lib/util";
-    import { POPUP_CARD_CLASSES } from "$lib/util/popup";
-    import { parseTime, sanitizeTime, stringifyTime } from "$lib/util/time";
+    import DelCombobox from "#lib/components/controls/DelCombobox.svelte";
+    import InputPlusMinus from "#lib/components/controls/InputPlusMinus.svelte";
+    import DelLabel from "#lib/components/del-label/DelLabel.svelte";
+    import MetaTags from "#lib/components/MetaTags.svelte";
+    import { getSessionContext } from "#lib/context/index.svelte.js";
+    import { Delegate } from "#lib/db/delegates.js";
+    import { db, queryStore, SessionDatabase } from "#lib/db/index.svelte.js";
+    import type { DelegateID, DelSessionData, StatsData } from "#lib/types.d.ts";
+    import { a11yLabel, compare, downloadFile, hasKey, lazyslide } from "#lib/util/index.js";
+    import { POPUP_CARD_CLASSES } from "#lib/util/popup.js";
+    import { parseTime, sanitizeTime, stringifyTime } from "#lib/util/time.js";
     import MdiArrowUp from "~icons/mdi/arrow-up";
     import MdiChevronLeft from "~icons/mdi/chevron-left";
     import MdiChevronRight from "~icons/mdi/chevron-right";

@@ -2,22 +2,22 @@
  * Some definitions for motion properties.
  * 
  * This consolidates important properties under one file
- * (other files in `$lib/motions` should only define infrastructure for using motions).
+ * (other files in `#lib/motions` should only define infrastructure for using motions).
  */
 
 import { z } from "zod";
 
+import type { IconComponent } from "#lib/components/IconLabel.svelte";
+import { numSpeakersStr } from "#lib/components/motions/form/MotionForm.svelte";
+import { type Delegate } from "#lib/db/delegates.js";
+import { optional, presentDelegateSchema, refineSpeakingTime, stringSchema, timeSchema, type Refine } from "#lib/motions/form_validation.js";
+import type { InputKind } from "#lib/motions/input.js";
+import { baseCompareMotions, SORT_KIND_EXTRAS_NAMES, SORT_PROPERTY_NAMES } from "#lib/motions/sort.js";
+import type { Is } from "#lib/motions/types.d.ts";
+import type { Motion, MotionKind, SortKind, SortOrder } from "#lib/types.d.ts";
+import { hasKey, type Comparator } from "#lib/util/index.js";
+import { stringifyTime } from "#lib/util/time.js";
 import type { RouteId } from "$app/types";
-import type { IconComponent } from "$lib/components/IconLabel.svelte";
-import { numSpeakersStr } from "$lib/components/motions/form/MotionForm.svelte";
-import { type Delegate } from "$lib/db/delegates";
-import { optional, presentDelegateSchema, refineSpeakingTime, stringSchema, timeSchema, type Refine } from "$lib/motions/form_validation";
-import type { InputKind } from "$lib/motions/input";
-import { baseCompareMotions, SORT_KIND_EXTRAS_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
-import type { Is } from "$lib/motions/types";
-import type { Motion, MotionKind, SortKind, SortOrder } from "$lib/types";
-import { hasKey, type Comparator } from "$lib/util";
-import { stringifyTime } from "$lib/util/time";
 import MdiAccountClock from "~icons/mdi/account-clock";
 import MdiAccountMultiple from "~icons/mdi/account-multiple";
 import MdiBookClock from "~icons/mdi/book-clock";
@@ -126,7 +126,7 @@ function getSortableField(m: Motion, delegates: Delegate[], k: string): unknown 
 export type FieldProperties = {
     /** The type of input. This is typically directly associated with some component.
      * 
-     * See `getComponent` in `"$lib/motions/sort"`.
+     * See `getComponent` in `"#lib/motions/sort"`.
     */
     input: InputKind,
     /** The schema used to validate the input. */

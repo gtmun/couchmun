@@ -8,7 +8,7 @@
     import type { Snippet } from "svelte";
     import type { HTMLAttributes } from "svelte/elements";
 
-    import { a11yLabel } from "$lib/util";
+    import { a11yLabel } from "#lib/util/index.js";
 
     interface Props extends HTMLAttributes<HTMLButtonElement> {
         /**

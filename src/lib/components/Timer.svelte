@@ -12,10 +12,10 @@
     import { cubicOut } from "svelte/easing";
     import { Tween } from "svelte/motion";
 
-    import { a11yLabel, clamp } from "$lib/util";
-    import { makeEditable } from "$lib/util/attach.svelte";
-    import { watchEffect } from "$lib/util/sv.svelte";
-    import { parseTime, stringifyTime } from "$lib/util/time";
+    import { makeEditable } from "#lib/util/attach.svelte.js";
+    import { a11yLabel, clamp } from "#lib/util/index.js";
+    import { watchEffect } from "#lib/util/sv.svelte.js";
+    import { parseTime, stringifyTime } from "#lib/util/time.js";
     import MdiPause from "~icons/mdi/pause";
     import MdiPlay from "~icons/mdi/play";
 
@@ -283,8 +283,8 @@
 </script>
 
 <script module lang="ts">
-    import type { ClockMessage } from "$lib/types";
-    import ClockSourceWorker from "$lib/util/clock?worker";
+    import type { ClockMessage } from "#lib/types.d.ts";
+    import ClockSourceWorker from "#lib/util/clock?worker";
 
     // This is a synchronized timer for all Timer components.
     // It is in a worker thread so that it runs in the background.

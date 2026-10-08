@@ -8,16 +8,16 @@
     import { v7 as uuidv7 } from "uuid";
     import type { z } from "zod";
 
-    import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
-    import { getSessionContext } from "$lib/context/index.svelte";
-    import { MOTION_BASE_FIELDS, MOTION_DEFS, MOTION_GROUP_LABELS, type FieldProperties, type MotionSchema } from "$lib/motions/definitions";
-    import { formatValidationError } from "$lib/motions/form_validation";
-    import { getComponent } from '$lib/motions/input';
-    import type { MotionInput } from "$lib/motions/types";
-    import type { DelegateID, Motion } from "$lib/types";
-    import { hasKey, mapGroupBy, NO_FIGURE } from "$lib/util";
-    import { proxify } from '$lib/util/sv.svelte';
-    import { parseTime } from "$lib/util/time";
+    import DelCombobox from "#lib/components/controls/DelCombobox.svelte";
+    import { getSessionContext } from "#lib/context/index.svelte.js";
+    import { MOTION_BASE_FIELDS, MOTION_DEFS, MOTION_GROUP_LABELS, type FieldProperties, type MotionSchema } from "#lib/motions/definitions.js";
+    import { formatValidationError } from "#lib/motions/form_validation.js";
+    import { getComponent } from '#lib/motions/input.js';
+    import type { MotionInput } from "#lib/motions/types.d.ts";
+    import type { DelegateID, Motion } from "#lib/types.d.ts";
+    import { hasKey, mapGroupBy, NO_FIGURE } from "#lib/util/index.js";
+    import { proxify } from '#lib/util/sv.svelte.js';
+    import { parseTime } from "#lib/util/time.js";
     import MdiPlus from "~icons/mdi/plus";
 
     const { selectedMotion, delegates, enabledMotions } = getSessionContext();

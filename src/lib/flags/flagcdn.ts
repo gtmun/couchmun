@@ -2,7 +2,7 @@
  * Flag URLs via FlagCDN.
  */
 
-import { hasKey } from "$lib/util";
+import { hasKey } from "#lib/util/index.js";
 
 let FLAG_CODES: Record<string, string> = {};
 export async function getFlagCodes(): Promise<typeof FLAG_CODES> {

@@ -1,12 +1,12 @@
 <script lang="ts">
-    import BarStats from "$lib/components/app-bar/BarStats.svelte";
-    import RollCall from "$lib/components/RollCall.svelte";
-    import SearchInput from "$lib/components/SearchInput.svelte";
-    import SpeakerList from "$lib/components/SpeakerList.svelte";
-    import { getSessionContext } from "$lib/context/index.svelte";
-    import { countPresentDelegates, delegateSearch } from "$lib/db/delegates";
-    import { db } from "$lib/db/index.svelte";
-    import type { DelegatePresence } from "$lib/types";
+    import BarStats from "#lib/components/app-bar/BarStats.svelte";
+    import RollCall from "#lib/components/RollCall.svelte";
+    import SearchInput from "#lib/components/SearchInput.svelte";
+    import SpeakerList from "#lib/components/SpeakerList.svelte";
+    import { getSessionContext } from "#lib/context/index.svelte.js";
+    import { countPresentDelegates, delegateSearch } from "#lib/db/delegates.js";
+    import { db } from "#lib/db/index.svelte.js";
+    import type { DelegatePresence } from "#lib/types.d.ts";
     import MdiAccount from "~icons/mdi/account";
     import MdiAccountCheck from "~icons/mdi/account-check";
     import MdiAccountOff from "~icons/mdi/account-off";

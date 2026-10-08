@@ -8,9 +8,9 @@
 <script lang="ts">
     import "../app.css";
     
-    import { createSessionContext } from "$lib/context/index.svelte";
-    import { createThemeContext } from "$lib/context/theme.svelte";
-    import { genStyles } from "$lib/util/chroma";
+    import { createSessionContext } from "#lib/context/index.svelte.js";
+    import { createThemeContext } from "#lib/context/theme.svelte.js";
+    import { genStyles } from "#lib/util/chroma.js";
 
     let { children } = $props();
 

@@ -8,28 +8,30 @@
   import { DragDropProvider } from "@dnd-kit/svelte";
   import { flip } from "svelte/animate";
 
+  import DelLabel from "#lib/components/del-label/DelLabel.svelte";
+  import IconLabel from "#lib/components/IconLabel.svelte";
+  import EditMotionContent from "#lib/components/modals/EditMotionContent.svelte";
+  import UniModal from "#lib/components/modals/UniModal.svelte";
+  import MotionForm from "#lib/components/motions/form/MotionForm.svelte";
+  import OrientedCollapsible from "#lib/components/OrientedCollapsible.svelte";
+  import { getSessionContext } from "#lib/context/index.svelte.js";
+  import { findDelegate } from "#lib/db/delegates.js";
+  import { db } from "#lib/db/index.svelte.js";
+  import { compareMotions as motionComparator, createMotionSchema, MOTION_DEFS, type MotionDef, type DisplayFieldKey, type DisplayFieldHeader, DISPLAY_FIELD_HEADERS } from "#lib/motions/definitions.js";
+  import type { Motion, MotionKind } from "#lib/types.d.ts";
+  import { createSortable, handleDrag } from "#lib/util/dnd.js";
+  import { a11yLabel, hasKey, NO_FIGURE } from "#lib/util/index.js";
+  import { proxify } from "#lib/util/sv.svelte.js";
   import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
-  import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-  import IconLabel from "$lib/components/IconLabel.svelte";
-  import EditMotionContent from "$lib/components/modals/EditMotionContent.svelte";
-  import UniModal from "$lib/components/modals/UniModal.svelte";
-  import MotionForm from "$lib/components/motions/form/MotionForm.svelte";
-  import OrientedCollapsible from "$lib/components/OrientedCollapsible.svelte";
-  import { getSessionContext } from "$lib/context/index.svelte";
-  import { findDelegate } from "$lib/db/delegates";
-  import { db } from "$lib/db/index.svelte";
-  import { compareMotions as motionComparator, createMotionSchema, MOTION_DEFS, type MotionDef, type DisplayFieldKey, type DisplayFieldHeader, DISPLAY_FIELD_HEADERS } from "$lib/motions/definitions";
-  import type { Motion, MotionKind } from "$lib/types";
-  import { a11yLabel, hasKey, NO_FIGURE } from "$lib/util";
-  import { createSortable, handleDrag } from "$lib/util/dnd";
-  import { proxify } from "$lib/util/sv.svelte";
   import MdiCancel from "~icons/mdi/cancel";
   import MdiCheck from "~icons/mdi/check";
   import MdiPencil from "~icons/mdi/pencil";
   import MdiSort from "~icons/mdi/sort";
   import MdiUndo from "~icons/mdi/undo";
 
+  // This is incorrectly raising an error.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { motions, selectedMotion, selectedMotionState, delegates, sortOrder } = getSessionContext();
   const pid = $props.id();
 

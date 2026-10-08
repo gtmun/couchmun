@@ -1,8 +1,8 @@
 <script lang="ts">
     import type { Snippet } from "svelte";
 
-    import type { InputComponentProps } from "$lib/motions/definitions";
-    import { sanitizeTime } from "$lib/util/time";
+    import type { InputComponentProps } from "#lib/motions/definitions.js";
+    import { sanitizeTime } from "#lib/util/time.js";
 
     interface Props extends InputComponentProps<string> {
         label?: string,

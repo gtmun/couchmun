@@ -15,11 +15,11 @@
 
     import Timer from "../Timer.svelte";
 
-    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import SpeakerList from "$lib/components/SpeakerList.svelte";
-    import { db } from "$lib/db/index.svelte";
-    import { lazyslide } from "$lib/util";
-    import { watchEffect } from "$lib/util/sv.svelte";
+    import DelLabel from "#lib/components/del-label/DelLabel.svelte";
+    import SpeakerList from "#lib/components/SpeakerList.svelte";
+    import { db } from "#lib/db/index.svelte.js";
+    import { lazyslide } from "#lib/util/index.js";
+    import { watchEffect } from "#lib/util/sv.svelte.js";
 
     interface Props {
         /**

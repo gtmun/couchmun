@@ -4,7 +4,7 @@
 <script lang="ts">
     import type { ClassValue } from "svelte/elements";
 
-    import { makeEditable } from "$lib/util/attach.svelte";
+    import { makeEditable } from "#lib/util/attach.svelte.js";
 
     interface Props {
         /** Title text */

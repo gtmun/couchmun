@@ -4,12 +4,12 @@
   Notably, this page includes a timer and title, which can be used quite generically.
 -->
 <script lang="ts">
-    import ToggleButton from "$lib/components/controls/ToggleButton.svelte";
-    import DelFlag, { FLAGCON_SIZE_CLASSES } from "$lib/components/del-label/DelFlag.svelte";
-    import Timer from "$lib/components/Timer.svelte";
-    import { getSessionContext } from "$lib/context/index.svelte";
-    import { lazyslide } from "$lib/util";
-    import { makeEditable } from "$lib/util/attach.svelte";
+    import ToggleButton from "#lib/components/controls/ToggleButton.svelte";
+    import DelFlag, { FLAGCON_SIZE_CLASSES } from "#lib/components/del-label/DelFlag.svelte";
+    import Timer from "#lib/components/Timer.svelte";
+    import { getSessionContext } from "#lib/context/index.svelte.js";
+    import { makeEditable } from "#lib/util/attach.svelte.js";
+    import { lazyslide } from "#lib/util/index.js";
     import MdiFlag from "~icons/mdi/flag";
     import MdiFlagOff from "~icons/mdi/flag-off";
 

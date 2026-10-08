@@ -2,8 +2,8 @@
  * Delegate table definition for the session database.
  */
 
-import type { DelegateAttrs, DelegateID, DelegatePresence, DelSessionData, MaybePending, StatsData } from "$lib/types";
-import { eqInsensitive, searchFuse } from "$lib/util";
+import type { DelegateAttrs, DelegateID, DelegatePresence, DelSessionData, MaybePending, StatsData } from "#lib/types.d.ts";
+import { eqInsensitive, searchFuse } from "#lib/util/index.js";
 
 export class Delegate {
     // Indexes:

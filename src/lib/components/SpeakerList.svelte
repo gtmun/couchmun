@@ -11,13 +11,13 @@
     import { flip } from "svelte/animate";
     import { v7 as uuidv7 } from "uuid";
 
-    import DelLabel from "$lib/components/del-label/DelLabel.svelte";
-    import SpeakerListEditControls from "$lib/components/SpeakerListEditControls.svelte";
-    import { type Delegate, findDelegate } from "$lib/db/delegates";
-    import type { DelegateID, Speaker, SpeakerEntryID } from "$lib/types";
-    import { a11yLabel } from "$lib/util";
-    import { createSortable, handleDrag } from "$lib/util/dnd";
-    import { proxify } from "$lib/util/sv.svelte";
+    import DelLabel from "#lib/components/del-label/DelLabel.svelte";
+    import SpeakerListEditControls from "#lib/components/SpeakerListEditControls.svelte";
+    import { type Delegate, findDelegate } from "#lib/db/delegates.js";
+    import type { DelegateID, Speaker, SpeakerEntryID } from "#lib/types.d.ts";
+    import { createSortable, handleDrag } from "#lib/util/dnd.js";
+    import { a11yLabel } from "#lib/util/index.js";
+    import { proxify } from "#lib/util/sv.svelte.js";
     import MdiCancel from "~icons/mdi/cancel";
     import MdiDragVertical from "~icons/mdi/drag-vertical";
     

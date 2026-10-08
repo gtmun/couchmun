@@ -1,8 +1,8 @@
 <script lang="ts">
     import InputTime from "./InputTime.svelte";
 
-    import type { InputComponentProps } from "$lib/motions/definitions";
-    import { parseTime, stringifyTime } from "$lib/util/time";
+    import type { InputComponentProps } from "#lib/motions/definitions.js";
+    import { parseTime, stringifyTime } from "#lib/util/time.js";
 
     type Props = InputComponentProps<string>;
     let {

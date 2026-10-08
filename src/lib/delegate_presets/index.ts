@@ -5,9 +5,9 @@
  * is a frequently used roster, so it is provided for convenience!
  */
 
-import DEFAULT_DELEGATES_JSON from "$lib/delegate_presets/preset-un.json";
-import type { DelegateAttrs } from "$lib/types";
-import { hasKey } from "$lib/util";
+import DEFAULT_DELEGATES_JSON from "#lib/delegate_presets/preset-un.json";
+import type { DelegateAttrs } from "#lib/types.d.ts";
+import { hasKey } from "#lib/util/index.js";
 
 type DelProperties = Record<string, DelegateAttrs>;
 /**
@@ -42,7 +42,7 @@ export async function getPreset(key: keyof typeof PRESETS): Promise<DelPropertie
 export async function getPreset(key: string): Promise<DelProperties | undefined>;
 export async function getPreset(key: string): Promise<DelProperties | undefined> {
     if (hasPreset(key)) {
-        const { default: json } = await import(`$lib/delegate_presets/preset-${key}.json`);
+        const { default: json } = await import(`#lib/delegate_presets/preset-${key}.json`);
         return structuredClone(json);
     }
 }

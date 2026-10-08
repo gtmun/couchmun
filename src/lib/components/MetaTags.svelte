@@ -5,8 +5,8 @@
   but it preferably should be on the top level.
 -->
 <script lang="ts">
+    import { getSessionContext } from "#lib/context/index.svelte.js";
     import { page } from "$app/state";
-    import { getSessionContext } from "$lib/context/index.svelte";
 
     interface Props {
         title: string;

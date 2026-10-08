@@ -1,11 +1,11 @@
 <script lang="ts">
     import { Dialog } from "@skeletonlabs/skeleton-svelte";
 
-    import DelCombobox from "$lib/components/controls/DelCombobox.svelte";
-    import ConfirmModal from "$lib/components/modals/ConfirmModal.svelte";
-    import { Delegate } from "$lib/db/delegates";
-    import type { DelegateID, Speaker } from "$lib/types";
-    import { a11yLabel } from "$lib/util";
+    import DelCombobox from "#lib/components/controls/DelCombobox.svelte";
+    import ConfirmModal from "#lib/components/modals/ConfirmModal.svelte";
+    import { Delegate } from "#lib/db/delegates.js";
+    import type { DelegateID, Speaker } from "#lib/types.d.ts";
+    import { a11yLabel } from "#lib/util/index.js";
     import MdiDelete from "~icons/mdi/delete";
 
     interface Props {

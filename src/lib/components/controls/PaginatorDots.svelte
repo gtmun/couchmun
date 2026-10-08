@@ -3,7 +3,7 @@
     Similar to Zag.js's "Tabs" or "Steps".
 -->
 <script lang="ts">
-    import { a11yLabel } from "$lib/util";
+    import { a11yLabel } from "#lib/util/index.js";
     import MdiChevronLeft from "~icons/mdi/chevron-left";
     import MdiChevronRight from "~icons/mdi/chevron-right";
 

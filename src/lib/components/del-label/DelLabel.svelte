@@ -7,8 +7,8 @@
 <script lang="ts">
     import type { Snippet } from "svelte";
 
-    import DelFlag, { FLAGCON_SIZE_CLASSES } from "$lib/components/del-label/DelFlag.svelte";
-    import type { DelegateAttrs } from "$lib/types";
+    import DelFlag, { FLAGCON_SIZE_CLASSES } from "#lib/components/del-label/DelFlag.svelte";
+    import type { DelegateAttrs } from "#lib/types.d.ts";
 
     interface Props {
         /**

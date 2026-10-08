@@ -1,6 +1,6 @@
 <!-- An input with a search icon next to it. That's it. -->
 <script lang="ts">
-    import { a11yLabel } from "$lib/util";
+    import { a11yLabel } from "#lib/util/index.js";
     import MdiSearch from "~icons/mdi/search";
 
     let { value = $bindable() } = $props();

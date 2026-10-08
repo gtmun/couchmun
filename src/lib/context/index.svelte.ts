@@ -19,9 +19,9 @@
 
 import { createContext } from "svelte";
 
-import { db, DEFAULT_SESSION_DATA, DEFAULT_SETTINGS } from "$lib/db/index.svelte";
-import type { SessionContext } from "$lib/types";
-import { stringifyTime } from "$lib/util/time";
+import { db, DEFAULT_SESSION_DATA, DEFAULT_SETTINGS } from "#lib/db/index.svelte.js";
+import type { SessionContext } from "#lib/types.d.ts";
+import { stringifyTime } from "#lib/util/time.js";
 
 // A wrapper class so Svelte is willing to make barTopic $state real.
 class SessionImpl implements SessionContext {

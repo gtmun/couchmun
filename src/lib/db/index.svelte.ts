@@ -11,10 +11,10 @@ import { readonly, writable, type Readable, type Updater, type Writable } from "
 import { Delegate } from "./delegates";
 import { KeyValuePair, toKeyValueArray, toObject } from "./keyval";
 
-import { DEFAULT_DELEGATES } from "$lib/delegate_presets";
-import { getFlagCodes, getFlagUrl } from "$lib/flags/flagcdn";
-import { DEFAULT_SORT_PRIORITY } from "$lib/motions/definitions";
-import type { DelegateAttrs, DelegateID, DelSessionData, MaybePending, PrevSessionData, SessionData, Settings } from "$lib/types";
+import { DEFAULT_DELEGATES } from "#lib/delegate_presets/index.js";
+import { getFlagCodes, getFlagUrl } from "#lib/flags/flagcdn.js";
+import { DEFAULT_SORT_PRIORITY } from "#lib/motions/definitions.js";
+import type { DelegateAttrs, DelegateID, DelSessionData, MaybePending, PrevSessionData, SessionData, Settings } from "#lib/types.d.ts";
 
 interface PopulateDelegateAttrs extends DelegateAttrs {
     /// Whether this delegate is enabled.

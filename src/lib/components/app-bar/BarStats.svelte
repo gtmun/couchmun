@@ -3,7 +3,7 @@
 -->
 
 <script lang="ts">
-    import { a11yLabel, NO_FIGURE } from "$lib/util";
+    import { a11yLabel, NO_FIGURE } from "#lib/util/index.js";
 
     interface Props {
         /**

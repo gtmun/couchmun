@@ -7,9 +7,9 @@
     import IconLabel from "./IconLabel.svelte";
     import VirtualList from "./VirtualList.svelte";
 
-    import type { Delegate } from "$lib/db/delegates";
-    import type { MaybePending } from "$lib/types";
-    import type { PropsOf } from "$lib/util";
+    import type { Delegate } from "#lib/db/delegates.js";
+    import type { MaybePending } from "#lib/types.d.ts";
+    import type { PropsOf } from "#lib/util/index.js";
 
     interface Props {
         getValue?: (del: Delegate) => string | null,
