@@ -149,7 +149,7 @@
             onMarkComplete?.(speaker.key, speaker.completed);
             speaker.completed = true;
         }
-        order = order;
+        order = [...order];
     }
 
     /**
@@ -177,7 +177,7 @@
         let speaker = createSpeaker(key);
         onCreate?.(key, index, speaker);
         order.splice(index, 0, speaker);
-        order = order;
+        order = [...order];
 
         return true;
     }
@@ -224,7 +224,7 @@
         }
 
         let [removedSpeaker] = order.splice(i, 1);
-        order = order;
+        order = [...order];
         
         if (removedSpeaker?.id === selectedSpeakerId) {
             setSelectedSpeaker(undefined);
