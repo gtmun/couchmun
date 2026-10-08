@@ -33,8 +33,6 @@
     let durInput: string = $state("");
     let shiftDown = $state(false);
     
-    let orderIndex = $state(1);
-
     function reset() {
         timerPanel?.reset();
     }
@@ -52,33 +50,32 @@
         const setToFor = (typeof s === "undefined" && !shiftDown) || s === "against";
         return setToFor ? "for" : "against";
     }
-    const ORDER_NAMES = [
-        "Manual",
-        "1F, 1A",
-        "1A, 1F",
-        "2F, 2A",
-        "2A, 2F",
-        "3F, 3A",
-        "3A, 3F",
-        "4F, 4A",
-        "4A, 4F",
-    ]
-    function getDefault(i: number) {
-        if (orderIndex == 0) return undefined;
-        
-        // Pattern is to start F (or A, if inverted), alternate every delta
-        let invert = orderIndex % 2 == 0;
-        let delta = (orderIndex + 1) >> 1;
 
-        return invert
-            ? Math.floor(i / delta) % 2 != 0
-            : Math.floor(i / delta) % 2 == 0;
+    // Default for-against placement in speaker list
+    const ORDER_RANGE = 4;
+    const N_ORDERS = 1 + 2 * ORDER_RANGE;
+    let orderIndex = $state(1);
+    let faOrder = $derived.by(() => {
+        if (orderIndex != 0) return {
+            invert: orderIndex > ORDER_RANGE,
+            delta: ((orderIndex - 1) % ORDER_RANGE) + 1
+        }
+    });
+    let faOrderName = $derived.by(() => {
+        if (typeof faOrder === "undefined") return "Manual";
+        return !faOrder.invert
+            ? `${faOrder.delta}F, ${faOrder.delta}A`
+            : `${faOrder.delta}A, ${faOrder.delta}F`;
+    });
+    function getDefault(i: number) {
+        if (typeof faOrder === "undefined") return undefined;
+        return faOrder.invert == (Math.floor(i / faOrder.delta) % 2 != 0);
     }
+    
     function troolSelect<T>(t: boolean | undefined, sel_true: T, sel_false: T, sel_undef: T) {
         if (typeof t === "undefined") return sel_undef;
         return t ? sel_true : sel_false;
     }
-
     function presetCls(s: SpeakerFA) {
         if (s.completed) return "preset-ui-depressed";
 
@@ -163,18 +160,18 @@
         <div class="flex flex-row items-center gap-1">
             <div class="flex flex-col w-15">
                 <span>Order</span>
-                <span class="tabular-nums">{ORDER_NAMES[orderIndex]}</span>
+                <span class="tabular-nums">{faOrderName}</span>
             </div>
             <div class="flex flex-col gap-1">
                 <button 
                     class="btn btn-sm py-0! preset-filled-primary-500"
-                    onclick={() => orderIndex = (orderIndex + 1) % ORDER_NAMES.length}
+                    onclick={() => orderIndex = (orderIndex + 1) % N_ORDERS}
                 >
                     <MdiChevronUp />
                 </button>
                 <button 
                     class="btn btn-sm py-0! preset-filled-primary-500"
-                    onclick={() => orderIndex = (orderIndex - 1) % ORDER_NAMES.length}
+                    onclick={() => orderIndex = (orderIndex + N_ORDERS - 1) % N_ORDERS}
                 >
                     <MdiChevronDown />
                 </button>
