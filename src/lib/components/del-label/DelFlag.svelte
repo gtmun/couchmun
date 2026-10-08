@@ -75,7 +75,7 @@
 <script module lang="ts">
     // 4:3 ratio for FlagCDN
     export const SIZE_CLASSES_INLINE: ClassValue = "size-5.5 empty:hidden";
-    export const SIZE_CLASSES_DISPLAY: ClassValue = "h-[25dvh] w-[75dvh] empty:hidden";
+    export const SIZE_CLASSES_DISPLAY: ClassValue = "h-[25dvh] w-4/5 empty:hidden";
 </script>
 
 {#if _flagURL}
