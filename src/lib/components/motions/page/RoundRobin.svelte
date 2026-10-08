@@ -62,8 +62,8 @@
         >
             {#snippet controls()}
                 <div class="flex flex-col items-stretch gap-1">
-                    <SpeakerListRR {comboboxDelegates} {order} proposer={findDelegate($delegates, motion.delegate)} {speakersList} />
-                    <SpeakerListEditControls delegates={comboboxDelegates} {order} onSelect={speakersList?.addSpeaker} />
+                    <SpeakerListRR {comboboxDelegates} bind:order proposer={findDelegate($delegates, motion.delegate)} {speakersList} />
+                    <SpeakerListEditControls delegates={comboboxDelegates} bind:order onSelect={speakersList?.addSpeaker} />
                 </div>
             {/snippet}
         </SpeakerList>

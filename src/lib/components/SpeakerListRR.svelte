@@ -13,7 +13,7 @@
         order: Speaker[];
         speakersList: SpeakerList | undefined;
     }
-    let { comboboxDelegates, order, proposer, speakersList }: Props = $props();
+    let { comboboxDelegates, order = $bindable(), proposer, speakersList }: Props = $props();
 
     let hideAddAll = $derived.by(() => {
         if (overrideHAA) return true;

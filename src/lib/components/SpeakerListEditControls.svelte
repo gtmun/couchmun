@@ -18,7 +18,7 @@
         onSelect?(key: DelegateID): void;
     }
 
-    let { delegates, order, onSelect }: Props = $props();
+    let { delegates, order = $bindable(), onSelect }: Props = $props();
     let openClearSpeakers = $state(false);
 </script>
 <div class="flex flex-row gap-1 items-center">

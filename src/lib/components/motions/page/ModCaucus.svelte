@@ -81,7 +81,7 @@
             {#snippet controls()}
                 <div class="flex flex-col items-stretch gap-1">
                     <SpeakerListFirstLast delegates={$delegates} {order} proposer={motion.delegate} {speakersList} />
-                    <SpeakerListEditControls delegates={$delegates} {order} onSelect={speakersList?.addSpeaker} />
+                    <SpeakerListEditControls delegates={$delegates} bind:order onSelect={speakersList?.addSpeaker} />
                 </div>
             {/snippet}
         </SpeakerList>

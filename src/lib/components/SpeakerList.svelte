@@ -352,6 +352,6 @@
     {#if controls}
         {@render controls()}
     {:else}
-        <SpeakerListEditControls {delegates} {order} onSelect={addSpeaker} />
+        <SpeakerListEditControls {delegates} bind:order onSelect={addSpeaker} />
     {/if}
 </div>
