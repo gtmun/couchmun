@@ -11,7 +11,7 @@ import type { RouteId } from "$app/types";
 import type { IconComponent } from "$lib/components/IconLabel.svelte";
 import { numSpeakersStr } from "$lib/components/motions/form/MotionForm.svelte";
 import { type Delegate } from "$lib/db/delegates";
-import { optional, presentDelegateSchema, refineSpeakingTime, stringSchema, timeSchema, type Refine, type SchemaOutput } from "$lib/motions/form_validation";
+import { optional, presentDelegateSchema, refineSpeakingTime, stringSchema, timeSchema, type Refine } from "$lib/motions/form_validation";
 import type { InputKind } from "$lib/motions/input";
 import { baseCompareMotions, SORT_KIND_EXTRAS_NAMES, SORT_PROPERTY_NAMES } from "$lib/motions/sort";
 import type { Is } from "$lib/motions/types";
@@ -429,9 +429,9 @@ export function createMotionSchema(delegates: Delegate[]) {
     };
     // Given tuple of all motion schemas,
     // create a unified schema which accepts any motion kind.
-    return z.discriminatedUnion("kind", _zObjectsFromMKinds(base, MOTION_KINDS));
+    const schema = z.discriminatedUnion("kind", _zObjectsFromMKinds(base, MOTION_KINDS));
+    return z.toZod<Motion>()(schema);
 }
-const _assertSchemaValidatesMotions: Is<SchemaOutput<typeof createMotionSchema>, Motion> = true;
 
 /** Type of motion schema verification. */
 export type MotionSchema = ReturnType<typeof createMotionSchema>;

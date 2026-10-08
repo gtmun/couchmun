@@ -5,17 +5,8 @@
 import { z } from "zod";
 
 import { findDelegate, type Delegate } from "$lib/db/delegates";
-import type { Is } from "$lib/motions/types";
 import type { DelegateID } from "$lib/types";
 import { parseTime, stringifyTime } from "$lib/util/time";
-
-export type SchemaInput<F extends (...args: any) => any> = z.input<ReturnType<F>>;
-export type SchemaOutput<F extends (...args: any) => any> = z.output<ReturnType<F>>;
-// Checks the given schema accepts input of type `Input` and accepts output of type `Output`.
-type MatchesIO<F extends (...args: any) => any, Input, Output> =
-    Is<SchemaInput<F>, Input> extends true ?
-        Is<SchemaOutput<F>, Output> extends true ? true : false
-    : false;
 
 export function formatValidationError(error: z.ZodError) {
     return error.issues[0];
@@ -54,16 +45,15 @@ export function stringSchema(label: string) {
  */
 export function stringToIntSchema() {
     // https://zod.dev/codecs?id=stringtoint
-    return z.codec(
+    return z.toZod<number>()(z.codec(
         z.string().regex(z.regexes.integer), 
         z.int(), 
         {
             decode: (str) => Number.parseInt(str, 10),
             encode: (num) => num.toString(),
         }
-    );
+    ));
 }
-const _assertSchema0: MatchesIO<typeof stringToIntSchema, string, number> = true;
 
 /**
  * Creates a schema that requires the input is the name of a present delegate.
@@ -73,7 +63,7 @@ const _assertSchema0: MatchesIO<typeof stringToIntSchema, string, number> = true
  * @returns the schema
  */
 export function presentDelegateSchema(delegates: Delegate[]) {
-    return z.codec(
+    return z.toZod<DelegateID>()(z.codec(
         stringSchema("Delegate name"),
         z.number(),
         {
@@ -114,12 +104,11 @@ export function presentDelegateSchema(delegates: Delegate[]) {
                 return del.name;
             }
         }
-    );
+    ));
 }
-const _assertSchema1: MatchesIO<typeof presentDelegateSchema, string, DelegateID> = true;
 
 export function timeSchema(label: string) {
-    return z.codec(
+    return z.toZod<number>()(z.codec(
         stringSchema(label),
         z.number(),
         {
@@ -138,9 +127,8 @@ export function timeSchema(label: string) {
             },
             encode: out => stringifyTime(out) ?? ""
         }
-    );
+    ));
 }
-const _assertSchema2: MatchesIO<typeof timeSchema, string, number> = true;
 
 export type Refine = readonly [check: (o: any) => boolean, z.core.$ZodCustomParams];
 export function refineSpeakingTime(totalTimeAttr = "totalTime", speakingTimeAttr = "speakingTime") {
