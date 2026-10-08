@@ -57,5 +57,5 @@
     <Switch.Control class="data-[state=checked]:preset-filled-primary-500">
         <Switch.Thumb />
     </Switch.Control>
-    <Switch.HiddenInput />
+    <Switch.HiddenInput class="hidden" />
 </Switch>
