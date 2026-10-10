@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
     import ToggleButton from "$lib/components/controls/ToggleButton.svelte";
-    import DelFlag, { SIZE_CLASSES_DISPLAY } from "$lib/components/del-label/DelFlag.svelte";
+    import DelFlag, { FLAGCON_SIZE_CLASSES } from "$lib/components/del-label/DelFlag.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import { getSessionContext } from "$lib/context/index.svelte";
     import { lazyslide } from "$lib/util";
@@ -32,7 +32,7 @@
 
 <div class="flex flex-col h-full items-stretch">
     <div class="flex flex-col grow gap-5 justify-center">
-        <div class="flex flex-col items-center">
+        <div class="flex flex-col items-stretch">
             {#if !(running && labelText.length === 0)}
                 <!-- Title, which should appear if not running or if non-empty whilst running -->
                 <div class={["flex justify-center items-center", showFlag && "pb-3"]} transition:lazyslide>
@@ -71,7 +71,7 @@
             {#key showFlag && attrs?.flagURL}
                 <div transition:lazyslide>
                     {#if showFlag}
-                        <div class={SIZE_CLASSES_DISPLAY}>
+                        <div class={["mx-auto", FLAGCON_SIZE_CLASSES]}>
                             <DelFlag label={labelText} url={attrs?.flagURL} fallback="un" />
                         </div>
                     {/if}

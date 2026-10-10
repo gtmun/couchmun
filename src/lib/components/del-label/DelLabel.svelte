@@ -7,7 +7,7 @@
 <script lang="ts">
     import type { Snippet } from "svelte";
 
-    import DelFlag, { SIZE_CLASSES_DISPLAY, SIZE_CLASSES_INLINE } from "$lib/components/del-label/DelFlag.svelte";
+    import DelFlag, { FLAGCON_SIZE_CLASSES } from "$lib/components/del-label/DelFlag.svelte";
     import type { DelegateAttrs } from "$lib/types";
 
     interface Props {
@@ -46,9 +46,7 @@
 
 {#if inline}
 <div class="inline-flex items-center gap-1">
-    <div class={SIZE_CLASSES_INLINE}>
-        <DelFlag {label} url={attrs?.flagURL} fallback={fallbackFlag ?? "none"} inline />
-    </div>
+    <DelFlag {label} url={attrs?.flagURL} fallback={fallbackFlag ?? "none"} inline />
     <span class="text-left">{label}</span>
 </div>
 {:else}
@@ -58,7 +56,7 @@
     {:else}
         <h2 class="h2">{label}</h2>
     {/if}
-    <div class={SIZE_CLASSES_DISPLAY}>
+    <div class={["flex flex-col items-center", FLAGCON_SIZE_CLASSES]}>
         <DelFlag {label} url={attrs?.flagURL} fallback={fallbackFlag ?? "un"} />
     </div>
 </div>

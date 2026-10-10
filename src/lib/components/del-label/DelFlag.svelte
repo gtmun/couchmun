@@ -13,7 +13,7 @@
 
     interface Props {
         /**
-         * Country's name. This is necessary for accessibilities purposes.
+         * Country's name. This is necessary for accessibility purposes.
          */
         label: string,
         /**
@@ -45,7 +45,12 @@
         inline = false
     }: Props = $props();
 
-    const IMG_SIZE_CLASSES = "size-full object-contain";
+    const IMG_CLASSES: ClassValue = $derived([
+        "object-contain",
+        // Size of image.
+        // Either a fixed size (for inline) or the full container (for display).
+        inline ? "size-5.5" : "w-full h-full"
+    ]);
     let _flagCodes: Record<string, string> = $state({});
     onMount(async () => {
         Object.assign(_flagCodes, await getFlagCodes());
@@ -73,26 +78,29 @@
 </script>
 
 <script module lang="ts">
-    // 4:3 ratio for FlagCDN
-    export const SIZE_CLASSES_INLINE: ClassValue = "size-5.5 empty:hidden";
-    export const SIZE_CLASSES_DISPLAY: ClassValue = "h-[25dvh] w-4/5 empty:hidden";
+    /** Flag container size classes. Used for containers holding display flags. */
+    export const FLAGCON_SIZE_CLASSES: ClassValue = "h-[25dvh] w-7/8 empty:hidden";
 </script>
 
 {#if _flagURL}
     <img
         src={_flagURL}
         alt=""
-        class={IMG_SIZE_CLASSES}
+        class={IMG_CLASSES}
     >
 {:else if fallback === "un"}
     <img
         src={getFlagUrl("un", false)!.toString()}
         alt=""
-        class={IMG_SIZE_CLASSES}
+        class={IMG_CLASSES}
     >
 {:else if fallback === "icon"}
     <!-- HACK: Just don't use this if not inline. -->
-    <MdiFlagOff role="none" preserveAspectRatio="xMinYMin meet" />
+    <MdiFlagOff
+        role="none"
+        class={IMG_CLASSES}
+        preserveAspectRatio="xMinYMin meet"
+    />
 {:else}
     <!-- do nothing -->
 {/if}
