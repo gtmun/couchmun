@@ -269,7 +269,8 @@
         "name": "Democratic People's Republic of Korea",
         "aliases": [
             "North Korea",
-            "Korea (the Democratic People's Republic of)"
+            "Korea (the Democratic People's Republic of)",
+            "DPRK"
         ]
     },
     "CD": {
@@ -700,7 +701,8 @@
     "NR": {
         "name": "Naoero",
         "aliases": [
-            "Republic of Naoero"
+            "Republic of Naoero",
+            "Nauru"
         ]
     },
     "NP": {
