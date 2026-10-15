@@ -68,7 +68,7 @@
         }
 
         let match;
-        if (inline && (match = url?.match(/^https:\/\/flagcdn.com\/(\w+).svg\/?$/))) {
+        if (inline && (match = url?.match(/^https:\/\/flagcdn.com\/([\w-]+).svg\/?$/))) {
             return `https://flagcdn.com/80x60/${match[1]}.png`;
         } else {
             return url;
