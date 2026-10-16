@@ -4,7 +4,7 @@
 
 import { Entity } from "dexie";
 
-import type { SessionDatabase } from "./index.svelte";
+import type { SessionDatabase } from "#lib/db/index.svelte.ts";
 
 export class KeyValuePair<K = string, V = any> extends Entity<SessionDatabase> implements IKeyValue<K, V> {
     key!: K;

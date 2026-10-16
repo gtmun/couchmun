@@ -9,7 +9,7 @@
     import { type Snippet } from "svelte";
     import type { ClassValue } from "svelte/elements";
 
-    import UniModalContent, { type ContentProps, type ExitState } from "./UniModalContent.svelte";
+    import UniModalContent, { type ContentProps, type ExitState } from "#lib/components/modals/UniModalContent.svelte";
 
     interface Props extends ContentProps<T> {
         /**

@@ -8,9 +8,8 @@
 import { Dexie, liveQuery, type EntityTable, type IndexableType, type InsertType } from "dexie";
 import { readonly, writable, type Readable, type Updater, type Writable } from "svelte/store";
 
-import { Delegate } from "./delegates";
-import { KeyValuePair, toKeyValueArray, toObject } from "./keyval";
-
+import { Delegate } from "#lib/db/delegates.js";
+import { KeyValuePair, toKeyValueArray, toObject } from "#lib/db/keyval.js";
 import { DEFAULT_DELEGATES } from "#lib/delegate_presets/index.js";
 import { getFlagCodes, getFlagUrl } from "#lib/flags/flagcdn.js";
 import { DEFAULT_SORT_PRIORITY } from "#lib/motions/definitions.js";

@@ -1,8 +1,7 @@
 <script lang="ts">
     import { Portal, Tooltip } from "@skeletonlabs/skeleton-svelte";
 
-    import LabeledSwitch from "../controls/LabeledSwitch.svelte";
-
+    import LabeledSwitch from "#lib/components/controls/LabeledSwitch.svelte";
     import type { SessionDatabase } from "#lib/db/index.svelte.js";
     import type { Preferences } from "#lib/types.d.ts";
     import MdiInformationOutline from "~icons/mdi/information-outline";

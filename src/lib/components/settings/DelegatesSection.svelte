@@ -3,11 +3,10 @@
     import * as csv from 'csv/browser/esm/sync';
     import { slide } from "svelte/transition";
 
-    import DelLabel from "../del-label/DelLabel.svelte";
-    import ConfirmModal from "../modals/ConfirmModal.svelte";
-    import EditDelegateContent from "../modals/EditDelegateContent.svelte";
-    import UniModal from "../modals/UniModal.svelte";
-
+    import DelLabel from "#lib/components/del-label/DelLabel.svelte";
+    import ConfirmModal from "#lib/components/modals/ConfirmModal.svelte";
+    import EditDelegateContent from "#lib/components/modals/EditDelegateContent.svelte";
+    import UniModal from "#lib/components/modals/UniModal.svelte";
     import { Delegate } from "#lib/db/delegates.js";
     import { _legacyFixDelFlag, SessionDatabase } from "#lib/db/index.svelte.js";
     import { PRESETS } from "#lib/delegate_presets/index.js";

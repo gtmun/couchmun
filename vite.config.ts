@@ -1,6 +1,5 @@
 import adapter from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
 import Icons from 'unplugin-icons/vite';
 import { defineConfig } from 'vite';
@@ -9,18 +8,16 @@ export default defineConfig({
 	plugins: [
 		tailwindcss(),
 		sveltekit({
-			// Consult https://kit.svelte.dev/docs/integrations#preprocessors
-			// for more information about preprocessors
-			preprocess: vitePreprocess(),
+			compilerOptions: {
+				// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
+				runes: ({ filename }) =>
+					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
+			},
 
-			// adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
+			// adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.
 			// If your environment is not supported, or you settled on a specific environment, switch out the adapter.
-			// See https://kit.svelte.dev/docs/adapters for more information about adapters.
-			adapter: adapter(),
-
-			paths: {
-				base: process.argv.includes('dev') ? '' : process.env.BASE_PATH
-			}
+			// See https://svelte.dev/docs/kit/adapters for more information about adapters.
+			adapter: adapter()
 		}),
 		Icons({ scale: 1.5, compiler: 'svelte' })
 	]

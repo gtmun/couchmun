@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { Snippet } from "svelte";
 
-    import UniModal from "./UniModal.svelte";
+    import UniModal from "#lib/components/modals/UniModal.svelte";
 
     interface Props {
         open: boolean,

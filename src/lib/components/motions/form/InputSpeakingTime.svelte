@@ -1,6 +1,5 @@
 <script lang="ts">
-    import InputTime from "./InputTime.svelte";
-
+    import InputTime from "#lib/components/motions/form/InputTime.svelte";
     import type { InputComponentProps } from "#lib/motions/definitions.js";
     import { parseTime, stringifyTime } from "#lib/util/time.js";
 

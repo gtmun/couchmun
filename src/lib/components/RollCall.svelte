@@ -3,10 +3,9 @@
     import { type Snippet } from "svelte";
     import type { ClassValue } from "svelte/elements";
 
-    import DelLabel from "./del-label/DelLabel.svelte";
-    import IconLabel from "./IconLabel.svelte";
-    import VirtualList from "./VirtualList.svelte";
-
+    import DelLabel from "#lib/components/del-label/DelLabel.svelte";
+    import IconLabel from "#lib/components/IconLabel.svelte";
+    import VirtualList from "#lib/components/VirtualList.svelte";
     import type { Delegate } from "#lib/db/delegates.js";
     import type { MaybePending } from "#lib/types.d.ts";
     import type { PropsOf } from "#lib/util/index.js";

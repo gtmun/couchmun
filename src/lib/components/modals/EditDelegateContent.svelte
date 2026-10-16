@@ -4,8 +4,7 @@
   This modal consists of a simple form to specify the delegate's attributes.
 -->
 <script lang="ts">
-    import UniModalContent, { type ExitState } from "./UniModalContent.svelte";
-
+    import UniModalContent, { type ExitState } from "#lib/components/modals/UniModalContent.svelte";
     import type { DelegateAttrs } from "#lib/types.d.ts";
     import { a11yLabel } from "#lib/util/index.js";
     import { proxify } from "#lib/util/sv.svelte.js";

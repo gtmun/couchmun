@@ -13,10 +13,9 @@
 <script lang="ts">
     import { type Snippet } from "svelte";
 
-    import Timer from "../Timer.svelte";
-
     import DelLabel from "#lib/components/del-label/DelLabel.svelte";
     import SpeakerList from "#lib/components/SpeakerList.svelte";
+    import Timer from "#lib/components/Timer.svelte";
     import { db } from "#lib/db/index.svelte.js";
     import { lazyslide } from "#lib/util/index.js";
     import { watchEffect } from "#lib/util/sv.svelte.js";

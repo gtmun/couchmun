@@ -5,6 +5,7 @@
  * (other files in `#lib/motions` should only define infrastructure for using motions).
  */
 
+import type { RouteId } from "$app/types";
 import { z } from "zod";
 
 import type { IconComponent } from "#lib/components/IconLabel.svelte";
@@ -17,7 +18,6 @@ import type { Is } from "#lib/motions/types.d.ts";
 import type { Motion, MotionKind, SortKind, SortOrder } from "#lib/types.d.ts";
 import { hasKey, type Comparator } from "#lib/util/index.js";
 import { stringifyTime } from "#lib/util/time.js";
-import type { RouteId } from "$app/types";
 import MdiAccountClock from "~icons/mdi/account-clock";
 import MdiAccountMultiple from "~icons/mdi/account-multiple";
 import MdiBookClock from "~icons/mdi/book-clock";
