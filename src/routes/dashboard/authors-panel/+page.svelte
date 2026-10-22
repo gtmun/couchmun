@@ -47,7 +47,7 @@
                             <h6 class="h6 text-center">Timer Durations</h6>
                             <!-- eslint-disable-next-line svelte/require-each-key -->
                             {#each durations as _, i}
-                                <lapel class="label group">
+                                <label class="label group">
                                     <span>
                                         {pages[i].name}
                                         <span class="text-surface-500 not-group-has-focus-within:opacity-0 transition-opacity duration-150">
@@ -59,7 +59,7 @@
                                         bind:value={durInputs[i]}
                                         onchange={e => durations[i] = parseTime(e.currentTarget.value) ?? durations[i]}
                                     >
-                                </lapel>
+                                </label>
                             {/each}
                         </div>
                         <Popover.Arrow class="[--arrow-size:--spacing(2)] [--arrow-background:var(--color-surface-100-900)]">
