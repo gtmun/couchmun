@@ -5,12 +5,14 @@ import { untrack } from "svelte";
  * 
  * This is an `$effect`.
  * @param signals The signals.
- * @param effect The side effects.
+ * @param effect The side effects. The callback holds the current and previous value (undefined if first execution).
  */
-export function watchEffect<T>(signals: () => T, effect: (t: T) => void) {
+export function watchEffect<T>(signals: () => T, effect: (curr: T, prev?: T) => void) {
+    let prev: T | undefined = undefined;
     $effect(() => {
-        const s = signals();
-        untrack(() => effect(s));
+        const curr = signals();
+        untrack(() => effect(curr, prev));
+        prev = curr;
     })
 }
 
