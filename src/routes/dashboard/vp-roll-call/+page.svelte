@@ -3,17 +3,19 @@
     import { slide } from "svelte/transition";
     
     import ToggleButton from "#lib/components/controls/ToggleButton.svelte";
-    import TimerPanel from "#lib/components/motions/TimerPanel.svelte";
+    import TimerPanel, { onRunningChangeSL } from "#lib/components/motions/TimerPanel.svelte";
     import MultiPage from "#lib/components/MultiPage.svelte";
     import RollCall, { type RollCallEntry } from "#lib/components/RollCall.svelte";
     import SpeakerList, { createSpeaker } from "#lib/components/SpeakerList.svelte";
     import SpeakLayout from "#lib/components/SpeakLayout.svelte";
+    import { getClockContext } from "#lib/context/clock.svelte.ts";
     import { getSessionContext } from "#lib/context/index.svelte.js";
     import { db } from "#lib/db/index.svelte.js";
     import type { DelegateID, Speaker } from "#lib/types.d.ts";
     import { a11yLabel, NO_FIGURE, notPendingThen } from "#lib/util/index.js";
     import { watchEffect } from "#lib/util/sv.svelte.js";
     import { parseTime } from "#lib/util/time.js";
+    import { TimerStateArray } from "#lib/util/timer.svelte.ts";
     import MdiAccountCancel from "~icons/mdi/account-cancel";
     import MdiAccountCheck from "~icons/mdi/account-check";
     import MdiCancel from "~icons/mdi/cancel";
@@ -111,9 +113,16 @@
 
     // Speakers list
     let rightsSpeakersList = $state<SpeakerList>();
-    let rightsTimerPanel = $state<TimerPanel>();
     let rightsDuration = $state(60);
     let rightsDurInput = $state("");
+    
+    const rightsTimerArray = new TimerStateArray(getClockContext(), [{
+        durationSecs: () => rightsDuration,
+        onDurationChange: d => rightsDuration = d,
+        onRunningChange(running, timeSincePause) {
+            return onRunningChangeSL(running, timeSincePause, db, rightsSpeakersList);
+        },
+    }]);
     function setDuration(e: SubmitEvent) {
         e.preventDefault();
 
@@ -207,9 +216,7 @@
             {#snippet main()}
                 <TimerPanel
                     speakersList={rightsSpeakersList}
-                    durations={[rightsDuration]}
-                    onDurationUpdate={(_, d) => rightsDuration = d}
-                    bind:this={rightsTimerPanel}
+                    timerArray={rightsTimerArray}
                     editable
                 >
                     {#snippet label(name)}
@@ -234,7 +241,7 @@
                     delegates={$delegates}
                     bind:order={rightsOrder}
                     bind:this={rightsSpeakersList}
-                    onBeforeSpeakerUpdate={() => rightsTimerPanel?.reset()}
+                    onBeforeSpeakerUpdate={() => rightsTimerArray.reset()}
                     onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
                 >
                     {#snippet controls()}{/snippet}
@@ -244,7 +251,7 @@
                     <form class="contents" onsubmit={setDuration}>
                         <label class="flex grow items-center">
                             <span>Speaker Time</span>
-                            <input class="input grow" bind:value={rightsDurInput} placeholder="mm:ss" disabled={rightsTimerPanel?.getRunState(0)} />
+                            <input class="input grow" bind:value={rightsDurInput} placeholder="mm:ss" disabled={rightsTimerArray.get(0)?.running} />
                         </label>
                     </form>
                 </div>

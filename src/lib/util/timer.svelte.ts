@@ -1,7 +1,7 @@
 import { onDestroy } from "svelte";
 
 import type { ClockSource } from "#lib/context/clock.svelte.ts";
-import type { TimerSnapshot } from "#lib/types.js";
+import type { TimerInteraction, TimerSnapshot } from "#lib/types.js";
 import { clamp } from "#lib/util/index.ts";
 import { watchEffect } from "#lib/util/sv.svelte.ts";
 
@@ -284,55 +284,168 @@ export class TimerState {
     }
 }
 
-/**
- * Creates a reactive array of timer states.
- * 
- * `TimerState`s do not need to be reconstructed every time an array is updated,
- * so this function handles the special logic required for TimerState arrays.
- * 
- * @param clock Clock source to bind all of the timers to.
- * @param nTimers The number of timers in array.
- * @param options Callback which specifies how each timer is constructed.
- *     This callback takes the index of the array and should ONLY use that information to
- *     deterministically inform the timer array's construction.
- * @returns the timer array.
- */
-export function createTimerArray(
-    clock: ClockSource,
-    nTimers: () => number,
-    options: (i: number) => TimerOptions
-): TimerState[] {
-    // Each timer is index-based, so the timer only needs to be sync'd across duration length.
-    // Additionally, timer should only be constructed once (it shouldn't be reconstructed ever).
-    const timers = $state<TimerState[]>([]);
+type TArrayOptions = Partial<{
+    /**
+     * Callback which defines how the timers are synchronized.
+     * 
+     * If not specified, this defaults to "sync".
+     */
+    interact: () => TimerInteraction | undefined
+}>
 
-    function fillTimerArray(n: number) {
-        for (let i = timers.length; i < n; i++) {
-            timers.push(new TimerState(clock, {
-                ...options(i),
+/**
+ * Reactive array of timers.
+ * 
+ * When there are multiple timers, the timers may need to be synced,
+ * and this class specially handles that functionality.
+ */
+export class TimerStateArray {
+    #clock: ClockSource;
+    #timers: TimerState[];
+    #timerInteraction: TimerInteraction;
+    
+    /**
+     * Creates a reactive array of timer states.
+     * 
+     * @param clock Clock source to bind all of the timers to.
+     * @param timerOptions An array of initializing parameters for each timer.
+     * @param arrayOptions Initializing options for the entire array.
+     * @returns the timer array.
+     */
+    constructor(
+        clock: ClockSource,
+        timerOptions: TimerOptions[],
+        arrayOptions?: TArrayOptions,
+    ) {
+        this.#clock = clock;
+        this.#timers = $state([]);
+        this.#timerInteraction = $derived(this.#timers.length >= 2
+            ? arrayOptions?.interact?.() ?? "sync"
+            : "sync"
+        );
+        this.push(...timerOptions);
+        
+        // Destroy all effects when enclosing component dies:
+        onDestroy(this.#cleanup);
+    }
+
+    /**
+     * Adds new timers to the array.
+     */
+    push(...els: TimerOptions[]) {
+        for (const options of els) {
+            const i = this.#timers.length;
+            const setRunning = (running: boolean) => this.#setRunning(i, running);
+            this.#timers.push(new TimerState(this.#clock, {
+                ...options,
+                onRunningChange(running, timeSincePause) {
+                    setRunning(running);
+                    options.onRunningChange?.call(this, running, timeSincePause);
+                },
                 root: true
             }));
         }
     }
-    fillTimerArray(nTimers());
+    /**
+     * Removes the last timer from the array.
+     */
+    pop() {
+        this.#timers.pop()?.cleanupEffects();
+    }
+    #cleanup() {
+        this.#timers.forEach(t => t.cleanupEffects());
+    }
+    /**
+     * Removes all timers from the array.
+     */
+    clear() {
+        this.#timers.forEach(timer => timer.cleanupEffects());
+        this.#timers = [];
+    }
+    
+    /**
+     * Sets the running state of all timers associated with this array,
+     * based on the sync state.
+     */
+    #setRunning(i: number, status: boolean) {
+        let fillStates: TimerState[];
 
-    // When the durations array's length updates,
-    // add or remove entries from the array.
-    watchEffect(nTimers, n => {
-        if (timers.length > n) {
-            // Truncate timers.
-            // Clear effects for any destructed timers, also.
-            for (const timer of timers.splice(n, timers.length - n)) {
-                timer.cleanupEffects();
-            }
-        } else if (timers.length < n) {
-            fillTimerArray(n);
+        const interact = this.#timerInteraction;
+        if (interact === "sync") {
+            fillStates = this.#timers;
+        } else if (interact === "cascade") {
+            fillStates = status
+                ? this.#timers.slice(i)
+                : this.#timers.slice(0, i + 1);
+        } else if (interact === "none") {
+            fillStates = [this.#timers[i]];
+        } else {
+            interact satisfies never;
+            fillStates = [];
         }
-    });
-    // Destroy all effects when this component dies:
-    onDestroy(() => {
-        timers.forEach(timer => timer.cleanupEffects());
-    });
+        fillStates.forEach(t => t.running = status);
+    }
 
-    return timers;
+    /**
+     * Returns the current array of timers.
+     * 
+     * Note that this should only be used to access the timers,
+     * not to rearrange elements, append new elements, or remove elements
+     * (doing so may corrupt the state of the array).
+     */
+    get value() {
+        return this.#timers;
+    }
+    /**
+     * Returns the number of elements in the array.
+     */
+    get length() {
+        return this.#timers.length;
+    }
+    [Symbol.iterator]() {
+        return this.#timers[Symbol.iterator]();
+    }
+    
+    /**
+     * Gets the current timer interaction of the array.
+     * 
+     * Note that this may not be the same as the input timer interaction
+     * (notably in cases where the input is not defined or there is a single timer in the array).
+     */
+    get timerInteraction() {
+        return this.#timerInteraction;
+    }
+    
+    /**
+     * Get the specified timer.
+     * 
+     * This returns `undefined` if index is out-of-bounds.
+     */
+    get(i: number): TimerState | undefined {
+        return this.#timers[i];
+    }
+
+    #mapIndices(indices?: number[]) {
+        return indices && indices.length != 0
+            ? indices.map<TimerState | undefined>(i => this.#timers[i])
+            : this.#timers;
+    }
+    /**
+     * Returns whether any of the timers can be reset.
+     * @param indices the indices to check resettable status for
+     *    (0 being the top/left-most and incrementing down/right).
+     */
+    canReset(indices?: number[]) {
+        return this.#mapIndices(indices).some(t => t?.canReset());
+    }
+    /**
+     * Resets a given set of timers.
+     * @param indices the indices of the timers to reset
+     *    (0 being the top/left-most and incrementing down/right).
+     * 
+     * **If no indices are provided, this instead resets all timers.**
+     */
+    reset(indices?: number[]) {
+        this.#mapIndices(indices).forEach(t => t?.reset());
+    }
 }

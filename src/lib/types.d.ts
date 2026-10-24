@@ -269,6 +269,18 @@ export interface TimerSnapshot {
     lastStart: number | undefined,
 }
 
+/**
+ * Indicates how an array of timers interact with each other.
+ * - If `"sync"`, timers have joined `running` properties. 
+ *     If a timer starts or stops, then all timers stop.
+ * - If `"cascade"`, timers have separate `running` properties, 
+ *     but starting a timer will also start all timers after it,
+ *     and pausing a timer will also pause all timers before it.
+ * - If `"none"`, timers have separate `running` properties, 
+ *     with no interactions between each other.
+ */
+export type TimerInteraction = "sync" | "cascade" | "none";
+
 // Session Data
 /**
  * All data stored as "session data" in the database.

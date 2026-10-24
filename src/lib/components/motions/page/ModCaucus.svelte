@@ -6,15 +6,16 @@
 -->
 <script lang="ts">
     import { numSpeakersStr } from "#lib/components/motions/form/MotionForm.svelte";
-    import TimerPanel from "#lib/components/motions/TimerPanel.svelte";
+    import TimerPanel, { onRunningChangeSL } from "#lib/components/motions/TimerPanel.svelte";
     import SpeakerList from "#lib/components/SpeakerList.svelte";
     import SpeakerListEditControls from "#lib/components/SpeakerListEditControls.svelte";
     import SpeakerListFirstLast from "#lib/components/SpeakerListFirstLast.svelte";
     import SpeakLayout from "#lib/components/SpeakLayout.svelte";
+    import { getClockContext } from "#lib/context/clock.svelte.ts";
     import { getSessionContext } from "#lib/context/index.svelte.js";
     import { db } from "#lib/db/index.svelte.js";
     import type { Motion, Speaker } from "#lib/types.d.ts";
-    import type { TimerState } from "#lib/util/timer.svelte.ts";
+    import { TimerStateArray, type TimerState } from "#lib/util/timer.svelte.ts";
 
     interface Props {
         motion: Motion & { kind: "mod" };
@@ -25,15 +26,37 @@
     const sessionData = getSessionContext();
     const { delegates, preferences } = sessionData;
 
-    let timerPanel = $state<TimerPanel>();
     let speakersList = $state<SpeakerList>();
-
+    const timerArray = new TimerStateArray(getClockContext(), [
+        {
+            durationSecs: () => motion.speakingTime,
+            onDurationChange: d => motion.speakingTime = d,
+            onRunningChange(running) {
+                sessionData.updateTabTitleExtras(running, this.secsRemaining);
+            },
+            onTimeChange(secsRemaining) {
+                sessionData.updateTabTitleExtras(this.running, secsRemaining);
+            },
+        },
+        {
+            durationSecs: () => motion.totalTime,
+            onDurationChange: d => motion.totalTime = d,
+            onRunningChange(running, timeSincePause) {
+                return onRunningChangeSL(running, timeSincePause, db, speakersList);
+            }
+        }
+    ], {
+        interact: () => $preferences.pauseMainTimer ? "sync" : "cascade",
+    })
     /**
      * Resets the delegate timer. It also does not trigger the effect if there was no speaker
      * (in which case a reset doesn't really need to happen).
      */
     function resetDel(oldSpeaker?: Speaker) {
-        if (typeof oldSpeaker !== "undefined") timerPanel?.reset([0]);
+        if (typeof oldSpeaker !== "undefined") {
+            deductTime(timerArray.value);
+        }
+        timerArray.reset([0]);
     }
     /**
      * Deduct time from the total timer if that setting is enabled.
@@ -42,26 +65,24 @@
         if ($preferences.yieldMainTimer) return;
         totalTimer.offsetDuration(-delTimer.secsRemaining);
     }
-
-    $effect(() => {
-        sessionData.updateTabTitleExtras(
-            timerPanel?.getRunState(0) ?? false,
-            timerPanel?.secsRemaining(0)
-        );
-    });
 </script>
 
 <SpeakLayout>
     {#snippet main()}
         <TimerPanel
             {speakersList}
-            durations={[motion.speakingTime, motion.totalTime]}
-            timerInteraction={$preferences.pauseMainTimer ? "sync" : "cascade"}
-            onBeforeReset={deductTime}
-            bind:this={timerPanel}
-            resetButtons={[
-                { label: "Reset", indices: [0] },
-                { label: "Reset All" }
+            {timerArray}
+            extraControls={[
+                {
+                    label: "Reset",
+                    disabled: () => !timerArray.canReset([0]),
+                    onclick: () => resetDel(),
+                },
+                {
+                    label: "Reset All",
+                    disabled: () => !timerArray.canReset(),
+                    onclick: () => timerArray.reset()
+                }
             ]}
         />
     {/snippet}

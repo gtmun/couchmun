@@ -4,12 +4,14 @@
     - An editable speakers list
 -->
 <script lang="ts">
-    import TimerPanel from "#lib/components/motions/TimerPanel.svelte";
+    import TimerPanel, { onRunningChangeSL } from "#lib/components/motions/TimerPanel.svelte";
     import SpeakerList from "#lib/components/SpeakerList.svelte";
     import SpeakLayout from "#lib/components/SpeakLayout.svelte";
+    import { getClockContext } from "#lib/context/clock.svelte.ts";
     import { getSessionContext } from "#lib/context/index.svelte.js";
     import { db } from "#lib/db/index.svelte.js";
     import { parseTime } from "#lib/util/time.js";
+    import { TimerStateArray } from "#lib/util/timer.svelte.ts";
 
     const sessionData = getSessionContext();
     const { speakersList: order, delegates, selectedMotion } = sessionData;
@@ -23,13 +25,20 @@
         // Fallback if motion not configured
         return 60;
     });
-    let timerPanel = $state<TimerPanel>();
     let speakersList = $state<SpeakerList>();
     let durInput: string = $state("");
+    const timerArray = new TimerStateArray(getClockContext(), [{
+        durationSecs: () => duration,
+        onDurationChange: d => duration = d,
+        onRunningChange(running, timeSincePause) {
+            sessionData.updateTabTitleExtras(running, this.secsRemaining);
+            return onRunningChangeSL(running, timeSincePause, db, speakersList);
+        },
+        onTimeChange(secsRemaining) {
+            sessionData.updateTabTitleExtras(this.running, secsRemaining);
+        },
+    }]);
 
-    function reset() {
-        timerPanel?.reset();
-    }
     function setDuration(e: SubmitEvent) {
         e.preventDefault();
 
@@ -39,22 +48,13 @@
         }
         durInput = "";
     }
-
-    $effect(() => {
-        sessionData.updateTabTitleExtras(
-            timerPanel?.getRunState(0) ?? false,
-            timerPanel?.secsRemaining(0)
-        );
-    });
 </script>
 
 <SpeakLayout>
     {#snippet main()}
         <TimerPanel
             {speakersList}
-            durations={[duration]}
-            onDurationUpdate={(_, d) => duration = d}
-            bind:this={timerPanel}
+            {timerArray}
             editable
         />
     {/snippet}
@@ -64,7 +64,7 @@
             delegates={$delegates}
             bind:order={$order}
             bind:this={speakersList}
-            onBeforeSpeakerUpdate={reset}
+            onBeforeSpeakerUpdate={() => timerArray.reset()}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
         />
         <!-- Timer config -->
@@ -72,7 +72,7 @@
             <form class="contents" onsubmit={setDuration}>
                 <label class="flex grow items-center">
                     <span>Speaker Time</span>
-                    <input class="input grow" bind:value={durInput} placeholder="mm:ss" disabled={timerPanel?.getRunState(0)} />
+                    <input class="input grow" bind:value={durInput} placeholder="mm:ss" disabled={timerArray.get(0)?.running} />
                 </label>
             </form>
         </div>

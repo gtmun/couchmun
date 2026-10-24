@@ -6,15 +6,17 @@
 <script lang="ts">
     import { slide } from "svelte/transition";
 
-    import TimerPanel from "#lib/components/motions/TimerPanel.svelte";
+    import TimerPanel, { onRunningChangeSL } from "#lib/components/motions/TimerPanel.svelte";
     import SpeakerList from "#lib/components/SpeakerList.svelte";
     import SpeakLayout from "#lib/components/SpeakLayout.svelte";
+    import { getClockContext } from "#lib/context/clock.svelte.ts";
     import { getSessionContext } from "#lib/context/index.svelte.js";
     import { Delegate, findDelegate } from "#lib/db/delegates.js";
     import { db } from "#lib/db/index.svelte.js";
     import type { SpeakerFA } from "#lib/types.d.ts";
     import { a11yLabel, NO_FIGURE } from "#lib/util/index.js";
     import { parseTime } from "#lib/util/time.js";
+    import { TimerStateArray } from "#lib/util/timer.svelte.ts";
     import MdiChevronDown from "~icons/mdi/chevron-down";
     import MdiChevronUp from "~icons/mdi/chevron-up";
     import MdiMinus from "~icons/mdi/minus";
@@ -28,14 +30,21 @@
     let { delegates, order = $bindable(), duration = $bindable(60) }: Props = $props();
 
     const sessionData = getSessionContext();
-    let timerPanel = $state<TimerPanel>();
     let speakersList = $state<SpeakerList>();
     let durInput: string = $state("");
     let shiftDown = $state(false);
     
-    function reset() {
-        timerPanel?.reset();
-    }
+    const timerArray = new TimerStateArray(getClockContext(), [{
+        durationSecs: () => duration,
+        onDurationChange: d => duration = d,
+        onRunningChange(running, timeSincePause) {
+            sessionData.updateTabTitleExtras(running, this.secsRemaining);
+            return onRunningChangeSL(running, timeSincePause, db, speakersList);
+        },
+        onTimeChange(secsRemaining) {
+            sessionData.updateTabTitleExtras(this.running, secsRemaining);
+        },
+    }]);
     function setDuration(e: SubmitEvent) {
         e.preventDefault();
 
@@ -86,22 +95,13 @@
     function rotateCls(stance: SpeakerFA["stance"]) {
         return ["transition-transform", stance !== "for" && "rotate-180"];
     }
-
-    $effect(() => {
-        sessionData.updateTabTitleExtras(
-            timerPanel?.getRunState(0) ?? false,
-            timerPanel?.secsRemaining(0)
-        );
-    });
 </script>
 
 <SpeakLayout>
     {#snippet main()}
         <TimerPanel
             {speakersList}
-            durations={[duration]}
-            onDurationUpdate={(_, d) => duration = d}
-            bind:this={timerPanel}
+            {timerArray}
             editable
         >
             {#snippet label(name)}
@@ -125,7 +125,7 @@
             {delegates}
             bind:order
             bind:this={speakersList}
-            onBeforeSpeakerUpdate={reset}
+            onBeforeSpeakerUpdate={() => timerArray.reset()}
             onMarkComplete={(key, isRepeat) => { if (!isRepeat) db.updateDelegate(key, d => { d.stats.timesSpoken++; }) }}
             onCreate={(_, i, s) => (s as SpeakerFA).stance = troolSelect(getDefault(i), "for", "against", undefined)}
         >
@@ -152,7 +152,7 @@
             <form class="contents" onsubmit={setDuration}>
                 <label class="flex grow items-center">
                     <span>Speaker Time</span>
-                    <input class="input grow" bind:value={durInput} placeholder="mm:ss" disabled={timerPanel?.getRunState(0)} />
+                    <input class="input grow" bind:value={durInput} placeholder="mm:ss" disabled={timerArray.get(0)?.running} />
                 </label>
             </form>
         </div>
