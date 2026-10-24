@@ -16,9 +16,11 @@
     import DelLabel from "#lib/components/del-label/DelLabel.svelte";
     import SpeakerList from "#lib/components/SpeakerList.svelte";
     import Timer from "#lib/components/Timer.svelte";
+    import { getClockContext } from "#lib/context/clock.svelte.ts";
     import { db } from "#lib/db/index.svelte.js";
+    import type { TimerSnapshot } from "#lib/types.js";
     import { lazyslide } from "#lib/util/index.js";
-    import { watchEffect } from "#lib/util/sv.svelte.js";
+    import { createTimerArray, TimerState } from "#lib/util/timer.svelte.ts";
 
     interface Props {
         /**
@@ -73,7 +75,9 @@
         /**
          * Listener to reset events. Called when reset is called.
          */
-        onBeforeReset?: (timers: (Timer | undefined)[]) => void,
+        onBeforeReset?: (timers: TimerState[]) => void,
+
+        snapshots?: (TimerSnapshot | undefined)[],
 
         /**
          * Property to format the delegate label.
@@ -88,45 +92,52 @@
         resetButtons = [{ label: "Reset" }],
         onDurationUpdate,
         onBeforeReset = undefined,
+        snapshots,
         label
     }: Props = $props();
 
     // Creates a `timers` state with the specific number of timers.
-    const numTimers = () => durations.length;
-    let timers: (Timer | undefined)[] = $state(Array.from({ length: numTimers() }));
-    let runStates: boolean[] = $state(Array.from({ length: numTimers() }, () => false));
+    const clock = getClockContext();
+    const timers = createTimerArray(clock, 
+        () => durations.length,
+        i => ({
+            durationSecs: () => durations[i],
+            snapshot: () => snapshots?.[i],
+            onRunningChange(running, timeSincePause) {
+                const last = i == durations.length - 1;
+                setRunState(i, running);
+                if (last && !running) {
+                    db.updateDelegate(selectedSpeaker?.key, d => { d.stats.durationSpoken += timeSincePause; })
+                }
+            },
+            onDurationChange(durationSecs) {
+                return onDurationUpdate?.(i, durationSecs);
+            }
+        })
+    );
 
     // If only 1 timer, just treat this as sync regardless of setting.
-    let timerInteraction = $derived(numTimers() < 2 ? "sync" : _ti);
-
-    watchEffect(() => [numTimers(), timerInteraction] as const, ([nTimers]) => {
-        // When number of timers change, update the list of timers,
-        // truncating any timer past the number of timers.
-        timers.length = nTimers;
-        // When number of runnings change, update the list of runnings,
-        // and pause all timers.
-        runStates.length = nTimers;
-        runStates.fill(false);
-    })
+    let timerInteraction = $derived(timers.length < 2 ? "sync" : _ti);
 
     // Getter/setter for run state, since it depends on timer interaction
     export function getRunState(i: number): boolean {
-        return runStates[i];
+        return timers[i].running;
     }
     function setRunState(i: number, s: boolean) {
+        let fillStates: TimerState[];
         if (timerInteraction === "sync") {
-            runStates.fill(s);
+            fillStates = timers;
         } else if (timerInteraction === "cascade") {
-            if (s) {
-                runStates.fill(s, i);
-            } else {
-                runStates.fill(s, 0, i + 1);
-            }
+            fillStates = s
+                ? timers.slice(i)
+                : timers.slice(0, i + 1);
         } else if (timerInteraction === "none") {
-            runStates[i] = s;
+            fillStates = [timers[i]];
         } else {
             timerInteraction satisfies never;
+            fillStates = [];
         }
+        fillStates.forEach(t => t.running = s);
 
         // If any timer starts, mark the current speaker as complete.
         if (s) {
@@ -137,47 +148,32 @@
      * Currently selected speaker from speakers list.
      */
     let selectedSpeaker = $derived(speakersList?.selectedSpeaker());
-    /**
-     * Whether timer at index `i` can be played.
-     * @param i The index. If omitted, this function instead asserts that all timers are playable.
-     * @return true if timer(s) can be played
-     */
-    function isTimerPlayable(i?: number): boolean {
-        // If speaker is undefined, timer should not be startable.
-        if (typeof selectedSpeaker === "undefined") return false;
 
-        // If index provided, check the given timer for playability.
-        // It should be playable if time has not elapsed.
-        const timerPlayable = (t?: Timer) => typeof t !== "undefined" && !t.isElapsed();
-        if (typeof i === "number") return timerPlayable(timers[i]);
-
-        // If no index provided, all timers need to be playable.
-        return timers.every(t => timerPlayable(t));
+    function isTimerPlayable(timer: TimerState) {
+        // A timer is playable if there's a speaker prepared and the timer has not elapsed.
+        return typeof selectedSpeaker !== "undefined" && !timer.isElapsed();
+    }
+    function allTimersPlayable() {
+        // All timers are playable if there's a speaker prepared and not every timer has elapsed.
+        return typeof selectedSpeaker !== "undefined" && timers.every(t => !t.isElapsed());
     }
 
+    function mapIndices(indices?: number[]) {
+        return (indices ?? []).map<TimerState | undefined>(i => timers[i]);
+    }
     /**
      * Returns whether any of the timers can be reset.
      * @param indices the indices to check resettable status for
      *    (0 being the top/left-most and incrementing down/right).
-     * 
-     * **If no indices are provided, this instead resets all timers.**
      */
-    export function canReset(...indices: number[]) {
-        if (indices.length === 0) {
-            return timers.some(t => t?.canReset());
-        } else {
-            return indices.some(i => timers[i]?.canReset());
+    export function canReset(indices?: number[]) {
+        let selectedTimers = mapIndices(indices);
+        if (selectedTimers.length === 0) {
+            selectedTimers = timers;
         }
-    }
 
-    /**
-     * @param timerIndex the index of the timer
-     * @returns the seconds remaining for the timer of the given index
-     */
-    export function secsRemaining(timerIndex: number) {
-        return timers[timerIndex]?.secsRemaining?.();
+        return selectedTimers.some(t => t?.canReset());
     }
-
     /**
      * Resets a given set of timers.
      * @param indices the indices of the timers to reset
@@ -185,14 +181,24 @@
      * 
      * **If no indices are provided, this instead resets all timers.**
      */
-    export function reset(...indices: number[]) {
+    export function reset(indices?: number[]) {
         onBeforeReset?.(timers);
-        if (indices.length === 0) {
-            timers.forEach(t => t?.reset());
-        } else {
-            indices.forEach(i => timers[i]?.reset());
+
+        let selectedTimers = mapIndices(indices);
+        if (selectedTimers.length === 0) {
+            selectedTimers = timers;
         }
+        selectedTimers.forEach(t => t?.reset());
     }
+    
+    /**
+     * @param timerIndex the index of the timer
+     * @returns the seconds remaining for the timer of the given index
+     */
+    export function secsRemaining(timerIndex: number) {
+        return timers[timerIndex]?.secsRemaining;
+    }
+
     function next() {
         speakersList?.next();
     }
@@ -209,9 +215,7 @@
         </div>
     {/key}
     <div class="flex flex-col gap-4">
-        <!-- HACK: Each timer depends on its index, so key isn't required -->
-        <!-- eslint-disable-next-line svelte/require-each-key -->
-        {#each timers as _, i}
+        {#each timers as timer, i (timer)}
             <!-- 
                 This const is needed because the event handlers should 
                 ONLY apply to 1 of the timers to avoid duplication.
@@ -220,21 +224,10 @@
             -->
             {@const last = i == timers.length - 1}
             <Timer
-                bind:duration={
-                    () => durations[i],
-                    d => {durations[i] = d; onDurationUpdate?.(i, d)}
-                }
-                running={getRunState(i)}
-                bind:this={timers[i]}
+                timerState={timer}
                 hidePlay={timerInteraction === "sync"}
-                disablePlay={!isTimerPlayable(i)}
+                disablePlay={!isTimerPlayable(timer)}
                 useKeyHandlers={last}
-                onRunningChange={(running, t) => {
-                    setRunState(i, running);
-                    if (last && !running) {
-                        db.updateDelegate(selectedSpeaker?.key, d => { d.stats.durationSpoken += t; })
-                    }
-                }}
                 {editable}
             />
         {/each}
@@ -246,7 +239,7 @@
                 {@const running = getRunState(0)}
                 <button 
                     class="btn btn-lg preset-filled-primary-500"
-                    disabled={!running && !isTimerPlayable()}
+                    disabled={!running && !allTimersPlayable()}
                     onclick={() => setRunState(0, !running)}
                 >
                     {running ? 'Pause' : 'Start'}
@@ -259,8 +252,8 @@
             {#each resetButtons as { indices, label }}
                 <button
                     class="btn btn-lg preset-filled-primary-500"
-                    disabled={!canReset(...(indices ?? []))}
-                    onclick={() => reset(...(indices ?? []))}
+                    disabled={!canReset(indices)}
+                    onclick={() => reset(indices)}
                 >
                     {label}
                 </button>

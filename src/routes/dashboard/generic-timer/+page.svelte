@@ -7,25 +7,31 @@
     import ToggleButton from "#lib/components/controls/ToggleButton.svelte";
     import DelFlag, { FLAGCON_SIZE_CLASSES } from "#lib/components/del-label/DelFlag.svelte";
     import Timer from "#lib/components/Timer.svelte";
+    import { getClockContext } from "#lib/context/clock.svelte.ts";
     import { getSessionContext } from "#lib/context/index.svelte.js";
     import { makeEditable } from "#lib/util/attach.svelte.js";
     import { lazyslide } from "#lib/util/index.js";
+    import { TimerState } from "#lib/util/timer.svelte.ts";
     import MdiFlag from "~icons/mdi/flag";
     import MdiFlagOff from "~icons/mdi/flag-off";
 
     const sessionData = getSessionContext();
     const { delegates } = sessionData;
-
     // Timer
     let timerEnabled: boolean = $state(true);
-    
-    let duration = $state<number>(60);
-    let running = $state<boolean>(false);
-    let timer = $state<Timer>();
+    const timer = new TimerState(getClockContext(), {
+        durationSecs: () => 60,
+        onRunningChange(running) {
+            sessionData.updateTabTitleExtras(running, this.secsRemaining);
+        },
+        onTimeChange(secsRemaining) {
+            sessionData.updateTabTitleExtras(this.running, secsRemaining);
+        }
+    });
     
     // Label
-    let labelText = $state<string>("");
-    let showFlag = $state<boolean>(false);
+    let labelText = $state("");
+    let showFlag = $state(false);
 
     const attrs = $derived($delegates.find(d => d.nameEquals(labelText)));
 </script>
@@ -33,13 +39,13 @@
 <div class="flex flex-col h-full items-stretch">
     <div class="flex flex-col grow gap-5 justify-center">
         <div class="flex flex-col items-stretch">
-            {#if !(running && labelText.length === 0)}
+            {#if !(timer.running && labelText.length === 0)}
                 <!-- Title, which should appear if not running or if non-empty whilst running -->
                 <div class={["flex justify-center items-center", showFlag && "pb-3"]} transition:lazyslide>
                     <h2 
                         class="h2 text-center contenteditable:editable-std"
                         {@attach makeEditable({
-                            when: !running,
+                            when: !timer.running,
                             get value() { return labelText; },
                             set value(text) { labelText = text; },
                             allowEmpty: true
@@ -49,7 +55,7 @@
                         {labelText}
                     </h2>
                     <!-- "Show flag" switch, which should appear if not running -->
-                    {#if !running}
+                    {#if !timer.running}
                         <div
                             class="pl-3"
                             transition:lazyslide={{ axis: "x" }}
@@ -82,22 +88,21 @@
         {#if timerEnabled}
         <div class="flex flex-col gap-5">
             <Timer
-                bind:duration
-                {running}
-                bind:this={timer}
-                onRunningChange={r => {
-                    running = r;
-                    sessionData.updateTabTitleExtras(r, timer?.secsRemaining());
-                }}
-                onTimeChange={msElapsed => sessionData.updateTabTitleExtras(running, msElapsed / 1000)}
+                timerState={timer}
                 editable
             />
     
             <div class="flex flex-row gap-3 justify-center">
-                <button class="btn preset-filled-primary-500" onclick={() => running = !running}>
-                    {!running ? 'Start' : 'Pause'}
+                <button class="btn preset-filled-primary-500" onclick={() => timer.toggleRunning()}>
+                    {!timer.running ? 'Start' : 'Pause'}
                 </button>
-                <button class="btn preset-filled-primary-500" disabled={!timer?.canReset()} onclick={timer?.reset}>Reset</button>
+                <button
+                    class="btn preset-filled-primary-500"
+                    disabled={!timer.canReset()}
+                    onclick={() => timer.reset()}
+                >
+                    Reset
+                </button>
             </div>
         </div>
         {/if}

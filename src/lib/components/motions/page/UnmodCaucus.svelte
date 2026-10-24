@@ -4,34 +4,38 @@
 -->
 <script lang="ts">
     import Timer from "#lib/components/Timer.svelte";
+    import { getClockContext } from "#lib/context/clock.svelte.ts";
     import { getSessionContext } from "#lib/context/index.svelte.js";
-    import type { Motion } from "#lib/types.d.ts";
+    import type { Motion } from "#lib/types.d.ts"
+    import { TimerState } from "#lib/util/timer.svelte.ts";
     
     interface Props {
         motion: Motion & { kind: "unmod" };
     }
     let { motion }: Props = $props();
-
+    
     const sessionData = getSessionContext();
-    let timer: Timer | undefined = $state();
-    let running: boolean = $state(false);
+
+    const timer = new TimerState(getClockContext(), {
+        durationSecs: () => motion.totalTime,
+        onRunningChange(running) {
+            sessionData.updateTabTitleExtras(running, this.secsRemaining);
+        },
+        onTimeChange(secsRemaining) {
+            sessionData.updateTabTitleExtras(this.running, secsRemaining);
+        },
+        onDurationChange(durationSecs) {
+            motion.totalTime = durationSecs;
+        }
+    });
 </script>
 
 <div class="flex flex-col gap-5">
-    <Timer
-        duration={motion.totalTime}
-        bind:this={timer}
-        {running}
-        onRunningChange={r => {
-            running = r;
-            sessionData.updateTabTitleExtras(r, timer?.secsRemaining?.());
-        }}
-        onTimeChange={msElapsed => sessionData.updateTabTitleExtras(running, msElapsed / 1000)}
-    />
+    <Timer timerState={timer} />
     <div class="flex flex-row gap-3 justify-center">
-        <button class="btn preset-filled-primary-500" onclick={() => running = !running}>
-            {!running ? 'Start' : 'Pause'}
+        <button class="btn preset-filled-primary-500" onclick={() => timer.toggleRunning()}>
+            {!timer.running ? 'Start' : 'Pause'}
         </button>
-        <button class="btn preset-filled-primary-500" onclick={timer?.reset}>Reset</button>
+        <button class="btn preset-filled-primary-500" onclick={() => timer.reset()}>Reset</button>
     </div>
 </div>

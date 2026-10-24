@@ -14,13 +14,15 @@
     const sessionData = getSessionContext();
     const { speakersList: order, delegates, selectedMotion } = sessionData;
 
-    let duration: number = $state(
-        $selectedMotion?.kind === "spklist"
+    let duration: number = $derived.by(() => {
         // Use motion's speaking time if motion configured
-        ? $selectedMotion.speakingTime
+        if ($selectedMotion?.kind === "spklist") {
+            return $selectedMotion.speakingTime;
+        }
+
         // Fallback if motion not configured
-        : 60
-    );
+        return 60;
+    });
     let timerPanel = $state<TimerPanel>();
     let speakersList = $state<SpeakerList>();
     let durInput: string = $state("");

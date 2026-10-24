@@ -248,6 +248,27 @@ export interface SpeakerFA extends Speaker {
     stance?: "for" | "against";
 }
 
+/**
+ * The current state of the timer.
+ * 
+ * This holds the information needed to determine
+ * whether a given timer is currently running
+ * and how much time is remaining.
+ */
+export interface TimerSnapshot {
+    /** The number of milliseconds remaining from when the timer was last paused. */
+    msRemainingAtPause: number,
+    /**
+     * The UNIX timestamp (in milliseconds) when the timer was last started.
+     * 
+     * The time since pause is `now() - lastStart`, and consequently,
+     * the number of milliseconds remaining is `msRemainingAtPause - (now() - lastStart)`.
+     * 
+     * If this is `undefined`, then the timer was not running.
+     */
+    lastStart: number | undefined,
+}
+
 // Session Data
 /**
  * All data stored as "session data" in the database.
@@ -356,10 +377,6 @@ export type SessionContext = {
      */
     updateTabTitleExtras(running: boolean, secsRemaining?: number): void
 };
-
-export type ClockMessage = 
-    | { kind: "startTick", ts: number } 
-    | { kind: "endTick"}
 
 // Stats store data:
 export type StatsData = {

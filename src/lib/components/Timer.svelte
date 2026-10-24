@@ -2,42 +2,24 @@
   @component A small timer component.
   This component consists of a linear progress bar and text displaying the timer's elapsed duration.
   
-  To programatically control the timer, bind to the `running` prop of this component. 
-  Setting it to `false` pauses the timer, and setting it to `true` starts the timer.
-  The timer will automatically pause (setting `running` to false) when the full duration elapses.
+  This component wraps around a `TimerState` object, displaying its information
+  while also providing controls to alter its state.
 -->
 <script lang="ts">
     import { Progress } from "@skeletonlabs/skeleton-svelte";
-    import { onDestroy, onMount } from "svelte";
     import { cubicOut } from "svelte/easing";
     import { Tween } from "svelte/motion";
 
     import { makeEditable } from "#lib/util/attach.svelte.js";
-    import { a11yLabel, clamp } from "#lib/util/index.js";
-    import { watchEffect } from "#lib/util/sv.svelte.js";
     import { getProgressColor } from "#lib/util/chroma.ts";
+    import { a11yLabel } from "#lib/util/index.js";
     import { parseTime, stringifyTime } from "#lib/util/time.js";
+    import { TimerState } from "#lib/util/timer.svelte.ts";
     import MdiPause from "~icons/mdi/pause";
     import MdiPlay from "~icons/mdi/play";
 
     interface Props {
-        /**
-         * How long the total duration of this timer should run for (in seconds).
-         * 
-         * If this timer is `editable`, then this is a **bindable** prop, 
-         * in which case the duration is updated when the timer is edited.
-         */
-        duration: number;
-
-        /**
-         * Whether or not this timer is running.
-         * 
-         * This is a **bindable** prop. It will update to reflect the timer's
-         * running state. This can be set to start or pause the timer.
-         * 
-         * To reset the timer, use the `reset` function of the component.
-         */
-        running?: boolean;
+        timerState: TimerState;
 
         // Visual properties:
         /**
@@ -80,45 +62,20 @@
          * If `disablePlay` is true, this prop is overrided and does nothing.
          */
         useKeyHandlers?: boolean;
-
-        /**
-         * This property can be bound to add an event handler for every time the timer's run state is changed.
-         * 
-         * @param running The updated running status of the timer
-         * @param elapsedSinceLastPause The time (in milliseconds) elapsed the last running period.
-         */
-        onRunningChange?: (running: boolean, elapsedSinceLastPause: number) => void;
-
-        /**
-         * This property can be bound to an event handler when the total time elapsed changes
-         * (so, every tick, essentially).
-         * 
-         * @param msRemaining The new time remaining (in milliseconds)
-         */
-        onTimeChange?: (msRemaining: number) => void;
     }
 
     let {
-        duration = $bindable(),
-        running = false,
+        timerState,
         height = "h-10",
         hideText = false,
         hidePlay = true,
         editable = false,
         disablePlay = false,
         useKeyHandlers = true,
-        onRunningChange = undefined,
-        onTimeChange = undefined,
     }: Props = $props();
     
-
-    let DURATION_MS = $derived(duration * 1000);
-    // reset timer on duration update:
-    watchEffect(() => duration, () => reset());
-
     // Progress & display values
-    let msRemaining = $state(duration * 1000);
-    const progress = Tween.of(() => clamp(msRemaining / DURATION_MS, 0, 1), {
+    const progress = Tween.of(() => timerState.progress, {
         duration: 1000,
         easing: cubicOut
     });
@@ -132,124 +89,6 @@
         trackBg: "preset-ui-depressed"
     });
 
-    // Timer related handlers
-    let lastStart: number | undefined = undefined;
-    let lastEnd: number = 0;
-    let msRemainingAtStart: number;
-
-    // Timer event loop
-    onMount(() => {
-        initClockSource().addEventListener("message", loop);
-    });
-    onDestroy(() => {
-        running = false;
-        updateRunningEffects(running);
-        clockSource?.removeEventListener("message", loop);
-    });
-    function loop({ data }: MessageEvent<ClockMessage>) {
-        if (data.kind === "startTick") {
-            if (!running) return;
-
-            // Update msRemaining:
-            lastStart ??= data.ts;
-            lastEnd = data.ts;
-            setMsRemaining(msRemainingAtStart - Math.floor(lastEnd - lastStart), 0);
-        } else if (data.kind === "endTick") {
-            // After all timers have been updated, update running:
-            running = running && msRemaining > 0;
-        } else {
-            data satisfies never;
-        }
-    }
-
-    // Trigger state update on running change:
-    watchEffect(() => running, r => updateRunningEffects(r));
-
-    /**
-     * Set the milliseconds remaining.
-     * @param newMsRemaining the milliseconds remaining
-     * @param min a minimum time which the time cannot be under (optional)
-     * @param max a maximum time which the time cannot exceed (optional)
-     */
-    function setMsRemaining(newMsRemaining: number, min?: number, max?: number) {
-        // If minimum provided, clamp to minimum
-        if (typeof min === "number" && Number.isFinite(min)) {
-            newMsRemaining = Math.max(newMsRemaining, min);
-        }
-        // If maximum provided, clamp to maximum
-        if (typeof max === "number" && Number.isFinite(max)) {
-            newMsRemaining = Math.min(newMsRemaining, max);
-        }
-
-        msRemaining = newMsRemaining;
-        onTimeChange?.(newMsRemaining);
-    }
-    // Exported methods:
-    /**
-     * Whether the timer can be reset at the moment.
-     * It can be reset only when the duration is not at maximum.
-     * @returns whether the timer can be reset
-     */
-    export function canReset(): boolean {
-        return msRemaining != DURATION_MS;
-    }
-    /**
-     * Resets the timer. 
-     * This practically does nothing if `canReset()` is false.
-     */
-    export function reset() {
-        running = false;
-        setMsRemaining(DURATION_MS);
-    }
-
-    /**
-     * Adds the given amount of time (in seconds) to the current timer.
-     * For example, if there is 0:30 left, and you call `timer.offsetDuration(1:00)`,
-     * there would be `1:30` left.
-     * 
-     * @param ts Time to add in seconds
-     * @param clampToMax If true, the new time will be capped to the maximum duration.
-     */
-    export function offsetDuration(ts: number, clampToMax = false) {
-        return setMsRemaining(msRemaining + 1000 * ts, 0, clampToMax ? DURATION_MS : undefined);
-    }
-
-    /**
-     * @returns the number of seconds remaining in the timer.
-     */
-    export function secsRemaining() {
-        return msRemaining / 1000;
-    }
-
-    /**
-     * @returns whether the timer has completed its full time.
-     */
-    export function isElapsed() {
-        return msRemaining <= 0;
-    }
-    /**
-     * Elapsed time since last pause.
-     */
-    function getElapsedTime() {
-        if (typeof lastStart === "undefined") return 0;
-        if (Number.isNaN(lastStart)) return 0;
-        if (Number.isNaN(lastEnd)) return 0;
-        if (lastEnd < lastStart) return 0;
-
-        return lastEnd - lastStart;
-    }
-    
-    function updateRunningEffects(running: boolean) {
-        // Make sure that running does not depend on msRemaining 
-        // (since that updates while running)
-        onRunningChange?.(running, getElapsedTime());
-
-        if (running) {
-            lastStart = undefined;
-            msRemainingAtStart = msRemaining;
-        }
-    }
-
     // Keyboard events
     function keydown(e: KeyboardEvent) {
         if (disablePlay) return;
@@ -257,8 +96,8 @@
         if (e.target !== document.body) return;
 
         if (!e.repeat) {
-            if (e.code === "Enter") running = !running;
-            if (e.code === "Space") running = true;
+            if (e.code === "Enter") timerState.toggleRunning();
+            if (e.code === "Space") timerState.running = true;
         }
     }
     function keyup(e: KeyboardEvent) {
@@ -266,26 +105,14 @@
         if (!useKeyHandlers) return;
         if (e.target !== document.body) return;
 
-        if (e.code === "Space") running = false;
+        if (e.code === "Space") timerState.running = false;
     }
 
     function setDuration(text?: string) {
-        let time = text ? parseTime(text) : undefined;
-        duration = time ?? duration;
-    }
-</script>
-
-<script module lang="ts">
-    import type { ClockMessage } from "#lib/types.d.ts";
-    import ClockSourceWorker from "#lib/util/clock?worker";
-
-    // This is a synchronized timer for all Timer components.
-    // It is in a worker thread so that it runs in the background.
-    // Every "tick", each timer connected to this clock source gets the same timestamp,
-    // allowing them to be synchronized.
-    let clockSource: Worker | undefined = undefined;
-    function initClockSource(): Worker {
-        return (clockSource ??= new ClockSourceWorker());
+        let dur = text ? parseTime(text) : undefined;
+        if (typeof dur !== "undefined") {
+            timerState.reset(dur);
+        }
     }
 </script>
 
@@ -294,16 +121,16 @@
         class={["h2", "text-center", "tabular-nums", hideText && "hidden"]}
         role="timer"
     >
-        {stringifyTime(secsRemaining())}/<span
+        {stringifyTime(timerState.secsRemaining)}/<span
             class="contenteditable:editable-std"
             {@attach makeEditable({
-                when: editable && !running,
-                get value() { return stringifyTime(duration) },
+                when: editable && !timerState.running,
+                get value() { return stringifyTime(timerState.durationSecs) },
                 set value(time) { setDuration(time) }
             })}
             role="none"
         >
-            {stringifyTime(duration)}
+            {stringifyTime(timerState.durationSecs)}
         </span>
     </h2>
     <div class="grid grid-cols-[1fr_auto] gap-1 items-center">
@@ -317,11 +144,11 @@
         {#if !hidePlay}
             <button 
                 class="btn-icon btn-icon-xl preset-filled-primary-500" 
-                onclick={() => running = !running}
-                disabled={disablePlay || isElapsed()}
-                {...a11yLabel(running ? "Pause Timer" : "Start Timer")}
+                onclick={() => timerState.toggleRunning()}
+                disabled={disablePlay || timerState.isElapsed()}
+                {...a11yLabel(timerState.running ? "Pause Timer" : "Start Timer")}
             >
-                {#if running}
+                {#if timerState.running}
                     <MdiPause />
                 {:else}
                     <MdiPlay />

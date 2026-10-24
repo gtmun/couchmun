@@ -282,7 +282,7 @@ export const DEFAULT_SESSION_DATA = {
         speakersList: []
     },
     speakersList: [],
-    faSpeakersList: []
+    faSpeakersList: [],
 } as const satisfies SessionData;
 
 /**
@@ -370,14 +370,14 @@ function getKVStore(table: EntityTable<KeyValuePair, "key">, key: string, fallba
         // Do a synchronous update before asynchronously updating the database.
         // Note: This does cause a double update, but since the result is the same it *should* be fine.
         store.set(val);
-        return table.update(key, { val: $state.snapshot(val) });
+        return table.put({ key, val: $state.snapshot(val) });
     };
     const update = async (updater: Updater<any>) => {
         // Do a synchronous update before asynchronously updating the database.
         // Note: This does cause a double update, but since the result is the same it *should* be fine.
         let val;
         store.update(e => val = updater(e));
-        return table.update(key, { val });
+        return table.put({ key, val });
     };
     
     return Object.assign(readonly(store), { set, update });

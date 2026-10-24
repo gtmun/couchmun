@@ -11,10 +11,10 @@
     import SpeakerListEditControls from "#lib/components/SpeakerListEditControls.svelte";
     import SpeakerListFirstLast from "#lib/components/SpeakerListFirstLast.svelte";
     import SpeakLayout from "#lib/components/SpeakLayout.svelte";
-    import type Timer from "#lib/components/Timer.svelte";
     import { getSessionContext } from "#lib/context/index.svelte.js";
     import { db } from "#lib/db/index.svelte.js";
     import type { Motion, Speaker } from "#lib/types.d.ts";
+    import type { TimerState } from "#lib/util/timer.svelte.ts";
 
     interface Props {
         motion: Motion & { kind: "mod" };
@@ -33,15 +33,14 @@
      * (in which case a reset doesn't really need to happen).
      */
     function resetDel(oldSpeaker?: Speaker) {
-        if (typeof oldSpeaker !== "undefined") timerPanel?.reset(0);
+        if (typeof oldSpeaker !== "undefined") timerPanel?.reset([0]);
     }
     /**
      * Deduct time from the total timer if that setting is enabled.
      */
-    function deductTime([delTimer, totalTimer]: (Timer | undefined)[]) {
+    function deductTime([delTimer, totalTimer]: TimerState[]) {
         if ($preferences.yieldMainTimer) return;
-        if (!delTimer || !totalTimer) return;
-        totalTimer.offsetDuration(-delTimer.secsRemaining?.());
+        totalTimer.offsetDuration(-delTimer.secsRemaining);
     }
 
     $effect(() => {

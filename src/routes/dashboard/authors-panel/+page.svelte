@@ -4,14 +4,18 @@
     import ForAgainst from "#lib/components/ForAgainst.svelte";
     import MultiPage from "#lib/components/MultiPage.svelte";
     import Timer from "#lib/components/Timer.svelte";
+    import { getClockContext } from "#lib/context/clock.svelte.ts";
     import { getSessionContext } from "#lib/context/index.svelte.js";
     import type { SpeakerFA } from "#lib/types.d.ts";
     import { proxify } from "#lib/util/sv.svelte.js";
     import { parseTime, sanitizeTime, stringifyTime } from "#lib/util/time.js";
+    import { TimerState } from "#lib/util/timer.svelte.ts";
     import MdiWrench from "~icons/mdi/wrench";
 
     const sessionData = getSessionContext();
     const { delegates, selectedMotion } = sessionData;
+
+    const clock = getClockContext();
     let durations = $state(
         $selectedMotion?.kind === "introdoc"
         // Use motion's definitions if motion configured
@@ -21,9 +25,6 @@
     );
     let durInputs = $derived(proxify(durations.map(d => stringifyTime(d))));
     let faOrder = $state<SpeakerFA[]>([]);
-
-    let timer = $state<Timer>();
-    let running = $state<boolean>(false);
 
     const pages = [
         { name: "Reading Period" },
@@ -72,24 +73,29 @@
     {/snippet}
     {#snippet children(page)}
         {#if page != 4}
+            {const timer = new TimerState(clock, {
+                durationSecs: () => durations[page],
+                onRunningChange(running) {
+                    sessionData.updateTabTitleExtras(running, this.secsRemaining);
+                },
+                onTimeChange(secsRemaining) {
+                    sessionData.updateTabTitleExtras(this.running, secsRemaining);
+                },
+                onDurationChange(durationSecs) {
+                    durations[page] = durationSecs;
+                }
+            })}
             <!-- FIXME: Unify UnmodCaucus and this -->
             <div class="flex flex-col justify-center h-full gap-4">
                 <Timer
-                    bind:duration={durations[page]}
-                    bind:this={timer}
-                    {running}
-                    onRunningChange={r => {
-                        running = r;
-                        sessionData.updateTabTitleExtras(r, timer?.secsRemaining?.());
-                    }}
-                    onTimeChange={msElapsed => sessionData.updateTabTitleExtras(running, msElapsed / 1000)}
+                    timerState={timer}
                     editable
                 />
                 <div class="flex flex-row gap-2 justify-center">
-                    <button class="btn btn-lg preset-filled-primary-500" onclick={() => running = !running}>
-                        {!running ? 'Start' : 'Pause'}
+                    <button class="btn btn-lg preset-filled-primary-500" onclick={() => timer.toggleRunning()}>
+                        {!timer.running ? 'Start' : 'Pause'}
                     </button>
-                    <button class="btn btn-lg preset-filled-primary-500" onclick={timer?.reset}>Reset</button>
+                    <button class="btn btn-lg preset-filled-primary-500" onclick={() => timer.reset()}>Reset</button>
                 </div>
             </div>
         {:else}

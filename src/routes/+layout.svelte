@@ -8,6 +8,7 @@
 <script lang="ts">
     import "../app.css";
     
+    import { createClockContext } from "#lib/context/clock.svelte.ts";
     import { createSessionContext } from "#lib/context/index.svelte.js";
     import { createThemeContext } from "#lib/context/theme.svelte.js";
     import { genStyles } from "#lib/util/chroma.js";
@@ -15,7 +16,7 @@
     let { children } = $props();
 
     createSessionContext();
-    
+
     function keydown(e: KeyboardEvent) {
         // Allows ESC to be used to unfocus an element.
         if (e.code === "Escape") {
@@ -23,6 +24,7 @@
         }
     }
 
+    createClockContext();
     let theme = createThemeContext();
     $effect(() => {
         if ($theme.colorScheme === "dark") {
