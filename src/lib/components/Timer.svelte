@@ -15,6 +15,7 @@
     import { makeEditable } from "#lib/util/attach.svelte.js";
     import { a11yLabel, clamp } from "#lib/util/index.js";
     import { watchEffect } from "#lib/util/sv.svelte.js";
+    import { getProgressColor } from "#lib/util/chroma.ts";
     import { parseTime, stringifyTime } from "#lib/util/time.js";
     import MdiPause from "~icons/mdi/pause";
     import MdiPlay from "~icons/mdi/play";
@@ -110,14 +111,6 @@
         onTimeChange = undefined,
     }: Props = $props();
     
-    const COLOR_THRESHOLDS = [
-        // color = the color class to apply
-        // threshold = the maximum value needed for this color apply
-        //     e.g., if (threshold_0 < progress <= threshold_1), we use color_1
-        { color: "bg-primary-500", threshold: 1   },
-        { color: "bg-yellow-400",  threshold: 0.5 },
-        { color: "bg-red-400",     threshold: 0.2 },
-    ] as const;
 
     let DURATION_MS = $derived(duration * 1000);
     // reset timer on duration update:
@@ -130,7 +123,7 @@
         easing: cubicOut
     });
     
-    let color = $derived((COLOR_THRESHOLDS.findLast(t => progress.current <= t.threshold) ?? COLOR_THRESHOLDS[0]).color);
+    let color = $derived(getProgressColor(progress.current));
     let barProps = $derived({
         value: Math.round(10000 * progress.current) / 100,
         height,

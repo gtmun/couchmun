@@ -1,4 +1,5 @@
 import chroma from 'chroma-js';
+import type { ClassValue } from 'svelte/elements';
 import colors from 'tailwindcss/colors';
 
 const SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
@@ -93,4 +94,26 @@ export function genStyles(primary?: string, surface?: string) {
         ${primaryPal ? setPalette('primary', primaryPal) : ""}
         ${primaryPal ? setContrastPalette('primary', primaryPal) : ""}
     }`;
+}
+
+const TIMER_COLOR_THRESHOLDS = [
+    // color = the color class to apply
+    // threshold = the maximum value needed for this color apply
+    //     e.g., if (threshold_0 < progress <= threshold_1), we use color_1
+    { color: "preset-filled-primary-500",          threshold: 1.0 },
+    { color: ["bg-yellow-400", "text-yellow-950"], threshold: 0.5 },
+    { color: ["bg-red-400", "text-red-50"],        threshold: 0.2 },
+    { color: ["preset-filled"],                    threshold: 0.0 }
+] as const;
+
+/**
+ * Converts the current progress fraction into a CSS class.
+ * This is used for timer meter purposes.
+ * 
+ * @param progress A progress value, in [0, 1]
+ * @returns the color class of the progress value.
+ */
+export function getProgressColor(progress: number): ClassValue {
+    return (TIMER_COLOR_THRESHOLDS.findLast(t => progress <= t.threshold)
+        ?? TIMER_COLOR_THRESHOLDS[0]).color;
 }
