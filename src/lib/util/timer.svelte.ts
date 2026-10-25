@@ -318,33 +318,34 @@ export class TimerStateArray {
         arrayOptions?: TArrayOptions,
     ) {
         this.#clock = clock;
-        this.#timers = $state([]);
+        this.#timers = $state(Array.from(timerOptions, (o, i) => this.#createTimer(o, i)));
         this.#timerInteraction = $derived(this.#timers.length >= 2
             ? arrayOptions?.interact?.() ?? "sync"
             : "sync"
         );
-        this.push(...timerOptions);
         
         // Destroy all effects when enclosing component dies:
         onDestroy(this.#cleanup);
     }
 
+    #createTimer(options: TimerOptions, i: number): TimerState {
+        const setRunning = (running: boolean) => this.#setRunning(i, running);
+        return new TimerState(this.#clock, {
+            ...options,
+            onRunningChange(running, timeSincePause) {
+                setRunning(running);
+                options.onRunningChange?.call(this, running, timeSincePause);
+            },
+            root: true
+        });
+    }
     /**
      * Adds new timers to the array.
      */
     push(...els: TimerOptions[]) {
-        for (const options of els) {
-            const i = this.#timers.length;
-            const setRunning = (running: boolean) => this.#setRunning(i, running);
-            this.#timers.push(new TimerState(this.#clock, {
-                ...options,
-                onRunningChange(running, timeSincePause) {
-                    setRunning(running);
-                    options.onRunningChange?.call(this, running, timeSincePause);
-                },
-                root: true
-            }));
-        }
+        const len = this.#timers.length;
+        const newEls = Array.from(els, (o, i) => this.#createTimer(o, len + i));
+        this.#timers.push(...newEls);
     }
     /**
      * Removes the last timer from the array.
@@ -353,13 +354,13 @@ export class TimerStateArray {
         this.#timers.pop()?.cleanupEffects();
     }
     #cleanup() {
-        this.#timers.forEach(t => t.cleanupEffects());
+        if (this) this.#timers.forEach(t => t.cleanupEffects());
     }
     /**
      * Removes all timers from the array.
      */
     clear() {
-        this.#timers.forEach(timer => timer.cleanupEffects());
+        this.#cleanup();
         this.#timers = [];
     }
     
@@ -401,9 +402,6 @@ export class TimerStateArray {
      */
     get length() {
         return this.#timers.length;
-    }
-    [Symbol.iterator]() {
-        return this.#timers[Symbol.iterator]();
     }
     
     /**

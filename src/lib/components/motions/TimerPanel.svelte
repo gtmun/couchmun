@@ -108,7 +108,7 @@
         </div>
     {/key}
     <div class="flex flex-col gap-4">
-        {#each timerArray as timer, i (timer)}
+        {#each timerArray.value as timer, i (timer)}
             <!-- 
                 This const is needed because the event handlers should 
                 ONLY apply to 1 of the timers to avoid duplication.
