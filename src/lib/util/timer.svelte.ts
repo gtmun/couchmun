@@ -325,7 +325,7 @@ export class TimerStateArray {
         );
         
         // Destroy all effects when enclosing component dies:
-        onDestroy(this.#cleanup);
+        onDestroy(() => this.#timers.forEach(t => t.cleanupEffects()));
     }
 
     #createTimer(options: TimerOptions, i: number): TimerState {
@@ -353,14 +353,11 @@ export class TimerStateArray {
     pop() {
         this.#timers.pop()?.cleanupEffects();
     }
-    #cleanup() {
-        if (this) this.#timers.forEach(t => t.cleanupEffects());
-    }
     /**
      * Removes all timers from the array.
      */
     clear() {
-        this.#cleanup();
+        this.#timers.forEach(t => t.cleanupEffects());
         this.#timers = [];
     }
     
